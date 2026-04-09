@@ -170,6 +170,8 @@ export function LoginScreen({ onLoginSuccess, initialBranding }: LoginScreenProp
 
           {/* Bottom links */}
           <div className="mt-6 space-y-3">
+            <GoogleAuthButton label="Continuar con Google" />
+
             <p className="text-center text-xs text-[#ADADAD]">
               ¿No tenés cuenta?{' '}
               <Link
@@ -179,8 +181,6 @@ export function LoginScreen({ onLoginSuccess, initialBranding }: LoginScreenProp
                 Registrá tu negocio
               </Link>
             </p>
-
-            <GoogleAuthButton label="Continuar con Google" />
           </div>
         </div>
 
