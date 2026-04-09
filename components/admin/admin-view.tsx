@@ -355,17 +355,17 @@ export function AdminView({ onBack }: AdminViewProps) {
             {/* Logo / Brand — misma altura que el header del contenido (h-16) */}
             <div className="flex h-16 shrink-0 items-center border-b border-border px-3">
               {!sidebarCollapsed ? (
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <WaitlessLogo size={32} color="dark" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-sm font-bold text-foreground leading-tight tracking-tight">{config.restaurantName ?? ''}</span>
-                    <span className="text-xs text-muted-foreground">Owner / Admin</span>
-                  </div>
-                </div>
+                <button
+                  onClick={() => setScreen('reports')}
+                  className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-70 transition-opacity"
+                >
+                  <WaitlessLogo size={32} color="dark" imageUrl={config.logoUrl} imageAlt="Logo" />
+                  <span className="text-xs text-muted-foreground">Admin</span>
+                </button>
               ) : (
-                <div className="flex w-full justify-center">
-                  <WaitlessLogo size={28} color="dark" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
-                </div>
+                <button onClick={() => setScreen('reports')} className="flex w-full justify-center hover:opacity-70 transition-opacity">
+                  <WaitlessLogo size={28} color="dark" imageUrl={config.logoUrl} imageAlt="Logo" />
+                </button>
               )}
             </div>
 
