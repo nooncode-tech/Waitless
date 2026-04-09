@@ -1,0 +1,47 @@
+# v0 runtime files
+__v0_runtime_loader.js
+__v0_devtools.tsx
+__v0_jsx-dev-runtime.ts
+
+# Common ignores
+node_modules/
+.next/
+.env*.local
+.env.zip
+.DS_Store
+*.tsbuildinfo
+pnpm-lock.yaml
+
+# Test coverage
+coverage/
+
+# Release artifacts — no deben viajar al repo
+*.zip
+*.pdf
+WAITLESS_*.md
+
+# Claude Code local settings (contiene rutas absolutas del sistema)
+.claude/
+.claude/settings.local.json
+
+# Internal work artifacts — not for release
+PROMPT_*.md
+project.context*.md
+TEST_STRATEGY.md
+docs/RELEASE_NOTES_V4.md
+
+# Build outputs
+dist/
+out/
+
+# Cache de herramientas
+.turbo/
+.swc/
+.cursor/
+
+# Logs
+*.log
+
+# OS
+Thumbs.db
+.env*.local

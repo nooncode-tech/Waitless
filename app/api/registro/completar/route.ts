@@ -1,0 +1,134 @@
+/**
+ * POST /api/registro/completar
+ * Called after Google OAuth for new users who don't have a tenant yet.
+ * Creates: tenant → app_config → profile (admin role linked to tenant).
+ * The auth.users row already exists (created by Google OAuth).
+ *
+ * Fields (multipart/form-data):
+ *   userId       string  — Supabase auth user id (from client session)
+ *   nombre       string  — Business name
+ *   slug         string  — URL identifier
+ *   primaryColor string  — HEX color
+ *   logo?        File    — Optional logo
+ */
+
+import { NextRequest, NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase-admin'
+
+const SLUG_RE = /^[a-z0-9-]{3,40}$/
+const HEX_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/
+
+export async function POST(req: NextRequest) {
+  let formData: FormData
+  try {
+    formData = await req.formData()
+  } catch {
+    return NextResponse.json({ error: 'Body inválido' }, { status: 400 })
+  }
+
+  const userId = (formData.get('userId') as string | null)?.trim()
+  const nombre = (formData.get('nombre') as string | null)?.trim()
+  const slug = (formData.get('slug') as string | null)?.trim().toLowerCase()
+  const primaryColor = (formData.get('primaryColor') as string | null)?.trim() ?? '#000000'
+  const logoFile = formData.get('logo') as File | null
+
+  if (!userId) return NextResponse.json({ error: 'userId requerido' }, { status: 400 })
+  if (!nombre || nombre.length < 2) return NextResponse.json({ error: 'Nombre muy corto' }, { status: 400 })
+  if (!slug || !SLUG_RE.test(slug)) return NextResponse.json({ error: 'Identificador inválido' }, { status: 400 })
+  if (!HEX_RE.test(primaryColor)) return NextResponse.json({ error: 'Color inválido' }, { status: 400 })
+
+  // Verify user exists in auth
+  const { data: authUser, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId)
+  if (userError || !authUser.user) {
+    return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
+  }
+
+  // Verify user doesn't already have a profile with a tenant
+  const { data: existingProfile } = await supabaseAdmin
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', userId)
+    .single()
+
+  if (existingProfile?.tenant_id) {
+    return NextResponse.json({ error: 'Este usuario ya tiene un negocio registrado' }, { status: 409 })
+  }
+
+  // Check slug is unique
+  const { data: existingTenant } = await supabaseAdmin
+    .from('tenants')
+    .select('id')
+    .eq('slug', slug)
+    .single()
+  if (existingTenant) {
+    return NextResponse.json({ error: 'Ese identificador ya está en uso, elegí otro' }, { status: 409 })
+  }
+
+  // Upload logo if provided
+  let logoUrl: string | null = null
+  if (logoFile && logoFile.size > 0) {
+    await supabaseAdmin.storage.createBucket('logos', { public: true }).catch(() => {})
+    const ext = logoFile.name.split('.').pop() ?? 'png'
+    const path = `${slug}/${Date.now()}.${ext}`
+    const buffer = Buffer.from(await logoFile.arrayBuffer())
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from('logos')
+      .upload(path, buffer, { contentType: logoFile.type, upsert: true })
+    if (!uploadError) {
+      const { data: urlData } = supabaseAdmin.storage.from('logos').getPublicUrl(path)
+      logoUrl = urlData.publicUrl
+    }
+  }
+
+  // Create tenant
+  const { data: tenantRow, error: tenantError } = await supabaseAdmin
+    .from('tenants')
+    .insert({ nombre, slug, plan: 'starter', activo: true })
+    .select()
+    .single()
+
+  if (tenantError || !tenantRow) {
+    return NextResponse.json({ error: 'Error creando el negocio' }, { status: 500 })
+  }
+
+  const tenantId = tenantRow.id as string
+
+  // Create app_config with branding
+  await supabaseAdmin.from('app_config').insert({
+    id: tenantId,
+    tenant_id: tenantId,
+    restaurant_name: nombre,
+    primary_color: primaryColor,
+    secondary_color: '#FFFFFF',
+    accent_color: '#BEBEBE',
+    logo_url: logoUrl,
+    powered_by_waitless: false,
+  })
+
+  // Create or update profile with admin role + tenant
+  const email = authUser.user.email ?? ''
+  const displayName = authUser.user.user_metadata?.full_name ?? authUser.user.user_metadata?.name ?? nombre
+
+  if (existingProfile) {
+    // Profile exists but no tenant — update it
+    await supabaseAdmin
+      .from('profiles')
+      .update({ tenant_id: tenantId, role: 'admin', activo: true })
+      .eq('id', userId)
+  } else {
+    // No profile at all — create one
+    await supabaseAdmin.from('profiles').insert({
+      id: userId,
+      username: slug,
+      nombre: displayName,
+      role: 'admin',
+      activo: true,
+      tenant_id: tenantId,
+    })
+  }
+
+  return NextResponse.json({
+    success: true,
+    tenant: { id: tenantId, nombre, slug },
+  }, { status: 201 })
+}

@@ -1,0 +1,143 @@
+/**
+ * lib/context/sync.ts
+ *
+ * Helpers de sincronización con Supabase extraídos de lib/context.tsx.
+ * Funciones puras sin dependencias de React — pueden importarse en cualquier contexto.
+ */
+
+import { supabase, getSessionClient } from '../supabase'
+import { executeOrQueue } from '../offline-queue'
+import { logError } from '../handle-error'
+import type { Order, TableSession, WaiterCall } from '../store'
+
+export async function uploadMenuImage(file: File): Promise<string | null> {
+  const fileName = `${Date.now()}-${file.name}`
+
+  const { error } = await supabase.storage
+    .from('menu-images')
+    .upload(fileName, file)
+
+  if (error) {
+    console.error('Error subiendo imagen:', error)
+    return null
+  }
+
+  const { data } = supabase.storage
+    .from('menu-images')
+    .getPublicUrl(fileName)
+
+  return data.publicUrl
+}
+
+export async function syncOrderToSupabase(order: Order, sessionId?: string) {
+  const data: Record<string, unknown> = {
+    id: order.id,
+    numero: order.numero,
+    canal: order.canal,
+    mesa: order.mesa ?? null,
+    seat_number: order.seatNumber ?? null,
+    items: order.items as unknown as object,
+    status: order.status,
+    cocina_a_status: order.cocinaAStatus,
+    cocina_b_status: order.cocinaBStatus,
+    nombre_cliente: order.nombreCliente ?? null,
+    telefono: order.telefono ?? null,
+    direccion: order.direccion ?? null,
+    zona_reparto: order.zonaReparto ?? null,
+    repartidor_id: order.repartidorId ?? null,
+    claimed_by_kitchen: order.claimedByKitchen ?? null,
+    cancelado: order.cancelado ?? false,
+    cancel_reason: order.cancelReason ?? null,
+    cancel_motivo: order.cancelMotivo ?? null,
+    cancelado_por: order.canceladoPor ?? null,
+    session_id: sessionId ?? null,
+    tiempo_inicio_preparacion: order.tiempoInicioPreparacion?.toISOString() ?? null,
+    tiempo_fin_preparacion: order.tiempoFinPreparacion?.toISOString() ?? null,
+    cancelado_at: order.canceladoAt?.toISOString() ?? null,
+    confirmed_at: order.confirmedAt?.toISOString() ?? null,
+    kitchen_received_at: order.kitchenReceivedAt?.toISOString() ?? null,
+    is_qr_order: order.isQrOrder ?? false,
+    updated_at: new Date().toISOString(),
+  }
+  await executeOrQueue({
+    table: 'orders',
+    type: 'upsert',
+    data,
+    sessionId: order.isQrOrder ? (sessionId ?? undefined) : undefined,
+  })
+}
+
+export async function syncSessionToSupabase(
+  session: Omit<TableSession, 'orders'>,
+  anonSessionId?: string,
+) {
+  const data: Record<string, unknown> = {
+    id: session.id,
+    mesa: session.mesa,
+    activa: session.activa,
+    bill_status: session.billStatus,
+    subtotal: session.subtotal,
+    impuestos: session.impuestos,
+    propina: session.propina,
+    descuento: session.descuento,
+    descuento_motivo: session.descuentoMotivo ?? null,
+    total: session.total,
+    monto_abonado: session.montoAbonado ?? 0,
+    payment_method: session.paymentMethod ?? null,
+    payment_status: session.paymentStatus,
+    device_id: session.deviceId,
+    feedback_done: session.feedbackDone ?? false,
+    paid_at: session.paidAt?.toISOString() ?? null,
+    receipt_id: session.receiptId ?? null,
+    expires_at: session.expiresAt?.toISOString() ?? null,
+    updated_at: new Date().toISOString(),
+    version: session.version ?? 0,
+  }
+  await executeOrQueue({ table: 'table_sessions', type: 'upsert', data, sessionId: anonSessionId })
+}
+
+/**
+ * Verifica que la versión local coincide con la de Supabase.
+ * Retorna:
+ *   'ok'       — versión coincide, proceder
+ *   'conflict' — otro dispositivo ya mutó la sesión, refrescar y bloquear
+ *   'offline'  — no se pudo verificar (sin conexión), hard-fail para operaciones críticas
+ */
+export async function checkSessionVersion(
+  sessionId: string,
+  localVersion: number,
+): Promise<'ok' | 'conflict' | 'offline'> {
+  try {
+    const { data } = await supabase
+      .from('table_sessions')
+      .select('version')
+      .eq('id', sessionId)
+      .single()
+    if (!data) return 'ok' // sesión nueva, no hay conflicto
+    return (data.version ?? 0) === localVersion ? 'ok' : 'conflict'
+  } catch (e) {
+    logError('checkSessionVersion', e)
+    return 'offline'
+  }
+}
+
+export async function syncWaiterCallToSupabase(call: WaiterCall, isAnon?: boolean) {
+  // Usa session client (anon key + x-session-id) para flujos QR,
+  // supabase normal para staff autenticado (markCallAttended)
+  const client = isAnon && call.sessionId ? getSessionClient(call.sessionId) : supabase
+  try {
+    const { error } = await client.from('waiter_calls').upsert({
+      id: call.id,
+      mesa: call.mesa,
+      tipo: call.tipo,
+      mensaje: call.mensaje ?? null,
+      session_id: call.sessionId ?? null,
+      atendido: call.atendido,
+      atendido_por: call.atendidoPor ?? null,
+      atendido_at: call.atendidoAt?.toISOString() ?? null,
+    })
+    if (error) logError('syncWaiterCall', error)
+  } catch (e) {
+    logError('syncWaiterCall', e)
+  }
+}
