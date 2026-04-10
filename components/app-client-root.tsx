@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { AppProvider, useApp } from '@/lib/context'
 import { Toaster } from '@/components/ui/sonner'
 import { LoginScreen } from '@/components/auth/login-screen'
+import { LandingPage } from '@/components/landing/landing-page'
 import { ClienteView } from '@/components/cliente/cliente-view'
 import { ClienteAuthScreen } from '@/components/cliente/cliente-auth-screen'
 import { MeseroView } from '@/components/mesero/mesero-view'
@@ -13,7 +14,7 @@ import type { UserRole } from '@/lib/store'
 import type { TenantBranding } from '@/lib/tenant-server'
 import type { ClienteUser } from '@/lib/cliente-auth'
 
-type AppView = 'login' | 'cliente-auth' | 'cliente' | 'admin' | 'mesero' | 'cocina_a' | 'cocina_b'
+type AppView = 'landing' | 'login' | 'cliente-auth' | 'cliente' | 'admin' | 'mesero' | 'cocina_a' | 'cocina_b'
 
 interface AppContentProps {
   initialBranding: TenantBranding
@@ -21,7 +22,7 @@ interface AppContentProps {
 
 function AppContent({ initialBranding }: AppContentProps) {
   const { currentUser, setCurrentTable, logout, validateTableQR } = useApp()
-  const [view, setView] = useState<AppView>('login')
+  const [view, setView] = useState<AppView>('landing')
   const [clienteMesa, setClienteMesa] = useState<number | null>(null)
   const [clienteUser, setClienteUser] = useState<ClienteUser | null>(null)
   const [qrError, setQrError] = useState<string | null>(null)
@@ -69,7 +70,7 @@ function AppContent({ initialBranding }: AppContentProps) {
 
   // Auto-redirect cuando hay sesión Supabase activa
   useEffect(() => {
-    if (currentUser && view === 'login') {
+    if (currentUser && (view === 'login' || view === 'landing')) {
       setView(roleToView(currentUser.role)) // eslint-disable-line react-hooks/set-state-in-effect -- intentional reactive navigation on auth state change
     }
   }, [currentUser, view])
@@ -79,7 +80,7 @@ function AppContent({ initialBranding }: AppContentProps) {
   }
 
   const handleLogout = async () => {
-    setView('login')
+    setView('landing')
     setClienteMesa(null)
     window.history.replaceState({}, '', window.location.pathname)
     await logout()
@@ -94,7 +95,7 @@ function AppContent({ initialBranding }: AppContentProps) {
     setClienteMesa(null)
     setClienteUser(null)
     setCurrentTable(null)
-    setView('login')
+    setView('landing')
     window.history.replaceState({}, '', window.location.pathname)
   }
 
@@ -132,6 +133,11 @@ function AppContent({ initialBranding }: AppContentProps) {
   // Vista cliente (acceso por QR — con o sin cuenta registrada)
   if (view === 'cliente' && clienteMesa) {
     return <ClienteView mesa={clienteMesa} onBack={handleClienteExit} clienteUser={clienteUser} />
+  }
+
+  // Landing pública
+  if (view === 'landing') {
+    return <LandingPage onLogin={() => setView('login')} />
   }
 
   // Pantalla de login — recibe branding server-side para renderizar sin flash
@@ -181,7 +187,7 @@ function AppContent({ initialBranding }: AppContentProps) {
       return <KDSView kitchen="b" onBack={handleLogout} />
 
     default:
-      return <LoginScreen onLoginSuccess={handleLoginSuccess} initialBranding={initialBranding} />
+      return <LandingPage onLogin={() => setView('login')} />
   }
 }
 
