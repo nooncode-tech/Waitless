@@ -166,6 +166,11 @@ export function LandingPage({ onLogin }: LandingPageProps) {
     return () => { cancelAnimationFrame(raf); el.removeEventListener('mouseenter', pause); el.removeEventListener('mouseleave', resume) }
   }, [])
 
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    setMenuOpen(false)
+  }
+
   const handlePlanClick = async (planId: string) => {
     if (!showEmailFor || showEmailFor !== planId) { setShowEmailFor(planId); setPlanEmail(''); return }
     setLoadingPlan(planId)
@@ -185,7 +190,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
     <div className="text-[#111] overflow-x-hidden" style={{ fontFamily: "'Inter', 'Poppins', system-ui, sans-serif" }}>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         @keyframes fadeUp   { from { opacity:0; transform:translateY(24px) } to { opacity:1; transform:translateY(0) } }
         @keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
         @keyframes scaleUp  { from { opacity:0; transform:scale(0.96) } to { opacity:1; transform:scale(1) } }
@@ -217,20 +221,20 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
           {/* Desktop links */}
           <div className="hidden md:flex items-center gap-7">
-            {[['#how','Cómo funciona'],['#features','Funciones'],['#pricing','Precios'],['#testimonials','Clientes']].map(([h,l]) => (
-              <a key={h} href={h} className="text-zinc-500 hover:text-[#111] text-sm font-medium transition-colors">{l}</a>
+            {[['how','Cómo funciona'],['features','Funciones'],['pricing','Precios'],['testimonials','Clientes']].map(([id,l]) => (
+              <button key={id} onClick={() => scrollTo(id)} className="text-zinc-500 hover:text-[#111] text-sm font-medium transition-colors cursor-pointer">{l}</button>
             ))}
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <button onClick={onLogin} className="text-zinc-500 hover:text-[#111] text-sm font-medium transition-colors px-3 py-2">
+            <button onClick={onLogin} className="text-zinc-500 hover:text-[#111] text-sm font-medium transition-colors px-3 py-2 cursor-pointer">
               Iniciar sesión
             </button>
-            <a href="#pricing"
-              className="text-sm font-semibold px-5 py-2.5 rounded-full text-white transition-all hover:opacity-90 active:scale-[0.98]"
+            <button onClick={() => scrollTo('pricing')}
+              className="text-sm font-semibold px-5 py-2.5 rounded-full text-white transition-all hover:opacity-90 active:scale-[0.98] cursor-pointer"
               style={{ background: 'linear-gradient(135deg,#18181b,#3f3f46)' }}>
               Ver planes
-            </a>
+            </button>
           </div>
 
           <button className="md:hidden text-zinc-600 hover:text-[#111] p-1" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
@@ -240,16 +244,16 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
         {menuOpen && (
           <div className="md:hidden bg-white border-t border-zinc-100 px-6 py-5 space-y-1 shadow-lg">
-            {[['#how','Cómo funciona'],['#features','Funciones'],['#pricing','Precios'],['#testimonials','Clientes']].map(([h,l]) => (
-              <a key={h} href={h} className="block text-zinc-600 text-sm py-2.5 font-medium hover:text-[#111] transition-colors" onClick={() => setMenuOpen(false)}>{l}</a>
+            {[['how','Cómo funciona'],['features','Funciones'],['pricing','Precios'],['testimonials','Clientes']].map(([id,l]) => (
+              <button key={id} onClick={() => scrollTo(id)} className="block w-full text-left text-zinc-600 text-sm py-2.5 font-medium hover:text-[#111] transition-colors cursor-pointer">{l}</button>
             ))}
             <div className="pt-3 space-y-2 border-t border-zinc-100 mt-2">
-              <button onClick={() => { setMenuOpen(false); onLogin() }} className="block w-full text-left text-zinc-500 text-sm py-2">Iniciar sesión</button>
-              <a href="#pricing" onClick={() => setMenuOpen(false)}
-                className="block w-full text-center text-sm font-semibold px-5 py-3 rounded-full text-white"
+              <button onClick={() => { setMenuOpen(false); onLogin() }} className="block w-full text-left text-zinc-500 text-sm py-2 cursor-pointer">Iniciar sesión</button>
+              <button onClick={() => scrollTo('pricing')}
+                className="block w-full text-center text-sm font-semibold px-5 py-3 rounded-full text-white cursor-pointer"
                 style={{ background: 'linear-gradient(135deg,#18181b,#3f3f46)' }}>
                 Ver planes
-              </a>
+              </button>
             </div>
           </div>
         )}
@@ -285,15 +289,15 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             </p>
 
             <div className="rv d3 flex flex-col sm:flex-row gap-3 mb-14 justify-center lg:justify-start">
-              <a href="#pricing"
-                className="inline-flex items-center justify-center gap-2 font-bold px-8 py-4 rounded-full text-sm text-[#111] bg-white hover:bg-zinc-100 transition-all group active:scale-[0.98]">
+              <button onClick={() => scrollTo('pricing')}
+                className="inline-flex items-center justify-center gap-2 font-bold px-8 py-4 rounded-full text-sm text-[#111] bg-white hover:bg-zinc-100 transition-all group active:scale-[0.98] cursor-pointer">
                 Comenzar gratis
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-              </a>
-              <a href="#how"
-                className="inline-flex items-center justify-center gap-2 font-medium px-8 py-4 rounded-full text-sm text-white/60 hover:text-white border border-white/15 hover:border-white/30 transition-all">
+              </button>
+              <button onClick={() => scrollTo('how')}
+                className="inline-flex items-center justify-center gap-2 font-medium px-8 py-4 rounded-full text-sm text-white/60 hover:text-white border border-white/15 hover:border-white/30 transition-all cursor-pointer">
                 Ver cómo funciona
-              </a>
+              </button>
             </div>
 
             {/* KPI row */}
@@ -642,13 +646,13 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             Herramientas que dignifican el trabajo de quienes mueven el mundo.
           </p>
           <div className="rv d3 flex flex-col sm:flex-row gap-3 justify-center">
-            <a href="#pricing"
-              className="inline-flex items-center justify-center gap-2 font-bold px-10 py-4 rounded-full text-sm text-[#111] bg-white hover:bg-zinc-100 transition-all group active:scale-[0.98]">
+            <button onClick={() => scrollTo('pricing')}
+              className="inline-flex items-center justify-center gap-2 font-bold px-10 py-4 rounded-full text-sm text-[#111] bg-white hover:bg-zinc-100 transition-all group active:scale-[0.98] cursor-pointer">
               Ver planes y precios
               <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-            </a>
+            </button>
             <button onClick={onLogin}
-              className="inline-flex items-center justify-center gap-2 font-medium px-10 py-4 rounded-full text-sm text-white/45 hover:text-white border border-white/[0.12] hover:border-white/25 transition-all">
+              className="inline-flex items-center justify-center gap-2 font-medium px-10 py-4 rounded-full text-sm text-white/45 hover:text-white border border-white/[0.12] hover:border-white/25 transition-all cursor-pointer">
               Ya tengo cuenta
             </button>
           </div>
