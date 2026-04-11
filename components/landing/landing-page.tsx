@@ -166,7 +166,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
     return () => { cancelAnimationFrame(raf); el.removeEventListener('mouseenter', pause); el.removeEventListener('mouseleave', resume) }
   }, [])
 
-  const scrollTo = (id: string) => {
+  const goTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     setMenuOpen(false)
   }
@@ -222,7 +222,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           {/* Desktop links */}
           <div className="hidden md:flex items-center gap-7">
             {[['how','Cómo funciona'],['features','Funciones'],['pricing','Precios'],['testimonials','Clientes']].map(([id,l]) => (
-              <button key={id} onClick={() => scrollTo(id)} className="text-zinc-500 hover:text-[#111] text-sm font-medium transition-colors cursor-pointer">{l}</button>
+              <button key={id} onClick={() => goTo(id)} className="text-zinc-500 hover:text-[#111] text-sm font-medium transition-colors cursor-pointer">{l}</button>
             ))}
           </div>
 
@@ -230,7 +230,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             <button onClick={onLogin} className="text-zinc-500 hover:text-[#111] text-sm font-medium transition-colors px-3 py-2 cursor-pointer">
               Iniciar sesión
             </button>
-            <button onClick={() => scrollTo('pricing')}
+            <button onClick={() => goTo('pricing')}
               className="text-sm font-semibold px-5 py-2.5 rounded-full text-white transition-all hover:opacity-90 active:scale-[0.98] cursor-pointer"
               style={{ background: 'linear-gradient(135deg,#18181b,#3f3f46)' }}>
               Ver planes
@@ -245,11 +245,11 @@ export function LandingPage({ onLogin }: LandingPageProps) {
         {menuOpen && (
           <div className="md:hidden bg-white border-t border-zinc-100 px-6 py-5 space-y-1 shadow-lg">
             {[['how','Cómo funciona'],['features','Funciones'],['pricing','Precios'],['testimonials','Clientes']].map(([id,l]) => (
-              <button key={id} onClick={() => scrollTo(id)} className="block w-full text-left text-zinc-600 text-sm py-2.5 font-medium hover:text-[#111] transition-colors cursor-pointer">{l}</button>
+              <button key={id} onClick={() => goTo(id)} className="block w-full text-left text-zinc-600 text-sm py-2.5 font-medium hover:text-[#111] transition-colors cursor-pointer">{l}</button>
             ))}
             <div className="pt-3 space-y-2 border-t border-zinc-100 mt-2">
               <button onClick={() => { setMenuOpen(false); onLogin() }} className="block w-full text-left text-zinc-500 text-sm py-2 cursor-pointer">Iniciar sesión</button>
-              <button onClick={() => scrollTo('pricing')}
+              <button onClick={() => goTo('pricing')}
                 className="block w-full text-center text-sm font-semibold px-5 py-3 rounded-full text-white cursor-pointer"
                 style={{ background: 'linear-gradient(135deg,#18181b,#3f3f46)' }}>
                 Ver planes
@@ -289,12 +289,12 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             </p>
 
             <div className="rv d3 flex flex-col sm:flex-row gap-3 mb-14 justify-center lg:justify-start">
-              <button onClick={() => scrollTo('pricing')}
+              <button onClick={() => goTo('pricing')}
                 className="inline-flex items-center justify-center gap-2 font-bold px-8 py-4 rounded-full text-sm text-[#111] bg-white hover:bg-zinc-100 transition-all group active:scale-[0.98] cursor-pointer">
                 Comenzar gratis
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
-              <button onClick={() => scrollTo('how')}
+              <button onClick={() => goTo('how')}
                 className="inline-flex items-center justify-center gap-2 font-medium px-8 py-4 rounded-full text-sm text-white/60 hover:text-white border border-white/15 hover:border-white/30 transition-all cursor-pointer">
                 Ver cómo funciona
               </button>
@@ -646,7 +646,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             Herramientas que dignifican el trabajo de quienes mueven el mundo.
           </p>
           <div className="rv d3 flex flex-col sm:flex-row gap-3 justify-center">
-            <button onClick={() => scrollTo('pricing')}
+            <button onClick={() => goTo('pricing')}
               className="inline-flex items-center justify-center gap-2 font-bold px-10 py-4 rounded-full text-sm text-[#111] bg-white hover:bg-zinc-100 transition-all group active:scale-[0.98] cursor-pointer">
               Ver planes y precios
               <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
@@ -675,17 +675,34 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                 Plataforma operativa para restaurantes con servicio en mesa.
               </p>
             </div>
-            {[
-              { h:'Producto', l:['Menú Digital','Sistema POS','Pantalla Cocina','Analítica'] },
-              { h:'Planes', l:['Básico','Pro','Business'] },
-              { h:'Legal', l:['Términos','Privacidad'] },
-            ].map(col => (
+            {([
+              { h:'Producto', l:[
+                { label:'Menú Digital',    id:'features' },
+                { label:'Sistema POS',     id:'features' },
+                { label:'Pantalla Cocina', id:'features' },
+                { label:'Analítica',       id:'features' },
+              ]},
+              { h:'Planes', l:[
+                { label:'Básico',   id:'pricing' },
+                { label:'Pro',      id:'pricing' },
+                { label:'Business', id:'pricing' },
+              ]},
+              { h:'Navegar', l:[
+                { label:'Cómo funciona', id:'how' },
+                { label:'Funciones',     id:'features' },
+                { label:'Clientes',      id:'testimonials' },
+              ]},
+            ] as { h: string; l: { label: string; id: string }[] }[]).map(col => (
               <div key={col.h}>
                 <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.15em] mb-5">{col.h}</p>
                 <ul className="space-y-3">
                   {col.l.map(link => (
-                    <li key={link}>
-                      <a href="#" className="text-white/25 text-sm hover:text-white/55 transition-colors">{link}</a>
+                    <li key={link.label}>
+                      <button
+                        onClick={() => goTo(link.id)}
+                        className="text-white/25 text-sm hover:text-white/55 transition-colors cursor-pointer text-left">
+                        {link.label}
+                      </button>
                     </li>
                   ))}
                 </ul>
