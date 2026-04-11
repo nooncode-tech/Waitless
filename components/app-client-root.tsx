@@ -142,7 +142,7 @@ function AppContent({ initialBranding }: AppContentProps) {
 
   // Pantalla de login — recibe branding server-side para renderizar sin flash
   if (view === 'login') {
-    return <LoginScreen onLoginSuccess={handleLoginSuccess} initialBranding={initialBranding} />
+    return <LoginScreen onLoginSuccess={handleLoginSuccess} onBack={() => setView('landing')} initialBranding={initialBranding} />
   }
 
   // Estado transitorio: view ya cambió a rol pero currentUser del contexto aún no propagó
@@ -187,7 +187,7 @@ function AppContent({ initialBranding }: AppContentProps) {
       return <KDSView kitchen="b" onBack={handleLogout} />
 
     default:
-      return <LandingPage onLogin={() => setView('login')} />
+    return <LandingPage onLogin={() => setView('login')} />
   }
 }
 

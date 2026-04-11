@@ -14,11 +14,12 @@ import type { TenantBranding } from '@/lib/tenant-server'
 
 interface LoginScreenProps {
   onLoginSuccess: (role: UserRole) => void
+  onBack?: () => void
   /** Branding pre-cargado server-side. Evita flash de logo/nombre vacío en el primer render. */
   initialBranding?: TenantBranding
 }
 
-export function LoginScreen({ onLoginSuccess, initialBranding }: LoginScreenProps) {
+export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginScreenProps) {
   const { login, config } = useApp()
 
   // Usa config del contexto (post-hidratación) con fallback al branding server-side
@@ -52,7 +53,20 @@ export function LoginScreen({ onLoginSuccess, initialBranding }: LoginScreenProp
   }
 
   return (
-    <div className="min-h-screen bg-white flex">
+    <div className="min-h-screen bg-white flex relative">
+      {/* Back to home button */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="absolute top-5 left-5 z-10 flex items-center gap-1.5 text-xs text-[#6B6B6B] hover:text-black transition-colors"
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 11L5 7L9 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Inicio
+        </button>
+      )}
+
       {/* Left panel — brand */}
       <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12" style={{ backgroundColor: primaryColor }}>
         <WaitlessLogo size={56} variant="mark" color="light" imageUrl={logoUrl} imageAlt={restaurantName ?? 'Logo'} />
