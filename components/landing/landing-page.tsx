@@ -213,66 +213,151 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       </nav>
 
       {/* ── HERO ── */}
-      <section className="relative min-h-screen flex items-center px-6 pt-16 overflow-hidden"
+      <section className="relative min-h-screen flex flex-col px-6 pt-16 overflow-hidden"
         style={{ background: '#080808' }}>
         {/* Radial glow */}
         <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,255,255,0.07) 0%, transparent 70%)' }} />
+          style={{ background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,255,255,0.08) 0%, transparent 70%)' }} />
         {/* Grid pattern */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
           style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
 
-        <div className="relative max-w-6xl mx-auto w-full py-28 md:py-36">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-10 border"
-            style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.1)' }}>
-            <Zap className="h-3 w-3 text-amber-400 fill-amber-400" />
-            <span className="text-white/60 text-xs font-medium tracking-wide">Plataforma operativa para restaurantes</span>
+        <div className="relative max-w-6xl mx-auto w-full flex-1 flex flex-col lg:flex-row items-center gap-12 py-16 md:py-20">
+          {/* Left: copy */}
+          <div className="flex-1 min-w-0">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-8 border"
+              style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.1)' }}>
+              <Zap className="h-3 w-3 text-amber-400 fill-amber-400" />
+              <span className="text-white/60 text-xs font-medium tracking-wide">Plataforma operativa para restaurantes</span>
+            </div>
+
+            {/* Headline */}
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black leading-[1.0] tracking-[-0.03em] mb-6">
+              <span style={{
+                background: 'linear-gradient(180deg, #ffffff 30%, rgba(255,255,255,0.4) 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>
+                Operación perfecta.{' '}
+              </span>
+              <span style={{ color: 'rgba(255,255,255,0.2)' }}>Sin fricciones.</span>
+            </h1>
+
+            <p className="text-white/45 text-lg leading-relaxed mb-10 max-w-md">
+              De la mesa al cobro en segundos. Gestiona pedidos, cocina y analítica desde un solo panel.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3 mb-12">
+              <a href="#pricing"
+                className="inline-flex items-center justify-center gap-2 font-bold px-8 py-4 rounded-full text-sm transition-all group"
+                style={{ background: 'linear-gradient(135deg, #ffffff 0%, #d4d4d4 100%)', color: '#000' }}>
+                Comenzar gratis
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+              </a>
+              <a href="#how"
+                className="inline-flex items-center justify-center gap-2 font-medium px-8 py-4 rounded-full text-sm text-white/60 hover:text-white transition-all border border-white/10 hover:border-white/20">
+                Ver cómo funciona
+              </a>
+            </div>
+
+            {/* KPI cards */}
+            <div className="grid grid-cols-3 gap-3 max-w-xs">
+              {[
+                { v: '2x', l: 'Pagos más rápidos' },
+                { v: '+40%', l: 'Más ventas' },
+                { v: '35%', l: 'Mejores decisiones' },
+              ].map(k => (
+                <div key={k.l} className="rounded-2xl p-4 border hover:border-white/15 transition-colors"
+                  style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)' }}>
+                  <p className="text-xl font-black text-white">{k.v}</p>
+                  <p className="text-white/35 text-[10px] mt-1 leading-tight">{k.l}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Headline */}
-          <h1 className="text-5xl md:text-7xl lg:text-[88px] font-black leading-[1.0] tracking-[-0.03em] mb-6 max-w-4xl">
-            <span style={{
-              background: 'linear-gradient(180deg, #ffffff 30%, rgba(255,255,255,0.4) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>
-              Operación perfecta.{'\n'}
-            </span>
-            <span style={{ color: 'rgba(255,255,255,0.2)' }}>Sin fricciones.</span>
-          </h1>
-
-          <p className="text-white/45 text-lg md:text-xl leading-relaxed mb-12 max-w-md">
-            De la mesa al cobro en segundos. Gestiona pedidos, cocina y analítica desde un solo panel.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-3 mb-24">
-            <a href="#pricing"
-              className="inline-flex items-center justify-center gap-2 font-bold px-8 py-4 rounded-full text-sm transition-all group"
-              style={{ background: 'linear-gradient(135deg, #ffffff 0%, #d4d4d4 100%)', color: '#000' }}>
-              Comenzar gratis
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-            </a>
-            <a href="#how"
-              className="inline-flex items-center justify-center gap-2 font-medium px-8 py-4 rounded-full text-sm text-white/60 hover:text-white transition-all border border-white/10 hover:border-white/20">
-              Ver cómo funciona
-            </a>
-          </div>
-
-          {/* KPI cards */}
-          <div className="grid grid-cols-3 gap-3 max-w-xs">
-            {[
-              { v: '2x', l: 'Pagos más rápidos' },
-              { v: '+40%', l: 'Más ventas' },
-              { v: '35%', l: 'Mejores decisiones' },
-            ].map(k => (
-              <div key={k.l} className="rounded-2xl p-4 border hover:border-white/15 transition-colors"
-                style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.07)' }}>
-                <p className="text-xl font-black text-white">{k.v}</p>
-                <p className="text-white/35 text-[10px] mt-1 leading-tight">{k.l}</p>
+          {/* Right: App mock */}
+          <div className="flex-shrink-0 w-full lg:w-[480px] relative hidden lg:block">
+            <div className="rounded-2xl border overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.6)]"
+              style={{ background: '#111', borderColor: 'rgba(255,255,255,0.08)' }}>
+              {/* Window bar */}
+              <div className="flex items-center gap-1.5 px-4 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: '#0d0d0d' }}>
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+                <div className="flex-1 mx-3 rounded px-3 py-1 text-center text-[10px] text-white/20" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                  waitless.app/mesas
+                </div>
               </div>
-            ))}
+              {/* App content */}
+              <div className="p-4">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-white font-bold text-sm">Mesas</p>
+                    <p className="text-white/30 text-[10px]">12 mesas activas</p>
+                  </div>
+                  <div className="flex gap-2">
+                    {['Libre', 'Ocupada', 'Lista'].map((s, i) => (
+                      <span key={s} className="text-[9px] px-2 py-1 rounded-full font-medium"
+                        style={{
+                          background: i === 0 ? 'rgba(255,255,255,0.06)' : i === 1 ? 'rgba(255,255,255,0.1)' : 'rgba(16,185,129,0.15)',
+                          color: i === 0 ? 'rgba(255,255,255,0.4)' : i === 1 ? 'rgba(255,255,255,0.7)' : '#34d399',
+                        }}>{s}</span>
+                    ))}
+                  </div>
+                </div>
+                {/* Table grid */}
+                <div className="grid grid-cols-4 gap-2 mb-4">
+                  {[
+                    { n: 1, s: 'libre' },
+                    { n: 2, s: 'ocupada' },
+                    { n: 3, s: 'cocina' },
+                    { n: 4, s: 'lista' },
+                    { n: 5, s: 'ocupada' },
+                    { n: 6, s: 'libre' },
+                    { n: 7, s: 'lista' },
+                    { n: 8, s: 'ocupada' },
+                  ].map(t => (
+                    <div key={t.n} className="rounded-xl p-3 border flex flex-col items-center gap-1.5"
+                      style={{
+                        background: t.s === 'lista' ? 'rgba(16,185,129,0.08)' : t.s === 'cocina' ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.03)',
+                        borderColor: t.s === 'lista' ? 'rgba(16,185,129,0.2)' : t.s === 'cocina' ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.06)',
+                      }}>
+                      <p className="text-white font-black text-base leading-none">{t.n}</p>
+                      <div className="w-1.5 h-1.5 rounded-full"
+                        style={{ background: t.s === 'libre' ? 'rgba(255,255,255,0.2)' : t.s === 'ocupada' ? 'rgba(255,255,255,0.6)' : t.s === 'cocina' ? '#fbbf24' : '#34d399' }} />
+                    </div>
+                  ))}
+                </div>
+                {/* Stats bar */}
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { l: 'Libres', v: '4', c: 'rgba(255,255,255,0.4)' },
+                    { l: 'En servicio', v: '6', c: 'rgba(255,255,255,0.7)' },
+                    { l: 'Listas', v: '2', c: '#34d399' },
+                  ].map(s => (
+                    <div key={s.l} className="rounded-xl p-3 text-center border" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }}>
+                      <p className="text-base font-black" style={{ color: s.c }}>{s.v}</p>
+                      <p className="text-[9px] text-white/30 mt-0.5">{s.l}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            {/* Floating notification */}
+            <div className="absolute -bottom-4 -left-6 rounded-2xl p-3 border shadow-xl flex items-center gap-3"
+              style={{ background: '#1a1a1a', borderColor: 'rgba(255,255,255,0.1)', minWidth: '180px' }}>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(16,185,129,0.15)' }}>
+                <Bell className="h-4 w-4 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-white text-[11px] font-semibold leading-tight">Mesa 3 lista</p>
+                <p className="text-white/35 text-[10px]">Pedido #47 completado</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
