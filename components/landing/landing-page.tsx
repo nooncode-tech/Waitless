@@ -187,10 +187,11 @@ export function LandingPage({ onLogin }: LandingPageProps) {
   }
 
   return (
-    <div className="text-[#111] overflow-x-hidden" style={{ fontFamily: "'Inter', 'Poppins', system-ui, sans-serif" }}>
+    <div className="text-[#111] overflow-x-hidden" style={{ fontFamily: "'DM Sans', 'Inter', system-ui, sans-serif" }}>
 
       <style>{`
-        @keyframes fadeUp   { from { opacity:0; transform:translateY(24px) } to { opacity:1; transform:translateY(0) } }
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        @keyframes fadeUp   { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
         @keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
         @keyframes scaleUp  { from { opacity:0; transform:scale(0.96) } to { opacity:1; transform:scale(1) } }
         .rv { opacity:0 }
@@ -260,56 +261,47 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       </nav>
 
       {/* ── HERO ── dark ─────────────────────────────────────── */}
-      <section className="relative min-h-screen flex flex-col justify-center px-6 pt-16 overflow-hidden"
-        style={{ background: 'linear-gradient(160deg, #0f0f0f 0%, #18181b 100%)' }}>
-
-        {/* Subtle grid */}
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ opacity:.03, backgroundImage:'linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)', backgroundSize:'72px 72px' }} />
-        {/* Top glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] pointer-events-none rounded-full"
-          style={{ background:'radial-gradient(ellipse,rgba(255,255,255,0.06) 0%,transparent 70%)', filter:'blur(40px)' }} />
+      <section className="relative min-h-screen flex flex-col justify-center px-6 pt-16" style={{ background: '#000' }}>
 
         <div ref={heroReveal.ref} className={`relative max-w-6xl mx-auto w-full py-20 md:py-24 flex flex-col lg:flex-row items-center gap-16 ${heroReveal.visible ? 'show' : ''}`}>
 
           {/* Copy */}
           <div className="flex-1 min-w-0 text-center lg:text-left">
-            <div className="rv inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-8 border border-white/10 bg-white/5">
-              <Zap className="h-3 w-3 text-amber-400 fill-amber-400" />
-              <span className="text-white/60 text-xs font-semibold tracking-wide">Plataforma operativa para restaurantes</span>
+            <div className="rv inline-flex items-center gap-2 rounded-full px-3.5 py-1 mb-7 border border-white/10">
+              <span className="text-white/45 text-[11px] font-medium tracking-wide">Plataforma operativa para restaurantes</span>
             </div>
 
-            <h1 className="rv d1 text-5xl md:text-6xl lg:text-[3.8rem] xl:text-[4.5rem] font-black leading-[1.04] tracking-[-0.03em] mb-6 text-white">
+            <h1 className="rv d1 text-3xl md:text-4xl lg:text-5xl font-semibold leading-[1.12] tracking-[-0.02em] mb-5 text-white">
               Operación perfecta.{' '}
-              <span className="text-white/25">Sin fricciones.</span>
+              <span className="text-white/30 font-light">Sin fricciones.</span>
             </h1>
 
-            <p className="rv d2 text-white/50 text-lg leading-relaxed mb-10 max-w-lg mx-auto lg:mx-0">
-              De la mesa al cobro en segundos. Gestiona pedidos, cocina y analítica — todo desde un solo panel.
+            <p className="rv d2 text-white/40 text-base leading-relaxed mb-9 max-w-md mx-auto lg:mx-0">
+              De la mesa al cobro en segundos. Gestiona pedidos, cocina y analítica desde un solo panel.
             </p>
 
-            <div className="rv d3 flex flex-col sm:flex-row gap-3 mb-14 justify-center lg:justify-start">
+            <div className="rv d3 flex flex-col sm:flex-row gap-2.5 mb-12 justify-center lg:justify-start">
               <button onClick={() => goTo('pricing')}
-                className="inline-flex items-center justify-center gap-2 font-bold px-8 py-4 rounded-full text-sm text-[#111] bg-white hover:bg-zinc-100 transition-all group active:scale-[0.98] cursor-pointer">
+                className="inline-flex items-center justify-center gap-2 font-medium px-6 py-3 rounded-full text-sm text-[#111] bg-white hover:bg-zinc-100 transition-all group active:scale-[0.98] cursor-pointer">
                 Comenzar gratis
-                <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+                <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
               </button>
               <button onClick={() => goTo('how')}
-                className="inline-flex items-center justify-center gap-2 font-medium px-8 py-4 rounded-full text-sm text-white/60 hover:text-white border border-white/15 hover:border-white/30 transition-all cursor-pointer">
+                className="inline-flex items-center justify-center gap-2 font-medium px-6 py-3 rounded-full text-sm text-white/45 hover:text-white border border-white/10 hover:border-white/20 transition-all cursor-pointer">
                 Ver cómo funciona
               </button>
             </div>
 
             {/* KPI row */}
-            <div className="rv d4 flex gap-8 justify-center lg:justify-start">
+            <div className="rv d4 flex gap-10 justify-center lg:justify-start">
               {[
                 { v: `${c1}x`,   sub: 'pagos más rápidos' },
                 { v: `+${c2}%`,  sub: 'más ventas' },
                 { v: `${c3}%`,   sub: 'menos errores' },
               ].map(k => (
                 <div key={k.sub} className="text-center lg:text-left">
-                  <p className="text-3xl font-black text-white tabular-nums leading-none">{k.v}</p>
-                  <p className="text-white/38 text-xs mt-1.5 leading-tight">{k.sub}</p>
+                  <p className="text-2xl font-semibold text-white tabular-nums leading-none">{k.v}</p>
+                  <p className="text-white/30 text-[11px] mt-1.5 font-light">{k.sub}</p>
                 </div>
               ))}
             </div>
@@ -317,9 +309,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
           {/* App mock */}
           <div className="rvs d2 flex-shrink-0 w-full lg:w-[440px] hidden lg:block relative">
-            <div className="absolute -inset-6 rounded-3xl pointer-events-none"
-              style={{ background:'radial-gradient(ellipse,rgba(255,255,255,0.05) 0%,transparent 70%)' }} />
-
             <div className="relative rounded-2xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.6)] border border-white/[0.08]"
               style={{ background:'#161618' }}>
               {/* Chrome bar */}
@@ -392,12 +381,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           </div>
         </div>
 
-        {/* Wave divider */}
-        <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-          <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-14" preserveAspectRatio="none">
-            <path d="M0 60 L0 30 Q360 0 720 30 Q1080 60 1440 30 L1440 60 Z" fill="#f9fafb" />
-          </svg>
-        </div>
       </section>
 
       {/* ── SOCIAL PROOF ── light ───────────────────────────── */}
