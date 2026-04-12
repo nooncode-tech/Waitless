@@ -114,13 +114,15 @@ function useCounter(target: number, duration = 1100, start = false) {
   useEffect(() => {
     if (!start) return
     let t0 = -1
+    let raf: number
     const step = (ts: number) => {
       if (t0 < 0) t0 = ts
       const p = Math.min((ts - t0) / duration, 1)
       setVal(Math.round((1 - Math.pow(1 - p, 3)) * target))
-      if (p < 1) requestAnimationFrame(step)
+      if (p < 1) raf = requestAnimationFrame(step)
     }
-    requestAnimationFrame(step)
+    raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
   }, [target, duration, start])
   return val
 }
@@ -199,6 +201,8 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       setPlanEmail('')
       return
     }
+    const email = planEmail.trim()
+    if (email && !email.includes('@')) return
     setLoadingPlan(planId)
     try {
       const res = await fetch('/api/subscriptions/checkout', {
@@ -605,7 +609,8 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                       ? { background: '#fff', color: '#18181b' }
                       : { background: '#18181b', color: '#fff' }}>
                     {loadingPlan === plan.id
-                      ? <span className="h-4 w-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                      ? <span className="h-4 w-4 border-2 rounded-full animate-spin"
+                        style={{ borderColor: plan.highlight ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.2)', borderTopColor: 'currentColor' }} />
                       : showEmailFor === plan.id
                         ? <>Continuar al pago <ChevronRight className="h-4 w-4" /></>
                         : <>Elegir {plan.name} <ChevronRight className="h-4 w-4" /></>
@@ -635,7 +640,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
         <div ref={carouselRef} className="flex gap-4 overflow-x-hidden select-none pl-6">
           {[...TESTIMONIALS, ...TESTIMONIALS].map((t, i) => (
-            <div key={i} className="flex-shrink-0 w-68 rounded-2xl p-5 border border-zinc-100 bg-[#fafafa] hover:border-zinc-200 transition-colors"
+            <div key={i} className="flex-shrink-0 rounded-2xl p-5 border border-zinc-100 bg-[#fafafa] hover:border-zinc-200 transition-colors"
               style={{ width: '272px' }}>
               <div className="flex gap-0.5 mb-3">
                 {Array.from({ length: 5 }).map((_, s) => (
