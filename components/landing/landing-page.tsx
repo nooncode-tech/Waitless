@@ -113,9 +113,9 @@ function useCounter(target: number, duration = 1100, start = false) {
   const [val, setVal] = useState(0)
   useEffect(() => {
     if (!start) return
-    let t0: number
+    let t0 = -1
     const step = (ts: number) => {
-      if (!t0) t0 = ts
+      if (t0 < 0) t0 = ts
       const p = Math.min((ts - t0) / duration, 1)
       setVal(Math.round((1 - Math.pow(1 - p, 3)) * target))
       if (p < 1) requestAnimationFrame(step)
@@ -147,7 +147,10 @@ export function LandingPage({ onLogin }: LandingPageProps) {
   const c3 = useCounter(30,  1000, heroReveal.visible)
 
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 30)
+    const fn = () => {
+      setScrolled(window.scrollY > 30)
+      if (window.scrollY > 80) setMenuOpen(false)
+    }
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
   }, [])
@@ -174,8 +177,14 @@ export function LandingPage({ onLogin }: LandingPageProps) {
     }
   }, [])
 
+  const NAV_H = 64
+
   const goTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    const el = document.getElementById(id)
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - NAV_H
+      window.scrollTo({ top, behavior: 'smooth' })
+    }
     setMenuOpen(false)
   }
 
@@ -216,7 +225,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
     <div className="text-[#111] overflow-x-hidden" style={{ fontFamily: "'Sora', 'Inter', system-ui, sans-serif" }}>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap');
         @keyframes fadeUp  { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
         @keyframes scaleUp { from { opacity:0; transform:scale(0.97) }     to { opacity:1; transform:scale(1) } }
         .rv  { opacity:0 }
@@ -230,7 +238,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       `}</style>
 
       {/* ── NAV ─────────────────────────────────────────────── */}
-      <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
+      <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ease-in-out ${
         scrolled ? 'bg-white/95 backdrop-blur-lg border-b border-zinc-200/60' : 'bg-transparent'
       }`}>
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -571,14 +579,22 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                   </ul>
 
                   {showEmailFor === plan.id && (
-                    <input
-                      type="email" placeholder="tu@email.com" value={planEmail}
-                      onChange={e => setPlanEmail(e.target.value)}
-                      className="w-full rounded-xl px-4 py-3 text-sm mb-3 outline-none border transition-colors"
-                      style={plan.highlight
-                        ? { background: 'rgba(255,255,255,0.07)', borderColor: 'rgba(255,255,255,0.12)', color: '#fff' }
-                        : { background: '#f9fafb', borderColor: '#e4e4e7', color: '#111' }}
-                      autoFocus />
+                    <div className="mb-3 space-y-2">
+                      <input
+                        type="email" placeholder="tu@email.com" value={planEmail}
+                        onChange={e => setPlanEmail(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && handlePlanClick(plan.id)}
+                        className="w-full rounded-xl px-4 py-3 text-sm outline-none border transition-colors"
+                        style={plan.highlight
+                          ? { background: 'rgba(255,255,255,0.07)', borderColor: 'rgba(255,255,255,0.12)', color: '#fff' }
+                          : { background: '#f9fafb', borderColor: '#e4e4e7', color: '#111' }}
+                        autoFocus />
+                      <button
+                        onClick={() => setShowEmailFor(null)}
+                        className={`w-full text-xs py-1 cursor-pointer transition-colors ${plan.highlight ? 'text-white/25 hover:text-white/50' : 'text-zinc-400 hover:text-zinc-600'}`}>
+                        Cancelar
+                      </button>
+                    </div>
                   )}
 
                   <button
