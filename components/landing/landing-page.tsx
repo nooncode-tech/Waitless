@@ -187,10 +187,10 @@ export function LandingPage({ onLogin }: LandingPageProps) {
   }
 
   return (
-    <div className="text-[#111] overflow-x-hidden" style={{ fontFamily: "'DM Sans', 'Inter', system-ui, sans-serif" }}>
+    <div className="text-[#111] overflow-x-hidden" style={{ fontFamily: "'Sora', 'Inter', system-ui, sans-serif" }}>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap');
         @keyframes fadeUp   { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
         @keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
         @keyframes scaleUp  { from { opacity:0; transform:scale(0.96) } to { opacity:1; transform:scale(1) } }
@@ -215,9 +215,9 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           <button onClick={onLogin} className="flex items-center gap-2.5 group cursor-pointer">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center"
               style={{ background: '#18181b' }}>
-              <span className="font-black text-white text-sm leading-none">W</span>
+              <span className="font-semibold text-white text-sm leading-none">W</span>
             </div>
-            <span className="font-bold text-[#111] text-base tracking-tight group-hover:text-zinc-500 transition-colors">WAITLESS</span>
+            <span className="font-medium text-[#111] text-base tracking-tight group-hover:text-zinc-500 transition-colors">WAITLESS</span>
           </button>
 
           {/* Desktop links */}
@@ -324,7 +324,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               <div className="p-5">
                 <div className="flex items-center justify-between mb-5">
                   <div>
-                    <p className="text-white font-bold text-sm">Panel de mesas</p>
+                    <p className="text-white font-medium text-sm">Panel de mesas</p>
                     <p className="text-white/30 text-[10px] mt-0.5">Lunes 14 de abr · 13:42</p>
                   </div>
                   <div className="flex gap-1.5">
@@ -343,7 +343,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         background: t.s==='lista' ? 'rgba(16,185,129,0.08)' : t.s==='cocina' ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.025)',
                         borderColor: t.s==='lista' ? 'rgba(16,185,129,0.2)' : t.s==='cocina' ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.06)',
                       }}>
-                      <p className="text-white font-black text-sm leading-none">{t.n}</p>
+                      <p className="text-white font-semibold text-sm leading-none">{t.n}</p>
                       <div className="w-1.5 h-1.5 rounded-full" style={{
                         background: t.s==='libre' ? 'rgba(255,255,255,0.2)' : t.s==='ocupada' ? 'rgba(255,255,255,0.55)' : t.s==='cocina' ? '#fbbf24' : '#34d399'
                       }} />
@@ -353,7 +353,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                 <div className="grid grid-cols-3 gap-2">
                   {[['Libres','4','rgba(255,255,255,0.38)'],['En servicio','6','rgba(255,255,255,0.65)'],['Listas','2','#34d399']].map(([l,v,c]) => (
                     <div key={l} className="rounded-xl p-3 text-center border border-white/[0.06] bg-white/[0.025]">
-                      <p className="text-base font-black tabular-nums" style={{ color:c }}>{v}</p>
+                      <p className="text-base font-semibold tabular-nums" style={{ color:c }}>{v}</p>
                       <p className="text-[9px] text-white/28 mt-0.5">{l}</p>
                     </div>
                   ))}
@@ -376,7 +376,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             <div className="absolute -top-4 -right-6 rounded-2xl px-4 py-3 border border-white/[0.1] shadow-2xl"
               style={{ background:'#1e1e20' }}>
               <p className="text-white/35 text-[10px] mb-0.5">Ticket promedio</p>
-              <p className="text-white font-black text-lg leading-none">$487</p>
+              <p className="text-white font-semibold text-lg leading-none">$487</p>
             </div>
           </div>
         </div>
@@ -398,8 +398,8 @@ export function LandingPage({ onLogin }: LandingPageProps) {
         <div ref={stepsReveal.ref} className={`max-w-6xl mx-auto ${stepsReveal.visible ? 'show' : ''}`}>
           {/* Header */}
           <div className="text-center mb-16">
-            <span className="rv inline-block text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-400 mb-4">Cómo funciona</span>
-            <h2 className="rv d1 text-4xl md:text-5xl font-black tracking-tight leading-[1.06] text-[#111]">
+            <span className="rv inline-block text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-400 mb-4">Cómo funciona</span>
+            <h2 className="rv d1 text-4xl md:text-5xl font-semibold tracking-tight leading-[1.06] text-[#111]">
               Listo en 30 minutos.
             </h2>
             <p className="rv d2 text-zinc-500 text-lg mt-3 max-w-md mx-auto leading-relaxed">
@@ -418,10 +418,10 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                     <div className="text-zinc-500 group-hover:text-white transition-colors duration-300">{s.icon}</div>
                   </div>
                   <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#18181b] flex items-center justify-center">
-                    <span className="text-white text-[9px] font-black">{s.n}</span>
+                    <span className="text-white text-[9px] font-semibold">{s.n}</span>
                   </div>
                 </div>
-                <h3 className="font-bold text-[#111] text-base mb-2 leading-snug">{s.title}</h3>
+                <h3 className="font-medium text-[#111] text-base mb-2 leading-snug">{s.title}</h3>
                 <p className="text-zinc-500 text-sm leading-relaxed">{s.body}</p>
               </div>
             ))}
@@ -434,8 +434,8 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
         <div ref={featReveal.ref} className={`max-w-6xl mx-auto ${featReveal.visible ? 'show' : ''}`}>
           <div className="text-center mb-16">
-            <span className="rv inline-block text-[11px] font-bold uppercase tracking-[0.22em] text-white/35 mb-4">Funciones</span>
-            <h2 className="rv d1 text-4xl md:text-5xl font-black tracking-tight leading-[1.06] text-white">
+            <span className="rv inline-block text-[11px] font-medium uppercase tracking-[0.22em] text-white/35 mb-4">Funciones</span>
+            <h2 className="rv d1 text-4xl md:text-5xl font-semibold tracking-tight leading-[1.06] text-white">
               Todo lo que necesitas.
             </h2>
             <p className="rv d2 text-white/45 text-lg mt-3 max-w-md mx-auto leading-relaxed">
@@ -451,7 +451,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 bg-white/[0.06] border border-white/[0.08] group-hover:bg-white/[0.09] transition-colors">
                   <div className="text-white/60 group-hover:text-white/85 transition-colors">{f.icon}</div>
                 </div>
-                <h3 className="font-bold text-white text-lg mb-2.5 leading-snug">{f.title}</h3>
+                <h3 className="font-medium text-white text-lg mb-2.5 leading-snug">{f.title}</h3>
                 <p className="text-white/42 text-sm leading-relaxed">{f.body}</p>
               </div>
             ))}
@@ -478,8 +478,8 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       <section id="pricing" className="bg-[#f9fafb] py-28 px-6">
         <div ref={pricingReveal.ref} className={`max-w-6xl mx-auto ${pricingReveal.visible ? 'show' : ''}`}>
           <div className="text-center mb-16">
-            <span className="rv inline-block text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-400 mb-4">Precios</span>
-            <h2 className="rv d1 text-4xl md:text-5xl font-black tracking-tight leading-[1.06] text-[#111]">
+            <span className="rv inline-block text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-400 mb-4">Precios</span>
+            <h2 className="rv d1 text-4xl md:text-5xl font-semibold tracking-tight leading-[1.06] text-[#111]">
               Sin sorpresas.
             </h2>
             <p className="rv d2 text-zinc-500 text-lg mt-3 max-w-sm mx-auto">
@@ -501,18 +501,18 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                 }}>
 
                 {plan.badge && (
-                  <div className="text-center py-2.5 text-xs font-bold text-white tracking-wide bg-emerald-500">
+                  <div className="text-center py-2.5 text-xs font-medium text-white tracking-wide bg-emerald-500">
                     {plan.badge}
                   </div>
                 )}
 
                 <div className="p-7 flex flex-col flex-1">
                   <div className="mb-7">
-                    <p className={`text-[11px] font-bold uppercase tracking-[0.2em] mb-4 ${plan.highlight ? 'text-white/40' : 'text-zinc-400'}`}>
+                    <p className={`text-[11px] font-medium uppercase tracking-[0.2em] mb-4 ${plan.highlight ? 'text-white/40' : 'text-zinc-400'}`}>
                       {plan.name}
                     </p>
                     <div className="flex items-end gap-1.5 mb-3">
-                      <span className={`text-5xl font-black tracking-tight tabular-nums ${plan.highlight ? 'text-white' : 'text-[#111]'}`}>
+                      <span className={`text-5xl font-semibold tracking-tight tabular-nums ${plan.highlight ? 'text-white' : 'text-[#111]'}`}>
                         {plan.price}
                       </span>
                       <span className={`text-sm mb-2 ${plan.highlight ? 'text-white/35' : 'text-zinc-400'}`}>{plan.period}</span>
@@ -556,7 +556,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                   <button
                     onClick={() => handlePlanClick(plan.id)}
                     disabled={loadingPlan === plan.id}
-                    className="w-full py-3.5 rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-[0.98] hover:opacity-90"
+                    className="w-full py-3.5 rounded-2xl text-sm font-medium transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 active:scale-[0.98] hover:opacity-90"
                     style={plan.highlight
                       ? { background:'#fff', color:'#18181b' }
                       : { background:'#18181b', color:'#fff' }}>
@@ -582,8 +582,8 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       <section id="testimonials" className="bg-white py-28 overflow-hidden">
         <div ref={testReveal.ref} className={`max-w-6xl mx-auto px-6 mb-14 ${testReveal.visible ? 'show' : ''}`}>
           <div className="text-center">
-            <span className="rv inline-block text-[11px] font-bold uppercase tracking-[0.22em] text-zinc-400 mb-4">Testimonios</span>
-            <h2 className="rv d1 text-4xl md:text-5xl font-black tracking-tight leading-[1.06] text-[#111]">
+            <span className="rv inline-block text-[11px] font-medium uppercase tracking-[0.22em] text-zinc-400 mb-4">Testimonios</span>
+            <h2 className="rv d1 text-4xl md:text-5xl font-semibold tracking-tight leading-[1.06] text-[#111]">
               Lo que dicen nuestros clientes
             </h2>
           </div>
@@ -599,7 +599,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               </div>
               <p className="text-zinc-600 text-sm leading-relaxed mb-5">"{t.text}"</p>
               <div>
-                <p className="font-bold text-sm text-[#111]">{t.name}</p>
+                <p className="font-medium text-sm text-[#111]">{t.name}</p>
                 <p className="text-zinc-400 text-xs mt-0.5">{t.role}</p>
               </div>
             </div>
@@ -611,8 +611,8 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       <section className="py-36 px-6 text-center" style={{ background:'#111' }}>
 
         <div ref={ctaReveal.ref} className={`relative max-w-2xl mx-auto ${ctaReveal.visible ? 'show' : ''}`}>
-          <span className="rv inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-white/25 mb-8">Empieza hoy</span>
-          <h2 className="rv d1 text-5xl md:text-6xl font-black leading-[1.02] tracking-[-0.03em] mb-6 text-white">
+          <span className="rv inline-block text-[11px] font-medium uppercase tracking-[0.25em] text-white/25 mb-8">Empieza hoy</span>
+          <h2 className="rv d1 text-5xl md:text-6xl font-semibold leading-[1.02] tracking-[-0.03em] mb-6 text-white">
             Tu restaurante merece<br />operar mejor.
           </h2>
           <p className="rv d2 text-white/40 text-lg mb-12 max-w-sm mx-auto leading-relaxed">
@@ -620,7 +620,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           </p>
           <div className="rv d3 flex flex-col sm:flex-row gap-3 justify-center">
             <button onClick={() => goTo('pricing')}
-              className="inline-flex items-center justify-center gap-2 font-bold px-10 py-4 rounded-full text-sm text-[#111] bg-white hover:bg-zinc-100 transition-all group active:scale-[0.98] cursor-pointer">
+              className="inline-flex items-center justify-center gap-2 font-medium px-10 py-4 rounded-full text-sm text-[#111] bg-white hover:bg-zinc-100 transition-all group active:scale-[0.98] cursor-pointer">
               Ver planes y precios
               <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
             </button>
@@ -640,9 +640,9 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               <button onClick={onLogin} className="flex items-center gap-2.5 mb-5 cursor-pointer group">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center"
                   style={{ background:'#e4e4e7' }}>
-                  <span className="font-black text-[#111] text-sm">W</span>
+                  <span className="font-semibold text-[#111] text-sm">W</span>
                 </div>
-                <span className="font-bold text-white/70 group-hover:text-white transition-colors tracking-tight">WAITLESS</span>
+                <span className="font-medium text-white/70 group-hover:text-white transition-colors tracking-tight">WAITLESS</span>
               </button>
               <p className="text-white/25 text-sm leading-relaxed max-w-xs">
                 Plataforma operativa para restaurantes con servicio en mesa.
@@ -667,7 +667,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               ]},
             ] as { h: string; l: { label: string; id: string }[] }[]).map(col => (
               <div key={col.h}>
-                <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.15em] mb-5">{col.h}</p>
+                <p className="text-white/40 text-[10px] font-medium uppercase tracking-[0.15em] mb-5">{col.h}</p>
                 <ul className="space-y-3">
                   {col.l.map(link => (
                     <li key={link.label}>
