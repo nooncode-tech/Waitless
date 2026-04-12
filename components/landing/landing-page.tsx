@@ -214,7 +214,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           {/* Logo */}
           <button onClick={onLogin} className="flex items-center gap-2.5 group cursor-pointer">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg,#18181b,#3f3f46)' }}>
+              style={{ background: '#18181b' }}>
               <span className="font-black text-white text-sm leading-none">W</span>
             </div>
             <span className="font-bold text-[#111] text-base tracking-tight group-hover:text-zinc-500 transition-colors">WAITLESS</span>
@@ -233,7 +233,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             </button>
             <button onClick={() => goTo('pricing')}
               className="text-sm font-semibold px-5 py-2.5 rounded-full text-white transition-all hover:opacity-90 active:scale-[0.98] cursor-pointer"
-              style={{ background: 'linear-gradient(135deg,#18181b,#3f3f46)' }}>
+              style={{ background: '#18181b' }}>
               Ver planes
             </button>
           </div>
@@ -252,7 +252,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               <button onClick={() => { setMenuOpen(false); onLogin() }} className="block w-full text-left text-zinc-500 text-sm py-2 cursor-pointer">Iniciar sesión</button>
               <button onClick={() => goTo('pricing')}
                 className="block w-full text-center text-sm font-semibold px-5 py-3 rounded-full text-white cursor-pointer"
-                style={{ background: 'linear-gradient(135deg,#18181b,#3f3f46)' }}>
+                style={{ background: '#18181b' }}>
                 Ver planes
               </button>
             </div>
@@ -430,17 +430,10 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       </section>
 
       {/* ── FEATURES ── dark ─────────────────────────────────── */}
-      <section id="features" className="py-28 px-6 relative overflow-hidden"
-        style={{ background:'linear-gradient(160deg,#0f0f0f,#1a1a1e)' }}>
-
-        <div className="absolute top-0 left-0 right-0 pointer-events-none">
-          <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-14 rotate-180" preserveAspectRatio="none">
-            <path d="M0 60 L0 30 Q360 0 720 30 Q1080 60 1440 30 L1440 60 Z" fill="white" />
-          </svg>
-        </div>
+      <section id="features" className="py-28 px-6" style={{ background:'#111' }}>
 
         <div ref={featReveal.ref} className={`max-w-6xl mx-auto ${featReveal.visible ? 'show' : ''}`}>
-          <div className="text-center mb-16 pt-6">
+          <div className="text-center mb-16">
             <span className="rv inline-block text-[11px] font-bold uppercase tracking-[0.22em] text-white/35 mb-4">Funciones</span>
             <h2 className="rv d1 text-4xl md:text-5xl font-black tracking-tight leading-[1.06] text-white">
               Todo lo que necesitas.
@@ -615,10 +608,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       </section>
 
       {/* ── CTA ── dark ──────────────────────────────────────── */}
-      <section className="relative py-36 px-6 text-center overflow-hidden"
-        style={{ background:'linear-gradient(160deg,#0f0f0f,#1a1a1e)' }}>
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background:'radial-gradient(ellipse 70% 55% at 50% 100%,rgba(255,255,255,0.05) 0%,transparent 65%)' }} />
+      <section className="py-36 px-6 text-center" style={{ background:'#111' }}>
 
         <div ref={ctaReveal.ref} className={`relative max-w-2xl mx-auto ${ctaReveal.visible ? 'show' : ''}`}>
           <span className="rv inline-block text-[11px] font-bold uppercase tracking-[0.25em] text-white/25 mb-8">Empieza hoy</span>
@@ -649,7 +639,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             <div className="col-span-2">
               <button onClick={onLogin} className="flex items-center gap-2.5 mb-5 cursor-pointer group">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-                  style={{ background:'linear-gradient(135deg,#fff,#d4d4d8)' }}>
+                  style={{ background:'#e4e4e7' }}>
                   <span className="font-black text-[#111] text-sm">W</span>
                 </div>
                 <span className="font-bold text-white/70 group-hover:text-white transition-colors tracking-tight">WAITLESS</span>
