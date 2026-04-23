@@ -15,7 +15,7 @@ function Spinner({ message = 'Verificando cuenta' }: { message?: string }) {
   )
 }
 
-async function redirectAfterAuth(userId: string, router: ReturnType<typeof useRouter>) {
+async function redirectAfterSession(userId: string, router: ReturnType<typeof useRouter>) {
   const { data: profile } = await supabase
     .from('profiles')
     .select('id, tenant_id')
@@ -47,36 +47,58 @@ function AuthCallbackInner() {
       return
     }
 
-    // PKCE flow: exchange code for session
-    if (code) {
-      supabase.auth.exchangeCodeForSession(code).then(async ({ data, error }) => {
+    let cancelled = false
+
+    async function handle() {
+      // Case 1: PKCE flow — code in query string
+      if (code) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+        if (cancelled) return
         if (error || !data.session) {
           setErrorMsg(`Error al autenticar: ${error?.message ?? 'Sin sesión'}`)
           return
         }
-        await redirectAfterAuth(data.session.user.id, router)
+        await redirectAfterSession(data.session.user.id, router)
+        return
+      }
+
+      // Case 2: Implicit flow — Supabase already processed the hash tokens
+      // and fired SIGNED_IN before our listener registered. Check if session exists.
+      const { data: { session: existing } } = await supabase.auth.getSession()
+      if (cancelled) return
+      if (existing) {
+        await redirectAfterSession(existing.user.id, router)
+        return
+      }
+
+      // Case 3: Tokens in hash haven't been processed yet — wait for SIGNED_IN
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
+          subscription.unsubscribe()
+          if (!cancelled) await redirectAfterSession(session.user.id, router)
+        }
       })
-      return
+
+      const timeout = setTimeout(() => {
+        if (cancelled) return
+        subscription.unsubscribe()
+        setErrorMsg(
+          'No se recibió código de autorización. ' +
+          'Asegúrate de que la URL de callback esté en la lista de Redirect URLs en Supabase ' +
+          '(Authentication → URL Configuration).'
+        )
+      }, 8000)
+
+      return () => {
+        subscription.unsubscribe()
+        clearTimeout(timeout)
+      }
     }
 
-    // Implicit flow: Supabase puts tokens in the URL hash and handles them automatically.
-    // We listen for the SIGNED_IN event which fires after the client processes the hash.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        subscription.unsubscribe()
-        await redirectAfterAuth(session.user.id, router)
-      }
-    })
-
-    // Timeout: if neither code nor hash token detected after 8s, show error
-    const timeout = setTimeout(() => {
-      subscription.unsubscribe()
-      setErrorMsg('No se recibió código de autorización. Asegúrate de que la URL de callback esté en la lista de Redirect URLs de Supabase.')
-    }, 8000)
-
+    const cleanup = handle()
     return () => {
-      subscription.unsubscribe()
-      clearTimeout(timeout)
+      cancelled = true
+      cleanup.then(fn => fn?.())
     }
   }, [router, searchParams])
 
