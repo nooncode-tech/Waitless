@@ -15,91 +15,93 @@ function Spinner({ message = 'Verificando cuenta' }: { message?: string }) {
   )
 }
 
-async function redirectAfterSession(userId: string, router: ReturnType<typeof useRouter>) {
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('id, tenant_id')
-    .eq('id', userId)
-    .single()
-
-  if (profile?.tenant_id) {
-    router.replace('/')
-  } else {
-    const { data: { user } } = await supabase.auth.getUser()
-    const nombre = user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? ''
-    const email = user?.email ?? ''
-    router.replace(`/registro/completar?${new URLSearchParams({ nombre, email })}`)
-  }
-}
-
 function AuthCallbackInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [status, setStatus] = useState('Iniciando...')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   useEffect(() => {
-    const errorParam = searchParams.get('error')
-    const errorDescription = searchParams.get('error_description')
-    const code = searchParams.get('code')
+    const run = async () => {
+      const errorParam = searchParams.get('error')
+      const code = searchParams.get('code')
 
-    if (errorParam) {
-      setErrorMsg(`Error de proveedor: ${errorDescription ?? errorParam}`)
-      return
-    }
+      if (errorParam) {
+        setErrorMsg(`Error del proveedor: ${searchParams.get('error_description') ?? errorParam}`)
+        return
+      }
 
-    let cancelled = false
-
-    async function handle() {
-      // Case 1: PKCE flow — code in query string
+      // PKCE flow
       if (code) {
+        setStatus('Intercambiando código...')
         const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-        if (cancelled) return
         if (error || !data.session) {
-          setErrorMsg(`Error al autenticar: ${error?.message ?? 'Sin sesión'}`)
+          setErrorMsg(`Error PKCE: ${error?.message ?? 'Sin sesión'}`)
           return
         }
-        await redirectAfterSession(data.session.user.id, router)
+        await finish(data.session.user.id)
         return
       }
 
-      // Case 2: Implicit flow — Supabase already processed the hash tokens
-      // and fired SIGNED_IN before our listener registered. Check if session exists.
-      const { data: { session: existing } } = await supabase.auth.getSession()
-      if (cancelled) return
-      if (existing) {
-        await redirectAfterSession(existing.user.id, router)
+      // Implicit flow: wait briefly for Supabase to process hash tokens
+      setStatus('Esperando sesión...')
+      await new Promise(r => setTimeout(r, 800))
+
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (session) {
+        setStatus('Sesión encontrada, redirigiendo...')
+        await finish(session.user.id)
         return
       }
 
-      // Case 3: Tokens in hash haven't been processed yet — wait for SIGNED_IN
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
-          subscription.unsubscribe()
-          if (!cancelled) await redirectAfterSession(session.user.id, router)
-        }
-      })
+      // Still no session — listen for it
+      setStatus('Esperando autenticación...')
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => {
+          sub.unsubscribe()
+          reject(new Error('Timeout: no se recibió sesión en 10 segundos'))
+        }, 10000)
 
-      const timeout = setTimeout(() => {
-        if (cancelled) return
-        subscription.unsubscribe()
-        setErrorMsg(
-          'No se recibió código de autorización. ' +
-          'Asegúrate de que la URL de callback esté en la lista de Redirect URLs en Supabase ' +
-          '(Authentication → URL Configuration).'
-        )
-      }, 8000)
+        const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(async (event, s) => {
+          if (s && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+            clearTimeout(timer)
+            sub.unsubscribe()
+            await finish(s.user.id)
+            resolve()
+          }
+        })
+      }).catch(e => { setErrorMsg(e.message) })
+    }
 
-      return () => {
-        subscription.unsubscribe()
-        clearTimeout(timeout)
+    const finish = async (userId: string) => {
+      setStatus('Verificando perfil...')
+      const { data: profile, error: pErr } = await supabase
+        .from('profiles')
+        .select('id, tenant_id, activo, role')
+        .eq('id', userId)
+        .single()
+
+      if (pErr && pErr.code !== 'PGRST116') {
+        setErrorMsg(`Error al leer perfil: ${pErr.message}`)
+        return
+      }
+
+      setStatus(`Perfil: activo=${profile?.activo}, role=${profile?.role}, tenant=${profile?.tenant_id ? 'sí' : 'no'}`)
+
+      await new Promise(r => setTimeout(r, 1500)) // show status briefly
+
+      if (profile?.tenant_id) {
+        router.replace('/')
+      } else {
+        const { data: { user } } = await supabase.auth.getUser()
+        const nombre = user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? ''
+        const email = user?.email ?? ''
+        router.replace(`/registro/completar?${new URLSearchParams({ nombre, email })}`)
       }
     }
 
-    const cleanup = handle()
-    return () => {
-      cancelled = true
-      cleanup.then(fn => fn?.())
-    }
+    run()
   }, [router, searchParams])
 
   if (errorMsg) {
@@ -107,11 +109,8 @@ function AuthCallbackInner() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-4 px-6">
         <div className="max-w-md w-full bg-red-50 border border-red-200 rounded-xl p-6 text-center">
           <p className="text-sm font-semibold text-red-700 mb-2">Error de autenticación</p>
-          <p className="text-xs text-red-600">{errorMsg}</p>
-          <button
-            onClick={() => router.replace('/')}
-            className="mt-4 text-xs underline text-red-500"
-          >
+          <p className="text-xs text-red-600 font-mono">{errorMsg}</p>
+          <button onClick={() => router.replace('/')} className="mt-4 text-xs underline text-red-500">
             Volver al inicio
           </button>
         </div>
@@ -119,7 +118,12 @@ function AuthCallbackInner() {
     )
   }
 
-  return <Spinner />
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-4">
+      <div className="w-8 h-8 border-2 border-black/10 border-t-black rounded-full animate-spin" />
+      <p className="text-xs text-black/40 tracking-widest uppercase font-mono">{status}</p>
+    </div>
+  )
 }
 
 export default function AuthCallback() {

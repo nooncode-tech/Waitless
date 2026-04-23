@@ -340,7 +340,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           .select('*')
           .eq('id', session.user.id)
           .single()
-        if (profile && profile.activo) {
+        if (profile && profile.activo !== false) {
           const user = buildUserFromProfile(profile as Record<string, unknown>)
           setState(prev => ({ ...prev, currentUser: user }))
           // Cargar lista de usuarios del staff — scoped por tenant cuando aplica
@@ -445,7 +445,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           .select('*')
           .eq('id', session.user.id)
           .single()
-        if (profile && profile.activo) {
+        if (profile && profile.activo !== false) {
           setState(prev => ({
             ...prev,
             currentUser: buildUserFromProfile(profile as Record<string, unknown>),
