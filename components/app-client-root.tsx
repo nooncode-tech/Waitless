@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { AppProvider, useApp } from '@/lib/context'
+import { supabase } from '@/lib/supabase'
 import { Toaster } from '@/components/ui/sonner'
 import { LoginScreen } from '@/components/auth/login-screen'
 import { LandingPage } from '@/components/landing/landing-page'
@@ -27,11 +29,44 @@ function AppContent({ initialBranding }: AppContentProps) {
   const [clienteUser, setClienteUser] = useState<ClienteUser | null>(null)
   const [qrError, setQrError] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
+  const router = useRouter()
+  const oauthHandled = useRef(false)
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- initializing mounted flag after hydration, standard SSR pattern
     setMounted(true)
   }, [])
+
+  // Handle Google OAuth redirect to root (when /auth/callback isn't in Supabase's Redirect URLs).
+  // Supabase processes the hash tokens automatically; we just need to handle the resulting session.
+  useEffect(() => {
+    if (oauthHandled.current) return
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event !== 'SIGNED_IN' || !session || oauthHandled.current) return
+      // Only act if context hasn't already resolved the user
+      if (currentUser) return
+      oauthHandled.current = true
+      subscription.unsubscribe()
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, tenant_id, role, activo')
+        .eq('id', session.user.id)
+        .single()
+
+      if (profile?.tenant_id) {
+        // Existing registered user — context will set currentUser via initAuth
+        // Just force a reload so context picks up the new session
+        window.location.reload()
+      } else {
+        // New user — send to registration
+        const nombre = session.user.user_metadata?.full_name ?? session.user.user_metadata?.name ?? ''
+        const email = session.user.email ?? ''
+        router.replace(`/registro/completar?${new URLSearchParams({ nombre, email })}`)
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [currentUser, router])
 
   // Acceso por QR: requiere ?mesa=N&token=XXX — token validado contra Supabase (P0-6)
   useEffect(() => {
