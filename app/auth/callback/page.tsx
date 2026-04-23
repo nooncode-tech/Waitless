@@ -15,55 +15,69 @@ function Spinner({ message = 'Verificando cuenta' }: { message?: string }) {
   )
 }
 
+async function redirectAfterAuth(userId: string, router: ReturnType<typeof useRouter>) {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id, tenant_id')
+    .eq('id', userId)
+    .single()
+
+  if (profile?.tenant_id) {
+    router.replace('/')
+  } else {
+    const { data: { user } } = await supabase.auth.getUser()
+    const nombre = user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? ''
+    const email = user?.email ?? ''
+    router.replace(`/registro/completar?${new URLSearchParams({ nombre, email })}`)
+  }
+}
+
 function AuthCallbackInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   useEffect(() => {
-    const code = searchParams.get('code')
     const errorParam = searchParams.get('error')
     const errorDescription = searchParams.get('error_description')
+    const code = searchParams.get('code')
 
-    // Supabase / Google passed back an error directly
     if (errorParam) {
       setErrorMsg(`Error de proveedor: ${errorDescription ?? errorParam}`)
       return
     }
 
-    if (!code) {
-      setErrorMsg('No se recibió el código de autorización. Verifica la configuración de Redirect URLs en Supabase.')
+    // PKCE flow: exchange code for session
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(async ({ data, error }) => {
+        if (error || !data.session) {
+          setErrorMsg(`Error al autenticar: ${error?.message ?? 'Sin sesión'}`)
+          return
+        }
+        await redirectAfterAuth(data.session.user.id, router)
+      })
       return
     }
 
-    supabase.auth.exchangeCodeForSession(code).then(async ({ data, error }) => {
-      if (error || !data.session) {
-        setErrorMsg(`Error al intercambiar código: ${error?.message ?? 'Sin sesión'}`)
-        return
-      }
-
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, tenant_id')
-        .eq('id', data.session.user.id)
-        .single()
-
-      if (profileError && profileError.code !== 'PGRST116') {
-        // PGRST116 = row not found, which is fine for new users
-        setErrorMsg(`Error al obtener perfil: ${profileError.message}`)
-        return
-      }
-
-      if (profile?.tenant_id) {
-        router.replace('/')
-      } else {
-        const user = data.session.user
-        const nombre = user.user_metadata?.full_name ?? user.user_metadata?.name ?? ''
-        const email = user.email ?? ''
-        const params = new URLSearchParams({ nombre, email })
-        router.replace(`/registro/completar?${params.toString()}`)
+    // Implicit flow: Supabase puts tokens in the URL hash and handles them automatically.
+    // We listen for the SIGNED_IN event which fires after the client processes the hash.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        subscription.unsubscribe()
+        await redirectAfterAuth(session.user.id, router)
       }
     })
+
+    // Timeout: if neither code nor hash token detected after 8s, show error
+    const timeout = setTimeout(() => {
+      subscription.unsubscribe()
+      setErrorMsg('No se recibió código de autorización. Asegúrate de que la URL de callback esté en la lista de Redirect URLs de Supabase.')
+    }, 8000)
+
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timeout)
+    }
   }, [router, searchParams])
 
   if (errorMsg) {
