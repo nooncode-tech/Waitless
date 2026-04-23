@@ -1,12 +1,19 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-export default function AuthCallback() {
+function Spinner() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-4">
+      <div className="w-8 h-8 border-2 border-black/10 border-t-black rounded-full animate-spin" />
+      <p className="text-xs text-black/30 tracking-widest uppercase">Verificando cuenta</p>
+    </div>
+  )
+}
+
+function AuthCallbackInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -24,7 +31,6 @@ export default function AuthCallback() {
         return
       }
 
-      // Verificar si ya tiene tenant (usuario existente) o es nuevo
       const { data: profile } = await supabase
         .from('profiles')
         .select('id, tenant_id')
@@ -43,10 +49,13 @@ export default function AuthCallback() {
     })
   }, [router, searchParams])
 
+  return <Spinner />
+}
+
+export default function AuthCallback() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-4">
-      <div className="w-8 h-8 border-2 border-black/10 border-t-black rounded-full animate-spin" />
-      <p className="text-xs text-black/30 tracking-widest uppercase">Verificando cuenta</p>
-    </div>
+    <Suspense fallback={<Spinner />}>
+      <AuthCallbackInner />
+    </Suspense>
   )
 }
