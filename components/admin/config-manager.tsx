@@ -346,6 +346,19 @@ export function ConfigManager() {
                 className="scale-75"
               />
             </div>
+            <div className="border-t border-border pt-3">
+              <Label className="text-[10px]">Número de WhatsApp</Label>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-[10px] text-muted-foreground">+</span>
+                <Input
+                  value={localConfig.whatsappNumero || ''}
+                  onChange={(e) => setLocalConfig(prev => ({ ...prev, whatsappNumero: e.target.value }))}
+                  placeholder="521550000000"
+                  className="h-8 text-xs font-mono"
+                />
+              </div>
+              <p className="text-[9px] text-muted-foreground mt-0.5">Solo dígitos, incluye código de país. Ej: 521550001234. Aparece en el menú digital.</p>
+            </div>
             <div className="border-t border-border pt-3 space-y-2">
               <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1.5">
                 <Bell className="h-3 w-3" />

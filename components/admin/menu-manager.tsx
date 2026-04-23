@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Edit2, ImageIcon } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, Edit2, ImageIcon, ExternalLink, Copy, Check } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -9,9 +9,33 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { formatPrice, type MenuItem } from '@/lib/store'
 import { MenuItemDialog } from './menu-item-dialog'
+import { supabase } from '@/lib/supabase'
 
 export function MenuManager() {
-  const { menuItems, updateMenuItem, categories, ingredients } = useApp()
+  const { menuItems, updateMenuItem, categories, ingredients, currentUser } = useApp()
+  const [tenantSlug, setTenantSlug] = useState<string>('default')
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (!currentUser?.tenantId) return
+    supabase
+      .from('tenants')
+      .select('slug')
+      .eq('id', currentUser.tenantId)
+      .single()
+      .then(({ data }) => { if (data?.slug) setTenantSlug(data.slug as string) })
+  }, [currentUser?.tenantId])
+
+  const menuUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/menu/${tenantSlug}`
+    : `/menu/${tenantSlug}`
+
+  const handleCopyUrl = () => {
+    if (!menuUrl) return
+    navigator.clipboard.writeText(menuUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   const calculateItemCost = (item: MenuItem): number => {
     if (!item.receta || item.receta.length === 0) return 0
@@ -55,15 +79,40 @@ export function MenuManager() {
             {menuItems.length} platillos en total
           </p>
         </div>
-        <Button 
-          className="bg-primary text-primary-foreground h-7 text-[10px] px-2.5" 
+        <Button
+          className="bg-primary text-primary-foreground h-7 text-[10px] px-2.5"
           onClick={handleAdd}
         >
           <Plus className="h-3 w-3 mr-1" />
           Agregar
         </Button>
       </div>
-      
+
+      {/* Banner menú digital */}
+      <div className="mb-3 p-2.5 rounded-lg border border-border bg-secondary/30 space-y-1.5">
+          <p className="text-[10px] font-medium text-foreground">Menú digital público</p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-[10px] text-muted-foreground font-mono truncate flex-1">{menuUrl}</p>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 shrink-0"
+              onClick={handleCopyUrl}
+              title="Copiar enlace"
+            >
+              {copied ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
+            </Button>
+            <a href={menuUrl} target="_blank" rel="noopener noreferrer">
+              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" title="Abrir menú digital">
+                <ExternalLink className="h-3 w-3" />
+              </Button>
+            </a>
+          </div>
+          <p className="text-[9px] text-muted-foreground">
+            Activa &quot;Mostrar en menú digital&quot; en cada platillo para que aparezca aquí.
+          </p>
+      </div>
+
       {/* Menu Items List */}
       <div>
           {sortedCategories.map((categoria) => {

@@ -83,6 +83,7 @@ export function useAdminActions(state: AppState, setState: SetState) {
     if (updates.accentColor !== undefined)                  dbUpdates.accent_color = updates.accentColor
     if (updates.fontFamily !== undefined)                   dbUpdates.font_family = updates.fontFamily
     if (updates.poweredByWaitless !== undefined)            dbUpdates.powered_by_waitless = updates.poweredByWaitless
+    if (updates.whatsappNumero !== undefined)               dbUpdates.whatsapp_numero = updates.whatsappNumero
 
     if (Object.keys(dbUpdates).length > 0) {
       const configTenantId = state.currentUser?.tenantId

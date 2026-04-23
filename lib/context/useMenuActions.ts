@@ -6,20 +6,23 @@ import type { AppState } from './types'
 import type { MenuItem, MenuCategory, TableConfig, TableState, Kitchen, Extra, RecipeIngredient } from '../store'
 import { generateId, canPrepareItem } from '../store'
 import { supabase } from '../supabase'
-import { uploadMenuImage } from './sync'
+import { uploadMenuImage, uploadMenuImages } from './sync'
 
 type SetState = Dispatch<SetStateAction<AppState>>
 
 export function useMenuActions(state: AppState, setState: SetState) {
   const updateMenuItem = useCallback(
-    async (itemId: string, updates: Partial<MenuItem>, imageFile?: File) => {
+    async (itemId: string, updates: Partial<MenuItem>, imageFiles?: (File | null)[]) => {
 
-      let imageUrl: string | undefined = updates.imagen
+      let finalImagenes: string[] | undefined = updates.imagenes
 
-      if (imageFile) {
-        const uploaded = await uploadMenuImage(imageFile)
-        if (uploaded) imageUrl = uploaded
+      if (imageFiles && imageFiles.some(Boolean)) {
+        const existingUrls = (updates.imagenes ?? []).filter(u => !u.startsWith('blob:'))
+        const newUrls = await uploadMenuImages(imageFiles)
+        finalImagenes = [...existingUrls, ...newUrls].slice(0, 3)
       }
+
+      const primaryImage = finalImagenes?.[0] ?? updates.imagen
 
       const payload: Record<string, unknown> = {}
 
@@ -28,11 +31,18 @@ export function useMenuActions(state: AppState, setState: SetState) {
       if (updates.precio !== undefined) payload.price = updates.precio
       if (updates.disponible !== undefined) payload.available = updates.disponible
       if (updates.categoria !== undefined) payload.category_id = updates.categoria
-      if (imageUrl !== undefined) payload.image = imageUrl
+      if (primaryImage !== undefined) payload.image = primaryImage
+      if (finalImagenes !== undefined) payload.imagenes = finalImagenes
       if (updates.cocina !== undefined) payload.cocina = updates.cocina
       if (updates.extras !== undefined) payload.extras = updates.extras
       if (updates.receta !== undefined) payload.receta = updates.receta
       if (updates.orden !== undefined) payload.orden = updates.orden
+      if (updates.identificador !== undefined) payload.identificador = updates.identificador ?? null
+      if (updates.colorFondo !== undefined) payload.color_fondo = updates.colorFondo ?? null
+      if (updates.colorBorde !== undefined) payload.color_borde = updates.colorBorde ?? null
+      if (updates.stockHabilitado !== undefined) payload.stock_habilitado = updates.stockHabilitado
+      if (updates.stockCantidad !== undefined) payload.stock_cantidad = updates.stockCantidad
+      if (updates.mostrarEnMenuDigital !== undefined) payload.mostrar_en_menu_digital = updates.mostrarEnMenuDigital
 
       const { error } = await supabase
         .from("menu_items")
@@ -48,7 +58,12 @@ export function useMenuActions(state: AppState, setState: SetState) {
         ...prev,
         menuItems: prev.menuItems.map(item =>
           item.id === itemId
-            ? { ...item, ...updates, imagen: imageUrl ?? item.imagen }
+            ? {
+                ...item,
+                ...updates,
+                imagen: primaryImage ?? item.imagen,
+                imagenes: finalImagenes ?? item.imagenes,
+              }
             : item
         )
       }))
@@ -57,13 +72,18 @@ export function useMenuActions(state: AppState, setState: SetState) {
   )
 
   const addMenuItem = useCallback(
-    async (item: Omit<MenuItem, "id">, imageFile?: File) => {
+    async (item: Omit<MenuItem, "id">, imageFiles?: (File | null)[]) => {
 
-      let imageUrl = item.imagen ?? null
+      let imagenes: string[] = item.imagenes ?? []
 
-      if (imageFile) {
-        imageUrl = await uploadMenuImage(imageFile)
+      if (imageFiles && imageFiles.some(Boolean)) {
+        const uploaded = await uploadMenuImages(imageFiles)
+        imagenes = uploaded.slice(0, 3)
+      } else if (item.imagen) {
+        imagenes = [item.imagen]
       }
+
+      const primaryImage = imagenes[0] ?? null
 
       const { data, error } = await supabase
         .from("menu_items")
@@ -73,7 +93,14 @@ export function useMenuActions(state: AppState, setState: SetState) {
             description: item.descripcion,
             price: item.precio,
             available: item.disponible ?? true,
-            image: imageUrl,
+            image: primaryImage,
+            imagenes,
+            identificador: item.identificador ?? null,
+            color_fondo: item.colorFondo ?? null,
+            color_borde: item.colorBorde ?? null,
+            stock_habilitado: item.stockHabilitado ?? false,
+            stock_cantidad: item.stockCantidad ?? 0,
+            mostrar_en_menu_digital: item.mostrarEnMenuDigital ?? true,
             category_id: item.categoria ?? null,
             cocina: item.cocina ?? 'cocina_a',
             extras: item.extras ?? [],
@@ -97,6 +124,13 @@ export function useMenuActions(state: AppState, setState: SetState) {
           categoria: data[0].category_id,
           disponible: data[0].available,
           imagen: data[0].image ?? undefined,
+          imagenes: (data[0].imagenes as string[] | null) ?? [],
+          identificador: data[0].identificador ?? undefined,
+          colorFondo: data[0].color_fondo ?? undefined,
+          colorBorde: data[0].color_borde ?? undefined,
+          stockHabilitado: data[0].stock_habilitado ?? false,
+          stockCantidad: data[0].stock_cantidad ?? 0,
+          mostrarEnMenuDigital: data[0].mostrar_en_menu_digital ?? true,
           cocina: (data[0].cocina ?? 'cocina_a') as Kitchen,
           extras: (data[0].extras ?? []) as Extra[],
           receta: (data[0].receta ?? []) as RecipeIngredient[],

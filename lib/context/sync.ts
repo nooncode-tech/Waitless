@@ -29,6 +29,13 @@ export async function uploadMenuImage(file: File): Promise<string | null> {
   return data.publicUrl
 }
 
+export async function uploadMenuImages(files: (File | null)[]): Promise<string[]> {
+  const results = await Promise.all(
+    files.map(f => (f ? uploadMenuImage(f) : Promise.resolve(null)))
+  )
+  return results.filter((url): url is string => url !== null)
+}
+
 export async function syncOrderToSupabase(order: Order, sessionId?: string) {
   const data: Record<string, unknown> = {
     id: order.id,

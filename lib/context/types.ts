@@ -117,8 +117,8 @@ export interface AppContextType extends AppState {
   getAvailableRewards: (sessionId: string) => Reward[]
 
   // Menu
-  updateMenuItem: (itemId: string, updates: Partial<MenuItem>) => void
-  addMenuItem: (item: Omit<MenuItem, 'id'>, imageFile?: File) => Promise<void>
+  updateMenuItem: (itemId: string, updates: Partial<MenuItem>, imageFiles?: (File | null)[]) => void
+  addMenuItem: (item: Omit<MenuItem, 'id'>, imageFiles?: (File | null)[]) => Promise<void>
   deleteMenuItem: (itemId: string) => void
   getAvailableMenuItems: () => MenuItem[]
 

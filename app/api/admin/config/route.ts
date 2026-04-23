@@ -34,6 +34,8 @@ const ALLOWED_FIELDS = new Set([
   'accent_color',
   'font_family',
   'powered_by_waitless',
+  // Contacto
+  'whatsapp_numero',
 ])
 
 export async function PUT(req: NextRequest) {

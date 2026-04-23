@@ -8,7 +8,16 @@ export const metadata = {
 
 export default function RegistroPage() {
   return (
-    <div className="min-h-screen bg-white flex">
+    <div className="min-h-screen bg-white flex relative">
+      <Link
+        href="/"
+        className="absolute top-5 left-5 z-10 flex items-center gap-1.5 text-xs text-[#6B6B6B] hover:text-black transition-colors"
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 11L5 7L9 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        Inicio
+      </Link>
       {/* Left panel — value prop */}
       <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12 bg-black">
         <div className="max-w-xs w-full">

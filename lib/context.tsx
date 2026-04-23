@@ -265,6 +265,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
               cocina: (item.cocina ?? 'cocina_a') as import('./store').Kitchen,
               disponible: item.available ?? true,
               imagen: item.image ?? undefined,
+              imagenes: (item.imagenes as string[] | null) ?? [],
+              identificador: item.identificador ?? undefined,
+              colorFondo: item.color_fondo ?? undefined,
+              colorBorde: item.color_borde ?? undefined,
+              stockHabilitado: item.stock_habilitado ?? false,
+              stockCantidad: item.stock_cantidad ?? 0,
+              mostrarEnMenuDigital: item.mostrar_en_menu_digital ?? true,
               extras: (item.extras ?? []) as import('./store').Extra[],
               receta: (item.receta ?? []) as import('./store').RecipeIngredient[],
               orden: item.orden ?? 0,
@@ -382,6 +389,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 accentColor: (configRow.accent_color as string | undefined) ?? prev.config.accentColor,
                 fontFamily: (configRow.font_family as string | undefined) ?? prev.config.fontFamily,
                 poweredByWaitless: (configRow.powered_by_waitless as boolean | undefined) ?? prev.config.poweredByWaitless,
+                whatsappNumero: (configRow.whatsapp_numero as string | undefined) ?? prev.config.whatsappNumero,
               },
             }))
           }
@@ -847,14 +855,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (tenantId && row.tenant_id !== tenantId) return
           const item: MenuItem = {
             id: row.id as string,
-            nombre: row.nombre as string,
-            descripcion: (row.descripcion ?? '') as string,
-            precio: Number(row.precio) || 0,
+            nombre: (row.name ?? row.nombre) as string,
+            descripcion: ((row.description ?? row.descripcion) ?? '') as string,
+            precio: Number(row.price ?? row.precio) || 0,
             categoria: (row.category_id ?? row.categoria) as string,
-            cocina: (row.cocina ?? 'a') as Kitchen,
-            imagen: row.imagen as string | undefined,
-            disponible: (row.disponible ?? true) as boolean,
+            cocina: (row.cocina ?? 'cocina_a') as Kitchen,
+            imagen: (row.image ?? row.imagen) as string | undefined,
+            imagenes: (row.imagenes as string[] | null) ?? [],
+            identificador: (row.identificador as string | null) ?? undefined,
+            colorFondo: (row.color_fondo as string | null) ?? undefined,
+            colorBorde: (row.color_borde as string | null) ?? undefined,
+            stockHabilitado: (row.stock_habilitado as boolean | null) ?? false,
+            stockCantidad: (row.stock_cantidad as number | null) ?? 0,
+            mostrarEnMenuDigital: (row.mostrar_en_menu_digital as boolean | null) ?? true,
+            disponible: (row.available ?? row.disponible ?? true) as boolean,
             extras: (row.extras as Extra[] | undefined) ?? [],
+            receta: (row.receta as RecipeIngredient[] | undefined) ?? [],
+            orden: (row.orden as number | null) ?? 0,
           }
           setState(prev => {
             const exists = prev.menuItems.some(m => m.id === item.id)

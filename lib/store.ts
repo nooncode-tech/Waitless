@@ -72,6 +72,13 @@ export interface MenuItem {
   precio: number
   categoria: string
   imagen?: string
+  imagenes?: string[]
+  identificador?: string
+  colorFondo?: string
+  colorBorde?: string
+  stockHabilitado?: boolean
+  stockCantidad?: number
+  mostrarEnMenuDigital?: boolean
   cocina: Kitchen
   disponible: boolean
   extras?: Extra[]
@@ -223,6 +230,7 @@ export interface AppConfig {
   accentColor?: string
   fontFamily?: string
   poweredByWaitless?: boolean
+  whatsappNumero?: string
 }
 
 // ============ WAITLIST (P2-3) ============
