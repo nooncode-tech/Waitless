@@ -94,7 +94,7 @@ export function PrintDialog({ open, onOpenChange, type, order, session, kitchen 
         <div className="flex justify-center py-4 bg-gray-100 rounded-lg max-h-[60vh] overflow-y-auto">
           <div className="transform scale-90 origin-top">
             {type === 'kitchen' && order && (
-              <KitchenTicket ref={printRef} order={order} kitchen={kitchen} />
+              <KitchenTicket ref={printRef} order={order} />
             )}
             {type === 'receipt' && (
               <CustomerReceipt

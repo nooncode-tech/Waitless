@@ -42,7 +42,6 @@ export function useMenuActions(state: AppState, setState: SetState) {
       if (updates.categoria !== undefined) payload.category_id = updates.categoria
       if (primaryImage !== undefined) payload.image = primaryImage
       if (finalImagenes !== undefined) payload.imagenes = finalImagenes
-      if (updates.cocina !== undefined) payload.cocina = updates.cocina
       if (updates.extras !== undefined) payload.extras = updates.extras
       if (updates.receta !== undefined) payload.receta = updates.receta
       if (updates.orden !== undefined) payload.orden = updates.orden

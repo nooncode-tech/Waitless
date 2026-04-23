@@ -21,11 +21,6 @@ export const KitchenTicket = forwardRef<HTMLDivElement, KitchenTicketProps>(
         {/* Header */}
         <div className="text-center border-b-2 border-black border-dashed pb-2 mb-2">
           <h1 className="text-2xl font-bold">COMANDA</h1>
-          {kitchen !== 'all' && (
-            <p className="text-lg font-bold">
-              {kitchen === 'a' ? 'COCINA A - Tacos' : 'COCINA B - Antojitos'}
-            </p>
-          )}
         </div>
         
         {/* Order Info */}

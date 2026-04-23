@@ -13,7 +13,6 @@ import type {
   MenuItem,
   Channel,
   OrderStatus,
-  Kitchen,
   KitchenStatus,
   User,
   Ingredient,
@@ -80,7 +79,7 @@ export interface AppContextType extends AppState {
     seatNumber?: number,
   ) => Promise<Order | null>
   updateOrderStatus: (orderId: string, status: OrderStatus) => void
-  updateKitchenStatus: (orderId: string, kitchen: 'a' | 'b', status: KitchenStatus) => void
+  updateKitchenStatus: (orderId: string, status: KitchenStatus) => void
   cancelOrder: (orderId: string, reason: CancelReason, motivo?: string, userId?: string) => boolean
   updateOrderItems: (orderId: string, items: OrderItem[]) => boolean
   markOrderDelivered: (orderId: string, meseroId?: string) => void
@@ -220,7 +219,7 @@ export interface AppContextType extends AppState {
 // Re-export store types used in context for convenience
 export type {
   Order, OrderItem, TableSession, MenuItem, Channel, OrderStatus,
-  Kitchen, KitchenStatus, User, Ingredient, WaiterCall, Reward,
+  KitchenStatus, User, Ingredient, WaiterCall, Reward,
   AppliedReward, AppConfig, AuditLog, PaymentMethod, PaymentStatus,
   BillStatus, InventoryAdjustment, QRToken, Refund, CancelReason,
   DeliveryZone, MenuCategory, Extra, TableConfig, LoyaltyCustomer,
