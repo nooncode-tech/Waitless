@@ -421,10 +421,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
               }))
             }
           }
-        } else {
-          // Perfil inactivo o inexistente — cerrar sesión
+        } else if (profile && profile.activo === false) {
+          // Solo cerrar sesión si la cuenta fue explícitamente desactivada
           await supabase.auth.signOut()
         }
+        // Si el perfil no existe (usuario OAuth nuevo) o activo es null,
+        // conservar la sesión para que pueda completar el registro.
       }
       setIsHydrated(true)
     }
