@@ -279,20 +279,12 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                     {/* Kitchen Status */}
                     <div className="flex gap-1.5 text-[10px] mb-3">
                       <span className={`px-1.5 py-0.5 rounded ${
-                        order.cocinaAStatus === 'listo' ? 'bg-[#F0FDF4] text-[#16A34A]' :
-                        order.cocinaAStatus === 'preparando' ? 'bg-[#FFFBEB] text-[#D97706]' :
+                        order.cocinaStatus === 'listo' ? 'bg-[#F0FDF4] text-[#16A34A]' :
+                        order.cocinaStatus === 'preparando' ? 'bg-[#FFFBEB] text-[#D97706]' :
                         'bg-muted text-muted-foreground'
                       }`}>
-                        A: {order.cocinaAStatus === 'listo' ? 'Listo' : 
-                            order.cocinaAStatus === 'preparando' ? 'Prep.' : 'Cola'}
-                      </span>
-                      <span className={`px-1.5 py-0.5 rounded ${
-                        order.cocinaBStatus === 'listo' ? 'bg-[#F0FDF4] text-[#16A34A]' :
-                        order.cocinaBStatus === 'preparando' ? 'bg-[#FFFBEB] text-[#D97706]' :
-                        'bg-muted text-muted-foreground'
-                      }`}>
-                        B: {order.cocinaBStatus === 'listo' ? 'Listo' : 
-                            order.cocinaBStatus === 'preparando' ? 'Prep.' : 'Cola'}
+                        Cocina: {order.cocinaStatus === 'listo' ? 'Listo' :
+                                 order.cocinaStatus === 'preparando' ? 'Prep.' : 'Cola'}
                       </span>
                     </div>
                     

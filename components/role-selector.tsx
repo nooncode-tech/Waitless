@@ -2,7 +2,7 @@
 
 import React from "react"
 import { WaitlessLogo } from '@/components/ui/waitless-logo'
-import { ChefHat, ClipboardList, Settings, Utensils, ChevronRight, QrCode } from 'lucide-react'
+import { ChefHat, ClipboardList, Settings, ChevronRight, QrCode } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 
 interface Role {
@@ -32,16 +32,10 @@ const ROLES: Role[] = [
     icon: <ClipboardList className="h-4 w-4" />,
   },
   {
-    id: 'cocina_a',
-    nombre: 'Kitchen A',
-    descripcion: 'KDS — Estación principal',
+    id: 'cocina',
+    nombre: 'Cocina',
+    descripcion: 'KDS — Pantalla de preparación',
     icon: <ChefHat className="h-4 w-4" />,
-  },
-  {
-    id: 'cocina_b',
-    nombre: 'Kitchen B',
-    descripcion: 'KDS — Estación secundaria',
-    icon: <Utensils className="h-4 w-4" />,
   },
 ]
 

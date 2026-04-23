@@ -1,11 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { ShoppingCart, X, Plus, Minus, MessageCircle, ChevronRight, Check, Phone } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { ShoppingCart, X, Plus, Minus, MessageCircle, Check, Phone, ChevronLeft, ArrowRight } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -41,6 +37,8 @@ interface MenuData {
   accentColor: string
   whatsappNumero: string | null
   poweredByWaitless: boolean
+  coverUrl: string | null
+  descripcion: string | null
   metodosPago: { efectivo: boolean; tarjeta: boolean; transferencia: boolean }
   categories: Category[]
   items: MenuItem[]
@@ -55,6 +53,12 @@ interface CartEntry {
 
 type Screen = 'menu' | 'cart' | 'checkout' | 'success' | 'mensaje'
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatPrice(n: number) {
+  return '$' + n.toFixed(2)
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function MenuDigitalPage({ slug }: { slug: string }) {
@@ -67,15 +71,14 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
   const [expandedItem, setExpandedItem] = useState<string | null>(null)
   const [orderNum, setOrderNum] = useState<number | null>(null)
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const tabsRef = useRef<HTMLDivElement>(null)
 
-  // Checkout form
   const [nombre, setNombre] = useState('')
   const [telefono, setTelefono] = useState('')
   const [metodoPago, setMetodoPago] = useState<string>('')
   const [notas, setNotas] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  // Mensaje form
   const [msgNombre, setMsgNombre] = useState('')
   const [msgTelefono, setMsgTelefono] = useState('')
   const [msgTexto, setMsgTexto] = useState('')
@@ -83,51 +86,46 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
   const [msgSubmitting, setMsgSubmitting] = useState(false)
 
   useEffect(() => {
-    fetch(`/api/public/${slug}/menu`)
-      .then(r => r.json())
-      .then(d => {
-        if (d.error) { setError(d.error); return }
-        setData(d)
-        if (d.categories.length > 0) setActiveCategory(d.categories[0].id)
-        const metodos = d.metodosPago
-        if (metodos.efectivo) setMetodoPago('efectivo')
-        else if (metodos.tarjeta) setMetodoPago('tarjeta')
-        else if (metodos.transferencia) setMetodoPago('transferencia')
-      })
-      .catch(() => setError('No se pudo cargar el menú'))
-      .finally(() => setLoading(false))
+    const fetchMenu = (isInitial = false) => {
+      fetch(`/api/public/${slug}/menu`, { cache: 'no-store' })
+        .then(r => r.json())
+        .then(d => {
+          if (d.error) { if (isInitial) setError(d.error); return }
+          setData(d)
+          if (isInitial && d.categories.length > 0) setActiveCategory(d.categories[0].id)
+          if (isInitial) {
+            const m = d.metodosPago
+            if (m.efectivo) setMetodoPago('efectivo')
+            else if (m.tarjeta) setMetodoPago('tarjeta')
+            else if (m.transferencia) setMetodoPago('transferencia')
+          }
+        })
+        .catch(() => { if (isInitial) setError('No se pudo cargar el menú') })
+        .finally(() => { if (isInitial) setLoading(false) })
+    }
+    fetchMenu(true)
+    const interval = setInterval(() => fetchMenu(false), 30_000)
+    return () => clearInterval(interval)
   }, [slug])
 
-  // ─── Cart helpers ───────────────────────────────────────────────────────────
-
   const cartTotal = cart.reduce((sum, e) => {
-    const extrasTotal = e.selectedExtras.reduce((s, ex) => s + ex.precio, 0)
-    return sum + (e.item.precio + extrasTotal) * e.cantidad
+    return sum + (e.item.precio + e.selectedExtras.reduce((s, ex) => s + ex.precio, 0)) * e.cantidad
   }, 0)
-
   const cartCount = cart.reduce((sum, e) => sum + e.cantidad, 0)
 
-  const addToCart = (item: MenuItem, extras: MenuExtra[] = []) => {
+  const addToCart = useCallback((item: MenuItem, extras: MenuExtra[] = []) => {
     setCart(prev => {
-      const key = item.id + extras.map(e => e.id).sort().join(',')
-      const existing = prev.find(e => e.item.id === item.id && e.selectedExtras.map(x => x.id).sort().join(',') === extras.map(e => e.id).sort().join(','))
-      if (existing) {
-        return prev.map(e => e === existing ? { ...e, cantidad: e.cantidad + 1 } : e)
-      }
+      const key = extras.map(e => e.id).sort().join(',')
+      const existing = prev.find(e => e.item.id === item.id && e.selectedExtras.map(x => x.id).sort().join(',') === key)
+      if (existing) return prev.map(e => e === existing ? { ...e, cantidad: e.cantidad + 1 } : e)
       return [...prev, { item, cantidad: 1, selectedExtras: extras }]
     })
     setExpandedItem(null)
-  }
+  }, [])
 
   const changeQty = (index: number, delta: number) => {
-    setCart(prev => {
-      const next = [...prev]
-      next[index] = { ...next[index], cantidad: next[index].cantidad + delta }
-      return next.filter(e => e.cantidad > 0)
-    })
+    setCart(prev => prev.map((e, i) => i === index ? { ...e, cantidad: e.cantidad + delta } : e).filter(e => e.cantidad > 0))
   }
-
-  // ─── Submit order ───────────────────────────────────────────────────────────
 
   const handleOrder = async () => {
     if (!metodoPago) return
@@ -137,12 +135,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: cart.map(e => ({
-            itemId: e.item.id,
-            cantidad: e.cantidad,
-            extras: e.selectedExtras,
-            notas: undefined,
-          })),
+          items: cart.map(e => ({ itemId: e.item.id, cantidad: e.cantidad, extras: e.selectedExtras })),
           nombreCliente: nombre.trim() || undefined,
           telefono: telefono.trim() || undefined,
           metodoPago,
@@ -155,13 +148,11 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       setCart([])
       setScreen('success')
     } catch {
-      alert('Error al enviar el pedido. Intenta de nuevo.')
+      alert('Error al enviar el pedido. Intentá de nuevo.')
     } finally {
       setSubmitting(false)
     }
   }
-
-  // ─── Submit mensaje ─────────────────────────────────────────────────────────
 
   const handleMensaje = async () => {
     if (!msgTexto.trim()) return
@@ -176,277 +167,355 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       if (json.error) { alert(json.error); return }
       setMsgSent(true)
     } catch {
-      alert('Error al enviar. Intenta de nuevo.')
+      alert('Error al enviar. Intentá de nuevo.')
     } finally {
       setMsgSubmitting(false)
     }
   }
 
-  // ─── Loading / Error ────────────────────────────────────────────────────────
+  // ─── Loading ────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="h-8 w-8 border-4 border-gray-200 border-t-black rounded-full animate-spin" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white gap-4">
+        <div className="w-8 h-8 border-2 border-black/10 border-t-black rounded-full animate-spin" />
+        <p className="text-xs text-black/30 tracking-widest uppercase">Cargando menú</p>
       </div>
     )
   }
 
   if (error || !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white p-6 text-center">
-        <div>
-          <p className="text-2xl mb-2">🍽️</p>
-          <p className="font-semibold text-gray-800">Menú no disponible</p>
-          <p className="text-sm text-gray-500 mt-1">{error ?? 'No se encontró este restaurante.'}</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white p-8 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center mb-6">
+          <span className="text-white text-2xl font-black" style={{ letterSpacing: '-0.04em' }}>W</span>
         </div>
+        <p className="font-bold text-black text-lg" style={{ letterSpacing: '-0.02em' }}>Menú no disponible</p>
+        <p className="text-sm text-black/40 mt-2">{error ?? 'No se encontró este restaurante.'}</p>
       </div>
     )
   }
 
-  const primary = data.primaryColor
-  const itemsByCategory = (catId: string | null) =>
-    data.items.filter(i => i.categoriaId === catId)
-  const uncategorized = data.items.filter(i => !i.categoriaId)
+  const primary = data.primaryColor || '#000000'
+  const itemsByCategory = (catId: string) => data.items.filter(i => i.categoriaId === catId)
+  const uncategorized = data.items.filter(i => !data.categories.some(c => c.id === i.categoriaId))
 
-  // ─── SUCCESS SCREEN ─────────────────────────────────────────────────────────
+  // ─── SUCCESS ─────────────────────────────────────────────────────────────────
 
   if (screen === 'success') {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white p-6 text-center">
-        <div className="h-16 w-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: primary }}>
-          <Check className="h-8 w-8 text-white" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white p-8 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-black flex items-center justify-center mb-6">
+          <Check className="h-7 w-7 text-white" strokeWidth={2.5} />
         </div>
-        <h1 className="text-xl font-bold text-gray-900 mb-1">¡Pedido recibido!</h1>
-        <p className="text-4xl font-bold mb-2" style={{ color: primary }}>#{orderNum}</p>
-        <p className="text-sm text-gray-500 mb-6">Tu pedido está siendo preparado.</p>
-        {data.whatsappNumero && (
-          <a
-            href={`https://wa.me/${data.whatsappNumero.replace(/\D/g, '')}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm text-white px-4 py-2 rounded-lg mb-4"
-            style={{ backgroundColor: '#25D366' }}
-          >
-            <Phone className="h-4 w-4" />
-            Contactar por WhatsApp
-          </a>
-        )}
-        <Button
-          variant="outline"
-          onClick={() => { setScreen('menu'); setNombre(''); setTelefono(''); setNotas('') }}
-          className="text-sm"
+        <p className="text-xs font-semibold tracking-widest uppercase text-black/30 mb-2">Pedido recibido</p>
+        <p
+          className="font-black text-6xl mb-1"
+          style={{ letterSpacing: '-0.04em', color: primary }}
         >
-          Volver al menú
-        </Button>
+          #{orderNum}
+        </p>
+        <p className="text-sm text-black/50 mb-8">Estamos preparando tu pedido.</p>
+
+        <div className="w-full max-w-xs space-y-3">
+          {data.whatsappNumero && (
+            <a
+              href={`https://wa.me/${data.whatsappNumero.replace(/\D/g, '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full h-12 rounded-xl text-sm font-semibold text-white"
+              style={{ backgroundColor: '#25D366' }}
+            >
+              <Phone className="h-4 w-4" />
+              Contactar por WhatsApp
+            </a>
+          )}
+          <button
+            onClick={() => { setScreen('menu'); setNombre(''); setTelefono(''); setNotas('') }}
+            className="w-full h-12 rounded-xl border border-black/10 text-sm font-semibold text-black hover:bg-black/5 transition-colors"
+          >
+            Volver al menú
+          </button>
+        </div>
+
+        {data.poweredByWaitless && (
+          <p className="absolute bottom-6 text-[10px] text-black/20 tracking-widest uppercase">
+            Powered by WAITLESS
+          </p>
+        )}
       </div>
     )
   }
 
-  // ─── MENSAJE SCREEN ─────────────────────────────────────────────────────────
+  // ─── MENSAJE ─────────────────────────────────────────────────────────────────
 
   if (screen === 'mensaje') {
     return (
       <div className="min-h-screen bg-white flex flex-col">
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-          <button onClick={() => setScreen('menu')} className="p-1">
-            <X className="h-5 w-5 text-gray-500" />
+        <header className="sticky top-0 z-20 bg-white border-b border-black/5 px-4 py-4 flex items-center gap-3">
+          <button
+            onClick={() => setScreen('menu')}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
+          >
+            <ChevronLeft className="h-5 w-5 text-black" />
           </button>
-          <h2 className="font-semibold text-gray-900">Enviar mensaje</h2>
-        </div>
-        <div className="flex-1 p-4 space-y-4">
+          <h1 className="font-bold text-black text-base" style={{ letterSpacing: '-0.02em' }}>
+            Enviar mensaje
+          </h1>
+        </header>
+
+        <div className="flex-1 p-5 max-w-lg mx-auto w-full">
           {msgSent ? (
-            <div className="flex flex-col items-center justify-center h-full gap-3 text-center py-12">
-              <div className="h-14 w-14 rounded-full flex items-center justify-center" style={{ backgroundColor: primary }}>
-                <Check className="h-7 w-7 text-white" />
+            <div className="flex flex-col items-center justify-center h-full gap-4 py-16 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center">
+                <Check className="h-6 w-6 text-white" strokeWidth={2.5} />
               </div>
-              <p className="font-semibold text-gray-900">Mensaje enviado</p>
-              <p className="text-sm text-gray-500">El restaurante lo recibirá pronto.</p>
-              <Button variant="outline" onClick={() => setScreen('menu')} className="mt-2 text-sm">
+              <div>
+                <p className="font-bold text-black text-lg" style={{ letterSpacing: '-0.02em' }}>Mensaje enviado</p>
+                <p className="text-sm text-black/40 mt-1">El restaurante lo recibirá pronto.</p>
+              </div>
+              <button
+                onClick={() => setScreen('menu')}
+                className="mt-2 h-11 px-6 rounded-xl border border-black/10 text-sm font-semibold text-black"
+              >
                 Volver al menú
-              </Button>
+              </button>
             </div>
           ) : (
-            <>
-              <div>
-                <Label className="text-xs text-gray-600">Tu nombre (opcional)</Label>
-                <Input value={msgNombre} onChange={e => setMsgNombre(e.target.value)} placeholder="Ej: Carlos" className="mt-1 h-9 text-sm" />
+            <div className="space-y-4">
+              <div className="rounded-2xl overflow-hidden border border-black/[0.06] bg-white shadow-sm">
+                <div>
+                  <label className="block text-[11px] font-semibold text-black/40 uppercase tracking-wider mb-1.5">Nombre</label>
+                  <input
+                    value={msgNombre}
+                    onChange={e => setMsgNombre(e.target.value)}
+                    placeholder="Tu nombre"
+                    className="w-full h-11 rounded-xl border border-black/10 px-3 text-sm text-black placeholder:text-black/25 focus:outline-none focus:border-black/30 bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-black/40 uppercase tracking-wider mb-1.5">Teléfono</label>
+                  <input
+                    value={msgTelefono}
+                    onChange={e => setMsgTelefono(e.target.value)}
+                    placeholder="+52 55..."
+                    className="w-full h-11 rounded-xl border border-black/10 px-3 text-sm text-black placeholder:text-black/25 focus:outline-none focus:border-black/30 bg-white"
+                  />
+                </div>
               </div>
               <div>
-                <Label className="text-xs text-gray-600">Teléfono (opcional)</Label>
-                <Input value={msgTelefono} onChange={e => setMsgTelefono(e.target.value)} placeholder="+52 55 0000 0000" className="mt-1 h-9 text-sm" />
-              </div>
-              <div>
-                <Label className="text-xs text-gray-600">Mensaje *</Label>
-                <Textarea
+                <label className="block text-[11px] font-semibold text-black/40 uppercase tracking-wider mb-1.5">Mensaje *</label>
+                <textarea
                   value={msgTexto}
                   onChange={e => setMsgTexto(e.target.value)}
                   placeholder="Escribe tu mensaje al restaurante..."
                   rows={5}
-                  className="mt-1 text-sm"
                   maxLength={1000}
+                  className="w-full rounded-xl border border-black/10 px-3 py-3 text-sm text-black placeholder:text-black/25 focus:outline-none focus:border-black/30 bg-white resize-none"
                 />
-                <p className="text-[10px] text-gray-400 mt-0.5 text-right">{msgTexto.length}/1000</p>
+                <p className="text-[10px] text-black/25 text-right mt-0.5">{msgTexto.length}/1000</p>
               </div>
-              <Button
-                className="w-full text-white"
+              <button
+                className="w-full h-12 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
                 style={{ backgroundColor: primary }}
                 disabled={!msgTexto.trim() || msgSubmitting}
                 onClick={handleMensaje}
               >
                 {msgSubmitting ? 'Enviando...' : 'Enviar mensaje'}
-              </Button>
-            </>
+              </button>
+            </div>
           )}
         </div>
       </div>
     )
   }
 
-  // ─── CHECKOUT SCREEN ────────────────────────────────────────────────────────
+  // ─── CHECKOUT ────────────────────────────────────────────────────────────────
 
   if (screen === 'checkout') {
-    const metodos = Object.entries(data.metodosPago)
-      .filter(([, v]) => v)
-      .map(([k]) => k)
+    const metodos = Object.entries(data.metodosPago).filter(([, v]) => v).map(([k]) => k)
+    const metodoLabels: Record<string, string> = { efectivo: 'Efectivo', tarjeta: 'Tarjeta', transferencia: 'Transferencia' }
 
     return (
       <div className="min-h-screen bg-white flex flex-col">
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10">
-          <button onClick={() => setScreen('cart')} className="p-1">
-            <X className="h-5 w-5 text-gray-500" />
+        <header className="sticky top-0 z-20 bg-white border-b border-black/5 px-4 py-4 flex items-center gap-3">
+          <button
+            onClick={() => setScreen('cart')}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
+          >
+            <ChevronLeft className="h-5 w-5 text-black" />
           </button>
-          <h2 className="font-semibold text-gray-900">Confirmar pedido</h2>
-        </div>
+          <h1 className="font-bold text-black text-base" style={{ letterSpacing: '-0.02em' }}>
+            Confirmar pedido
+          </h1>
+        </header>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-32">
+        <div className="flex-1 overflow-y-auto pb-28 max-w-lg mx-auto w-full">
           {/* Resumen */}
-          <div className="bg-gray-50 rounded-xl p-3 space-y-1.5">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Tu pedido</p>
-            {cart.map((entry, i) => {
-              const extrasTotal = entry.selectedExtras.reduce((s, e) => s + e.precio, 0)
-              return (
-                <div key={i} className="flex justify-between text-sm text-gray-700">
-                  <span>{entry.cantidad}× {entry.item.nombre}{entry.selectedExtras.length > 0 && ` + ${entry.selectedExtras.map(e => e.nombre).join(', ')}`}</span>
-                  <span>${((entry.item.precio + extrasTotal) * entry.cantidad).toFixed(2)}</span>
-                </div>
-              )
-            })}
-            <div className="border-t border-gray-200 pt-1.5 mt-1.5 flex justify-between font-semibold text-sm">
-              <span>Total</span>
-              <span>${cartTotal.toFixed(2)}</span>
+          <div className="px-5 pt-5">
+            <p className="text-[11px] font-semibold text-black/30 uppercase tracking-wider mb-3">Tu pedido</p>
+            <div className="rounded-2xl border border-black/8 overflow-hidden">
+              {cart.map((entry, i) => {
+                const ext = entry.selectedExtras.reduce((s, e) => s + e.precio, 0)
+                return (
+                  <div key={i} className="flex justify-between items-center px-4 py-3 border-b border-black/5 last:border-0">
+                    <div className="min-w-0 flex-1 mr-3">
+                      <p className="text-sm font-semibold text-black">{entry.cantidad}× {entry.item.nombre}</p>
+                      {entry.selectedExtras.length > 0 && (
+                        <p className="text-[11px] text-black/35 mt-0.5">{entry.selectedExtras.map(e => e.nombre).join(' · ')}</p>
+                      )}
+                    </div>
+                    <p className="text-sm font-bold text-black shrink-0">{formatPrice((entry.item.precio + ext) * entry.cantidad)}</p>
+                  </div>
+                )
+              })}
+              <div className="flex justify-between items-center px-4 py-3 bg-black/3">
+                <p className="text-sm font-bold text-black">Total</p>
+                <p className="text-base font-black text-black" style={{ letterSpacing: '-0.02em' }}>{formatPrice(cartTotal)}</p>
+              </div>
             </div>
           </div>
 
-          {/* Datos cliente */}
-          <div className="space-y-3">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Tus datos (opcional)</p>
-            <div>
-              <Label className="text-xs text-gray-600">Nombre</Label>
-              <Input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Ej: María García" className="mt-1 h-9 text-sm" />
-            </div>
-            <div>
-              <Label className="text-xs text-gray-600">Teléfono</Label>
-              <Input value={telefono} onChange={e => setTelefono(e.target.value)} placeholder="+52 55 0000 0000" className="mt-1 h-9 text-sm" />
+          {/* Datos */}
+          <div className="px-5 mt-6">
+            <p className="text-[11px] font-semibold text-black/30 uppercase tracking-wider mb-3">Tus datos <span className="normal-case font-normal">(opcional)</span></p>
+            <div className="space-y-3">
+              <input
+                value={nombre}
+                onChange={e => setNombre(e.target.value)}
+                placeholder="Nombre"
+                className="w-full h-11 rounded-xl border border-black/10 px-3 text-sm text-black placeholder:text-black/25 focus:outline-none focus:border-black/30 bg-white"
+              />
+              <input
+                value={telefono}
+                onChange={e => setTelefono(e.target.value)}
+                placeholder="Teléfono"
+                className="w-full h-11 rounded-xl border border-black/10 px-3 text-sm text-black placeholder:text-black/25 focus:outline-none focus:border-black/30 bg-white"
+              />
             </div>
           </div>
 
-          {/* Método de pago */}
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Método de pago</p>
-            <div className="grid grid-cols-3 gap-2">
+          {/* Pago */}
+          <div className="px-5 mt-6">
+            <p className="text-[11px] font-semibold text-black/30 uppercase tracking-wider mb-3">Método de pago</p>
+            <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${metodos.length}, 1fr)` }}>
               {metodos.map(m => (
                 <button
                   key={m}
                   onClick={() => setMetodoPago(m)}
-                  className={`py-2.5 rounded-xl border-2 text-sm font-medium transition-colors ${metodoPago === m ? 'border-current text-white' : 'border-gray-200 text-gray-600 bg-white'}`}
-                  style={metodoPago === m ? { borderColor: primary, backgroundColor: primary } : {}}
+                  className="h-12 rounded-xl border-2 text-sm font-semibold transition-all"
+                  style={
+                    metodoPago === m
+                      ? { borderColor: primary, backgroundColor: primary, color: '#fff' }
+                      : { borderColor: 'rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.6)', backgroundColor: '#fff' }
+                  }
                 >
-                  {m === 'efectivo' ? '💵 Efectivo' : m === 'tarjeta' ? '💳 Tarjeta' : '🔁 Transfer.'}
+                  {metodoLabels[m] ?? m}
                 </button>
               ))}
             </div>
           </div>
 
           {/* Notas */}
-          <div>
-            <Label className="text-xs text-gray-600">Notas del pedido (opcional)</Label>
-            <Textarea
+          <div className="px-5 mt-6">
+            <p className="text-[11px] font-semibold text-black/30 uppercase tracking-wider mb-3">Notas <span className="normal-case font-normal">(opcional)</span></p>
+            <textarea
               value={notas}
               onChange={e => setNotas(e.target.value)}
               placeholder="Alergias, instrucciones especiales..."
               rows={3}
-              className="mt-1 text-sm"
               maxLength={500}
+              className="w-full rounded-xl border border-black/10 px-3 py-3 text-sm text-black placeholder:text-black/25 focus:outline-none focus:border-black/30 bg-white resize-none"
             />
           </div>
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100">
-          <Button
-            className="w-full h-12 text-base font-semibold text-white rounded-xl"
-            style={{ backgroundColor: primary }}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-black/5 p-4 max-w-lg mx-auto">
+          <button
+            className="w-full h-13 rounded-xl text-sm font-bold text-white flex items-center justify-between px-5 disabled:opacity-40 transition-opacity hover:opacity-90"
+            style={{ backgroundColor: primary, height: '52px' }}
             disabled={!metodoPago || submitting}
             onClick={handleOrder}
           >
-            {submitting ? 'Enviando...' : `Hacer pedido · $${cartTotal.toFixed(2)}`}
-          </Button>
+            <span>{submitting ? 'Enviando...' : 'Hacer pedido'}</span>
+            <span className="font-black text-base" style={{ letterSpacing: '-0.02em' }}>{formatPrice(cartTotal)}</span>
+          </button>
         </div>
       </div>
     )
   }
 
-  // ─── CART SCREEN ────────────────────────────────────────────────────────────
+  // ─── CART ────────────────────────────────────────────────────────────────────
 
   if (screen === 'cart') {
     return (
       <div className="min-h-screen bg-white flex flex-col">
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 sticky top-0 bg-white z-10">
-          <button onClick={() => setScreen('menu')} className="p-1">
-            <X className="h-5 w-5 text-gray-500" />
+        <header className="sticky top-0 z-20 bg-white border-b border-black/5 px-4 py-4 flex items-center gap-3">
+          <button
+            onClick={() => setScreen('menu')}
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
+          >
+            <ChevronLeft className="h-5 w-5 text-black" />
           </button>
-          <h2 className="font-semibold text-gray-900">Tu carrito</h2>
-        </div>
+          <h1 className="font-bold text-black text-base" style={{ letterSpacing: '-0.02em' }}>
+            Tu carrito
+          </h1>
+          {cartCount > 0 && (
+            <span className="ml-auto text-xs font-semibold text-black/30">{cartCount} {cartCount === 1 ? 'ítem' : 'ítems'}</span>
+          )}
+        </header>
 
         {cart.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center p-6">
-            <ShoppingCart className="h-10 w-10 text-gray-300" />
-            <p className="text-gray-500 text-sm">Tu carrito está vacío</p>
-            <Button variant="outline" size="sm" onClick={() => setScreen('menu')} className="mt-2">
+          <div className="flex-1 flex flex-col items-center justify-center gap-3 p-8 text-center">
+            <ShoppingCart className="h-10 w-10 text-black/10" />
+            <p className="text-sm font-semibold text-black/30">Tu carrito está vacío</p>
+            <button
+              onClick={() => setScreen('menu')}
+              className="mt-2 h-10 px-5 rounded-xl border border-black/10 text-sm font-semibold text-black"
+            >
               Ver menú
-            </Button>
+            </button>
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto divide-y divide-gray-100 pb-36">
+            <div className="flex-1 overflow-y-auto pb-32 max-w-lg mx-auto w-full">
               {cart.map((entry, i) => {
-                const extrasTotal = entry.selectedExtras.reduce((s, e) => s + e.precio, 0)
-                const lineTotal = (entry.item.precio + extrasTotal) * entry.cantidad
+                const ext = entry.selectedExtras.reduce((s, e) => s + e.precio, 0)
+                const foto = entry.item.imagenes[0] ?? entry.item.imagen
                 return (
-                  <div key={i} className="px-4 py-3 flex gap-3">
-                    {(entry.item.imagenes[0] ?? entry.item.imagen) && (
+                  <div key={i} className="flex items-center gap-4 px-5 py-4 border-b border-black/5 last:border-0">
+                    {foto && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={entry.item.imagenes[0] ?? entry.item.imagen!}
+                        src={foto}
                         alt={entry.item.nombre}
-                        className="w-16 h-16 object-cover rounded-lg shrink-0"
-                        style={{ backgroundColor: entry.item.colorFondo ?? undefined }}
+                        className="w-14 h-14 rounded-xl object-cover shrink-0"
+                        style={{ backgroundColor: entry.item.colorFondo ?? '#f5f5f5' }}
                       />
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-gray-900 truncate">{entry.item.nombre}</p>
+                      <p className="text-sm font-bold text-black truncate">{entry.item.nombre}</p>
                       {entry.selectedExtras.length > 0 && (
-                        <p className="text-[11px] text-gray-400">{entry.selectedExtras.map(e => e.nombre).join(', ')}</p>
+                        <p className="text-[11px] text-black/35 mt-0.5">{entry.selectedExtras.map(e => e.nombre).join(' · ')}</p>
                       )}
-                      <p className="text-sm font-semibold text-gray-700 mt-0.5">${lineTotal.toFixed(2)}</p>
+                      <p className="text-sm font-black text-black mt-0.5" style={{ letterSpacing: '-0.02em' }}>
+                        {formatPrice((entry.item.precio + ext) * entry.cantidad)}
+                      </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => changeQty(i, -1)} className="h-7 w-7 rounded-full border border-gray-200 flex items-center justify-center">
-                        <Minus className="h-3 w-3 text-gray-600" />
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <button
+                        onClick={() => changeQty(i, -1)}
+                        className="w-8 h-8 rounded-lg border border-black/10 flex items-center justify-center hover:bg-black/5 transition-colors"
+                      >
+                        <Minus className="h-3.5 w-3.5 text-black" />
                       </button>
-                      <span className="text-sm font-semibold w-4 text-center">{entry.cantidad}</span>
-                      <button onClick={() => changeQty(i, 1)} className="h-7 w-7 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: primary }}>
-                        <Plus className="h-3 w-3" />
+                      <span className="text-sm font-bold text-black w-4 text-center">{entry.cantidad}</span>
+                      <button
+                        onClick={() => changeQty(i, 1)}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-white transition-opacity hover:opacity-80"
+                        style={{ backgroundColor: primary }}
+                      >
+                        <Plus className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   </div>
@@ -454,19 +523,21 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
               })}
             </div>
 
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 space-y-2">
-              <div className="flex justify-between text-sm font-semibold text-gray-800 mb-1">
-                <span>Total</span>
-                <span>${cartTotal.toFixed(2)}</span>
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-black/5 p-4">
+              <div className="max-w-lg mx-auto">
+                <div className="flex justify-between items-center mb-3">
+                  <p className="text-sm text-black/40">Total</p>
+                  <p className="text-xl font-black text-black" style={{ letterSpacing: '-0.03em' }}>{formatPrice(cartTotal)}</p>
+                </div>
+                <button
+                  className="w-full rounded-xl font-bold text-white flex items-center justify-between px-5 transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: primary, height: '52px' }}
+                  onClick={() => setScreen('checkout')}
+                >
+                  <span className="text-sm">Continuar</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
               </div>
-              <Button
-                className="w-full h-12 text-base font-semibold text-white rounded-xl flex items-center justify-center gap-2"
-                style={{ backgroundColor: primary }}
-                onClick={() => setScreen('checkout')}
-              >
-                Continuar
-                <ChevronRight className="h-4 w-4" />
-              </Button>
             </div>
           </>
         )}
@@ -474,9 +545,8 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
     )
   }
 
-  // ─── MAIN MENU SCREEN ────────────────────────────────────────────────────────
+  // ─── ITEM CARD (grid) ────────────────────────────────────────────────────────
 
-  const allCategories = data.categories
   const ItemCard = ({ item }: { item: MenuItem }) => {
     const isExpanded = expandedItem === item.id
     const [selectedExtras, setSelectedExtras] = useState<MenuExtra[]>([])
@@ -484,141 +554,202 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
 
     const toggleExtra = (extra: MenuExtra) => {
       setSelectedExtras(prev =>
-        prev.some(e => e.id === extra.id)
-          ? prev.filter(e => e.id !== extra.id)
-          : [...prev, extra]
+        prev.some(e => e.id === extra.id) ? prev.filter(e => e.id !== extra.id) : [...prev, extra]
       )
     }
 
+    const extrasPrice = selectedExtras.reduce((s, e) => s + e.precio, 0)
+
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        {foto && (
+      <div className="bg-white border-b border-black/5 last:border-0">
+        {/* Fila principal */}
+        <div className="flex items-center gap-3 px-4 py-3">
+          {/* Imagen */}
           <div
-            className="w-full h-44 overflow-hidden"
-            style={{
-              backgroundColor: item.colorFondo ?? '#f9fafb',
-              borderBottom: item.colorBorde ? `2px solid ${item.colorBorde}` : undefined,
-            }}
+            className="shrink-0 rounded-xl overflow-hidden relative"
+            style={{ width: 72, height: 72, backgroundColor: item.colorFondo ?? '#f0f0f0' }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={foto} alt={item.nombre} className="w-full h-full object-cover" />
+            {foto && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={foto} alt={item.nombre} className="w-full h-full object-cover" />
+            )}
+            {item.colorBorde && (
+              <div className="absolute inset-0 rounded-xl" style={{ boxShadow: `inset 0 0 0 2px ${item.colorBorde}` }} />
+            )}
           </div>
-        )}
-        <div className="p-3">
-          <div className="flex justify-between items-start gap-2">
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900 text-sm">{item.nombre}</p>
-              {item.descripcion && (
-                <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-2">{item.descripcion}</p>
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-black text-sm leading-tight" style={{ letterSpacing: '-0.01em' }}>
+              {item.nombre}
+            </p>
+            {item.descripcion && (
+              <p className="text-[11px] text-black/40 mt-0.5 line-clamp-2 leading-relaxed">
+                {item.descripcion}
+              </p>
+            )}
+            <div className="flex items-center gap-2 mt-1.5">
+              <p className="font-black text-sm" style={{ letterSpacing: '-0.02em', color: primary }}>
+                {formatPrice(item.precio + extrasPrice)}
+              </p>
+              {item.extras.length > 0 && (
+                <button
+                  onClick={() => setExpandedItem(isExpanded ? null : item.id)}
+                  className="text-[10px] text-black/35 underline underline-offset-2"
+                >
+                  {isExpanded ? 'Cerrar' : '+ opciones'}
+                </button>
               )}
             </div>
-            <p className="font-bold text-sm shrink-0" style={{ color: primary }}>
-              ${item.precio.toFixed(2)}
-            </p>
           </div>
 
-          {isExpanded && item.extras.length > 0 && (
-            <div className="mt-2 pt-2 border-t border-gray-100">
-              <p className="text-[10px] font-medium text-gray-500 uppercase mb-1.5">Extras</p>
-              <div className="space-y-1">
-                {item.extras.map(extra => {
-                  const checked = selectedExtras.some(e => e.id === extra.id)
-                  return (
-                    <button
-                      key={extra.id}
-                      onClick={() => toggleExtra(extra)}
-                      className={`w-full flex justify-between items-center px-2.5 py-1.5 rounded-lg border text-xs transition-colors ${checked ? 'border-current text-white' : 'border-gray-200 text-gray-700 bg-white'}`}
-                      style={checked ? { borderColor: primary, backgroundColor: primary } : {}}
-                    >
-                      <span>{extra.nombre}</span>
-                      <span>+${extra.precio.toFixed(2)}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          <div className="mt-2.5 flex gap-2">
-            {item.extras.length > 0 && (
-              <button
-                onClick={() => setExpandedItem(isExpanded ? null : item.id)}
-                className="flex-1 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
-              >
-                {isExpanded ? 'Cerrar' : 'Personalizar'}
-              </button>
-            )}
-            <button
-              onClick={() => addToCart(item, selectedExtras)}
-              className="flex-1 py-1.5 rounded-lg text-xs font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1"
-              style={{ backgroundColor: primary }}
-            >
-              <Plus className="h-3 w-3" />
-              Agregar
-            </button>
-          </div>
+          {/* Botón agregar */}
+          <button
+            onClick={() => addToCart(item, selectedExtras)}
+            className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white transition-opacity hover:opacity-80 active:scale-95"
+            style={{ backgroundColor: primary }}
+          >
+            <Plus className="h-4 w-4" />
+          </button>
         </div>
+
+        {/* Extras expandibles */}
+        {isExpanded && item.extras.length > 0 && (
+          <div className="px-4 pb-3">
+            <div className="grid grid-cols-2 gap-1.5">
+              {item.extras.map(extra => {
+                const checked = selectedExtras.some(e => e.id === extra.id)
+                return (
+                  <button
+                    key={extra.id}
+                    onClick={() => toggleExtra(extra)}
+                    className="flex justify-between items-center px-2.5 py-2 rounded-lg border text-[11px] font-semibold transition-all"
+                    style={
+                      checked
+                        ? { borderColor: primary, backgroundColor: primary, color: '#fff' }
+                        : { borderColor: 'rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.65)', backgroundColor: 'transparent' }
+                    }
+                  >
+                    <span className="truncate mr-1">{extra.nombre}</span>
+                    <span className="shrink-0">+{formatPrice(extra.precio)}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
     )
   }
 
+  // ─── MAIN MENU ───────────────────────────────────────────────────────────────
+
+  const allCategories = data.categories
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2.5 min-w-0">
-            {data.logoUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={data.logoUrl} alt="Logo" className="h-8 w-8 rounded-lg object-cover shrink-0" />
-            )}
-            <h1 className="font-bold text-gray-900 text-sm truncate">{data.restaurantName}</h1>
+    <div className="min-h-screen bg-[#f7f7f7] flex flex-col">
+
+      {/* ── Sticky category tabs ────────────────────────────────────────────── */}
+      {allCategories.length > 0 && (
+        <header className="sticky top-0 z-20 bg-white border-b border-black/5">
+          <div className="flex items-center gap-2 px-4 py-2.5">
+            <div
+              ref={tabsRef}
+              className="flex gap-1.5 overflow-x-auto flex-1"
+              style={{ scrollbarWidth: 'none' }}
+            >
+              {allCategories.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    setActiveCategory(cat.id)
+                    categoryRefs.current[cat.id]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  }}
+                  className="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all"
+                  style={
+                    activeCategory === cat.id
+                      ? { backgroundColor: '#000', color: '#fff' }
+                      : { backgroundColor: 'rgba(0,0,0,0.06)', color: 'rgba(0,0,0,0.45)' }
+                  }
+                >
+                  {cat.nombre}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setScreen('mensaje')}
+              className="shrink-0 w-8 h-8 rounded-xl border border-black/10 flex items-center justify-center hover:bg-black/5 transition-colors"
+            >
+              <MessageCircle className="h-4 w-4 text-black" />
+            </button>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+        </header>
+      )}
+
+      {/* ── Items grid ─────────────────────────────────────────────────────── */}
+      <main className="flex-1 w-full pb-28">
+
+        {/* ── Profile hero ──────────────────────────────────────────────────── */}
+        <div className="bg-white mb-4">
+          {/* Cover image */}
+          {data.coverUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={data.coverUrl}
+              alt="Portada"
+              className="w-full object-cover"
+              style={{ height: 180 }}
+            />
+          ) : (
+            <div className="w-full bg-black/5" style={{ height: 100 }} />
+          )}
+
+          {/* Profile block */}
+          <div className="px-5 pb-5 pt-4 flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              {data.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={data.logoUrl}
+                  alt={data.restaurantName}
+                  className="w-14 h-14 rounded-2xl object-cover shrink-0 border border-black/8"
+                />
+              ) : (
+                <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center shrink-0">
+                  <span className="text-white font-black text-xl" style={{ letterSpacing: '-0.03em' }}>
+                    {data.restaurantName.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+              <div className="min-w-0">
+                <h1 className="font-black text-black text-lg leading-tight" style={{ letterSpacing: '-0.03em' }}>
+                  {data.restaurantName}
+                </h1>
+                {data.descripcion && (
+                  <p className="text-xs text-black/45 mt-0.5 leading-relaxed line-clamp-2">
+                    {data.descripcion}
+                  </p>
+                )}
+              </div>
+            </div>
+
             {data.whatsappNumero && (
               <a
                 href={`https://wa.me/${data.whatsappNumero.replace(/\D/g, '')}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white"
+                className="flex items-center justify-center gap-2 w-full h-11 rounded-xl text-sm font-semibold text-white"
                 style={{ backgroundColor: '#25D366' }}
               >
-                <Phone className="h-3.5 w-3.5" />
-                WhatsApp
+                <Phone className="h-4 w-4" />
+                Contactar por WhatsApp
+                <span className="text-white/70 text-xs font-normal ml-1">{data.whatsappNumero}</span>
               </a>
             )}
-            <button
-              onClick={() => setScreen('mensaje')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              <MessageCircle className="h-3.5 w-3.5" />
-              Mensaje
-            </button>
           </div>
         </div>
 
-        {/* Category tabs */}
-        {allCategories.length > 0 && (
-          <div className="max-w-2xl mx-auto overflow-x-auto flex gap-1 px-4 pb-2.5 scrollbar-hide">
-            {allCategories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => {
-                  setActiveCategory(cat.id)
-                  categoryRefs.current[cat.id]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                }}
-                className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${activeCategory === cat.id ? 'text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-                style={activeCategory === cat.id ? { backgroundColor: primary } : {}}
-              >
-                {cat.nombre}
-              </button>
-            ))}
-          </div>
-        )}
-      </header>
-
-      {/* ── Items ──────────────────────────────────────────────────────────── */}
-      <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-4 pb-28 space-y-6">
+        <div className="px-4">
         {allCategories.map(cat => {
           const catItems = itemsByCategory(cat.id)
           if (catItems.length === 0) return null
@@ -626,9 +757,12 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
             <section
               key={cat.id}
               ref={el => { categoryRefs.current[cat.id] = el as HTMLDivElement | null }}
+              className="pt-6"
             >
-              <h2 className="font-bold text-gray-800 text-sm mb-3 sticky top-[105px] bg-gray-50 py-1 z-10">{cat.nombre}</h2>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
+              <h2 className="font-black text-black text-base mb-3" style={{ letterSpacing: '-0.025em' }}>
+                {cat.nombre}
+              </h2>
+              <div className="rounded-2xl overflow-hidden border border-black/[0.06] bg-white shadow-sm">
                 {catItems.map(item => <ItemCard key={item.id} item={item} />)}
               </div>
             </section>
@@ -636,34 +770,35 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
         })}
 
         {uncategorized.length > 0 && (
-          <section>
-            <h2 className="font-bold text-gray-800 text-sm mb-3">Otros</h2>
-            <div className="grid grid-cols-2 gap-3">
+          <section className="pt-6">
+            <h2 className="font-black text-black text-base mb-3" style={{ letterSpacing: '-0.025em' }}>Otros</h2>
+            <div className="rounded-2xl overflow-hidden border border-black/[0.06] bg-white shadow-sm">
               {uncategorized.map(item => <ItemCard key={item.id} item={item} />)}
             </div>
           </section>
         )}
 
         {data.poweredByWaitless && (
-          <p className="text-center text-[10px] text-gray-400 pt-2">
-            Menú digital por <span className="font-semibold">WAITLESS</span>
+          <p className="text-center text-[10px] text-black/20 tracking-widest uppercase mt-10 pb-2">
+            Powered by WAITLESS
           </p>
         )}
+        </div>{/* /px-4 */}
       </main>
 
-      {/* ── Floating cart button ────────────────────────────────────────────── */}
+      {/* ── Floating cart ──────────────────────────────────────────────────── */}
       {cartCount > 0 && (
         <div className="fixed bottom-6 left-0 right-0 flex justify-center z-30 px-4">
           <button
             onClick={() => setScreen('cart')}
-            className="w-full max-w-sm flex items-center justify-between px-4 py-3.5 rounded-2xl shadow-lg text-white"
-            style={{ backgroundColor: primary }}
+            className="w-full flex items-center justify-between px-5 rounded-2xl shadow-2xl shadow-black/20 text-white transition-transform hover:scale-[1.01] active:scale-[0.99]"
+            style={{ backgroundColor: '#000', height: '56px' }}
           >
-            <div className="h-6 w-6 rounded-lg bg-white/20 flex items-center justify-center text-xs font-bold">
+            <span className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center text-xs font-black">
               {cartCount}
-            </div>
-            <span className="font-semibold text-sm">Ver carrito</span>
-            <span className="font-bold text-sm">${cartTotal.toFixed(2)}</span>
+            </span>
+            <span className="text-sm font-bold">Ver carrito</span>
+            <span className="font-black text-sm" style={{ letterSpacing: '-0.02em' }}>{formatPrice(cartTotal)}</span>
           </button>
         </div>
       )}

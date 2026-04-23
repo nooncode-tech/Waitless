@@ -130,14 +130,9 @@ export function useOrderActions(state: AppState, setState: SetState) {
       canal,
       mesa,
       seatNumber,
-      items: state.cart.map(item => ({
-        ...item,
-        cocinaAStatus: (item.menuItem.cocina === 'cocina_a' || item.menuItem.cocina === 'ambas') ? 'en_cola' : undefined,
-        cocinaBStatus: (item.menuItem.cocina === 'cocina_b' || item.menuItem.cocina === 'ambas') ? 'en_cola' : undefined,
-      })),
+      items: state.cart.map(item => ({ ...item })),
       status: 'recibido',
-      cocinaAStatus: 'en_cola',
-      cocinaBStatus: 'en_cola',
+      cocinaStatus: 'en_cola',
       confirmedAt: new Date(),
       isQrOrder: canal === 'mesa' && !state.currentUser, // QR order = mesa channel with no logged user
       createdAt: new Date(),
@@ -320,65 +315,25 @@ export function useOrderActions(state: AppState, setState: SetState) {
     }
   }, [state.orders, setState])
 
-  const updateKitchenStatus = useCallback((orderId: string, kitchen: 'a' | 'b', status: KitchenStatus) => {
+  const updateKitchenStatus = useCallback((orderId: string, status: KitchenStatus) => {
     setState(prev => {
       const updatedOrders = prev.orders.map(order => {
         if (order.id !== orderId) return order
 
         const updates: Partial<Order> = {
           updatedAt: new Date(),
-        }
-
-        if (kitchen === 'a') {
-          updates.cocinaAStatus = status
-        } else {
-          updates.cocinaBStatus = status
-        }
-
-        // When a kitchen starts preparing, claim "ambas" items exclusively
-        // Only claim if the other kitchen has NO exclusive items in this order
-        if (status === 'preparando') {
-          const hasAmbasItems = order.items.some(i => i.menuItem.cocina === 'ambas')
-          if (hasAmbasItems) {
-            const otherKitchenKey = kitchen === 'a' ? 'cocina_b' : 'cocina_a'
-            const otherHasExclusiveItems = order.items.some(i => i.menuItem.cocina === otherKitchenKey)
-
-            if (!otherHasExclusiveItems) {
-              // All items relevant to the other kitchen are "ambas" - claim exclusively
-              if (kitchen === 'a' && order.cocinaBStatus === 'en_cola') {
-                updates.cocinaBStatus = 'listo'
-                updates.claimedByKitchen = 'cocina_a'
-              } else if (kitchen === 'b' && order.cocinaAStatus === 'en_cola') {
-                updates.cocinaAStatus = 'listo'
-                updates.claimedByKitchen = 'cocina_b'
-              }
-            }
-          }
+          cocinaStatus: status,
         }
 
         if (status === 'preparando' && !order.tiempoInicioPreparacion) {
           updates.tiempoInicioPreparacion = new Date()
-          // KPI: registrar cuando cocina acepta la orden (PDF q124)
           if (!order.kitchenReceivedAt) updates.kitchenReceivedAt = new Date()
         }
 
-        // Update overall status based on kitchen statuses
-        const newCocinaA = updates.cocinaAStatus ?? (kitchen === 'a' ? status : order.cocinaAStatus)
-        const newCocinaB = updates.cocinaBStatus ?? (kitchen === 'b' ? status : order.cocinaBStatus)
-
-        // Check if any items need this kitchen
-        const needsA = order.items.some(i => i.menuItem.cocina === 'cocina_a' || i.menuItem.cocina === 'ambas')
-        const needsB = order.items.some(i => i.menuItem.cocina === 'cocina_b' || i.menuItem.cocina === 'ambas')
-
-        const aReady = !needsA || newCocinaA === 'listo'
-        const bReady = !needsB || newCocinaB === 'listo'
-
-        if (aReady && bReady) {
+        if (status === 'listo') {
           updates.status = 'listo'
-          if (!order.tiempoFinPreparacion) {
-            updates.tiempoFinPreparacion = new Date()
-          }
-        } else if (newCocinaA === 'preparando' || newCocinaB === 'preparando') {
+          if (!order.tiempoFinPreparacion) updates.tiempoFinPreparacion = new Date()
+        } else if (status === 'preparando') {
           updates.status = 'preparando'
         }
 
@@ -587,18 +542,10 @@ export function useOrderActions(state: AppState, setState: SetState) {
     return true
   }, [state.orders, state.tableSessions])
 
-  const getOrdersForKitchen = useCallback((kitchen: 'a' | 'b'): Order[] => {
+  const getOrdersForKitchen = useCallback((): Order[] => {
     return state.orders.filter(order => {
       if (order.status === 'entregado') return false
-
-      const kitchenStatus = kitchen === 'a' ? order.cocinaAStatus : order.cocinaBStatus
-      const kitchenKey = kitchen === 'a' ? 'cocina_a' : 'cocina_b'
-
-      const hasItems = order.items.some(
-        item => item.menuItem.cocina === kitchenKey || item.menuItem.cocina === 'ambas'
-      )
-
-      return hasItems && kitchenStatus !== 'listo'
+      return order.cocinaStatus !== 'listo'
     })
   }, [state.orders])
 

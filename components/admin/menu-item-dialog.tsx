@@ -2,7 +2,7 @@
 
 import React, { useRef } from "react"
 import { useState } from 'react'
-import { X, Plus, Trash2, ImageIcon, Upload, Archive, AlertTriangle, FolderOpen, Package, Monitor } from 'lucide-react'
+import { X, Plus, Trash2, ImageIcon, Archive, AlertTriangle, FolderOpen, Package } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Switch } from '@/components/ui/switch'
-import { type MenuItem, type Kitchen, type Extra, type RecipeIngredient } from '@/lib/store'
+import { type MenuItem, type Extra, type RecipeIngredient } from '@/lib/store'
 import { CategoryManager } from './category-manager'
 
 interface MenuItemDialogProps {
@@ -31,7 +31,6 @@ export function MenuItemDialog({ item, onClose }: MenuItemDialogProps) {
   const [descripcion, setDescripcion] = useState(item?.descripcion || '')
   const [precio, setPrecio] = useState(item?.precio.toString() || '')
   const [categoria, setCategoria] = useState(item?.categoria || categories[0]?.id || '')
-  const [cocina, setCocina] = useState<Kitchen>(item?.cocina || 'cocina_a')
   const [identificador, setIdentificador] = useState(item?.identificador || '')
 
   // ── Fotos (hasta 3) ──────────────────────────────────────────────
@@ -53,9 +52,6 @@ export function MenuItemDialog({ item, onClose }: MenuItemDialogProps) {
   // ── Stock directo ────────────────────────────────────────────────
   const [stockHabilitado, setStockHabilitado] = useState(item?.stockHabilitado ?? false)
   const [stockCantidad, setStockCantidad] = useState(item?.stockCantidad?.toString() || '0')
-
-  // ── Menú digital ─────────────────────────────────────────────────
-  const [mostrarEnMenuDigital, setMostrarEnMenuDigital] = useState(item?.mostrarEnMenuDigital ?? true)
 
   // ── Extras y receta ──────────────────────────────────────────────
   const [extras, setExtras] = useState<Extra[]>(item?.extras || [])
@@ -130,7 +126,6 @@ export function MenuItemDialog({ item, onClose }: MenuItemDialogProps) {
       descripcion,
       precio: parseFloat(precio) || 0,
       categoria,
-      cocina,
       identificador: identificador.trim() || undefined,
       imagenes: existingUrls,
       imagen: existingUrls[0] ?? imagenes[0],
@@ -138,7 +133,6 @@ export function MenuItemDialog({ item, onClose }: MenuItemDialogProps) {
       colorBorde: usarColorBorde ? colorBorde : undefined,
       stockHabilitado,
       stockCantidad: parseInt(stockCantidad) || 0,
-      mostrarEnMenuDigital,
       extras: extras.length > 0 ? extras : undefined,
       receta: receta.length > 0 ? receta : undefined,
       disponible: item?.disponible ?? true,
@@ -369,20 +363,6 @@ export function MenuItemDialog({ item, onClose }: MenuItemDialogProps) {
             </Dialog>
           </div>
 
-          <div>
-            <Label htmlFor="cocina" className="text-xs">Estación de cocina</Label>
-            <Select value={cocina} onValueChange={(v) => setCocina(v as Kitchen)}>
-              <SelectTrigger className="h-8 text-sm mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="cocina_a" className="text-sm">Cocina A (Tacos/Carnes)</SelectItem>
-                <SelectItem value="cocina_b" className="text-sm">Cocina B (Antojitos)</SelectItem>
-                <SelectItem value="ambas" className="text-sm">Ambas cocinas</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* ── STOCK DIRECTO ─────────────────────────────────── */}
           <div className="border border-border rounded-lg p-2.5 space-y-2">
             <div className="flex items-center gap-2">
@@ -415,21 +395,6 @@ export function MenuItemDialog({ item, onClose }: MenuItemDialogProps) {
                 Activar para controlar cuántas unidades quedan disponibles del producto.
               </p>
             )}
-          </div>
-
-          {/* ── MENÚ DIGITAL ──────────────────────────────────── */}
-          <div className="flex items-center gap-2 border border-border rounded-lg p-2.5">
-            <Monitor className="h-3.5 w-3.5 text-muted-foreground" />
-            <div className="flex-1">
-              <Label className="text-xs">Mostrar en menú digital</Label>
-              <p className="text-[10px] text-muted-foreground">Aparecerá en el menú QR del cliente.</p>
-            </div>
-            <Switch
-              id="menu-digital"
-              checked={mostrarEnMenuDigital}
-              onCheckedChange={setMostrarEnMenuDigital}
-              className="scale-75"
-            />
           </div>
 
           {/* ── EXTRAS ────────────────────────────────────────── */}

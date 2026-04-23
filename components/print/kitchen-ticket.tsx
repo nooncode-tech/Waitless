@@ -5,19 +5,11 @@ import { type Order, formatTime, getChannelLabel } from '@/lib/store'
 
 interface KitchenTicketProps {
   order: Order
-  kitchen?: 'a' | 'b' | 'all'
 }
 
 export const KitchenTicket = forwardRef<HTMLDivElement, KitchenTicketProps>(
-  ({ order, kitchen = 'all' }, ref) => {
-    const kitchenKey = kitchen === 'a' ? 'cocina_a' : kitchen === 'b' ? 'cocina_b' : null
-    
-    const items = kitchen === 'all' 
-      ? order.items 
-      : order.items.filter(item => 
-          item.menuItem.cocina === kitchenKey || item.menuItem.cocina === 'ambas'
-        )
-    
+  ({ order }, ref) => {
+    const items = order.items
     if (items.length === 0) return null
     
     return (

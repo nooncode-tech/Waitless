@@ -36,6 +36,9 @@ const ALLOWED_FIELDS = new Set([
   'powered_by_waitless',
   // Contacto
   'whatsapp_numero',
+  // Menú digital
+  'cover_url',
+  'descripcion',
 ])
 
 export async function PUT(req: NextRequest) {

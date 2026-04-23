@@ -43,7 +43,7 @@ const EVENT_BUILDERS: Record<string, (d: EventPayload) => NotificationData> = {
 
 export async function POST(req: NextRequest) {
   // ── Auth + role check (validates JWT AND DB role/activo) ───────────────────
-  const auth = await requireRole(req, ['mesero', 'manager', 'admin', 'cocina_a', 'cocina_b'])
+  const auth = await requireRole(req, ['mesero', 'manager', 'admin', 'cocina'])
   if ('error' in auth) return auth.error
 
   // ── Plan guard: push_notifications requiere pro o enterprise ──────────────

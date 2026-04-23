@@ -2,14 +2,13 @@
 // Estado global usando React Context + localStorage para persistencia
 
 export type Channel = 'mesa' | 'mesero' | 'para_llevar' | 'delivery'
-export type Kitchen = 'cocina_a' | 'cocina_b' | 'ambas'
 export type OrderStatus = 'recibido' | 'preparando' | 'listo' | 'empacado' | 'en_camino' | 'entregado' | 'cancelado'
 export type CancelReason = 'cliente_solicito' | 'sin_ingredientes' | 'error_pedido' | 'tiempo_excedido' | 'otro'
 export type KitchenStatus = 'en_cola' | 'preparando' | 'listo'
 export type PaymentMethod = 'tarjeta' | 'efectivo' | 'transferencia' | 'apple_pay'
 export type PaymentStatus = 'pendiente' | 'parcial' | 'pagado' | 'reembolsado'
 export type BillStatus = 'abierta' | 'en_pago' | 'pagada' | 'cerrada' | 'liberada'
-export type UserRole = 'admin' | 'manager' | 'mesero' | 'cocina_a' | 'cocina_b'
+export type UserRole = 'admin' | 'manager' | 'mesero' | 'cocina'
 export type TableState = 'disponible' | 'ocupada' | 'cuenta_pedida' | 'limpieza' | 'hold'
 export type IngredientUnit = 'kg' | 'g' | 'l' | 'ml' | 'unidad' | 'porcion'
 
@@ -79,7 +78,6 @@ export interface MenuItem {
   stockHabilitado?: boolean
   stockCantidad?: number
   mostrarEnMenuDigital?: boolean
-  cocina: Kitchen
   disponible: boolean
   extras?: Extra[]
   receta?: RecipeIngredient[]
@@ -94,8 +92,6 @@ export interface OrderItem {
   cantidad: number
   notas?: string
   extras?: Extra[]
-  cocinaAStatus?: KitchenStatus
-  cocinaBStatus?: KitchenStatus
   seatNumber?: number
 }
 
@@ -107,8 +103,7 @@ export interface Order {
   seatNumber?: number
   items: OrderItem[]
   status: OrderStatus
-  cocinaAStatus: KitchenStatus
-  cocinaBStatus: KitchenStatus
+  cocinaStatus: KitchenStatus
   confirmedAt?: Date
   kitchenReceivedAt?: Date
   isQrOrder?: boolean
@@ -123,8 +118,6 @@ export interface Order {
   // Tiempos
   tiempoInicioPreparacion?: Date
   tiempoFinPreparacion?: Date
-  // Kitchen claim for "ambas" orders
-  claimedByKitchen?: 'cocina_a' | 'cocina_b'
   // Cancelacion
   cancelado?: boolean
   cancelReason?: CancelReason
@@ -231,6 +224,8 @@ export interface AppConfig {
   fontFamily?: string
   poweredByWaitless?: boolean
   whatsappNumero?: string
+  coverUrl?: string
+  descripcion?: string
 }
 
 // ============ WAITLIST (P2-3) ============
@@ -329,7 +324,6 @@ export const MENU_ITEMS: MenuItem[] = [
     descripcion: 'Cerdo marinado con achiote, piña, cebolla y cilantro',
     precio: 35,
     categoria: 'cat-1',
-    cocina: 'cocina_a',
     disponible: true,
     orden: 1,
     extras: [
@@ -350,7 +344,6 @@ export const MENU_ITEMS: MenuItem[] = [
     descripcion: 'Bistec de res a la plancha con cebolla y cilantro',
     precio: 40,
     categoria: 'cat-1',
-    cocina: 'cocina_a',
     disponible: true,
     orden: 2,
     extras: [
@@ -370,7 +363,6 @@ export const MENU_ITEMS: MenuItem[] = [
     descripcion: 'Cerdo confitado al estilo Michoacán',
     precio: 38,
     categoria: 'cat-1',
-    cocina: 'cocina_a',
     disponible: true,
     orden: 3,
     receta: [
@@ -384,7 +376,6 @@ export const MENU_ITEMS: MenuItem[] = [
     descripcion: 'Carne de res suave y jugosa',
     precio: 38,
     categoria: 'cat-1',
-    cocina: 'cocina_a',
     disponible: true,
     orden: 4,
     receta: [
@@ -398,7 +389,6 @@ export const MENU_ITEMS: MenuItem[] = [
     descripcion: 'Chorizo artesanal con papas',
     precio: 35,
     categoria: 'cat-1',
-    cocina: 'cocina_a',
     disponible: true,
     orden: 5,
     receta: [
@@ -414,7 +404,6 @@ export const MENU_ITEMS: MenuItem[] = [
     descripcion: 'Tortilla de maíz con queso Oaxaca y flor de calabaza',
     precio: 55,
     categoria: 'cat-2',
-    cocina: 'cocina_b',
     disponible: true,
     orden: 1,
     receta: [
@@ -429,7 +418,6 @@ export const MENU_ITEMS: MenuItem[] = [
     descripcion: 'Tortilla de maíz con queso Oaxaca y huitlacoche',
     precio: 60,
     categoria: 'cat-2',
-    cocina: 'cocina_b',
     disponible: true,
     orden: 2,
     receta: [
@@ -444,7 +432,6 @@ export const MENU_ITEMS: MenuItem[] = [
     descripcion: 'Base de masa con frijoles, chorizo, crema y queso',
     precio: 50,
     categoria: 'cat-2',
-    cocina: 'cocina_b',
     disponible: true,
     orden: 3,
     receta: [
@@ -461,7 +448,6 @@ export const MENU_ITEMS: MenuItem[] = [
     descripcion: 'Base de masa con frijoles, tinga de pollo, crema y queso',
     precio: 50,
     categoria: 'cat-2',
-    cocina: 'cocina_b',
     disponible: true,
     orden: 4,
     receta: [
@@ -477,7 +463,6 @@ export const MENU_ITEMS: MenuItem[] = [
     descripcion: 'Masa rellena de frijol negro con nopales y queso',
     precio: 45,
     categoria: 'cat-2',
-    cocina: 'cocina_b',
     disponible: true,
     orden: 5,
     receta: [
@@ -493,7 +478,6 @@ export const MENU_ITEMS: MenuItem[] = [
     descripcion: 'Masa de maíz rellena de chicharrón prensado',
     precio: 48,
     categoria: 'cat-2',
-    cocina: 'cocina_b',
     disponible: true,
     orden: 6,
     receta: [
@@ -559,7 +543,6 @@ export const MENU_ITEMS: MenuItem[] = [
     descripcion: 'Flan casero con caramelo',
     precio: 45,
     categoria: 'cat-4',
-    cocina: 'cocina_b',
     disponible: true,
     orden: 1,
   },
@@ -569,7 +552,6 @@ export const MENU_ITEMS: MenuItem[] = [
     descripcion: '3 churros con chocolate caliente',
     precio: 50,
     categoria: 'cat-4',
-    cocina: 'cocina_b',
     disponible: true,
     orden: 2,
   },
@@ -779,8 +761,7 @@ export function getRoleLabel(role: UserRole): string {
     admin: 'Owner / Admin',
     manager: 'Manager / Encargado',
     mesero: 'Sala / Waiter',
-    cocina_a: 'Kitchen A',
-    cocina_b: 'Kitchen B',
+    cocina: 'Cocina',
   }
   return labels[role]
 }
@@ -805,7 +786,7 @@ export function isAdmin(role: UserRole): boolean {
 }
 
 export function isKitchen(role: UserRole): boolean {
-  return role === 'cocina_a' || role === 'cocina_b'
+  return role === 'cocina'
 }
 
 // ============ FEEDBACK ============

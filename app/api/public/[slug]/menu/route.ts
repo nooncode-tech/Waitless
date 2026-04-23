@@ -29,7 +29,7 @@ export async function GET(
   // Cargar config (branding + métodos de pago + whatsapp)
   let configQuery = supabaseAdmin
     .from('app_config')
-    .select('restaurant_name, logo_url, primary_color, accent_color, metodos_pago_activos, whatsapp_numero, powered_by_waitless')
+    .select('restaurant_name, logo_url, primary_color, accent_color, metodos_pago_activos, whatsapp_numero, powered_by_waitless, cover_url, descripcion')
 
   if (tenantId) {
     configQuery = configQuery.eq('tenant_id', tenantId)
@@ -66,13 +66,11 @@ export async function GET(
     console.error('[public/menu] Error cargando ítems:', itemsError.message)
   }
 
-  // Filtrar: disponibles y visibles en menú digital
-  // mostrar_en_menu_digital puede no existir aún (migración pendiente) → tratar como true
+  // Filtrar: disponibles y con stock
   const items = (rawItems ?? []).filter(item => {
     const disponible = (item.available ?? item.disponible ?? true) as boolean
-    const enMenuDigital = item.mostrar_en_menu_digital !== false   // null/undefined → true
     const conStock = item.stock_habilitado ? (item.stock_cantidad ?? 0) > 0 : true
-    return disponible && enMenuDigital && conStock
+    return disponible && conStock
   }).map(item => ({
     id: item.id as string,
     nombre: (item.name ?? item.nombre) as string,
@@ -99,6 +97,8 @@ export async function GET(
     accentColor: (config?.accent_color as string | null) ?? '#BEBEBE',
     poweredByWaitless: (config?.powered_by_waitless as boolean | null) ?? true,
     whatsappNumero: (config?.whatsapp_numero as string | null) ?? null,
+    coverUrl: (config?.cover_url as string | null) ?? null,
+    descripcion: (config?.descripcion as string | null) ?? null,
     metodosPago,
     categories: (categories ?? []).map(c => ({
       id: c.id as string,

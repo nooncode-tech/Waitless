@@ -316,12 +316,7 @@ function TableOrderCard({ order, onUpdateStatus }: TableOrderCardProps) {
   const canEdit = canEditOrder(order.id)
   const canCancel = canCancelOrder(order.id)
   
-  // Check kitchen status
-  const needsA = order.items.some(i => i.menuItem.cocina === 'cocina_a' || i.menuItem.cocina === 'ambas')
-  const needsB = order.items.some(i => i.menuItem.cocina === 'cocina_b' || i.menuItem.cocina === 'ambas')
-  const aReady = !needsA || order.cocinaAStatus === 'listo'
-  const bReady = !needsB || order.cocinaBStatus === 'listo'
-  const allKitchensReady = aReady && bReady
+  const allKitchensReady = order.cocinaStatus === 'listo'
   
   return (
     <>
@@ -353,26 +348,13 @@ function TableOrderCard({ order, onUpdateStatus }: TableOrderCardProps) {
           <div className="flex items-center gap-1">
             {/* Kitchen Status Badges */}
             {order.status !== 'listo' && order.status !== 'entregado' && (
-              <div className="flex gap-0.5">
-                {needsA && (
-                  <span className={`text-[8px] px-1 py-0.5 rounded ${
-                    order.cocinaAStatus === 'listo' ? 'bg-[#F0FDF4] text-[#16A34A]' :
-                    order.cocinaAStatus === 'preparando' ? 'bg-[#FFFBEB] text-[#D97706]' :
-                    'bg-muted text-muted-foreground'
-                  }`}>
-                    A
-                  </span>
-                )}
-                {needsB && (
-                  <span className={`text-[8px] px-1 py-0.5 rounded ${
-                    order.cocinaBStatus === 'listo' ? 'bg-[#F0FDF4] text-[#16A34A]' :
-                    order.cocinaBStatus === 'preparando' ? 'bg-[#FFFBEB] text-[#D97706]' :
-                    'bg-muted text-muted-foreground'
-                  }`}>
-                    B
-                  </span>
-                )}
-              </div>
+              <span className={`text-[8px] px-1 py-0.5 rounded ${
+                order.cocinaStatus === 'listo' ? 'bg-[#F0FDF4] text-[#16A34A]' :
+                order.cocinaStatus === 'preparando' ? 'bg-[#FFFBEB] text-[#D97706]' :
+                'bg-muted text-muted-foreground'
+              }`}>
+                {order.cocinaStatus === 'listo' ? 'Listo' : order.cocinaStatus === 'preparando' ? 'Prep.' : 'Cola'}
+              </span>
             )}
             
             <Badge className={`text-[9px] h-4 px-1.5 ${
@@ -521,12 +503,7 @@ function OrderCard({ order, channel, onUpdateStatus }: OrderCardProps) {
     return sum + (item.menuItem.precio + extrasTotal) * item.cantidad
   }, 0)
   
-  // Check kitchen status
-  const needsA = order.items.some(i => i.menuItem.cocina === 'cocina_a' || i.menuItem.cocina === 'ambas')
-  const needsB = order.items.some(i => i.menuItem.cocina === 'cocina_b' || i.menuItem.cocina === 'ambas')
-  const aReady = !needsA || order.cocinaAStatus === 'listo'
-  const bReady = !needsB || order.cocinaBStatus === 'listo'
-  const allKitchensReady = aReady && bReady
+  const allKitchensReady = order.cocinaStatus === 'listo'
   
   const getNextAction = () => {
     if (order.status === 'entregado') return null
@@ -649,26 +626,14 @@ function OrderCard({ order, channel, onUpdateStatus }: OrderCardProps) {
           {/* Kitchen Status */}
           {order.status !== 'entregado' && order.status !== 'en_camino' && (
             <div className="flex gap-1 text-[9px] mb-2">
-              {needsA && (
-                <span className={`px-1.5 py-0.5 rounded ${
-                  order.cocinaAStatus === 'listo' ? 'bg-[#F0FDF4] text-[#16A34A]' :
-                  order.cocinaAStatus === 'preparando' ? 'bg-[#FFFBEB] text-[#D97706]' :
-                  'bg-[#F2F2F2] text-[#6B6B6B]'
-                }`}>
-                  A: {order.cocinaAStatus === 'listo' ? 'Listo' : 
-                      order.cocinaAStatus === 'preparando' ? 'Prep.' : 'Cola'}
-                </span>
-              )}
-              {needsB && (
-                <span className={`px-1.5 py-0.5 rounded ${
-                  order.cocinaBStatus === 'listo' ? 'bg-[#F0FDF4] text-[#16A34A]' :
-                  order.cocinaBStatus === 'preparando' ? 'bg-[#FFFBEB] text-[#D97706]' :
-                  'bg-[#F2F2F2] text-[#6B6B6B]'
-                }`}>
-                  B: {order.cocinaBStatus === 'listo' ? 'Listo' : 
-                      order.cocinaBStatus === 'preparando' ? 'Prep.' : 'Cola'}
-                </span>
-              )}
+              <span className={`px-1.5 py-0.5 rounded ${
+                order.cocinaStatus === 'listo' ? 'bg-[#F0FDF4] text-[#16A34A]' :
+                order.cocinaStatus === 'preparando' ? 'bg-[#FFFBEB] text-[#D97706]' :
+                'bg-[#F2F2F2] text-[#6B6B6B]'
+              }`}>
+                Cocina: {order.cocinaStatus === 'listo' ? 'Listo' :
+                         order.cocinaStatus === 'preparando' ? 'Prep.' : 'Cola'}
+              </span>
               {!allKitchensReady && (
                 <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
                   <AlertCircle className="h-2.5 w-2.5" />

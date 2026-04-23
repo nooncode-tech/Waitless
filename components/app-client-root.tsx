@@ -14,7 +14,7 @@ import type { UserRole } from '@/lib/store'
 import type { TenantBranding } from '@/lib/tenant-server'
 import type { ClienteUser } from '@/lib/cliente-auth'
 
-type AppView = 'landing' | 'login' | 'cliente-auth' | 'cliente' | 'admin' | 'mesero' | 'cocina_a' | 'cocina_b'
+type AppView = 'landing' | 'login' | 'cliente-auth' | 'cliente' | 'admin' | 'mesero' | 'cocina'
 
 interface AppContentProps {
   initialBranding: TenantBranding
@@ -172,19 +172,12 @@ function AppContent({ initialBranding }: AppContentProps) {
       }
       return <MeseroView onBack={handleLogout} />
 
-    case 'cocina_a':
-      if (currentUser.role !== 'cocina_a') {
+    case 'cocina':
+      if (currentUser.role !== 'cocina') {
         setView('login')
         return null
       }
-      return <KDSView kitchen="a" onBack={handleLogout} />
-
-    case 'cocina_b':
-      if (currentUser.role !== 'cocina_b') {
-        setView('login')
-        return null
-      }
-      return <KDSView kitchen="b" onBack={handleLogout} />
+      return <KDSView onBack={handleLogout} />
 
     default:
     return <LandingPage onLogin={() => setView('login')} />

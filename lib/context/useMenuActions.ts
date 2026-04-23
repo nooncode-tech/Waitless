@@ -3,7 +3,7 @@
 import { useCallback } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
 import type { AppState } from './types'
-import type { MenuItem, MenuCategory, TableConfig, TableState, Kitchen, Extra, RecipeIngredient } from '../store'
+import type { MenuItem, MenuCategory, TableConfig, TableState, Extra, RecipeIngredient } from '../store'
 import { generateId, canPrepareItem } from '../store'
 import { supabase } from '../supabase'
 import { uploadMenuImage, uploadMenuImages } from './sync'
@@ -13,6 +13,15 @@ type SetState = Dispatch<SetStateAction<AppState>>
 export function useMenuActions(state: AppState, setState: SetState) {
   const updateMenuItem = useCallback(
     async (itemId: string, updates: Partial<MenuItem>, imageFiles?: (File | null)[]) => {
+
+      // Optimistic update — reverted on error
+      const prevItems = state.menuItems
+      setState(prev => ({
+        ...prev,
+        menuItems: prev.menuItems.map(item =>
+          item.id === itemId ? { ...item, ...updates } : item
+        ),
+      }))
 
       let finalImagenes: string[] | undefined = updates.imagenes
 
@@ -44,29 +53,30 @@ export function useMenuActions(state: AppState, setState: SetState) {
       if (updates.stockCantidad !== undefined) payload.stock_cantidad = updates.stockCantidad
       if (updates.mostrarEnMenuDigital !== undefined) payload.mostrar_en_menu_digital = updates.mostrarEnMenuDigital
 
-      const { error } = await supabase
-        .from("menu_items")
-        .update(payload)
-        .eq("id", itemId)
+      const res = await fetch(`/api/admin/menu-items/${itemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
 
-      if (error) {
-        console.error("Error actualizando platillo:", error)
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}))
+        console.error("Error actualizando platillo:", json.error ?? res.status)
+        setState(prev => ({ ...prev, menuItems: prevItems }))
         return
       }
 
-      setState(prev => ({
-        ...prev,
-        menuItems: prev.menuItems.map(item =>
-          item.id === itemId
-            ? {
-                ...item,
-                ...updates,
-                imagen: primaryImage ?? item.imagen,
-                imagenes: finalImagenes ?? item.imagenes,
-              }
-            : item
-        )
-      }))
+      // Apply final image values if they changed during upload
+      if (finalImagenes !== undefined || primaryImage !== undefined) {
+        setState(prev => ({
+          ...prev,
+          menuItems: prev.menuItems.map(item =>
+            item.id === itemId
+              ? { ...item, imagen: primaryImage ?? item.imagen, imagenes: finalImagenes ?? item.imagenes }
+              : item
+          ),
+        }))
+      }
     },
     [setState]
   )
@@ -102,7 +112,6 @@ export function useMenuActions(state: AppState, setState: SetState) {
             stock_cantidad: item.stockCantidad ?? 0,
             mostrar_en_menu_digital: item.mostrarEnMenuDigital ?? true,
             category_id: item.categoria ?? null,
-            cocina: item.cocina ?? 'cocina_a',
             extras: item.extras ?? [],
             receta: item.receta ?? [],
             orden: item.orden ?? 0,
@@ -131,7 +140,6 @@ export function useMenuActions(state: AppState, setState: SetState) {
           stockHabilitado: data[0].stock_habilitado ?? false,
           stockCantidad: data[0].stock_cantidad ?? 0,
           mostrarEnMenuDigital: data[0].mostrar_en_menu_digital ?? true,
-          cocina: (data[0].cocina ?? 'cocina_a') as Kitchen,
           extras: (data[0].extras ?? []) as Extra[],
           receta: (data[0].receta ?? []) as RecipeIngredient[],
           orden: data[0].orden ?? 0,

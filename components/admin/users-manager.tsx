@@ -18,8 +18,7 @@ const ROLE_CONFIG: Record<UserRole, { label: string; icon: React.ReactNode; colo
   admin:    { label: 'Administrador', icon: <Shield className="h-3.5 w-3.5" />,    color: 'bg-primary text-primary-foreground' },
   manager:  { label: 'Manager',       icon: <User className="h-3.5 w-3.5" />,      color: 'bg-purple-600 text-white' },
   mesero:   { label: 'Mesero',        icon: <UserCheck className="h-3.5 w-3.5" />, color: 'bg-amber-500 text-white' },
-  cocina_a: { label: 'Cocina A',      icon: <ChefHat className="h-3.5 w-3.5" />,   color: 'bg-success text-success-foreground' },
-  cocina_b: { label: 'Cocina B',      icon: <ChefHat className="h-3.5 w-3.5" />,   color: 'bg-[#6B6B6B] text-white' },
+  cocina:   { label: 'Cocina',         icon: <ChefHat className="h-3.5 w-3.5" />,   color: 'bg-success text-success-foreground' },
 }
 
 // ── Helper: obtiene el token del usuario actual ───────────────────────────────

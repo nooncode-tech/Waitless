@@ -67,9 +67,8 @@ export async function POST(
     if (!menuItem) return null
 
     const disponible = (menuItem.available ?? menuItem.disponible ?? true) as boolean
-    const enMenuDigital = menuItem.mostrar_en_menu_digital !== false
     const conStock = menuItem.stock_habilitado ? (menuItem.stock_cantidad ?? 0) > 0 : true
-    if (!disponible || !enMenuDigital || !conStock) return null
+    if (!disponible || !conStock) return null
 
     const precioBase = Number(menuItem.price ?? menuItem.precio)
     const extrasValidados = (cartItem.extras ?? []).map(e => {
@@ -89,7 +88,6 @@ export async function POST(
         descripcion: ((menuItem.description ?? menuItem.descripcion) ?? '') as string,
         precio: precioBase,
         imagen: (menuItem.image ?? menuItem.imagen) ?? undefined,
-        cocina: menuItem.cocina ?? 'cocina_a',
         disponible: true,
         categoria: menuItem.category_id,
       },
@@ -97,8 +95,6 @@ export async function POST(
       extras: extrasValidados,
       notas: cartItem.notas,
       precioUnitario,
-      cocinaAStatus: 'en_cola',
-      cocinaBStatus: 'en_cola',
     }
   }).filter(Boolean)
 
@@ -131,7 +127,6 @@ export async function POST(
     items: orderItems,
     status: 'recibido',
     cocina_a_status: 'en_cola',
-    cocina_b_status: 'en_cola',
     nombre_cliente: body.nombreCliente?.trim() || null,
     telefono: body.telefono?.trim() || null,
     cancelado: false,

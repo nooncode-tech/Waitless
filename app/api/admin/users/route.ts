@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 })
   }
 
-  const VALID_ROLES = ['admin', 'manager', 'mesero', 'cocina_a', 'cocina_b']
+  const VALID_ROLES = ['admin', 'manager', 'mesero', 'cocina']
   if (!VALID_ROLES.includes(role)) {
     return NextResponse.json({ error: 'Rol inválido' }, { status: 400 })
   }
@@ -70,7 +70,7 @@ export async function PUT(req: NextRequest) {
   const profileUpdates: Record<string, unknown> = {}
   if (updates.nombre !== undefined) profileUpdates.nombre = updates.nombre
   if (updates.role !== undefined) {
-    const VALID_ROLES = ['admin', 'manager', 'mesero', 'cocina_a', 'cocina_b']
+    const VALID_ROLES = ['admin', 'manager', 'mesero', 'cocina']
     if (!VALID_ROLES.includes(updates.role)) {
       return NextResponse.json({ error: 'Rol inválido' }, { status: 400 })
     }

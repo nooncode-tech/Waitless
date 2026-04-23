@@ -24,9 +24,7 @@ export function ExpoView() {
     o =>
       o.status !== 'entregado' &&
       o.status !== 'cancelado' &&
-      (o.status === 'listo' ||
-        o.cocinaAStatus === 'listo' ||
-        o.cocinaBStatus === 'listo')
+      (o.status === 'listo' || o.cocinaStatus === 'listo')
   )
 
   // Group by mesa

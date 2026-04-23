@@ -282,6 +282,28 @@ export function ConfigManager() {
               />
               <p className="text-[9px] text-muted-foreground mt-0.5">URL pública de la imagen del logo</p>
             </div>
+            <div>
+              <Label className="text-[10px]">URL de portada</Label>
+              <Input
+                value={localConfig.coverUrl || ''}
+                onChange={(e) => setLocalConfig(prev => ({ ...prev, coverUrl: e.target.value }))}
+                placeholder="https://..."
+                className="h-8 text-xs"
+              />
+              <p className="text-[9px] text-muted-foreground mt-0.5">Imagen de encabezado del menú digital del cliente</p>
+            </div>
+            <div>
+              <Label className="text-[10px]">Descripción del restaurante</Label>
+              <textarea
+                value={localConfig.descripcion || ''}
+                onChange={(e) => setLocalConfig(prev => ({ ...prev, descripcion: e.target.value }))}
+                placeholder="Breve descripción de tu restaurante..."
+                rows={2}
+                maxLength={200}
+                className="w-full mt-0.5 rounded-md border border-input bg-background px-3 py-1.5 text-xs resize-none focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+              <p className="text-[9px] text-muted-foreground mt-0.5">Aparece debajo del nombre en el menú digital</p>
+            </div>
             <div className="grid grid-cols-3 gap-2">
               <div>
                 <Label className="text-[10px]">Color primario</Label>

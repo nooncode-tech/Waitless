@@ -24,36 +24,29 @@ import {
 } from '@/lib/store'
 
 interface KDSViewProps {
-  kitchen: 'a' | 'b'
   onBack: () => void
 }
 
 type KDSTab = 'queue' | 'preparing' | 'ready'
 
-export function KDSView({ kitchen, onBack }: KDSViewProps) {
+export function KDSView({ onBack }: KDSViewProps) {
   const { orders, updateKitchenStatus, config } = useApp()
   const [currentTime, setCurrentTime] = useState(new Date())
   const [activeTab, setActiveTab] = useState<KDSTab>('queue')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [pacingBlocked, setPacingBlocked] = useState(false)
-  
+
   useEffect(() => {
-    // Actualizar cada 30s para mantener los timers SLA precisos
     const interval = setInterval(() => setCurrentTime(new Date()), 30000)
     return () => clearInterval(interval)
   }, [])
-  
-  const kitchenKey = kitchen === 'a' ? 'cocina_a' : 'cocina_b'
-  const kitchenName = kitchen === 'a' ? 'Kitchen A' : 'Kitchen B'
-  const kitchenDesc = kitchen === 'a' ? 'Estación principal' : 'Estación secundaria'
-  
+
+  const kitchenName = 'Cocina'
+  const kitchenDesc = 'Estación de preparación'
+
   const relevantOrders = orders.filter(order => {
     if (order.status === 'entregado' || order.status === 'cancelado') return false
-    if (order.claimedByKitchen && order.claimedByKitchen !== kitchenKey) return false
-    const hasItems = order.items.some(
-      item => item.menuItem.cocina === kitchenKey || item.menuItem.cocina === 'ambas'
-    )
-    return hasItems
+    return true
   })
   
   const sortByArrivalTime = (orders: Order[]) => {
@@ -75,20 +68,9 @@ export function KDSView({ kitchen, onBack }: KDSViewProps) {
     })
   }
 
-  const queueOrders = sortBySLAPriority(relevantOrders.filter(o => {
-    const status = kitchen === 'a' ? o.cocinaAStatus : o.cocinaBStatus
-    return status === 'en_cola'
-  }))
-  
-  const preparingOrders = sortByArrivalTime(relevantOrders.filter(o => {
-    const status = kitchen === 'a' ? o.cocinaAStatus : o.cocinaBStatus
-    return status === 'preparando'
-  }))
-  
-  const readyOrders = sortByArrivalTime(relevantOrders.filter(o => {
-    const status = kitchen === 'a' ? o.cocinaAStatus : o.cocinaBStatus
-    return status === 'listo'
-  }))
+  const queueOrders = sortBySLAPriority(relevantOrders.filter(o => o.cocinaStatus === 'en_cola'))
+  const preparingOrders = sortByArrivalTime(relevantOrders.filter(o => o.cocinaStatus === 'preparando'))
+  const readyOrders = sortByArrivalTime(relevantOrders.filter(o => o.cocinaStatus === 'listo'))
   
   const handleStartOrder = (orderId: string) => {
     const maxPrep = config?.pacingMaxPreparando
@@ -97,18 +79,18 @@ export function KDSView({ kitchen, onBack }: KDSViewProps) {
       setTimeout(() => setPacingBlocked(false), 3000)
       return
     }
-    updateKitchenStatus(orderId, kitchen, 'preparando')
+    updateKitchenStatus(orderId, 'preparando')
   }
 
   const handleCompleteOrder = (orderId: string) => {
-    updateKitchenStatus(orderId, kitchen, 'listo')
+    updateKitchenStatus(orderId, 'listo')
   }
 
   // Fire all queued orders for a specific mesa at once
   const handleFireTable = (mesa: number) => {
     queueOrders
       .filter(o => o.mesa === mesa)
-      .forEach(o => updateKitchenStatus(o.id, kitchen, 'preparando'))
+      .forEach(o => updateKitchenStatus(o.id, 'preparando'))
   }
 
   // Tables with queued orders (for fire-by-table pacing)
@@ -116,11 +98,7 @@ export function KDSView({ kitchen, onBack }: KDSViewProps) {
     new Set(queueOrders.filter(o => o.mesa != null).map(o => o.mesa as number))
   ).sort((a, b) => a - b)
   
-  const getOrderItems = (order: Order) => {
-    return order.items.filter(
-      item => item.menuItem.cocina === kitchenKey || item.menuItem.cocina === 'ambas'
-    )
-  }
+  const getOrderItems = (order: Order) => order.items
   
   const getTimeColor = (createdAt: Date) => {
     const minutes = Math.floor((currentTime.getTime() - new Date(createdAt).getTime()) / 1000 / 60)
