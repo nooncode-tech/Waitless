@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Settings, Percent, Clock, CreditCard, Bell, MapPin, Save, Check, AlertTriangle, X, Star, ChefHat, Palette, Store, Power, Eye, EyeOff } from 'lucide-react'
+import { Settings, Percent, Clock, CreditCard, Bell, MapPin, Save, Check, AlertTriangle, X, Star, ChefHat, Palette, Store, Power, Eye, EyeOff, Trash2 } from 'lucide-react'
 import { useApp } from '@/lib/context'
+import { DeleteAccountDialog } from '@/components/admin/delete-account-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -24,6 +25,7 @@ export function ConfigManager() {
   const [selectedTables, setSelectedTables] = useState<number[]>([])
   const [storeSaving, setStoreSaving] = useState(false)
   const [storeSaved, setStoreSaved] = useState(false)
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false)
 
   // Ensure all config fields have defaults for backwards compatibility
   const safeConfig = {
@@ -715,7 +717,41 @@ export function ConfigManager() {
             })()}
           </CardContent>
         </Card>
+
+        {/* ── Zona de peligro ── */}
+        <Card className="border-red-200 bg-red-50/30">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold text-red-700 flex items-center gap-2">
+              <Trash2 className="h-4 w-4" />
+              Zona de peligro
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-gray-800">Eliminar cuenta</p>
+                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                  Elimina permanentemente tu cuenta, menú, órdenes y todos los datos del restaurante.<br />
+                  Solo disponible si no tenés órdenes activas ni mesas abiertas.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0 border-red-300 text-red-700 hover:bg-red-100 hover:border-red-400 bg-white"
+                onClick={() => setShowDeleteAccount(true)}
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                Eliminar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {showDeleteAccount && (
+        <DeleteAccountDialog onClose={() => setShowDeleteAccount(false)} />
+      )}
     </div>
   )
 }
