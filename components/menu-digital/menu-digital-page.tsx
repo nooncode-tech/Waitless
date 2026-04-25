@@ -559,26 +559,26 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       <div className="border-b border-gray-100 last:border-0">
         {/* Main row */}
         <div
-          className="flex items-start gap-3 p-4 cursor-pointer active:bg-gray-50 transition-colors"
+          className="flex items-center gap-3 px-4 py-3 cursor-pointer active:bg-gray-50 transition-colors"
           onClick={() => item.extras.length > 0 ? setExpandedItem(isExpanded ? null : item.id) : addToCart(item, [])}
         >
           {/* Text side */}
-          <div className="flex-1 min-w-0 pt-0.5">
-            <p className="font-bold text-black text-[15px] leading-tight" style={{ letterSpacing: '-0.01em' }}>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-black text-sm leading-tight" style={{ letterSpacing: '-0.01em' }}>
               {item.nombre}
             </p>
             {item.descripcion && (
-              <p className="text-xs text-gray-500 mt-1 leading-relaxed line-clamp-2">
+              <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">
                 {item.descripcion}
               </p>
             )}
-            <div className="flex items-center gap-3 mt-2.5">
+            <div className="flex items-center gap-2 mt-1.5">
               <p className="font-black text-sm" style={{ letterSpacing: '-0.02em', color: primary }}>
                 {formatPrice(item.precio + extrasPrice)}
               </p>
               {item.extras.length > 0 && (
                 <span className="text-[10px] font-semibold text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">
-                  {isExpanded ? 'Cerrar opciones' : 'Personalizar'}
+                  {isExpanded ? 'Cerrar' : 'Personalizar'}
                 </span>
               )}
             </div>
@@ -587,7 +587,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
           {/* Image + add button */}
           <div className="shrink-0 relative">
             {foto ? (
-              <div className="relative w-24 h-20 rounded-2xl overflow-hidden shadow-sm">
+              <div className="relative w-20 h-16 rounded-xl overflow-hidden shadow-sm">
                 <img
                   src={foto}
                   alt={item.nombre}
@@ -595,7 +595,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
                   style={{ backgroundColor: item.colorFondo ?? '#f0f0f0' }}
                 />
                 {item.colorBorde && (
-                  <div className="absolute inset-0 rounded-2xl" style={{ boxShadow: `inset 0 0 0 2px ${item.colorBorde}` }} />
+                  <div className="absolute inset-0 rounded-xl" style={{ boxShadow: `inset 0 0 0 2px ${item.colorBorde}` }} />
                 )}
                 {/* Add button overlaid on image */}
                 {item.extras.length === 0 && (
@@ -686,7 +686,10 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
     <div className="min-h-screen bg-gray-50 flex flex-col" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden" style={{ minHeight: 220 }}>
+      <div
+        className="relative overflow-hidden"
+        style={{ height: data.coverUrl ? 180 : 120 }}
+      >
         {/* Background */}
         {data.coverUrl ? (
           <img
@@ -697,51 +700,46 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
         ) : (
           <div
             className="absolute inset-0"
-            style={{
-              background: `linear-gradient(135deg, ${primary}ee 0%, #000000 100%)`,
-            }}
+            style={{ background: `linear-gradient(135deg, ${primary}dd 0%, #000000 100%)` }}
           />
         )}
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
         {/* Content */}
-        <div className="relative px-5 pt-10 pb-6 flex flex-col justify-end" style={{ minHeight: 220 }}>
-          {/* Status badge */}
+        <div className="relative h-full flex flex-col justify-end px-5 pb-4">
           {cerrada && (
-            <div className="absolute top-5 right-5 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full flex items-center gap-1.5">
+            <div className="absolute top-3 right-4 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full flex items-center gap-1.5">
               <Clock className="w-3 h-3" />
               Cerrada
             </div>
           )}
 
-          {/* Logo + info */}
-          <div className="flex items-end gap-4 mt-auto">
+          <div className="flex items-center gap-3">
             {data.logoUrl ? (
               <img
                 src={data.logoUrl}
                 alt={data.restaurantName}
-                className="w-16 h-16 rounded-2xl object-cover shrink-0 border-2 border-white/20 shadow-xl"
+                className="w-12 h-12 rounded-xl object-cover shrink-0 border-2 border-white/20 shadow-lg"
               />
             ) : (
               <div
-                className="w-16 h-16 rounded-2xl shrink-0 flex items-center justify-center border-2 border-white/20 shadow-xl"
-                style={{ backgroundColor: `${primary}33`, backdropFilter: 'blur(8px)' }}
+                className="w-12 h-12 rounded-xl shrink-0 flex items-center justify-center border-2 border-white/20 shadow-lg"
+                style={{ backgroundColor: `${primary}44`, backdropFilter: 'blur(8px)' }}
               >
-                <span className="text-white font-black text-2xl" style={{ letterSpacing: '-0.03em' }}>
+                <span className="text-white font-black text-xl" style={{ letterSpacing: '-0.03em' }}>
                   {data.restaurantName.charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
-            <div className="min-w-0 pb-1">
+            <div className="min-w-0">
               <h1
-                className="font-black text-white text-2xl leading-tight"
-                style={{ letterSpacing: '-0.03em', textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}
+                className="font-black text-white text-xl leading-tight"
+                style={{ letterSpacing: '-0.03em', textShadow: '0 2px 6px rgba(0,0,0,0.5)' }}
               >
                 {data.restaurantName}
               </h1>
               {data.descripcion && (
-                <p className="text-white/60 text-xs mt-1 leading-relaxed line-clamp-2">
+                <p className="text-white/55 text-[11px] mt-0.5 line-clamp-1">
                   {data.descripcion}
                 </p>
               )}
@@ -780,7 +778,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       {/* ── Sticky category tabs ──────────────────────────────────────────── */}
       {allCategories.length > 0 && (
         <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
-          <div className="flex items-center gap-2 px-4 py-3 max-w-2xl mx-auto">
+          <div className="flex items-center gap-2 px-4 py-2 max-w-2xl mx-auto">
             <div
               ref={tabsRef}
               className="flex gap-1.5 overflow-x-auto flex-1"
@@ -816,7 +814,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
 
       {/* ── Menu sections ────────────────────────────────────────────────── */}
       <main className="flex-1 w-full pb-32 max-w-2xl mx-auto w-full">
-        <div className="px-4 pt-4 space-y-4">
+        <div className="px-4 pt-3 space-y-3">
 
           {allCategories.map(cat => {
             const catItems = itemsByCategory(cat.id)
@@ -827,8 +825,8 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
                 ref={el => { categoryRefs.current[cat.id] = el as HTMLDivElement | null }}
               >
                 <h2
-                  className="font-black text-black text-base mb-3 px-1"
-                  style={{ letterSpacing: '-0.025em' }}
+                  className="font-black text-black text-sm mb-2 px-1"
+                  style={{ letterSpacing: '-0.02em' }}
                 >
                   {cat.nombre}
                 </h2>
