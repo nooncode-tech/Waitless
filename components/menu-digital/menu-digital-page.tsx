@@ -584,67 +584,36 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
             </div>
           </div>
 
-          {/* Image + add button */}
-          <div className="shrink-0 relative">
+          {/* Image placeholder + add button — always same size */}
+          <div className="shrink-0 relative w-20 h-16 rounded-xl overflow-hidden"
+            style={{ backgroundColor: item.colorFondo ?? '#f3f4f6' }}
+          >
             {foto ? (
-              <div className="relative w-20 h-16 rounded-xl overflow-hidden shadow-sm">
-                <img
-                  src={foto}
-                  alt={item.nombre}
-                  className="w-full h-full object-cover"
-                  style={{ backgroundColor: item.colorFondo ?? '#f0f0f0' }}
-                />
-                {item.colorBorde && (
-                  <div className="absolute inset-0 rounded-xl" style={{ boxShadow: `inset 0 0 0 2px ${item.colorBorde}` }} />
-                )}
-                {/* Add button overlaid on image */}
-                {item.extras.length === 0 && (
-                  <button
-                    onClick={e => { e.stopPropagation(); addToCart(item, []) }}
-                    className="absolute bottom-1.5 right-1.5 w-7 h-7 rounded-full flex items-center justify-center text-white shadow-lg transition-transform active:scale-90"
-                    style={{ backgroundColor: primary }}
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                  </button>
-                )}
-              </div>
+              <img
+                src={foto}
+                alt={item.nombre}
+                className="w-full h-full object-cover"
+              />
             ) : (
-              /* No image: floating add button */
-              item.extras.length === 0 && (
-                <button
-                  onClick={e => { e.stopPropagation(); addToCart(item, []) }}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-white shadow-sm transition-transform active:scale-90 mt-1"
-                  style={{ backgroundColor: primary }}
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
-              )
-            )}
-
-            {/* For items with extras — show add button separately */}
-            {item.extras.length > 0 && foto && (
-              <div className="mt-2 flex justify-end">
-                <button
-                  onClick={e => { e.stopPropagation(); addToCart(item, selectedExtras) }}
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow-sm transition-transform active:scale-90"
-                  style={{ backgroundColor: primary }}
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                </button>
+              <div className="w-full h-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 19.5h16.5a1.5 1.5 0 001.5-1.5v-13.5a1.5 1.5 0 00-1.5-1.5H3.75a1.5 1.5 0 00-1.5 1.5v13.5a1.5 1.5 0 001.5 1.5z" />
+                </svg>
               </div>
             )}
-          </div>
-
-          {/* Add button for text-only items with extras */}
-          {item.extras.length > 0 && !foto && (
+            {item.colorBorde && (
+              <div className="absolute inset-0 rounded-xl" style={{ boxShadow: `inset 0 0 0 2px ${item.colorBorde}` }} />
+            )}
+            {/* Add button always overlaid on bottom-right */}
             <button
               onClick={e => { e.stopPropagation(); addToCart(item, selectedExtras) }}
-              className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white shadow-sm transition-transform active:scale-90 mt-1"
+              className="absolute bottom-1 right-1 w-6 h-6 rounded-full flex items-center justify-center text-white shadow-md transition-transform active:scale-90"
               style={{ backgroundColor: primary }}
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3 w-3" />
             </button>
-          )}
+          </div>
+
         </div>
 
         {/* Extras panel */}
