@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { ShoppingCart, X, Plus, Minus, MessageCircle, Check, Phone, ChevronLeft, ArrowRight } from 'lucide-react'
+import { ShoppingCart, X, Plus, Minus, MessageCircle, Check, Phone, ChevronLeft, ArrowRight, Clock } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -284,7 +284,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="rounded-2xl overflow-hidden border border-black/[0.06] bg-white shadow-sm">
+              <div className="space-y-3">
                 <div>
                   <label className="block text-[11px] font-semibold text-black/40 uppercase tracking-wider mb-1.5">Nombre</label>
                   <input
@@ -352,7 +352,6 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
         </header>
 
         <div className="flex-1 overflow-y-auto pb-28 max-w-lg mx-auto w-full">
-          {/* Resumen */}
           <div className="px-5 pt-5">
             <p className="text-[11px] font-semibold text-black/30 uppercase tracking-wider mb-3">Tu pedido</p>
             <div className="rounded-2xl border border-black/8 overflow-hidden">
@@ -377,7 +376,6 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
             </div>
           </div>
 
-          {/* Datos */}
           <div className="px-5 mt-6">
             <p className="text-[11px] font-semibold text-black/30 uppercase tracking-wider mb-3">Tus datos <span className="normal-case font-normal">(opcional)</span></p>
             <div className="space-y-3">
@@ -396,7 +394,6 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
             </div>
           </div>
 
-          {/* Pago */}
           <div className="px-5 mt-6">
             <p className="text-[11px] font-semibold text-black/30 uppercase tracking-wider mb-3">Método de pago</p>
             <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${metodos.length}, 1fr)` }}>
@@ -417,7 +414,6 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
             </div>
           </div>
 
-          {/* Notas */}
           <div className="px-5 mt-6">
             <p className="text-[11px] font-semibold text-black/30 uppercase tracking-wider mb-3">Notas <span className="normal-case font-normal">(opcional)</span></p>
             <textarea
@@ -486,7 +482,6 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
                 return (
                   <div key={i} className="flex items-center gap-4 px-5 py-4 border-b border-black/5 last:border-0">
                     {foto && (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={foto}
                         alt={entry.item.nombre}
@@ -546,12 +541,13 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
     )
   }
 
-  // ─── ITEM CARD (grid) ────────────────────────────────────────────────────────
+  // ─── ITEM CARD ───────────────────────────────────────────────────────────────
 
   const ItemCard = ({ item }: { item: MenuItem }) => {
     const isExpanded = expandedItem === item.id
     const [selectedExtras, setSelectedExtras] = useState<MenuExtra[]>([])
     const foto = item.imagenes[0] ?? item.imagen
+    const extrasPrice = selectedExtras.reduce((s, e) => s + e.precio, 0)
 
     const toggleExtra = (extra: MenuExtra) => {
       setSelectedExtras(prev =>
@@ -559,64 +555,102 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       )
     }
 
-    const extrasPrice = selectedExtras.reduce((s, e) => s + e.precio, 0)
-
     return (
-      <div className="bg-white border-b border-black/5 last:border-0">
-        {/* Fila principal */}
-        <div className="flex items-center gap-3 px-4 py-3">
-          {/* Imagen */}
-          <div
-            className="shrink-0 rounded-xl overflow-hidden relative"
-            style={{ width: 72, height: 72, backgroundColor: item.colorFondo ?? '#f0f0f0' }}
-          >
-            {foto && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={foto} alt={item.nombre} className="w-full h-full object-cover" />
-            )}
-            {item.colorBorde && (
-              <div className="absolute inset-0 rounded-xl" style={{ boxShadow: `inset 0 0 0 2px ${item.colorBorde}` }} />
-            )}
-          </div>
-
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-black text-sm leading-tight" style={{ letterSpacing: '-0.01em' }}>
+      <div className="border-b border-gray-100 last:border-0">
+        {/* Main row */}
+        <div
+          className="flex items-start gap-3 p-4 cursor-pointer active:bg-gray-50 transition-colors"
+          onClick={() => item.extras.length > 0 ? setExpandedItem(isExpanded ? null : item.id) : addToCart(item, [])}
+        >
+          {/* Text side */}
+          <div className="flex-1 min-w-0 pt-0.5">
+            <p className="font-bold text-black text-[15px] leading-tight" style={{ letterSpacing: '-0.01em' }}>
               {item.nombre}
             </p>
             {item.descripcion && (
-              <p className="text-[11px] text-black/40 mt-0.5 line-clamp-2 leading-relaxed">
+              <p className="text-xs text-gray-500 mt-1 leading-relaxed line-clamp-2">
                 {item.descripcion}
               </p>
             )}
-            <div className="flex items-center gap-2 mt-1.5">
+            <div className="flex items-center gap-3 mt-2.5">
               <p className="font-black text-sm" style={{ letterSpacing: '-0.02em', color: primary }}>
                 {formatPrice(item.precio + extrasPrice)}
               </p>
               {item.extras.length > 0 && (
-                <button
-                  onClick={() => setExpandedItem(isExpanded ? null : item.id)}
-                  className="text-[10px] text-black/35 underline underline-offset-2"
-                >
-                  {isExpanded ? 'Cerrar' : '+ opciones'}
-                </button>
+                <span className="text-[10px] font-semibold text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">
+                  {isExpanded ? 'Cerrar opciones' : 'Personalizar'}
+                </span>
               )}
             </div>
           </div>
 
-          {/* Botón agregar */}
-          <button
-            onClick={() => addToCart(item, selectedExtras)}
-            className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white transition-opacity hover:opacity-80 active:scale-95"
-            style={{ backgroundColor: primary }}
-          >
-            <Plus className="h-4 w-4" />
-          </button>
+          {/* Image + add button */}
+          <div className="shrink-0 relative">
+            {foto ? (
+              <div className="relative w-24 h-20 rounded-2xl overflow-hidden shadow-sm">
+                <img
+                  src={foto}
+                  alt={item.nombre}
+                  className="w-full h-full object-cover"
+                  style={{ backgroundColor: item.colorFondo ?? '#f0f0f0' }}
+                />
+                {item.colorBorde && (
+                  <div className="absolute inset-0 rounded-2xl" style={{ boxShadow: `inset 0 0 0 2px ${item.colorBorde}` }} />
+                )}
+                {/* Add button overlaid on image */}
+                {item.extras.length === 0 && (
+                  <button
+                    onClick={e => { e.stopPropagation(); addToCart(item, []) }}
+                    className="absolute bottom-1.5 right-1.5 w-7 h-7 rounded-full flex items-center justify-center text-white shadow-lg transition-transform active:scale-90"
+                    style={{ backgroundColor: primary }}
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              /* No image: floating add button */
+              item.extras.length === 0 && (
+                <button
+                  onClick={e => { e.stopPropagation(); addToCart(item, []) }}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-white shadow-sm transition-transform active:scale-90 mt-1"
+                  style={{ backgroundColor: primary }}
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              )
+            )}
+
+            {/* For items with extras — show add button separately */}
+            {item.extras.length > 0 && foto && (
+              <div className="mt-2 flex justify-end">
+                <button
+                  onClick={e => { e.stopPropagation(); addToCart(item, selectedExtras) }}
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-white shadow-sm transition-transform active:scale-90"
+                  style={{ backgroundColor: primary }}
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Add button for text-only items with extras */}
+          {item.extras.length > 0 && !foto && (
+            <button
+              onClick={e => { e.stopPropagation(); addToCart(item, selectedExtras) }}
+              className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white shadow-sm transition-transform active:scale-90 mt-1"
+              style={{ backgroundColor: primary }}
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          )}
         </div>
 
-        {/* Extras expandibles */}
+        {/* Extras panel */}
         {isExpanded && item.extras.length > 0 && (
-          <div className="px-4 pb-3">
+          <div className="px-4 pb-4 bg-gray-50/80">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Personalizar</p>
             <div className="grid grid-cols-2 gap-1.5">
               {item.extras.map(extra => {
                 const checked = selectedExtras.some(e => e.id === extra.id)
@@ -624,15 +658,15 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
                   <button
                     key={extra.id}
                     onClick={() => toggleExtra(extra)}
-                    className="flex justify-between items-center px-2.5 py-2 rounded-lg border text-[11px] font-semibold transition-all"
+                    className="flex justify-between items-center px-3 py-2.5 rounded-xl border text-[11px] font-semibold transition-all"
                     style={
                       checked
                         ? { borderColor: primary, backgroundColor: primary, color: '#fff' }
-                        : { borderColor: 'rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.65)', backgroundColor: 'transparent' }
+                        : { borderColor: 'rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.65)', backgroundColor: '#fff' }
                     }
                   >
                     <span className="truncate mr-1">{extra.nombre}</span>
-                    <span className="shrink-0">+{formatPrice(extra.precio)}</span>
+                    <span className="shrink-0 opacity-70">+{formatPrice(extra.precio)}</span>
                   </button>
                 )
               })}
@@ -646,14 +680,107 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
   // ─── MAIN MENU ───────────────────────────────────────────────────────────────
 
   const allCategories = data.categories
+  const cerrada = data.tiendaAbierta === false
 
   return (
-    <div className="min-h-screen bg-[#f7f7f7] flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
 
-      {/* ── Sticky category tabs ────────────────────────────────────────────── */}
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      <div className="relative overflow-hidden" style={{ minHeight: 220 }}>
+        {/* Background */}
+        {data.coverUrl ? (
+          <img
+            src={data.coverUrl}
+            alt="Portada"
+            className={`absolute inset-0 w-full h-full object-cover ${cerrada ? 'grayscale' : ''}`}
+          />
+        ) : (
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(135deg, ${primary}ee 0%, #000000 100%)`,
+            }}
+          />
+        )}
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" />
+
+        {/* Content */}
+        <div className="relative px-5 pt-10 pb-6 flex flex-col justify-end" style={{ minHeight: 220 }}>
+          {/* Status badge */}
+          {cerrada && (
+            <div className="absolute top-5 right-5 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full flex items-center gap-1.5">
+              <Clock className="w-3 h-3" />
+              Cerrada
+            </div>
+          )}
+
+          {/* Logo + info */}
+          <div className="flex items-end gap-4 mt-auto">
+            {data.logoUrl ? (
+              <img
+                src={data.logoUrl}
+                alt={data.restaurantName}
+                className="w-16 h-16 rounded-2xl object-cover shrink-0 border-2 border-white/20 shadow-xl"
+              />
+            ) : (
+              <div
+                className="w-16 h-16 rounded-2xl shrink-0 flex items-center justify-center border-2 border-white/20 shadow-xl"
+                style={{ backgroundColor: `${primary}33`, backdropFilter: 'blur(8px)' }}
+              >
+                <span className="text-white font-black text-2xl" style={{ letterSpacing: '-0.03em' }}>
+                  {data.restaurantName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+            <div className="min-w-0 pb-1">
+              <h1
+                className="font-black text-white text-2xl leading-tight"
+                style={{ letterSpacing: '-0.03em', textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}
+              >
+                {data.restaurantName}
+              </h1>
+              {data.descripcion && (
+                <p className="text-white/60 text-xs mt-1 leading-relaxed line-clamp-2">
+                  {data.descripcion}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── WhatsApp CTA ─────────────────────────────────────────────────── */}
+      {data.whatsappNumero && (
+        <div className="bg-white px-4 py-3 border-b border-gray-100">
+          <a
+            href={`https://wa.me/${data.whatsappNumero.replace(/\D/g, '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full h-11 rounded-xl text-sm font-semibold text-white max-w-lg mx-auto"
+            style={{ backgroundColor: '#25D366' }}
+          >
+            <Phone className="h-4 w-4" />
+            Contactar por WhatsApp
+          </a>
+        </div>
+      )}
+
+      {/* ── Tienda cerrada banner ─────────────────────────────────────────── */}
+      {cerrada && (
+        <div className="bg-red-50 border-b border-red-100 px-5 py-3 flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+          <div>
+            <p className="text-xs font-bold text-red-700">Tienda cerrada temporalmente</p>
+            <p className="text-[10px] text-red-400 mt-0.5">Por el momento no aceptamos pedidos. Volvé más tarde.</p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Sticky category tabs ──────────────────────────────────────────── */}
       {allCategories.length > 0 && (
-        <header className="sticky top-0 z-20 bg-white border-b border-black/5">
-          <div className="flex items-center gap-2 px-4 py-2.5">
+        <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
+          <div className="flex items-center gap-2 px-4 py-3 max-w-2xl mx-auto">
             <div
               ref={tabsRef}
               className="flex gap-1.5 overflow-x-auto flex-1"
@@ -666,11 +793,11 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
                     setActiveCategory(cat.id)
                     categoryRefs.current[cat.id]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                   }}
-                  className="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all"
+                  className="shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap"
                   style={
                     activeCategory === cat.id
                       ? { backgroundColor: '#000', color: '#fff' }
-                      : { backgroundColor: 'rgba(0,0,0,0.06)', color: 'rgba(0,0,0,0.45)' }
+                      : { backgroundColor: 'rgba(0,0,0,0.05)', color: 'rgba(0,0,0,0.45)' }
                   }
                 >
                   {cat.nombre}
@@ -679,137 +806,70 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
             </div>
             <button
               onClick={() => setScreen('mensaje')}
-              className="shrink-0 w-8 h-8 rounded-xl border border-black/10 flex items-center justify-center hover:bg-black/5 transition-colors"
+              className="shrink-0 w-8 h-8 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
             >
-              <MessageCircle className="h-4 w-4 text-black" />
+              <MessageCircle className="h-4 w-4 text-gray-500" />
             </button>
           </div>
-        </header>
+        </div>
       )}
 
-      {/* ── Items grid ─────────────────────────────────────────────────────── */}
-      <main className="flex-1 w-full pb-28">
+      {/* ── Menu sections ────────────────────────────────────────────────── */}
+      <main className="flex-1 w-full pb-32 max-w-2xl mx-auto w-full">
+        <div className="px-4 pt-4 space-y-4">
 
-        {/* ── Tienda cerrada banner ─────────────────────────────────────────── */}
-        {data.tiendaAbierta === false && (
-          <div className="bg-red-50 border-b border-red-200 px-5 py-3 flex items-center gap-2.5">
-            <span className="text-base">🔴</span>
-            <div>
-              <p className="text-xs font-bold text-red-700">Tienda cerrada</p>
-              <p className="text-[10px] text-red-500">Por el momento no aceptamos pedidos. Volvé más tarde.</p>
-            </div>
-          </div>
-        )}
-
-        {/* ── Profile hero ──────────────────────────────────────────────────── */}
-        <div className="bg-white mb-4">
-          {/* Cover image */}
-          {data.coverUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={data.coverUrl}
-              alt="Portada"
-              className="w-full object-cover"
-              style={{ height: 180 }}
-            />
-          ) : (
-            <div className="w-full bg-black/5" style={{ height: 100 }} />
-          )}
-
-          {/* Profile block */}
-          <div className="px-5 pb-5 pt-4 flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-              {data.logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={data.logoUrl}
-                  alt={data.restaurantName}
-                  className="w-14 h-14 rounded-2xl object-cover shrink-0 border border-black/8"
-                />
-              ) : (
-                <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center shrink-0">
-                  <span className="text-white font-black text-xl" style={{ letterSpacing: '-0.03em' }}>
-                    {data.restaurantName.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
-              <div className="min-w-0">
-                <h1 className="font-black text-black text-lg leading-tight" style={{ letterSpacing: '-0.03em' }}>
-                  {data.restaurantName}
-                </h1>
-                {data.descripcion && (
-                  <p className="text-xs text-black/45 mt-0.5 leading-relaxed line-clamp-2">
-                    {data.descripcion}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {data.whatsappNumero && (
-              <a
-                href={`https://wa.me/${data.whatsappNumero.replace(/\D/g, '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full h-11 rounded-xl text-sm font-semibold text-white"
-                style={{ backgroundColor: '#25D366' }}
+          {allCategories.map(cat => {
+            const catItems = itemsByCategory(cat.id)
+            if (catItems.length === 0) return null
+            return (
+              <section
+                key={cat.id}
+                ref={el => { categoryRefs.current[cat.id] = el as HTMLDivElement | null }}
               >
-                <Phone className="h-4 w-4" />
-                Contactar por WhatsApp
-                <span className="text-white/70 text-xs font-normal ml-1">{data.whatsappNumero}</span>
-              </a>
-            )}
-          </div>
-        </div>
+                <h2
+                  className="font-black text-black text-base mb-3 px-1"
+                  style={{ letterSpacing: '-0.025em' }}
+                >
+                  {cat.nombre}
+                </h2>
+                <div className="rounded-2xl overflow-hidden bg-white shadow-sm border border-gray-100">
+                  {catItems.map(item => <ItemCard key={item.id} item={item} />)}
+                </div>
+              </section>
+            )
+          })}
 
-        <div className="px-4">
-        {allCategories.map(cat => {
-          const catItems = itemsByCategory(cat.id)
-          if (catItems.length === 0) return null
-          return (
-            <section
-              key={cat.id}
-              ref={el => { categoryRefs.current[cat.id] = el as HTMLDivElement | null }}
-              className="pt-6"
-            >
-              <h2 className="font-black text-black text-base mb-3" style={{ letterSpacing: '-0.025em' }}>
-                {cat.nombre}
+          {uncategorized.length > 0 && (
+            <section>
+              <h2 className="font-black text-black text-base mb-3 px-1" style={{ letterSpacing: '-0.025em' }}>
+                Otros
               </h2>
-              <div className="rounded-2xl overflow-hidden border border-black/[0.06] bg-white shadow-sm">
-                {catItems.map(item => <ItemCard key={item.id} item={item} />)}
+              <div className="rounded-2xl overflow-hidden bg-white shadow-sm border border-gray-100">
+                {uncategorized.map(item => <ItemCard key={item.id} item={item} />)}
               </div>
             </section>
-          )
-        })}
+          )}
 
-        {uncategorized.length > 0 && (
-          <section className="pt-6">
-            <h2 className="font-black text-black text-base mb-3" style={{ letterSpacing: '-0.025em' }}>Otros</h2>
-            <div className="rounded-2xl overflow-hidden border border-black/[0.06] bg-white shadow-sm">
-              {uncategorized.map(item => <ItemCard key={item.id} item={item} />)}
-            </div>
-          </section>
-        )}
-
-        {data.poweredByWaitless && (
-          <p className="text-center text-[10px] text-black/20 tracking-widest uppercase mt-10 pb-2">
-            Powered by WAITLESS
-          </p>
-        )}
-        </div>{/* /px-4 */}
+          {data.poweredByWaitless && (
+            <p className="text-center text-[10px] text-black/20 tracking-widest uppercase pt-4 pb-2">
+              Powered by WAITLESS
+            </p>
+          )}
+        </div>
       </main>
 
-      {/* ── Floating cart ──────────────────────────────────────────────────── */}
-      {cartCount > 0 && data.tiendaAbierta !== false && (
+      {/* ── Floating cart button ──────────────────────────────────────────── */}
+      {cartCount > 0 && !cerrada && (
         <div className="fixed bottom-6 left-0 right-0 flex justify-center z-30 px-4">
           <button
             onClick={() => setScreen('cart')}
-            className="w-full flex items-center justify-between px-5 rounded-2xl shadow-2xl shadow-black/20 text-white transition-transform hover:scale-[1.01] active:scale-[0.99]"
+            className="w-full max-w-sm flex items-center justify-between px-5 rounded-2xl shadow-2xl shadow-black/25 text-white transition-all hover:scale-[1.01] active:scale-[0.99]"
             style={{ backgroundColor: '#000', height: '56px' }}
           >
             <span className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center text-xs font-black">
               {cartCount}
             </span>
-            <span className="text-sm font-bold">Ver carrito</span>
+            <span className="text-sm font-bold tracking-tight">Ver carrito</span>
             <span className="font-black text-sm" style={{ letterSpacing: '-0.02em' }}>{formatPrice(cartTotal)}</span>
           </button>
         </div>
