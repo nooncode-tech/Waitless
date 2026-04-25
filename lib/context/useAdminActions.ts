@@ -92,26 +92,12 @@ export function useAdminActions(state: AppState, setState: SetState) {
     if (updates.autoHorarioCierre !== undefined)            dbUpdates.auto_horario_cierre = updates.autoHorarioCierre
 
     if (Object.keys(dbUpdates).length > 0) {
-      const configTenantId = state.currentUser?.tenantId
-      const configUpdateQuery = supabase.from('app_config').update(dbUpdates)
-      if (configTenantId) {
-        configUpdateQuery.eq('tenant_id', configTenantId).then(() => {})
-      } else {
-        // Single-tenant: compatibilidad con fila legacy id='default'
-        configUpdateQuery.eq('id', 'default').then(() => {})
-      }
-      executeOrQueue({
-        table: 'audit_logs',
-        type: 'insert',
-        data: {
-          id: generateId(),
-          user_id: state.currentUser?.id ?? 'unknown',
-          accion: 'actualizar_config',
-          detalles: `Campos: ${Object.keys(dbUpdates).join(', ')}`,
-          entidad: 'app_config',
-          entidad_id: configTenantId ?? 'default',
-        },
-      })
+      // Usar el API route (supabaseAdmin) para bypasear RLS
+      fetch('/api/admin/config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dbUpdates),
+      }).catch(err => console.error('[updateConfig] Error persistiendo config:', err))
     }
   }, [state.currentUser, setState])
 
