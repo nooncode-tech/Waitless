@@ -778,7 +778,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       {/* ── Sticky category tabs ──────────────────────────────────────────── */}
       {allCategories.length > 0 && (
         <div className="sticky top-0 z-20 bg-white border-b border-gray-100 shadow-sm">
-          <div className="flex items-center gap-2 px-4 py-2 max-w-2xl mx-auto">
+          <div className="flex items-center gap-2 px-4 py-2">
             <div
               ref={tabsRef}
               className="flex gap-1.5 overflow-x-auto flex-1"
@@ -813,7 +813,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       )}
 
       {/* ── Menu sections ────────────────────────────────────────────────── */}
-      <main className="flex-1 w-full pb-32 max-w-2xl mx-auto w-full">
+      <main className="flex-1 w-full pb-32">
         <div className="px-4 pt-3 space-y-3">
 
           {allCategories.map(cat => {
