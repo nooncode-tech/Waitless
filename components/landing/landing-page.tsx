@@ -268,6 +268,10 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
           {/* Desktop actions */}
           <div className="hidden md:flex items-center gap-2">
+            <a href="/explore"
+              className={`text-sm font-medium transition-colors px-3 py-2 cursor-pointer ${navMuted}`}>
+              Explorar restaurantes
+            </a>
             <button onClick={onLogin}
               className={`text-sm font-medium transition-colors px-3 py-2 cursor-pointer ${navMuted}`}>
               Iniciar sesión
