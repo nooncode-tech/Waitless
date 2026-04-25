@@ -363,6 +363,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
             // Single-tenant: compatibilidad con fila legacy id='default'
             configQuery = configQuery.eq('id', 'default')
           }
+
+          // Cargar nombre del tenant como fallback para restaurantName
+          let tenantNombre: string | undefined
+          if (user.tenantId) {
+            const { data: tenantRow } = await supabase
+              .from('tenants')
+              .select('nombre')
+              .eq('id', user.tenantId)
+              .single()
+            tenantNombre = (tenantRow?.nombre as string | undefined) ?? undefined
+          }
+
           const { data: configRow } = await configQuery.single()
           if (configRow) {
             setState(prev => ({
@@ -380,7 +392,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 googleReviewUrl: configRow.google_review_url ?? prev.config.googleReviewUrl,
                 pacingMaxPreparando: configRow.pacing_max_preparando ?? prev.config.pacingMaxPreparando,
                 // P2-1: White-label branding
-                restaurantName: (configRow.restaurant_name as string | undefined) ?? prev.config.restaurantName,
+                restaurantName: (configRow.restaurant_name as string | undefined) ?? tenantNombre ?? prev.config.restaurantName,
                 logoUrl: (configRow.logo_url as string | undefined) ?? prev.config.logoUrl,
                 primaryColor: (configRow.primary_color as string | undefined) ?? prev.config.primaryColor,
                 secondaryColor: (configRow.secondary_color as string | undefined) ?? prev.config.secondaryColor,

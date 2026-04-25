@@ -16,7 +16,7 @@ export async function GET(
 ) {
   const { slug } = await params
 
-  // Resolver tenant por slug
+  // Resolver tenant por slug (incluye nombre como fallback para restaurant_name)
   const { data: tenant } = await supabaseAdmin
     .from('tenants')
     .select('id, nombre')
@@ -98,7 +98,7 @@ export async function GET(
   const storeOpen = computeStoreOpen(tiendaAbierta, apertura, cierre)
 
   return NextResponse.json({
-    restaurantName: (config?.restaurant_name as string | null) ?? 'Restaurante',
+    restaurantName: (config?.restaurant_name as string | null) ?? (tenant?.nombre as string | null) ?? 'Restaurante',
     logoUrl: (config?.logo_url as string | null) ?? null,
     primaryColor: (config?.primary_color as string | null) ?? '#000000',
     accentColor: (config?.accent_color as string | null) ?? '#BEBEBE',

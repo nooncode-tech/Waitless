@@ -22,7 +22,9 @@ export function ConfigManager() {
   const { config, updateConfig, emergencyCloseAllTables, emergencyCloseTables, tableSessions, orders } = useApp()
   const [showEmergencyConfirm, setShowEmergencyConfirm] = useState(false)
   const [selectedTables, setSelectedTables] = useState<number[]>([])
-  
+  const [storeSaving, setStoreSaving] = useState(false)
+  const [storeSaved, setStoreSaved] = useState(false)
+
   // Ensure all config fields have defaults for backwards compatibility
   const safeConfig = {
     ...config,
@@ -34,10 +36,20 @@ export function ConfigManager() {
     autoHorarioApertura: config.autoHorarioApertura ?? null,
     autoHorarioCierre: config.autoHorarioCierre ?? null,
   }
-  
+
   const [localConfig, setLocalConfig] = useState({ ...safeConfig })
   const [saved, setSaved] = useState(false)
-  
+
+  // Guarda solo los campos de estado de tienda — inmediatamente, sin esperar "Guardar"
+  const saveStoreStatus = (patch: Partial<typeof safeConfig>) => {
+    const next = { ...localConfig, ...patch }
+    setLocalConfig(next)
+    updateConfig(patch)
+    setStoreSaving(true)
+    setTimeout(() => { setStoreSaving(false); setStoreSaved(true) }, 600)
+    setTimeout(() => setStoreSaved(false), 2200)
+  }
+
   const handleSave = () => {
     updateConfig(localConfig)
     setSaved(true)
@@ -84,6 +96,8 @@ export function ConfigManager() {
             <CardTitle className={`text-xs flex items-center gap-1.5 ${localConfig.tiendaAbierta ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
               <Power className="h-3.5 w-3.5" />
               Estado de la tienda
+              {storeSaving && <span className="ml-auto text-[9px] text-muted-foreground">Guardando...</span>}
+              {storeSaved && !storeSaving && <span className="ml-auto text-[9px] text-green-600 flex items-center gap-0.5"><Check className="h-2.5 w-2.5" />Guardado</span>}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-3 pt-0 space-y-3">
@@ -101,7 +115,7 @@ export function ConfigManager() {
               </div>
               <Switch
                 checked={localConfig.tiendaAbierta}
-                onCheckedChange={(checked) => setLocalConfig(prev => ({ ...prev, tiendaAbierta: checked }))}
+                onCheckedChange={(checked) => saveStoreStatus({ tiendaAbierta: checked })}
               />
             </div>
 
@@ -122,7 +136,7 @@ export function ConfigManager() {
               </div>
               <Switch
                 checked={localConfig.tiendaVisible}
-                onCheckedChange={(checked) => setLocalConfig(prev => ({ ...prev, tiendaVisible: checked }))}
+                onCheckedChange={(checked) => saveStoreStatus({ tiendaVisible: checked })}
                 className="scale-75"
               />
             </div>
