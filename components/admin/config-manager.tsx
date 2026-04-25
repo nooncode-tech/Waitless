@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Settings, Percent, Clock, CreditCard, Bell, MapPin, Save, Check, AlertTriangle, X, Star, ChefHat, Palette, Store } from 'lucide-react'
+import { Settings, Percent, Clock, CreditCard, Bell, MapPin, Save, Check, AlertTriangle, X, Star, ChefHat, Palette, Store, Power, Eye, EyeOff } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -29,6 +29,10 @@ export function ConfigManager() {
     metodospagoActivos: config.metodospagoActivos || DEFAULT_METODOS_PAGO,
     sonidoNuevosPedidos: config.sonidoNuevosPedidos ?? true,
     notificacionesStockBajo: config.notificacionesStockBajo ?? true,
+    tiendaAbierta: config.tiendaAbierta ?? true,
+    tiendaVisible: config.tiendaVisible ?? true,
+    autoHorarioApertura: config.autoHorarioApertura ?? null,
+    autoHorarioCierre: config.autoHorarioCierre ?? null,
   }
   
   const [localConfig, setLocalConfig] = useState({ ...safeConfig })
@@ -74,6 +78,103 @@ export function ConfigManager() {
       </div>
       
       <div className="space-y-3">
+        {/* Estado de la tienda */}
+        <Card className={localConfig.tiendaAbierta ? 'border-green-500/40 bg-green-500/5' : 'border-red-400/40 bg-red-400/5'}>
+          <CardHeader className="p-3 pb-2">
+            <CardTitle className={`text-xs flex items-center gap-1.5 ${localConfig.tiendaAbierta ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              <Power className="h-3.5 w-3.5" />
+              Estado de la tienda
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-3 pt-0 space-y-3">
+            {/* Abierta / Cerrada toggle */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold">
+                  {localConfig.tiendaAbierta ? '🟢 Tienda abierta' : '🔴 Tienda cerrada'}
+                </p>
+                <p className="text-[9px] text-muted-foreground mt-0.5">
+                  {localConfig.tiendaAbierta
+                    ? 'Los clientes pueden ver el menú y hacer pedidos'
+                    : 'No se aceptan pedidos. Los clientes verán "Cerrada"'}
+                </p>
+              </div>
+              <Switch
+                checked={localConfig.tiendaAbierta}
+                onCheckedChange={(checked) => setLocalConfig(prev => ({ ...prev, tiendaAbierta: checked }))}
+              />
+            </div>
+
+            {/* Visible al público */}
+            <div className="border-t border-border pt-3 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-1.5">
+                  {localConfig.tiendaVisible ? <Eye className="h-3 w-3 text-muted-foreground" /> : <EyeOff className="h-3 w-3 text-muted-foreground" />}
+                  <p className="text-xs font-medium">
+                    {localConfig.tiendaVisible ? 'Visible al público' : 'Oculta al público'}
+                  </p>
+                </div>
+                <p className="text-[9px] text-muted-foreground mt-0.5">
+                  {localConfig.tiendaVisible
+                    ? 'Aparece en el marketplace de restaurantes'
+                    : 'No aparece en la lista pública de restaurantes'}
+                </p>
+              </div>
+              <Switch
+                checked={localConfig.tiendaVisible}
+                onCheckedChange={(checked) => setLocalConfig(prev => ({ ...prev, tiendaVisible: checked }))}
+                className="scale-75"
+              />
+            </div>
+
+            {/* Horario automático */}
+            <div className="border-t border-border pt-3 space-y-2">
+              <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1.5">
+                <Clock className="h-3 w-3" />
+                Horario automático (opcional)
+              </p>
+              <p className="text-[9px] text-muted-foreground">
+                Si se configura, la tienda abre y cierra sola. Usá hora local (Argentina, UTC−3).
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-[10px]">Apertura</Label>
+                  <Input
+                    type="time"
+                    value={localConfig.autoHorarioApertura ?? ''}
+                    onChange={(e) => setLocalConfig(prev => ({
+                      ...prev,
+                      autoHorarioApertura: e.target.value || null,
+                    }))}
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div>
+                  <Label className="text-[10px]">Cierre</Label>
+                  <Input
+                    type="time"
+                    value={localConfig.autoHorarioCierre ?? ''}
+                    onChange={(e) => setLocalConfig(prev => ({
+                      ...prev,
+                      autoHorarioCierre: e.target.value || null,
+                    }))}
+                    className="h-8 text-xs"
+                  />
+                </div>
+              </div>
+              {(localConfig.autoHorarioApertura || localConfig.autoHorarioCierre) && (
+                <button
+                  type="button"
+                  onClick={() => setLocalConfig(prev => ({ ...prev, autoHorarioApertura: null, autoHorarioCierre: null }))}
+                  className="text-[9px] text-destructive underline"
+                >
+                  Quitar horario automático
+                </button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Impuestos y pagos */}
         <Card>
           <CardHeader className="p-3 pb-2">

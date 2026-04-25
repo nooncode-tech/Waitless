@@ -390,6 +390,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 whatsappNumero: (configRow.whatsapp_numero as string | undefined) ?? prev.config.whatsappNumero,
                 coverUrl: (configRow.cover_url as string | undefined) ?? prev.config.coverUrl,
                 descripcion: (configRow.descripcion as string | undefined) ?? prev.config.descripcion,
+                tiendaAbierta: (configRow.tienda_abierta as boolean | undefined) ?? prev.config.tiendaAbierta ?? true,
+                tiendaVisible: (configRow.tienda_visible as boolean | undefined) ?? prev.config.tiendaVisible ?? true,
+                autoHorarioApertura: (configRow.auto_horario_apertura as string | null | undefined) ?? prev.config.autoHorarioApertura ?? null,
+                autoHorarioCierre: (configRow.auto_horario_cierre as string | null | undefined) ?? prev.config.autoHorarioCierre ?? null,
               },
             }))
           }

@@ -43,6 +43,7 @@ interface MenuData {
   categories: Category[]
   items: MenuItem[]
   tenantId: string | null
+  tiendaAbierta?: boolean
 }
 
 interface CartEntry {
@@ -689,6 +690,17 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       {/* ── Items grid ─────────────────────────────────────────────────────── */}
       <main className="flex-1 w-full pb-28">
 
+        {/* ── Tienda cerrada banner ─────────────────────────────────────────── */}
+        {data.tiendaAbierta === false && (
+          <div className="bg-red-50 border-b border-red-200 px-5 py-3 flex items-center gap-2.5">
+            <span className="text-base">🔴</span>
+            <div>
+              <p className="text-xs font-bold text-red-700">Tienda cerrada</p>
+              <p className="text-[10px] text-red-500">Por el momento no aceptamos pedidos. Volvé más tarde.</p>
+            </div>
+          </div>
+        )}
+
         {/* ── Profile hero ──────────────────────────────────────────────────── */}
         <div className="bg-white mb-4">
           {/* Cover image */}
@@ -787,7 +799,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       </main>
 
       {/* ── Floating cart ──────────────────────────────────────────────────── */}
-      {cartCount > 0 && (
+      {cartCount > 0 && data.tiendaAbierta !== false && (
         <div className="fixed bottom-6 left-0 right-0 flex justify-center z-30 px-4">
           <button
             onClick={() => setScreen('cart')}

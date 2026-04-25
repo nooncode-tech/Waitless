@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { computeStoreOpen } from '@/lib/store-hours'
 
 interface CartItem {
   itemId: string
@@ -47,6 +48,23 @@ export async function POST(
     .single()
 
   const tenantId: string | null = tenant?.id ?? null
+
+  // Verificar estado de la tienda
+  {
+    let cfgQ = supabaseAdmin
+      .from('app_config')
+      .select('tienda_abierta, auto_horario_apertura, auto_horario_cierre')
+    if (tenantId) cfgQ = cfgQ.eq('tenant_id', tenantId)
+    else cfgQ = cfgQ.eq('id', 'default')
+    const { data: cfg } = await cfgQ.single()
+    const tiendaAbierta = (cfg?.tienda_abierta as boolean | null) ?? true
+    const apertura = (cfg?.auto_horario_apertura as string | null) ?? null
+    const cierre = (cfg?.auto_horario_cierre as string | null) ?? null
+    const storeOpen = computeStoreOpen(tiendaAbierta, apertura, cierre)
+    if (!storeOpen) {
+      return NextResponse.json({ error: 'La tienda está cerrada en este momento.' }, { status: 503 })
+    }
+  }
 
   // Obtener ítems del menú para calcular total server-side
   const itemIds = body.items.map(i => i.itemId)

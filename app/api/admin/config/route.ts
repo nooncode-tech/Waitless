@@ -39,6 +39,11 @@ const ALLOWED_FIELDS = new Set([
   // Menú digital
   'cover_url',
   'descripcion',
+  // Estado de la tienda
+  'tienda_abierta',
+  'tienda_visible',
+  'auto_horario_apertura',
+  'auto_horario_cierre',
 ])
 
 export async function PUT(req: NextRequest) {

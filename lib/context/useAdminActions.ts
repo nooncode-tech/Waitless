@@ -86,6 +86,10 @@ export function useAdminActions(state: AppState, setState: SetState) {
     if (updates.whatsappNumero !== undefined)               dbUpdates.whatsapp_numero = updates.whatsappNumero
     if (updates.coverUrl !== undefined)                     dbUpdates.cover_url = updates.coverUrl
     if (updates.descripcion !== undefined)                  dbUpdates.descripcion = updates.descripcion
+    if (updates.tiendaAbierta !== undefined)                dbUpdates.tienda_abierta = updates.tiendaAbierta
+    if (updates.tiendaVisible !== undefined)                dbUpdates.tienda_visible = updates.tiendaVisible
+    if (updates.autoHorarioApertura !== undefined)          dbUpdates.auto_horario_apertura = updates.autoHorarioApertura
+    if (updates.autoHorarioCierre !== undefined)            dbUpdates.auto_horario_cierre = updates.autoHorarioCierre
 
     if (Object.keys(dbUpdates).length > 0) {
       const configTenantId = state.currentUser?.tenantId

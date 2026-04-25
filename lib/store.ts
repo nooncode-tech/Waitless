@@ -226,6 +226,11 @@ export interface AppConfig {
   whatsappNumero?: string
   coverUrl?: string
   descripcion?: string
+  // Store status
+  tiendaAbierta?: boolean
+  tiendaVisible?: boolean
+  autoHorarioApertura?: string | null
+  autoHorarioCierre?: string | null
 }
 
 // ============ WAITLIST (P2-3) ============

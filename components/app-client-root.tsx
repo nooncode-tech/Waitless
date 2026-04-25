@@ -68,6 +68,16 @@ function AppContent({ initialBranding }: AppContentProps) {
     return () => subscription.unsubscribe()
   }, [currentUser, router])
 
+  // Auto-open login when coming from explore page via ?login=1
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('login') === '1' && view === 'landing') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: open login from URL param on mount
+      setView('login')
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- only run once on mount
+
   // Acceso por QR: requiere ?mesa=N&token=XXX — token validado contra Supabase (P0-6)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)

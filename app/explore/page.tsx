@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Star, ChevronRight, TrendingUp, Award, Utensils, Flame } from 'lucide-react'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { computeStoreOpen } from '@/lib/store-hours'
 import type { ExploreRestaurant } from '@/app/api/public/explore/route'
 
 export const dynamic = 'force-dynamic'
@@ -29,7 +30,7 @@ async function getData(): Promise<{
   const [{ data: configs }, { data: feedbacks }, { data: items }] = await Promise.all([
     supabaseAdmin
       .from('app_config')
-      .select('tenant_id, restaurant_name, logo_url, cover_url, descripcion, primary_color')
+      .select('tenant_id, restaurant_name, logo_url, cover_url, descripcion, primary_color, tienda_abierta, tienda_visible, auto_horario_apertura, auto_horario_cierre')
       .in('tenant_id', ids),
     supabaseAdmin
       .from('feedback')
@@ -67,10 +68,15 @@ async function getData(): Promise<{
     }
   }
 
-  const restaurants: ExploreRestaurant[] = tenants.map(t => {
+  const restaurants: (ExploreRestaurant & { tiendaAbierta: boolean; tiendaVisible: boolean })[] = tenants.map(t => {
     const tid = t.id as string
     const cfg = configMap[tid]
     const rd = ratingMap[tid]
+    const tiendaAbierta = (cfg?.tienda_abierta as boolean | null) ?? true
+    const tiendaVisible = (cfg?.tienda_visible as boolean | null) ?? true
+    const apertura = (cfg?.auto_horario_apertura as string | null) ?? null
+    const cierre = (cfg?.auto_horario_cierre as string | null) ?? null
+    const storeOpen = computeStoreOpen(tiendaAbierta, apertura, cierre)
     return {
       slug: t.slug as string,
       nombre: (cfg?.restaurant_name as string | null) ?? (t.nombre as string),
@@ -81,8 +87,10 @@ async function getData(): Promise<{
       rating: rd ? Math.round((rd.sum / rd.count) * 10) / 10 : 0,
       totalRatings: rd?.count ?? 0,
       featuredItems: itemMap[tid] ?? [],
+      tiendaAbierta: storeOpen,
+      tiendaVisible,
     }
-  })
+  }).filter(r => r.tiendaVisible)
 
   restaurants.sort((a, b) => b.rating - a.rating || b.totalRatings - a.totalRatings)
 
@@ -122,7 +130,8 @@ function Stars({ rating }: { rating: number }) {
   )
 }
 
-function RestaurantBigCard({ r, badge }: { r: ExploreRestaurant; badge?: string }) {
+function RestaurantBigCard({ r, badge }: { r: ExploreRestaurant & { tiendaAbierta?: boolean }; badge?: string }) {
+  const cerrada = r.tiendaAbierta === false
   return (
     <Link
       href={`/menu/${r.slug}`}
@@ -131,11 +140,16 @@ function RestaurantBigCard({ r, badge }: { r: ExploreRestaurant; badge?: string 
       {/* Cover */}
       <div className="relative h-44 overflow-hidden" style={{ backgroundColor: r.primaryColor }}>
         {r.coverUrl
-          ? <img src={r.coverUrl} alt={r.nombre} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          ? <img src={r.coverUrl} alt={r.nombre} className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${cerrada ? 'grayscale opacity-60' : ''}`} />
           : <div className="w-full h-full flex items-center justify-center opacity-20"><Utensils className="w-20 h-20 text-white" /></div>}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-        {badge && (
+        {cerrada && (
+          <span className="absolute top-3 left-3 bg-black/80 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">
+            Cerrada
+          </span>
+        )}
+        {!cerrada && badge && (
           <span className="absolute top-3 left-3 bg-white text-black text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow">
             {badge}
           </span>
@@ -229,14 +243,15 @@ function DishCard({ dish }: { dish: { id: string; nombre: string; precio: number
   )
 }
 
-function RestaurantRowCard({ r }: { r: ExploreRestaurant }) {
+function RestaurantRowCard({ r }: { r: ExploreRestaurant & { tiendaAbierta?: boolean } }) {
+  const cerrada = r.tiendaAbierta === false
   return (
     <Link
       href={`/menu/${r.slug}`}
       className="group flex items-center gap-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-200"
     >
       <div
-        className="flex-none w-16 h-16 rounded-xl overflow-hidden"
+        className={`flex-none w-16 h-16 rounded-xl overflow-hidden ${cerrada ? 'grayscale opacity-50' : ''}`}
         style={{ backgroundColor: r.primaryColor }}
       >
         {r.logoUrl
@@ -247,7 +262,10 @@ function RestaurantRowCard({ r }: { r: ExploreRestaurant }) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-[15px] text-black tracking-tight line-clamp-1">{r.nombre}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="font-bold text-[15px] text-black tracking-tight line-clamp-1">{r.nombre}</h3>
+          {cerrada && <span className="shrink-0 text-[10px] font-bold text-gray-400 border border-gray-200 rounded-full px-2 py-0.5">Cerrada</span>}
+        </div>
         {r.descripcion
           ? <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{r.descripcion}</p>
           : r.featuredItems.length > 0
@@ -306,15 +324,20 @@ export default async function ExplorePage() {
       {/* ── Sticky header ── */}
       <header className="sticky top-0 z-50 bg-black border-b border-white/5">
         <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center">
-              <span className="text-black font-black text-[11px] tracking-tight">W</span>
-            </div>
-            <span className="text-white font-black text-sm tracking-tight" style={{ letterSpacing: '-0.02em' }}>WAITLESS</span>
-          </Link>
-          <Link href="/" className="text-white/50 text-xs hover:text-white/80 transition-colors">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="text-white/40 text-xs hover:text-white/70 transition-colors flex items-center gap-1">
+              ← Inicio
+            </Link>
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-7 h-7 bg-white rounded-lg flex items-center justify-center">
+                <span className="text-black font-black text-[11px] tracking-tight">W</span>
+              </div>
+              <span className="text-white font-black text-sm tracking-tight" style={{ letterSpacing: '-0.02em' }}>WAITLESS</span>
+            </Link>
+          </div>
+          <a href="/?login=1" className="text-white/50 text-xs hover:text-white/80 transition-colors">
             Soy restaurante →
-          </Link>
+          </a>
         </div>
       </header>
 

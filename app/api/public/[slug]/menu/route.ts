@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { computeStoreOpen } from '@/lib/store-hours'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,7 +30,7 @@ export async function GET(
   // Cargar config (branding + métodos de pago + whatsapp)
   let configQuery = supabaseAdmin
     .from('app_config')
-    .select('restaurant_name, logo_url, primary_color, accent_color, metodos_pago_activos, whatsapp_numero, powered_by_waitless, cover_url, descripcion')
+    .select('restaurant_name, logo_url, primary_color, accent_color, metodos_pago_activos, whatsapp_numero, powered_by_waitless, cover_url, descripcion, tienda_abierta, tienda_visible, auto_horario_apertura, auto_horario_cierre')
 
   if (tenantId) {
     configQuery = configQuery.eq('tenant_id', tenantId)
@@ -90,6 +91,12 @@ export async function GET(
     transferencia: true,
   }
 
+  const tiendaAbierta = (config?.tienda_abierta as boolean | null) ?? true
+  const tiendaVisible = (config?.tienda_visible as boolean | null) ?? true
+  const apertura = (config?.auto_horario_apertura as string | null) ?? null
+  const cierre = (config?.auto_horario_cierre as string | null) ?? null
+  const storeOpen = computeStoreOpen(tiendaAbierta, apertura, cierre)
+
   return NextResponse.json({
     restaurantName: (config?.restaurant_name as string | null) ?? 'Restaurante',
     logoUrl: (config?.logo_url as string | null) ?? null,
@@ -99,6 +106,10 @@ export async function GET(
     whatsappNumero: (config?.whatsapp_numero as string | null) ?? null,
     coverUrl: (config?.cover_url as string | null) ?? null,
     descripcion: (config?.descripcion as string | null) ?? null,
+    tiendaAbierta: storeOpen,
+    tiendaVisible,
+    autoHorarioApertura: apertura,
+    autoHorarioCierre: cierre,
     metodosPago,
     categories: (categories ?? []).map(c => ({
       id: c.id as string,
