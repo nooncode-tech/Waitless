@@ -92,12 +92,19 @@ export function useAdminActions(state: AppState, setState: SetState) {
     if (updates.autoHorarioCierre !== undefined)            dbUpdates.auto_horario_cierre = updates.autoHorarioCierre
 
     if (Object.keys(dbUpdates).length > 0) {
-      // Usar el API route (supabaseAdmin) para bypasear RLS
-      fetch('/api/admin/config', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dbUpdates),
-      }).catch(err => console.error('[updateConfig] Error persistiendo config:', err))
+      // Usar el API route (supabaseAdmin) para bypasear RLS — requiere Bearer token
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        const token = session?.access_token
+        if (!token) return
+        fetch('/api/admin/config', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(dbUpdates),
+        }).catch(err => console.error('[updateConfig] Error persistiendo config:', err))
+      })
     }
   }, [state.currentUser, setState])
 
