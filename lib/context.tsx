@@ -232,6 +232,15 @@ function getDefaultState(): AppState {
   }
 }
 
+function parseJsonField<T>(value: unknown, fallback: T): T {
+  if (value === null || value === undefined) return fallback
+  if (Array.isArray(value) || typeof value === 'object') return value as T
+  if (typeof value === 'string') {
+    try { return JSON.parse(value) as T } catch { return fallback }
+  }
+  return fallback
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>(getDefaultState)
   const [isHydrated, setIsHydrated] = useState(false)
@@ -384,9 +393,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 impuestoPorcentaje: Number(configRow.impuesto_porcentaje ?? prev.config.impuestoPorcentaje),
                 propinaSugeridaPorcentaje: Number(configRow.propina_sugerida_porcentaje ?? prev.config.propinaSugeridaPorcentaje),
                 tiempoExpiracionSesionMinutos: Number(configRow.tiempo_expiracion_sesion_minutos ?? prev.config.tiempoExpiracionSesionMinutos),
-                zonasReparto: (typeof configRow.zonas_reparto === 'string' ? JSON.parse(configRow.zonas_reparto) : configRow.zonas_reparto) as string[] ?? prev.config.zonasReparto,
-                horariosOperacion: (typeof configRow.horarios_operacion === 'string' ? JSON.parse(configRow.horarios_operacion) : configRow.horarios_operacion) as AppConfig['horariosOperacion'] ?? prev.config.horariosOperacion,
-                metodospagoActivos: (typeof configRow.metodos_pago_activos === 'string' ? JSON.parse(configRow.metodos_pago_activos) : configRow.metodos_pago_activos) as AppConfig['metodospagoActivos'] ?? prev.config.metodospagoActivos,
+                zonasReparto: parseJsonField<string[]>(configRow.zonas_reparto, prev.config.zonasReparto),
+                horariosOperacion: parseJsonField<AppConfig['horariosOperacion']>(configRow.horarios_operacion, prev.config.horariosOperacion),
+                metodospagoActivos: parseJsonField<AppConfig['metodospagoActivos']>(configRow.metodos_pago_activos, prev.config.metodospagoActivos),
                 sonidoNuevosPedidos: configRow.sonido_nuevos_pedidos ?? prev.config.sonidoNuevosPedidos,
                 notificacionesStockBajo: configRow.notificaciones_stock_bajo ?? prev.config.notificacionesStockBajo,
                 googleReviewUrl: configRow.google_review_url ?? prev.config.googleReviewUrl,
