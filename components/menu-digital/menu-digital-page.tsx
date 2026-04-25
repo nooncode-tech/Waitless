@@ -654,95 +654,85 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
 
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <div
-        className="relative overflow-hidden"
-        style={{ height: data.coverUrl ? 180 : 120 }}
-      >
-        {/* Background */}
+      {/* ── Cover photo ───────────────────────────────────────────────────── */}
+      <div className="relative w-full overflow-hidden" style={{ height: 160 }}>
         {data.coverUrl ? (
           <img
             src={data.coverUrl}
             alt="Portada"
-            className={`absolute inset-0 w-full h-full object-cover ${cerrada ? 'grayscale' : ''}`}
+            className={`w-full h-full object-cover ${cerrada ? 'grayscale opacity-70' : ''}`}
           />
         ) : (
+          /* Placeholder con color primario + patrón sutil */
           <div
-            className="absolute inset-0"
-            style={{ background: `linear-gradient(135deg, ${primary}dd 0%, #000000 100%)` }}
-          />
+            className="w-full h-full flex items-center justify-center"
+            style={{ background: `linear-gradient(135deg, ${primary} 0%, ${primary}88 100%)` }}
+          >
+            <svg className="w-12 h-12 opacity-20" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={1}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 19.5h16.5a1.5 1.5 0 001.5-1.5v-13.5a1.5 1.5 0 00-1.5-1.5H3.75a1.5 1.5 0 00-1.5 1.5v13.5a1.5 1.5 0 001.5 1.5z" />
+            </svg>
+          </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-        {/* Content */}
-        <div className="relative h-full flex flex-col justify-end px-5 pb-4">
-          {cerrada && (
-            <div className="absolute top-3 right-4 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full flex items-center gap-1.5">
-              <Clock className="w-3 h-3" />
-              Cerrada
-            </div>
-          )}
+        {/* Badge cerrada */}
+        {cerrada && (
+          <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full flex items-center gap-1.5">
+            <Clock className="w-3 h-3" />
+            Cerrada
+          </div>
+        )}
+      </div>
 
-          <div className="flex items-center gap-3">
+      {/* ── Profile block ─────────────────────────────────────────────────── */}
+      <div className="bg-white border-b border-gray-100 px-5 pb-4">
+        {/* Logo sobresaliendo sobre la portada */}
+        <div className="flex items-end justify-between -mt-8 mb-3">
+          <div
+            className="w-16 h-16 rounded-2xl overflow-hidden border-[3px] border-white shadow-lg shrink-0"
+            style={{ backgroundColor: primary }}
+          >
             {data.logoUrl ? (
-              <img
-                src={data.logoUrl}
-                alt={data.restaurantName}
-                className="w-12 h-12 rounded-xl object-cover shrink-0 border-2 border-white/20 shadow-lg"
-              />
+              <img src={data.logoUrl} alt={data.restaurantName} className="w-full h-full object-cover" />
             ) : (
-              <div
-                className="w-12 h-12 rounded-xl shrink-0 flex items-center justify-center border-2 border-white/20 shadow-lg"
-                style={{ backgroundColor: `${primary}44`, backdropFilter: 'blur(8px)' }}
-              >
-                <span className="text-white font-black text-xl" style={{ letterSpacing: '-0.03em' }}>
+              <div className="w-full h-full flex items-center justify-center">
+                <span className="text-white font-black text-2xl" style={{ letterSpacing: '-0.03em' }}>
                   {data.restaurantName.charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
-            <div className="min-w-0">
-              <h1
-                className="font-black text-white text-xl leading-tight"
-                style={{ letterSpacing: '-0.03em', textShadow: '0 2px 6px rgba(0,0,0,0.5)' }}
-              >
-                {data.restaurantName}
-              </h1>
-              {data.descripcion && (
-                <p className="text-white/55 text-[11px] mt-0.5 line-clamp-1">
-                  {data.descripcion}
-                </p>
-              )}
-            </div>
           </div>
+
+          {/* WhatsApp inline */}
+          {data.whatsappNumero && (
+            <a
+              href={`https://wa.me/${data.whatsappNumero.replace(/\D/g, '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white shadow-sm"
+              style={{ backgroundColor: '#25D366' }}
+            >
+              <Phone className="h-3.5 w-3.5" />
+              WhatsApp
+            </a>
+          )}
         </div>
+
+        {/* Nombre + descripción */}
+        <h1 className="font-black text-black text-xl leading-tight" style={{ letterSpacing: '-0.03em' }}>
+          {data.restaurantName}
+        </h1>
+        {data.descripcion && (
+          <p className="text-sm text-gray-500 mt-1 leading-relaxed">{data.descripcion}</p>
+        )}
+
+        {/* Tienda cerrada inline */}
+        {cerrada && (
+          <div className="mt-3 flex items-center gap-2 bg-red-50 rounded-xl px-3 py-2">
+            <div className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+            <p className="text-xs font-semibold text-red-700">Tienda cerrada — no aceptamos pedidos ahora</p>
+          </div>
+        )}
       </div>
-
-      {/* ── WhatsApp CTA ─────────────────────────────────────────────────── */}
-      {data.whatsappNumero && (
-        <div className="bg-white px-4 py-3 border-b border-gray-100">
-          <a
-            href={`https://wa.me/${data.whatsappNumero.replace(/\D/g, '')}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full h-11 rounded-xl text-sm font-semibold text-white max-w-lg mx-auto"
-            style={{ backgroundColor: '#25D366' }}
-          >
-            <Phone className="h-4 w-4" />
-            Contactar por WhatsApp
-          </a>
-        </div>
-      )}
-
-      {/* ── Tienda cerrada banner ─────────────────────────────────────────── */}
-      {cerrada && (
-        <div className="bg-red-50 border-b border-red-100 px-5 py-3 flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-          <div>
-            <p className="text-xs font-bold text-red-700">Tienda cerrada temporalmente</p>
-            <p className="text-[10px] text-red-400 mt-0.5">Por el momento no aceptamos pedidos. Volvé más tarde.</p>
-          </div>
-        </div>
-      )}
 
       {/* ── Sticky category tabs ──────────────────────────────────────────── */}
       {allCategories.length > 0 && (
@@ -763,7 +753,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
                   className="shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap"
                   style={
                     activeCategory === cat.id
-                      ? { backgroundColor: '#000', color: '#fff' }
+                      ? { backgroundColor: primary, color: '#fff' }
                       : { backgroundColor: 'rgba(0,0,0,0.05)', color: 'rgba(0,0,0,0.45)' }
                   }
                 >
