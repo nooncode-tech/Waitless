@@ -413,7 +413,7 @@ export function DailyClosing() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold text-black tracking-tight">Turno & Caja</h2>
+          <h2 className="text-lg font-bold text-foreground tracking-tight">Turno & Caja</h2>
           <p className="text-xs text-muted-foreground mt-0.5">Ledger operativo del turno</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -425,7 +425,7 @@ export function DailyClosing() {
             className="h-8 text-xs w-auto"
           />
           <Button variant="outline" size="sm" onClick={exportCSV}
-            className="gap-1.5 h-8 text-xs border-border bg-transparent hover:bg-muted text-black">
+            className="gap-1.5 h-8 text-xs border-border bg-transparent hover:bg-muted text-foreground">
             <Download className="h-3 w-3" />
             CSV
           </Button>
@@ -453,7 +453,7 @@ export function DailyClosing() {
                 'w-2 h-2 rounded-full',
                 shiftOpen ? 'bg-success animate-pulse' : 'bg-accent'
               )} />
-              <span className="text-sm font-bold text-black">
+              <span className="text-sm font-bold text-foreground">
                 {shiftOpen ? 'Turno activo' : shiftEnd ? 'Turno cerrado' : 'Sin turno abierto'}
               </span>
             </div>
@@ -533,7 +533,7 @@ export function DailyClosing() {
             <div className="px-4 py-3 border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Banknote className="h-3.5 w-3.5 text-muted-foreground" />
-                <p className="text-xs font-bold text-black uppercase tracking-wide">Conciliación de Efectivo</p>
+                <p className="text-xs font-bold text-foreground uppercase tracking-wide">Conciliación de Efectivo</p>
               </div>
             </div>
             <div className="p-4 space-y-3">
@@ -572,15 +572,15 @@ export function DailyClosing() {
               <div className="space-y-1.5 pt-2 border-t border-border">
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">Fondo apertura</span>
-                  <span className="text-black">{fondoNum > 0 ? formatPrice(fondoNum) : '—'}</span>
+                  <span className="text-foreground">{fondoNum > 0 ? formatPrice(fondoNum) : '—'}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">+ Ventas en efectivo</span>
-                  <span className="text-black">{formatPrice(cashSales)}</span>
+                  <span className="text-foreground">{formatPrice(cashSales)}</span>
                 </div>
                 <div className="flex justify-between text-sm font-semibold border-t border-border pt-1.5">
-                  <span className="text-black">Efectivo esperado</span>
-                  <span className="text-black">{formatPrice(esperado)}</span>
+                  <span className="text-foreground">Efectivo esperado</span>
+                  <span className="text-foreground">{formatPrice(esperado)}</span>
                 </div>
                 {hasDif && (
                   <div className={cn(
@@ -643,11 +643,11 @@ export function DailyClosing() {
           ].map(kpi => (
             <div key={kpi.label} className="border border-border rounded-xl p-3 bg-white">
               <div className="flex items-center gap-2 mb-1">
-                <div className="p-1 rounded bg-muted text-black">
+                <div className="p-1 rounded bg-muted text-foreground">
                   {kpi.icon}
                 </div>
               </div>
-              <p className="text-lg font-bold text-black leading-none">{kpi.value}</p>
+              <p className="text-lg font-bold text-foreground leading-none">{kpi.value}</p>
               <p className="text-[10px] text-muted-foreground mt-0.5">{kpi.label}</p>
             </div>
           ))}
@@ -664,12 +664,12 @@ export function DailyClosing() {
       {/* Financial Ledger */}
       <div className="border border-border rounded-xl bg-white overflow-hidden">
         <div className="px-4 py-3 border-b border-border">
-          <p className="text-xs font-bold text-black uppercase tracking-wide">Resumen Financiero</p>
+          <p className="text-xs font-bold text-foreground uppercase tracking-wide">Resumen Financiero</p>
         </div>
         <div className="p-4 space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Ventas Brutas</span>
-            <span className="font-medium text-black">{formatPrice(stats.grossSales)}</span>
+            <span className="font-medium text-foreground">{formatPrice(stats.grossSales)}</span>
           </div>
           {stats.totalDiscounts > 0 && (
             <div className="flex justify-between text-sm">
@@ -683,7 +683,7 @@ export function DailyClosing() {
               <span className="text-destructive">−{formatPrice(stats.totalRefunds)}</span>
             </div>
           )}
-          <div className="flex justify-between text-base font-bold text-black pt-2 border-t border-border">
+          <div className="flex justify-between text-base font-bold text-foreground pt-2 border-t border-border">
             <span>Ventas Netas</span>
             <span>{formatPrice(stats.netSales)}</span>
           </div>
@@ -705,7 +705,7 @@ export function DailyClosing() {
         {/* By Payment Method */}
         <div className="border border-border rounded-xl bg-white overflow-hidden">
           <div className="px-4 py-3 border-b border-border">
-            <p className="text-xs font-bold text-black uppercase tracking-wide">Método de Pago</p>
+            <p className="text-xs font-bold text-foreground uppercase tracking-wide">Método de Pago</p>
           </div>
           <div className="p-4 space-y-2">
             {Object.entries(stats.salesByPayment).length > 0 ? (
@@ -715,7 +715,7 @@ export function DailyClosing() {
                     {paymentIcon(method)}
                     <span>{paymentLabel(method)}</span>
                   </div>
-                  <span className="font-semibold text-black">{formatPrice(amount)}</span>
+                  <span className="font-semibold text-foreground">{formatPrice(amount)}</span>
                 </div>
               ))
             ) : (
@@ -727,14 +727,14 @@ export function DailyClosing() {
         {/* By Channel */}
         <div className="border border-border rounded-xl bg-white overflow-hidden">
           <div className="px-4 py-3 border-b border-border">
-            <p className="text-xs font-bold text-black uppercase tracking-wide">Canal de Venta</p>
+            <p className="text-xs font-bold text-foreground uppercase tracking-wide">Canal de Venta</p>
           </div>
           <div className="p-4 space-y-2">
             {Object.entries(stats.salesByChannel).length > 0 ? (
               Object.entries(stats.salesByChannel).map(([channel, amount]) => (
                 <div key={channel} className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">{getChannelLabel(channel as Order['canal'])}</span>
-                  <span className="font-semibold text-black">{formatPrice(amount)}</span>
+                  <span className="font-semibold text-foreground">{formatPrice(amount)}</span>
                 </div>
               ))
             ) : (
@@ -748,7 +748,7 @@ export function DailyClosing() {
       <div className="border border-border rounded-xl bg-white overflow-hidden">
         <div className="px-4 py-3 border-b border-border flex items-center gap-2">
           <ChefHat className="h-3.5 w-3.5 text-muted-foreground" />
-          <p className="text-xs font-bold text-black uppercase tracking-wide">Más Vendidos</p>
+          <p className="text-xs font-bold text-foreground uppercase tracking-wide">Más Vendidos</p>
           {kpiLoading && <Spinner className="size-3 text-muted-foreground ml-auto" />}
         </div>
         <div className="p-4">
@@ -765,12 +765,12 @@ export function DailyClosing() {
                 <div key={item.menu_item_id} className="flex justify-between items-center text-sm">
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground text-xs w-4 text-right">{index + 1}</span>
-                    <span className="text-black">{item.nombre}</span>
+                    <span className="text-foreground">{item.nombre}</span>
                     <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
                       ×{item.total_cantidad}
                     </span>
                   </div>
-                  <span className="font-semibold text-black">{formatPrice(item.total_revenue)}</span>
+                  <span className="font-semibold text-foreground">{formatPrice(item.total_revenue)}</span>
                 </div>
               ))}
             </div>

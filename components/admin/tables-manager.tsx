@@ -123,7 +123,7 @@ export function TablesManager() {
     if (status === 'listo') return { bg: 'bg-green-50', border: 'border-success border-2', dot: 'bg-success animate-pulse', text: 'text-success' }
     if (status === 'preparando') return { bg: 'bg-kds-preparing', border: 'border-warning', dot: 'bg-warning animate-pulse', text: 'text-warning' }
     if (hasBillRequest) return { bg: 'bg-kds-preparing', border: 'border-warning border-2', dot: 'bg-warning animate-pulse', text: 'text-warning' }
-    return { bg: 'bg-muted', border: 'border-accent', dot: 'bg-black', text: 'text-black' }
+    return { bg: 'bg-muted', border: 'border-accent', dot: 'bg-black', text: 'text-foreground' }
   }
 
   const freeTables = activeTables.filter(
@@ -154,7 +154,7 @@ export function TablesManager() {
             { label: 'Libres', value: freeCount, color: 'text-muted-foreground', bg: 'bg-muted' },
             { label: 'En cocina', value: preparingCount, color: 'text-warning', bg: 'bg-kds-preparing' },
             { label: 'Listos', value: readyCount, color: 'text-success', bg: 'bg-green-50' },
-            { label: 'Ocupadas', value: occupiedCount, color: 'text-black', bg: 'bg-muted' },
+            { label: 'Ocupadas', value: occupiedCount, color: 'text-foreground', bg: 'bg-muted' },
           ].map(stat => (
             <div key={stat.label} className={cn('rounded-lg p-2', stat.bg)}>
               <p className={cn('text-xl font-bold', stat.color)}>{stat.value}</p>
@@ -229,7 +229,7 @@ export function TablesManager() {
                     <div className={cn('w-2 h-2 rounded-full', style.dot)} />
                   </div>
                   <div className="flex-1 flex items-center justify-center">
-                    <span className="text-lg font-bold text-black">{info.numero}</span>
+                    <span className="text-lg font-bold text-foreground">{info.numero}</span>
                   </div>
                   <div className="w-full">
                     {info.status === 'libre' ? (
@@ -263,7 +263,7 @@ export function TablesManager() {
                   )}
                 >
                   <div className={cn('w-2.5 h-2.5 rounded-full shrink-0', style.dot)} />
-                  <span className="text-sm font-bold text-black w-14 shrink-0">Mesa {info.numero}</span>
+                  <span className="text-sm font-bold text-foreground w-14 shrink-0">Mesa {info.numero}</span>
                   <div className="flex-1 min-w-0">
                     <p className={cn('text-xs font-semibold', style.text)}>{info.label}</p>
                     {info.activeOrders.length > 0 && (

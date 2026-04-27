@@ -266,16 +266,16 @@ export function MenuManager() {
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-black/8">
               <div>
-                <p className="font-black text-black text-sm" style={{ letterSpacing: '-0.02em' }}>
+                <p className="font-black text-foreground text-sm tracking-tight">
                   Personalizar menú
                 </p>
-                <p className="text-[10px] text-black/40 mt-0.5">Apariencia de la página pública</p>
+                <p className="text-[10px] text-foreground/40 mt-0.5">Apariencia de la página pública</p>
               </div>
               <button
                 onClick={() => setShowCustomize(false)}
                 className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-black/6 transition-colors"
               >
-                <X className="h-4 w-4 text-black/50" />
+                <X className="h-4 w-4 text-foreground/50" />
               </button>
             </div>
 
@@ -284,10 +284,10 @@ export function MenuManager() {
 
               {/* Identidad */}
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-black/30 mb-2.5">Identidad</p>
+                <p className="text-[9px] font-semibold uppercase tracking-widest text-foreground/30 mb-2.5">Identidad</p>
                 <div className="space-y-2.5">
                   <div>
-                    <label className="text-[10px] font-semibold text-black/50 block mb-1">Nombre del restaurante</label>
+                    <label className="text-[10px] font-semibold text-foreground/50 block mb-1">Nombre del restaurante</label>
                     <Input
                       value={localBranding.restaurantName}
                       onChange={e => setLocalBranding(p => ({ ...p, restaurantName: e.target.value }))}
@@ -296,7 +296,7 @@ export function MenuManager() {
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-semibold text-black/50 block mb-1">Descripción</label>
+                    <label className="text-[10px] font-semibold text-foreground/50 block mb-1">Descripción</label>
                     <Textarea
                       value={localBranding.descripcion}
                       onChange={e => setLocalBranding(p => ({ ...p, descripcion: e.target.value }))}
@@ -305,17 +305,17 @@ export function MenuManager() {
                       maxLength={200}
                       className="text-xs"
                     />
-                    <p className="text-[9px] text-black/25 text-right">{localBranding.descripcion.length}/200</p>
+                    <p className="text-[9px] text-foreground/25 text-right">{localBranding.descripcion.length}/200</p>
                   </div>
                 </div>
               </div>
 
               {/* Imágenes */}
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-black/30 mb-2.5">Imágenes</p>
+                <p className="text-[9px] font-semibold uppercase tracking-widest text-foreground/30 mb-2.5">Imágenes</p>
                 <div className="space-y-2.5">
                   <div>
-                    <label className="text-[10px] font-semibold text-black/50 block mb-1">URL del logo</label>
+                    <label className="text-[10px] font-semibold text-foreground/50 block mb-1">URL del logo</label>
                     <Input
                       value={localBranding.logoUrl}
                       onChange={e => setLocalBranding(p => ({ ...p, logoUrl: e.target.value }))}
@@ -324,7 +324,7 @@ export function MenuManager() {
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-semibold text-black/50 block mb-1">URL de portada</label>
+                    <label className="text-[10px] font-semibold text-foreground/50 block mb-1">URL de portada</label>
                     <Input
                       value={localBranding.coverUrl}
                       onChange={e => setLocalBranding(p => ({ ...p, coverUrl: e.target.value }))}
@@ -347,25 +347,25 @@ export function MenuManager() {
 
               {/* Contacto */}
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-black/30 mb-2.5">Contacto</p>
+                <p className="text-[9px] font-semibold uppercase tracking-widest text-foreground/30 mb-2.5">Contacto</p>
                 <div>
-                  <label className="text-[10px] font-semibold text-black/50 block mb-1">Número de WhatsApp</label>
+                  <label className="text-[10px] font-semibold text-foreground/50 block mb-1">Número de WhatsApp</label>
                   <Input
                     value={localBranding.whatsappNumero}
                     onChange={e => setLocalBranding(p => ({ ...p, whatsappNumero: e.target.value }))}
                     placeholder="+52 55 1234 5678"
                     className="h-9 text-xs"
                   />
-                  <p className="text-[9px] text-black/30 mt-0.5">Aparece como botón de contacto en el menú</p>
+                  <p className="text-[9px] text-foreground/30 mt-0.5">Aparece como botón de contacto en el menú</p>
                 </div>
               </div>
 
               {/* Colores */}
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-black/30 mb-2.5">Colores</p>
+                <p className="text-[9px] font-semibold uppercase tracking-widest text-foreground/30 mb-2.5">Colores</p>
                 <div className="grid grid-cols-2 gap-2.5">
                   <div>
-                    <label className="text-[10px] font-semibold text-black/50 block mb-1">Color primario</label>
+                    <label className="text-[10px] font-semibold text-foreground/50 block mb-1">Color primario</label>
                     <div className="flex items-center gap-2 h-9 rounded-lg border border-black/10 px-2 bg-white">
                       <input
                         type="color"
@@ -373,11 +373,11 @@ export function MenuManager() {
                         onChange={e => setLocalBranding(p => ({ ...p, primaryColor: e.target.value }))}
                         className="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent"
                       />
-                      <span className="text-xs font-mono text-black/60">{localBranding.primaryColor}</span>
+                      <span className="text-xs font-mono text-foreground/60">{localBranding.primaryColor}</span>
                     </div>
                   </div>
                   <div>
-                    <label className="text-[10px] font-semibold text-black/50 block mb-1">Color acento</label>
+                    <label className="text-[10px] font-semibold text-foreground/50 block mb-1">Color acento</label>
                     <div className="flex items-center gap-2 h-9 rounded-lg border border-black/10 px-2 bg-white">
                       <input
                         type="color"
@@ -385,7 +385,7 @@ export function MenuManager() {
                         onChange={e => setLocalBranding(p => ({ ...p, accentColor: e.target.value }))}
                         className="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent"
                       />
-                      <span className="text-xs font-mono text-black/60">{localBranding.accentColor}</span>
+                      <span className="text-xs font-mono text-foreground/60">{localBranding.accentColor}</span>
                     </div>
                   </div>
                 </div>
@@ -393,11 +393,11 @@ export function MenuManager() {
 
               {/* Opciones */}
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-black/30 mb-2.5">Opciones</p>
+                <p className="text-[9px] font-semibold uppercase tracking-widest text-foreground/30 mb-2.5">Opciones</p>
                 <div className="flex items-center justify-between h-10 px-3 rounded-lg border border-black/10 bg-white">
                   <div>
-                    <p className="text-xs font-semibold text-black">Powered by WAITLESS</p>
-                    <p className="text-[9px] text-black/35">Muestra el badge al pie del menú</p>
+                    <p className="text-xs font-semibold text-foreground">Powered by WAITLESS</p>
+                    <p className="text-[9px] text-foreground/35">Muestra el badge al pie del menú</p>
                   </div>
                   <Switch
                     checked={localBranding.poweredByWaitless}

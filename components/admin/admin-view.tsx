@@ -215,7 +215,7 @@ export function AdminView({ onBack }: AdminViewProps) {
               onClick={() => setScreen(item.id)}
               className={cn(
                 'flex-1 flex flex-col items-center justify-center py-2 gap-0.5 relative transition-colors',
-                screen === item.id ? 'text-black' : 'text-muted-foreground'
+                screen === item.id ? 'text-foreground' : 'text-muted-foreground'
               )}
             >
               <div className="relative">
@@ -251,7 +251,7 @@ export function AdminView({ onBack }: AdminViewProps) {
                     {currentUser?.nombre?.charAt(0).toUpperCase() ?? 'A'}
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-xs font-semibold text-black">{currentUser?.nombre ?? 'Admin'}</span>
+                    <span className="text-xs font-semibold text-foreground">{currentUser?.nombre ?? 'Admin'}</span>
                     <span className="text-[10px] text-muted-foreground capitalize">{currentUser?.role ?? 'admin'}</span>
                   </div>
                 </div>

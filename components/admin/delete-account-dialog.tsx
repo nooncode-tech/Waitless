@@ -71,7 +71,7 @@ export function DeleteAccountDialog({ onClose }: Props) {
           <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
             <Trash2 className="w-6 h-6 text-muted-foreground" />
           </div>
-          <h2 className="font-black text-xl text-foreground mb-2" style={{ letterSpacing: '-0.02em' }}>
+          <h2 className="font-black text-xl text-foreground mb-2 tracking-tight">
             Cuenta eliminada
           </h2>
           <p className="text-sm text-muted-foreground leading-relaxed mb-6">
@@ -100,7 +100,7 @@ export function DeleteAccountDialog({ onClose }: Props) {
               <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
                 <AlertTriangle className="w-4 h-4 text-red-600" />
               </div>
-              <h2 className="font-black text-base text-black" style={{ letterSpacing: '-0.02em' }}>
+              <h2 className="font-black text-base text-foreground tracking-tight">
                 Eliminar cuenta
               </h2>
             </div>
@@ -163,12 +163,12 @@ export function DeleteAccountDialog({ onClose }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-border">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
               <Trash2 className="w-4 h-4 text-red-600" />
             </div>
-            <h2 className="font-black text-base text-black" style={{ letterSpacing: '-0.02em' }}>
+            <h2 className="font-black text-base text-foreground tracking-tight">
               Confirmar eliminación
             </h2>
           </div>

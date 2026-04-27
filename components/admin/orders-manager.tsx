@@ -96,7 +96,7 @@ export function OrdersManager() {
             <Badge 
               variant="secondary" 
               className={`text-[9px] h-3.5 px-1 ${
-                activeTab === 'table' ? 'bg-white/20 text-white' : 'bg-muted text-black'
+                activeTab === 'table' ? 'bg-white/20 text-white' : 'bg-muted text-foreground'
               }`}
             >
               {activeTable.length}
@@ -117,7 +117,7 @@ export function OrdersManager() {
             <Badge 
               variant="secondary" 
               className={`text-[9px] h-3.5 px-1 ${
-                activeTab === 'takeout' ? 'bg-white/20 text-white' : 'bg-muted text-black'
+                activeTab === 'takeout' ? 'bg-white/20 text-white' : 'bg-muted text-foreground'
               }`}
             >
               {activeTakeout.length}
@@ -138,7 +138,7 @@ export function OrdersManager() {
             <Badge 
               variant="secondary" 
               className={`text-[9px] h-3.5 px-1 ${
-                activeTab === 'delivery' ? 'bg-white/20 text-white' : 'bg-muted text-black'
+                activeTab === 'delivery' ? 'bg-white/20 text-white' : 'bg-muted text-foreground'
               }`}
             >
               {activeDelivery.length}

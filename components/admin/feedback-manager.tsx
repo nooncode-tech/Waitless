@@ -52,7 +52,7 @@ export function FeedbackManager() {
   return (
     <div className="p-4 space-y-5 max-w-3xl">
       <div>
-        <h2 className="text-lg font-bold text-black">Feedback de clientes</h2>
+        <h2 className="text-lg font-bold text-foreground">Feedback de clientes</h2>
         <p className="text-xs text-muted-foreground mt-0.5">{feedbackList.length} respuestas recibidas</p>
       </div>
 
@@ -60,17 +60,17 @@ export function FeedbackManager() {
       <div className="grid grid-cols-3 gap-3">
         <div className="border border-border rounded-xl p-4 bg-white text-center">
           <Star className="h-5 w-5 mx-auto mb-1 text-yellow-500 fill-yellow-500" />
-          <p className="text-2xl font-bold text-black">{avgRating}</p>
+          <p className="text-2xl font-bold text-foreground">{avgRating}</p>
           <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Promedio</p>
         </div>
         <div className="border border-border rounded-xl p-4 bg-white text-center">
           <TrendingUp className="h-5 w-5 mx-auto mb-1 text-success" />
-          <p className="text-2xl font-bold text-black">{nps}%</p>
+          <p className="text-2xl font-bold text-foreground">{nps}%</p>
           <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Satisfechos (≥4★)</p>
         </div>
         <div className="border border-border rounded-xl p-4 bg-white text-center">
           <MessageSquare className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
-          <p className="text-2xl font-bold text-black">{feedbackList.filter(f => f.comentario).length}</p>
+          <p className="text-2xl font-bold text-foreground">{feedbackList.filter(f => f.comentario).length}</p>
           <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Con comentario</p>
         </div>
       </div>
@@ -78,7 +78,7 @@ export function FeedbackManager() {
       {/* Distribution */}
       <div className="border border-border rounded-xl bg-white overflow-hidden">
         <div className="px-4 py-3 border-b border-border">
-          <p className="text-xs font-bold text-black uppercase tracking-wide">Distribución</p>
+          <p className="text-xs font-bold text-foreground uppercase tracking-wide">Distribución</p>
         </div>
         <div className="p-4 space-y-2">
           {distribution.map(d => (
@@ -100,7 +100,7 @@ export function FeedbackManager() {
       {/* Comments */}
       <div className="border border-border rounded-xl bg-white overflow-hidden">
         <div className="px-4 py-3 border-b border-border">
-          <p className="text-xs font-bold text-black uppercase tracking-wide">Últimos comentarios</p>
+          <p className="text-xs font-bold text-foreground uppercase tracking-wide">Últimos comentarios</p>
         </div>
         <div className="divide-y divide-border">
           {loading ? (
@@ -129,7 +129,7 @@ export function FeedbackManager() {
                     Mesa {f.mesa} · {new Date(f.createdAt).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
                   </span>
                 </div>
-                <p className="text-xs text-black">{f.comentario}</p>
+                <p className="text-xs text-foreground">{f.comentario}</p>
               </div>
             ))
           )}

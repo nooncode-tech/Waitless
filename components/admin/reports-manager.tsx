@@ -408,7 +408,7 @@ export function ReportsManager() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-lg font-bold text-black tracking-tight">Dashboard</h2>
+          <h2 className="text-lg font-bold text-foreground tracking-tight">Dashboard</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
             {new Date().toLocaleDateString('es-MX', {
               weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
@@ -432,7 +432,7 @@ export function ReportsManager() {
                   'px-3 py-1.5 text-xs font-semibold rounded-md transition-all',
                   dateRange === r
                     ? 'bg-black text-white'
-                    : 'text-muted-foreground hover:text-black'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
               >
                 {RANGE_LABELS[r]}
@@ -460,11 +460,11 @@ export function ReportsManager() {
               <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground leading-tight">
                 {kpi.label}
               </span>
-              <div className="p-1.5 rounded-lg bg-muted text-black shrink-0">
+              <div className="p-1.5 rounded-lg bg-muted text-foreground shrink-0">
                 {kpi.icon}
               </div>
             </div>
-            <p className="text-xl font-bold text-black leading-none truncate">{kpi.value}</p>
+            <p className="text-xl font-bold text-foreground leading-none truncate">{kpi.value}</p>
             {kpi.diff !== null && kpi.diff !== undefined ? (
               <p className={cn(
                 'text-[10px] mt-1 font-semibold',
@@ -482,7 +482,7 @@ export function ReportsManager() {
       {/* Gráfico ventas por hora */}
       <div className="border border-border rounded-xl bg-white overflow-hidden">
         <div className="px-4 py-3 border-b border-border">
-          <p className="text-xs font-bold text-black uppercase tracking-wide">Ventas por hora</p>
+          <p className="text-xs font-bold text-foreground uppercase tracking-wide">Ventas por hora</p>
         </div>
         <div className="p-4">
           {totalRevenue > 0 ? (
@@ -532,7 +532,7 @@ export function ReportsManager() {
       {dateRange !== 'hoy' && (
         <div className="border border-border rounded-xl bg-white overflow-hidden">
           <div className="px-4 py-3 border-b border-border">
-            <p className="text-xs font-bold text-black uppercase tracking-wide">
+            <p className="text-xs font-bold text-foreground uppercase tracking-wide">
               Tendencia de ventas — {RANGE_LABELS[dateRange]}
             </p>
           </div>
@@ -583,14 +583,14 @@ export function ReportsManager() {
         {/* Canal */}
         <div className="border border-border rounded-xl bg-white overflow-hidden">
           <div className="px-4 py-3 border-b border-border">
-            <p className="text-xs font-bold text-black uppercase tracking-wide">Pedidos por canal</p>
+            <p className="text-xs font-bold text-foreground uppercase tracking-wide">Pedidos por canal</p>
           </div>
           <div className="p-4 space-y-3">
             {byChannel.map(ch => (
               <div key={ch.label}>
                 <div className="flex justify-between text-xs mb-1">
                   <span className="text-muted-foreground">{ch.label}</span>
-                  <span className="font-semibold text-black">{ch.count} ({ch.pct}%)</span>
+                  <span className="font-semibold text-foreground">{ch.count} ({ch.pct}%)</span>
                 </div>
                 <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                   <div
@@ -609,7 +609,7 @@ export function ReportsManager() {
         {/* SLA & Cancelaciones */}
         <div className="border border-border rounded-xl bg-white overflow-hidden">
           <div className="px-4 py-3 border-b border-border">
-            <p className="text-xs font-bold text-black uppercase tracking-wide">Eficiencia operativa</p>
+            <p className="text-xs font-bold text-foreground uppercase tracking-wide">Eficiencia operativa</p>
           </div>
           <div className="p-4 space-y-4">
             <div>
@@ -639,7 +639,7 @@ export function ReportsManager() {
 
             <div className="grid grid-cols-3 gap-2 pt-1">
               <div className="text-center">
-                <p className="text-lg font-bold text-black">{completedOrders.length}</p>
+                <p className="text-lg font-bold text-foreground">{completedOrders.length}</p>
                 <p className="text-[10px] text-muted-foreground">Completados</p>
               </div>
               <div className="text-center border-x border-border">
@@ -661,7 +661,7 @@ export function ReportsManager() {
       <div className="border border-border rounded-xl bg-white overflow-hidden">
         <div className="px-4 py-3 border-b border-border flex items-center gap-2">
           <ChefHat className="h-3.5 w-3.5 text-muted-foreground" />
-          <p className="text-xs font-bold text-black uppercase tracking-wide">Más vendidos ({RANGE_LABELS[dateRange]})</p>
+          <p className="text-xs font-bold text-foreground uppercase tracking-wide">Más vendidos ({RANGE_LABELS[dateRange]})</p>
         </div>
         <div className="p-4">
           {topItems.length > 0 ? (
@@ -678,12 +678,12 @@ export function ReportsManager() {
                         : <span className="text-[10px] font-bold">{i + 1}</span>
                       }
                     </span>
-                    <span className="text-sm text-black truncate">{item.name}</span>
+                    <span className="text-sm text-foreground truncate">{item.name}</span>
                     <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full shrink-0">
                       ×{item.qty}
                     </span>
                   </div>
-                  <span className="text-sm font-semibold text-black shrink-0">
+                  <span className="text-sm font-semibold text-foreground shrink-0">
                     {formatPrice(item.revenue)}
                   </span>
                 </div>
@@ -700,7 +700,7 @@ export function ReportsManager() {
         <div className="border border-border rounded-xl bg-white overflow-hidden">
           <div className="px-4 py-3 border-b border-border flex items-center gap-2">
             <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
-            <p className="text-xs font-bold text-black uppercase tracking-wide">
+            <p className="text-xs font-bold text-foreground uppercase tracking-wide">
               Satisfacción de clientes ({RANGE_LABELS[dateRange]})
             </p>
           </div>
@@ -708,7 +708,7 @@ export function ReportsManager() {
             <div className="flex items-start gap-6">
               {/* Average rating */}
               <div className="text-center shrink-0">
-                <p className="text-3xl font-bold text-black leading-none">
+                <p className="text-3xl font-bold text-foreground leading-none">
                   {feedbackSummary.avg_rating?.toFixed(1) ?? '—'}
                 </p>
                 <div className="flex gap-0.5 justify-center mt-1">
