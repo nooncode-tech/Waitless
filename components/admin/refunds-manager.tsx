@@ -79,44 +79,44 @@ export function RefundsManager() {
   return (
     <div className="space-y-4">
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-100 rounded-lg">
-                <RotateCcw className="h-5 w-5 text-amber-600" />
+          <CardContent className="p-3">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-amber-100 rounded-lg shrink-0">
+                <RotateCcw className="h-4 w-4 text-amber-600" />
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Total Reembolsos</p>
-                <p className="text-lg font-bold">{refunds.length}</p>
+              <div className="min-w-0">
+                <p className="text-[10px] text-muted-foreground truncate">Total Reembolsos</p>
+                <p className="text-base font-bold">{refunds.length}</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <DollarSign className="h-5 w-5 text-red-600" />
+          <CardContent className="p-3">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-red-100 rounded-lg shrink-0">
+                <DollarSign className="h-4 w-4 text-red-600" />
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Monto Total</p>
-                <p className="text-lg font-bold">{formatPrice(totalRefunded)}</p>
+              <div className="min-w-0">
+                <p className="text-[10px] text-muted-foreground truncate">Monto Total</p>
+                <p className="text-base font-bold">{formatPrice(totalRefunded)}</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Calendar className="h-5 w-5 text-blue-600" />
+
+        <Card className="col-span-2 sm:col-span-1">
+          <CardContent className="p-3">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-blue-100 rounded-lg shrink-0">
+                <Calendar className="h-4 w-4 text-blue-600" />
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Hoy</p>
-                <p className="text-lg font-bold">{formatPrice(refundedToday)}</p>
+              <div className="min-w-0">
+                <p className="text-[10px] text-muted-foreground truncate">Hoy</p>
+                <p className="text-base font-bold">{formatPrice(refundedToday)}</p>
               </div>
             </div>
           </CardContent>

@@ -124,7 +124,7 @@ export function UsersManager() {
   return (
     <div>
       {/* Stats */}
-      <div className="grid grid-cols-5 gap-2 mb-3">
+      <div className="grid grid-cols-4 gap-2 mb-3">
         {(Object.keys(ROLE_CONFIG) as UserRole[]).map((role) => {
           const count = users.filter(u => u.role === role && u.activo).length
           const config = ROLE_CONFIG[role]
