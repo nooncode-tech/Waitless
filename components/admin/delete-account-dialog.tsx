@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { AlertTriangle, Trash2, X, Eye, EyeOff } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
+import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
 
 interface Props {
@@ -184,13 +185,13 @@ export function DeleteAccountDialog({ onClose }: Props) {
               Contraseña
             </label>
             <div className="relative">
-              <input
+              <Input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={e => { setPassword(e.target.value); setError(null) }}
                 onKeyDown={e => e.key === 'Enter' && handleDelete()}
                 placeholder="Tu contraseña actual"
-                className="w-full h-11 rounded-xl border border-gray-200 px-3 pr-10 text-sm text-black placeholder:text-gray-300 focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20"
+                className="h-11 rounded-xl pr-10 focus-visible:border-red-400 focus-visible:ring-red-400/20"
                 autoFocus
               />
               <button

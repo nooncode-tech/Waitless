@@ -8,6 +8,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
 import { formatPrice, type Channel, type MenuItem } from '@/lib/store'
 
 interface CreateOrderDialogProps {
@@ -236,22 +239,24 @@ export function CreateOrderDialog({ channel, onClose }: CreateOrderDialogProps) 
                     <MapPin className="h-2.5 w-2.5" />
                     Zona de reparto <span className="text-destructive">*</span>
                   </Label>
-                  <select
-                    id="zona"
+                  <Select
                     value={zona}
-                    onChange={(e) => setZona(e.target.value)}
-                    onBlur={() => handleBlur('zona', zona)}
-                    className={`w-full h-8 text-sm rounded-md border px-2 ${
-                      errors.zona && touched.zona ? 'border-destructive' : 'border-input'
-                    }`}
+                    onValueChange={(v) => { setZona(v); handleBlur('zona', v) }}
                   >
-                    <option value="">Selecciona zona...</option>
-                    {deliveryZones.map(z => (
-                      <option key={z.nombre} value={z.nombre}>
-                        {z.nombre} - {formatPrice(z.costoEnvio)} ({z.tiempoEstimado} min)
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger
+                      id="zona"
+                      className={`h-8 text-sm ${errors.zona && touched.zona ? 'border-destructive' : ''}`}
+                    >
+                      <SelectValue placeholder="Selecciona zona..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {deliveryZones.map(z => (
+                        <SelectItem key={z.nombre} value={z.nombre}>
+                          {z.nombre} - {formatPrice(z.costoEnvio)} ({z.tiempoEstimado} min)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   {errors.zona && touched.zona && (
                     <p className="text-[10px] text-destructive mt-0.5 flex items-center gap-0.5">
                       <AlertCircle className="h-2.5 w-2.5" />

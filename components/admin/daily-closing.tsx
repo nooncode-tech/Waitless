@@ -24,6 +24,8 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   formatPrice,
   calculateOrderTotal,
@@ -415,12 +417,12 @@ export function DailyClosing() {
           <p className="text-xs text-[#6B6B6B] mt-0.5">Ledger operativo del turno</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          <input
+          <Input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
             max={new Date().toISOString().split('T')[0]}
-            className="h-8 px-2 text-xs border border-[#E5E5E5] rounded-lg bg-white text-black"
+            className="h-8 text-xs w-auto"
           />
           <Button variant="outline" size="sm" onClick={exportCSV}
             className="gap-1.5 h-8 text-xs border-[#E5E5E5] bg-transparent hover:bg-[#F2F2F2] text-black">
@@ -505,13 +507,13 @@ export function DailyClosing() {
         {/* Shift note */}
         {(shiftOpen || shiftEnd) && (
           <div className="mt-3">
-            <textarea
+            <Textarea
               value={shiftNote}
               onChange={e => setShiftNote(e.target.value)}
               placeholder="Observaciones del turno (opcional)..."
               rows={2}
               disabled={!!shiftEnd && !shiftOpen}
-              className="w-full text-xs border border-[#E5E5E5] rounded-lg p-2 resize-none bg-white text-black placeholder:text-[#BEBEBE] disabled:bg-[#F2F2F2] disabled:text-[#6B6B6B]"
+              className="text-xs p-2"
             />
           </div>
         )}
@@ -540,7 +542,7 @@ export function DailyClosing() {
                   <label className="text-[10px] font-medium text-[#6B6B6B] uppercase tracking-wide block mb-1">
                     Fondo apertura ($)
                   </label>
-                  <input
+                  <Input
                     type="number"
                     min="0"
                     step="0.01"
@@ -548,21 +550,21 @@ export function DailyClosing() {
                     onChange={e => setFondoCajaApertura(e.target.value)}
                     placeholder="0.00"
                     disabled={!!shiftEnd && !shiftOpen}
-                    className="w-full h-8 px-2 text-xs border border-[#E5E5E5] rounded-lg bg-white text-black placeholder:text-[#BEBEBE] disabled:bg-[#F2F2F2] disabled:text-[#6B6B6B]"
+                    className="h-8 text-xs"
                   />
                 </div>
                 <div>
                   <label className="text-[10px] font-medium text-[#6B6B6B] uppercase tracking-wide block mb-1">
                     Efectivo contado ($)
                   </label>
-                  <input
+                  <Input
                     type="number"
                     min="0"
                     step="0.01"
                     value={efectivoContado}
                     onChange={e => setEfectivoContado(e.target.value)}
                     placeholder="0.00"
-                    className="w-full h-8 px-2 text-xs border border-[#E5E5E5] rounded-lg bg-white text-black placeholder:text-[#BEBEBE]"
+                    className="h-8 text-xs"
                   />
                 </div>
               </div>

@@ -15,6 +15,7 @@ import type { MenuItem } from '@/lib/store'
 import type { ClienteUser } from '@/lib/cliente-auth'
 import { ExternalLink, Star, UserCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import { WaitlessLogo } from '@/components/ui/waitless-logo'
 import { cn } from '@/lib/utils'
 
@@ -143,7 +144,7 @@ function FeedbackScreen({ onFinish, sessionId, mesa }: { onFinish: () => void; s
         {/* Comentario */}
         {rating > 0 && (
           <div>
-            <textarea
+            <Textarea
               value={comment}
               onChange={e => setComment(e.target.value)}
               placeholder={
@@ -152,7 +153,7 @@ function FeedbackScreen({ onFinish, sessionId, mesa }: { onFinish: () => void; s
                   : '¿Qué podríamos mejorar?'
               }
               rows={3}
-              className="w-full text-sm border border-[#E5E5E5] rounded-xl p-3 resize-none text-black placeholder:text-[#BEBEBE] focus:outline-none focus:border-black transition-colors"
+              className="text-sm p-3"
             />
           </div>
         )}

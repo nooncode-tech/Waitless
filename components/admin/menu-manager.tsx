@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react'
 import { Plus, Edit2, ImageIcon, ExternalLink, Copy, Check, Settings2, X, Save } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { formatPrice, type MenuItem } from '@/lib/store'
 import { MenuItemDialog } from './menu-item-dialog'
@@ -286,22 +288,22 @@ export function MenuManager() {
                 <div className="space-y-2.5">
                   <div>
                     <label className="text-[10px] font-semibold text-black/50 block mb-1">Nombre del restaurante</label>
-                    <input
+                    <Input
                       value={localBranding.restaurantName}
                       onChange={e => setLocalBranding(p => ({ ...p, restaurantName: e.target.value }))}
                       placeholder="Mi Restaurante"
-                      className="w-full h-9 rounded-lg border border-black/10 px-3 text-xs text-black placeholder:text-black/25 focus:outline-none focus:border-black/30 bg-white"
+                      className="h-9 text-xs"
                     />
                   </div>
                   <div>
                     <label className="text-[10px] font-semibold text-black/50 block mb-1">Descripción</label>
-                    <textarea
+                    <Textarea
                       value={localBranding.descripcion}
                       onChange={e => setLocalBranding(p => ({ ...p, descripcion: e.target.value }))}
                       placeholder="Breve descripción de tu restaurante..."
                       rows={2}
                       maxLength={200}
-                      className="w-full rounded-lg border border-black/10 px-3 py-2 text-xs text-black placeholder:text-black/25 focus:outline-none focus:border-black/30 bg-white resize-none"
+                      className="text-xs"
                     />
                     <p className="text-[9px] text-black/25 text-right">{localBranding.descripcion.length}/200</p>
                   </div>
@@ -314,20 +316,20 @@ export function MenuManager() {
                 <div className="space-y-2.5">
                   <div>
                     <label className="text-[10px] font-semibold text-black/50 block mb-1">URL del logo</label>
-                    <input
+                    <Input
                       value={localBranding.logoUrl}
                       onChange={e => setLocalBranding(p => ({ ...p, logoUrl: e.target.value }))}
                       placeholder="https://..."
-                      className="w-full h-9 rounded-lg border border-black/10 px-3 text-xs text-black placeholder:text-black/25 focus:outline-none focus:border-black/30 bg-white"
+                      className="h-9 text-xs"
                     />
                   </div>
                   <div>
                     <label className="text-[10px] font-semibold text-black/50 block mb-1">URL de portada</label>
-                    <input
+                    <Input
                       value={localBranding.coverUrl}
                       onChange={e => setLocalBranding(p => ({ ...p, coverUrl: e.target.value }))}
                       placeholder="https://..."
-                      className="w-full h-9 rounded-lg border border-black/10 px-3 text-xs text-black placeholder:text-black/25 focus:outline-none focus:border-black/30 bg-white"
+                      className="h-9 text-xs"
                     />
                   </div>
                   {/* Preview portada */}
@@ -348,11 +350,11 @@ export function MenuManager() {
                 <p className="text-[9px] font-semibold uppercase tracking-widest text-black/30 mb-2.5">Contacto</p>
                 <div>
                   <label className="text-[10px] font-semibold text-black/50 block mb-1">Número de WhatsApp</label>
-                  <input
+                  <Input
                     value={localBranding.whatsappNumero}
                     onChange={e => setLocalBranding(p => ({ ...p, whatsappNumero: e.target.value }))}
                     placeholder="+52 55 1234 5678"
-                    className="w-full h-9 rounded-lg border border-black/10 px-3 text-xs text-black placeholder:text-black/25 focus:outline-none focus:border-black/30 bg-white"
+                    className="h-9 text-xs"
                   />
                   <p className="text-[9px] text-black/30 mt-0.5">Aparece como botón de contacto en el menú</p>
                 </div>

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { X, Bell, MessageSquare, Receipt, HelpCircle, Check } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 
 interface WaiterCallDialogProps {
   mesa: number
@@ -131,11 +132,11 @@ export function WaiterCallDialog({ mesa, onClose }: WaiterCallDialogProps) {
               <label className="text-xs font-medium text-foreground">Mensaje (opcional)</label>
               <div className="relative mt-1">
                 <MessageSquare className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <textarea
+                <Textarea
                   value={customMessage}
                   onChange={(e) => setCustomMessage(e.target.value)}
                   placeholder="¿En qué podemos ayudarte?"
-                  className="w-full pl-9 pr-3 py-2.5 text-sm border border-border rounded-xl resize-none h-20 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="pl-9 text-sm h-20"
                 />
               </div>
             </div>

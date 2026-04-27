@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { useApp } from '@/lib/context'
 import type { WaitlistEntry } from '@/lib/store'
 import { EmptyState } from '@/components/shared/empty-state'
+import { Input } from '@/components/ui/input'
 import { S } from '@/lib/strings'
 
 const ESTADO_LABELS: Record<WaitlistEntry['estado'], string> = {
@@ -100,21 +101,21 @@ export function WaitlistManager() {
           <div className="grid grid-cols-2 gap-3">
             <label className="space-y-1">
               <span className="text-xs text-gray-600">{S.waitlistName} *</span>
-              <input
+              <Input
                 required
                 value={form.nombre}
                 onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))}
-                className="w-full text-sm border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-black"
+                className="h-9 text-sm"
                 placeholder="Ej: García"
               />
             </label>
             <label className="space-y-1">
               <span className="text-xs text-gray-600">{S.waitlistPhone}</span>
-              <input
+              <Input
                 value={form.telefono}
                 onChange={e => setForm(p => ({ ...p, telefono: e.target.value }))}
                 type="tel"
-                className="w-full text-sm border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-black"
+                className="h-9 text-sm"
                 placeholder="Ej: 11 1234-5678"
               />
             </label>
@@ -122,21 +123,21 @@ export function WaitlistManager() {
           <div className="grid grid-cols-2 gap-3">
             <label className="space-y-1">
               <span className="text-xs text-gray-600">{S.waitlistGuests}</span>
-              <input
+              <Input
                 type="number"
                 min={1}
                 max={20}
                 value={form.personas}
                 onChange={e => setForm(p => ({ ...p, personas: e.target.value }))}
-                className="w-full text-sm border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-black"
+                className="h-9 text-sm"
               />
             </label>
             <label className="space-y-1">
               <span className="text-xs text-gray-600">{S.waitlistNotes}</span>
-              <input
+              <Input
                 value={form.notas}
                 onChange={e => setForm(p => ({ ...p, notas: e.target.value }))}
-                className="w-full text-sm border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-black"
+                className="h-9 text-sm"
                 placeholder="Ej: cumpleaños, silla de bebé"
               />
             </label>
@@ -284,13 +285,13 @@ function WaitlistCard({ entry, onAssign, onCancel, onRemove }: WaitlistCardProps
 
       {assigningMesa && (
         <form onSubmit={submitAssign} className="flex gap-2 items-center">
-          <input
+          <Input
             type="number"
             min={1}
             value={mesaValue}
             onChange={e => setMesaValue(e.target.value)}
             placeholder="Nro. de mesa"
-            className="text-xs border rounded-lg px-2 py-1 w-28 focus:outline-none focus:ring-2 focus:ring-black"
+            className="h-8 text-xs w-28"
             autoFocus
           />
           <button

@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -143,18 +146,21 @@ export function QRManager() {
               <div className="flex items-end gap-4">
                 <div className="flex-1">
                   <Label htmlFor="mesa-select">Numero de Mesa</Label>
-                  <select
-                    id="mesa-select"
-                    value={selectedMesa}
-                    onChange={(e) => setSelectedMesa(Number(e.target.value))}
-                    className="w-full mt-1.5 h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  <Select
+                    value={String(selectedMesa)}
+                    onValueChange={(v) => setSelectedMesa(Number(v))}
                   >
-                    {activeTables.map(table => (
-                      <option key={table.id} value={table.numero}>
-                        Mesa {table.numero} {table.nombre ? `- ${table.nombre}` : ''}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger id="mesa-select" className="mt-1.5 h-10">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {activeTables.map(table => (
+                        <SelectItem key={table.id} value={String(table.numero)}>
+                          Mesa {table.numero} {table.nombre ? `- ${table.nombre}` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button onClick={() => handleGenerateQR(selectedMesa)} className="gap-2">
                   <QrCode className="h-4 w-4" />
