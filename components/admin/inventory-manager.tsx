@@ -78,7 +78,7 @@ export function InventoryManager() {
   const displayItems = activeTab === 'low' ? activeLowStock : activeIngredients
   
   return (
-    <div className="p-3">
+    <div>
       {/* Stats */}
       <div className="grid grid-cols-3 gap-2 mb-3">
         <Card className="bg-card">

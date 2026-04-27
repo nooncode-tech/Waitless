@@ -179,7 +179,7 @@ export function AdminView({ onBack }: AdminViewProps) {
 
         {/* Mobile Content */}
         <main className="flex-1 overflow-auto pb-20">
-          <div className="bg-card min-h-full">
+          <div className="bg-card min-h-full p-3">
             {screen === 'reports' && <ReportsManager />}
             {screen === 'tables' && <TablesManager />}
             {screen === 'closing' && <DailyClosing />}
@@ -193,9 +193,9 @@ export function AdminView({ onBack }: AdminViewProps) {
             {screen === 'audit' && <AuditLogViewer />}
             {screen === 'users' && <UsersManager />}
             {screen === 'config' && <ConfigManager />}
-            {screen === 'waitlist' && <div className="p-4"><WaitlistManager /></div>}
+            {screen === 'waitlist' && <WaitlistManager />}
             {screen === 'feedback' && <FeedbackManager />}
-            {screen === 'analytics' && <div className="p-4"><AnalyticsDashboard /></div>}
+            {screen === 'analytics' && <AnalyticsDashboard />}
             {screen === 'health' && <HealthPanel />}
             {screen === 'backup' && <BackupManager />}
           </div>
@@ -563,9 +563,9 @@ export function AdminView({ onBack }: AdminViewProps) {
               {screen === 'audit' && <AuditLogViewer />}
               {screen === 'users' && <UsersManager />}
               {screen === 'config' && <ConfigManager />}
-              {screen === 'waitlist' && <div className="p-6"><WaitlistManager /></div>}
+              {screen === 'waitlist' && <WaitlistManager />}
               {screen === 'feedback' && <FeedbackManager />}
-              {screen === 'analytics' && <div className="p-2"><AnalyticsDashboard /></div>}
+              {screen === 'analytics' && <AnalyticsDashboard />}
               {screen === 'health' && <HealthPanel />}
               {screen === 'backup' && <BackupManager />}
             </div>

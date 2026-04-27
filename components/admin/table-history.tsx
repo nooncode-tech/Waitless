@@ -264,7 +264,7 @@ export function TableHistory() {
 
   // Table selection view
   return (
-    <div className="p-3">
+    <div>
       <div className="flex items-center gap-2 mb-4">
         <History className="h-4 w-4 text-primary" />
         <h2 className="text-sm font-bold text-foreground">Historial por mesa</h2>

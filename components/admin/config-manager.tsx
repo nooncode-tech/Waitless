@@ -62,7 +62,7 @@ export function ConfigManager() {
   const hasChanges = JSON.stringify(localConfig) !== JSON.stringify(safeConfig)
   
   return (
-    <div className="p-3">
+    <div>
       <div className="flex items-center justify-between mb-3">
         <div>
           <h2 className="text-xs font-semibold text-foreground flex items-center gap-1.5">

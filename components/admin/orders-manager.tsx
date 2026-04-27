@@ -79,7 +79,7 @@ export function OrdersManager() {
   }
   
   return (
-    <div className="p-3">
+    <div>
       {/* Tabs - Only show tabs if there are orders in multiple channels */}
       <div className="flex gap-1 mb-3 overflow-x-auto">
         <button

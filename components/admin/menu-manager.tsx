@@ -104,7 +104,7 @@ export function MenuManager() {
     .sort((a, b) => a.orden - b.orden)
   
   return (
-    <div className="p-3">
+    <div>
       <div className="flex items-center justify-between mb-3">
         <div>
           <h2 className="text-xs font-semibold text-foreground">Gestion de menu</h2>

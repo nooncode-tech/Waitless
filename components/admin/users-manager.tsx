@@ -122,7 +122,7 @@ export function UsersManager() {
   }
 
   return (
-    <div className="p-3">
+    <div>
       {/* Stats */}
       <div className="grid grid-cols-5 gap-2 mb-3">
         {(Object.keys(ROLE_CONFIG) as UserRole[]).map((role) => {
