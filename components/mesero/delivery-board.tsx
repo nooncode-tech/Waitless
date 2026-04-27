@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Clock, Package, MapPin, Phone, Truck, ShoppingBag, AlertCircle, User } from 'lucide-react'
+import { Check, Clock, Package, MapPin, Phone, Truck, ShoppingBag, AlertCircle, User, Copy } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +12,14 @@ export function DeliveryBoard() {
   const { orders, users, updateOrderStatus, assignRepartidor } = useApp()
   const [assigningId, setAssigningId] = useState<string | null>(null)
   const [selectedRepartidor, setSelectedRepartidor] = useState<string>('')
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  const copyTrackingLink = (orderId: string) => {
+    const url = `${window.location.origin}/tracking/${orderId}`
+    navigator.clipboard.writeText(url)
+    setCopiedId(orderId)
+    setTimeout(() => setCopiedId(null), 2000)
+  }
 
   const deliveryStaff = users.filter(u => u.activo && (u.role === 'mesero' || u.role === 'manager'))
 
@@ -259,12 +267,25 @@ export function DeliveryBoard() {
                     )}
 
                     {isEnCamino && (
-                      <Button
-                        className="w-full bg-success hover:bg-success/90 text-white h-7 text-xs"
-                        onClick={() => handleMarkDelivered(order.id)}
-                      >
-                        <Check className="h-3 w-3 mr-1" />Entregado
-                      </Button>
+                      <div className="space-y-1.5">
+                        {isDelivery && (
+                          <button
+                            onClick={() => copyTrackingLink(order.id)}
+                            className="w-full flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground border border-dashed border-border rounded-lg py-1.5 transition-colors"
+                          >
+                            {copiedId === order.id
+                              ? <><Check className="h-3 w-3 text-success" /><span className="text-success">Link copiado</span></>
+                              : <><Copy className="h-3 w-3" />Copiar link de tracking</>
+                            }
+                          </button>
+                        )}
+                        <Button
+                          className="w-full bg-success hover:bg-success/90 text-white h-7 text-xs"
+                          onClick={() => handleMarkDelivered(order.id)}
+                        >
+                          <Check className="h-3 w-3 mr-1" />Entregado
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>
