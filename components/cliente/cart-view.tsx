@@ -190,7 +190,7 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
         {!loyaltyPhone && !showPhoneInput && (
           <button
             onClick={() => setShowPhoneInput(true)}
-            className="w-full flex items-center gap-2 px-3 py-2 border border-[#E5E5E5] rounded-xl text-xs text-[#6B6B6B] hover:border-black transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 border border-border rounded-xl text-xs text-muted-foreground hover:border-black transition-colors"
           >
             <Gift className="h-3.5 w-3.5 shrink-0" />
             <span>Acumula puntos — identifícate con tu teléfono</span>
@@ -199,14 +199,14 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
 
         {showPhoneInput && (
           <div className="flex gap-2">
-            <div className="flex-1 flex items-center border border-[#E5E5E5] rounded-xl px-3 gap-2">
-              <Phone className="h-3.5 w-3.5 text-[#BEBEBE] shrink-0" />
+            <div className="flex-1 flex items-center border border-border rounded-xl px-3 gap-2">
+              <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               <input
                 type="tel"
                 value={phoneInput}
                 onChange={e => setPhoneInput(e.target.value)}
                 placeholder="Número de teléfono"
-                className="flex-1 text-xs py-2 bg-transparent outline-none text-black placeholder:text-[#BEBEBE]"
+                className="flex-1 text-xs py-2 bg-transparent outline-none text-black placeholder:text-muted-foreground"
                 onKeyDown={e => e.key === 'Enter' && handleIdentify()}
                 autoFocus
               />
@@ -220,7 +220,7 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
             </button>
             <button
               onClick={() => setShowPhoneInput(false)}
-              className="px-3 h-9 border border-[#E5E5E5] text-xs text-[#6B6B6B] rounded-xl"
+              className="px-3 h-9 border border-border text-xs text-muted-foreground rounded-xl"
             >
               ×
             </button>
@@ -228,15 +228,15 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
         )}
 
         {customer && (
-          <div className="flex items-center justify-between px-3 py-2 bg-[#F0FDF4] border border-[#16A34A]/20 rounded-xl">
+          <div className="flex items-center justify-between px-3 py-2 bg-green-50 border border-success/20 rounded-xl">
             <div className="flex items-center gap-2">
-              <Gift className="h-3.5 w-3.5 text-[#16A34A]" />
-              <span className="text-xs font-semibold text-[#16A34A]">
+              <Gift className="h-3.5 w-3.5 text-success" />
+              <span className="text-xs font-semibold text-success">
                 {customer.puntos} puntos acumulados
               </span>
             </div>
             {puntosGanados > 0 && (
-              <span className="text-[10px] text-[#16A34A]">+{puntosGanados} con este pedido</span>
+              <span className="text-[10px] text-success">+{puntosGanados} con este pedido</span>
             )}
           </div>
         )}
@@ -256,7 +256,7 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Armchair className="h-3.5 w-3.5" />
-            <span>¿Cuál es tu asiento? <span className="text-[#BEBEBE]">(opcional)</span></span>
+            <span>¿Cuál es tu asiento? <span className="text-muted-foreground">(opcional)</span></span>
           </div>
           <div className="flex gap-1.5 flex-wrap">
             {[1,2,3,4,5,6,7,8].map(n => (
@@ -266,7 +266,7 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
                 className={`w-9 h-9 rounded-xl text-sm font-semibold border transition-colors ${
                   seatNumber === n
                     ? 'bg-black text-white border-black'
-                    : 'bg-white text-black border-[#E5E5E5] hover:border-black'
+                    : 'bg-white text-black border-border hover:border-black'
                 }`}
               >
                 {n}

@@ -415,7 +415,7 @@ function InventoryHistoryDialog({ adjustments, ingredients, users, onClose }: In
       case 'entrada': return 'bg-success/20 text-success'
       case 'salida': return 'bg-amber-500/20 text-amber-600'
       case 'merma': return 'bg-destructive/20 text-destructive'
-      case 'ajuste': return 'bg-[#F2F2F2] text-[#6B6B6B]'
+      case 'ajuste': return 'bg-muted text-muted-foreground'
       default: return 'bg-secondary text-foreground'
     }
   }

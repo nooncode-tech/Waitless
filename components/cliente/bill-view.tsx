@@ -172,7 +172,7 @@ export function BillView({ sessionId, mesa, onBack, onShowRewards }: BillViewPro
                   className={`flex-1 py-2 rounded text-xs font-semibold transition-colors border ${
                     currentTipPercent === percent
                       ? 'bg-black text-white border-black'
-                      : 'bg-white text-black border-[#E5E5E5] hover:border-black'
+                      : 'bg-white text-black border-border hover:border-black'
                   }`}
                 >
                   {percent === 0 ? 'Sin' : `${percent}%`}
@@ -187,39 +187,39 @@ export function BillView({ sessionId, mesa, onBack, onShowRewards }: BillViewPro
           <div className="mt-5">
             <button
               onClick={() => setShowSplit(!showSplit)}
-              className="w-full flex items-center justify-between p-3 border border-[#E5E5E5] rounded-xl hover:border-black transition-colors"
+              className="w-full flex items-center justify-between p-3 border border-border rounded-xl hover:border-black transition-colors"
             >
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-black" />
                 <span className="text-[13px] font-semibold text-black">Dividir cuenta</span>
               </div>
-              <span className="text-[11px] text-[#6B6B6B]">
+              <span className="text-[11px] text-muted-foreground">
                 {showSplit ? `${formatPrice(splitAmount)} c/u` : 'Split bill'}
               </span>
             </button>
 
             {showSplit && (
-              <div className="mt-2 p-4 bg-[#F2F2F2] rounded-xl space-y-3">
-                <p className="text-xs text-[#6B6B6B] text-center">¿Cuántas personas dividen?</p>
+              <div className="mt-2 p-4 bg-muted rounded-xl space-y-3">
+                <p className="text-xs text-muted-foreground text-center">¿Cuántas personas dividen?</p>
                 <div className="flex items-center justify-center gap-4">
                   <button
                     onClick={() => setSplitPeople(p => Math.max(2, p - 1))}
-                    className="w-9 h-9 rounded-full bg-white border border-[#E5E5E5] flex items-center justify-center hover:border-black transition-colors"
+                    className="w-9 h-9 rounded-full bg-white border border-border flex items-center justify-center hover:border-black transition-colors"
                   >
                     <Minus className="h-4 w-4" />
                   </button>
                   <span className="text-2xl font-bold text-black w-10 text-center">{splitPeople}</span>
                   <button
                     onClick={() => setSplitPeople(p => Math.min(20, p + 1))}
-                    className="w-9 h-9 rounded-full bg-white border border-[#E5E5E5] flex items-center justify-center hover:border-black transition-colors"
+                    className="w-9 h-9 rounded-full bg-white border border-border flex items-center justify-center hover:border-black transition-colors"
                   >
                     <Plus className="h-4 w-4" />
                   </button>
                 </div>
                 <div className="bg-white rounded-lg p-3 text-center">
-                  <p className="text-[11px] text-[#6B6B6B]">Cada persona paga</p>
+                  <p className="text-[11px] text-muted-foreground">Cada persona paga</p>
                   <p className="text-2xl font-bold text-black mt-1">{formatPrice(splitAmount)}</p>
-                  <p className="text-[10px] text-[#BEBEBE] mt-0.5">Total: {formatPrice(session.total)} ÷ {splitPeople}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Total: {formatPrice(session.total)} ÷ {splitPeople}</p>
                 </div>
               </div>
             )}
@@ -229,49 +229,49 @@ export function BillView({ sessionId, mesa, onBack, onShowRewards }: BillViewPro
 
       {/* Bottom Summary */}
       {session.orders.length > 0 && (
-        <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-[#E5E5E5] p-4 max-w-md mx-auto shadow-lg">
+        <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-border p-4 max-w-md mx-auto shadow-lg">
           <div className="space-y-1 mb-3">
-            <div className="flex justify-between text-[13px] text-[#6B6B6B]">
+            <div className="flex justify-between text-[13px] text-muted-foreground">
               <span>Subtotal</span>
               <span>{formatPrice(session.subtotal)}</span>
             </div>
-            <div className="flex justify-between text-[13px] text-[#6B6B6B]">
+            <div className="flex justify-between text-[13px] text-muted-foreground">
               <span>IVA ({config.impuestoPorcentaje}%)</span>
               <span>{formatPrice(session.impuestos)}</span>
             </div>
             {session.propina > 0 && (
-              <div className="flex justify-between text-[13px] text-[#6B6B6B]">
+              <div className="flex justify-between text-[13px] text-muted-foreground">
                 <span>Propina</span>
                 <span>{formatPrice(session.propina)}</span>
               </div>
             )}
             {session.descuento > 0 && (
-              <div className="flex justify-between text-[13px] text-[#16A34A] font-medium">
+              <div className="flex justify-between text-[13px] text-success font-medium">
                 <span>Descuento {session.descuentoMotivo && `· ${session.descuentoMotivo}`}</span>
                 <span>−{formatPrice(session.descuento)}</span>
               </div>
             )}
-            <div className="flex justify-between text-base font-bold text-black pt-2 border-t border-[#E5E5E5]">
+            <div className="flex justify-between text-base font-bold text-black pt-2 border-t border-border">
               <span>Total</span>
               <span>{formatPrice(session.total)}</span>
             </div>
           </div>
 
           {isPaid ? (
-            <div className="text-center py-2.5 bg-[#F0FDF4] rounded-lg border border-[#16A34A]/20">
+            <div className="text-center py-2.5 bg-green-50 rounded-lg border border-success/20">
               <div className="flex items-center justify-center gap-2 mb-0.5">
-                <Check className="h-4 w-4 text-[#16A34A]" />
-                <p className="text-sm font-semibold text-[#16A34A]">Cuenta pagada</p>
+                <Check className="h-4 w-4 text-success" />
+                <p className="text-sm font-semibold text-success">Cuenta pagada</p>
               </div>
-              <p className="text-[10px] text-[#16A34A]/70">Gracias por tu visita</p>
+              <p className="text-[10px] text-success/70">Gracias por tu visita</p>
             </div>
           ) : isWaiting ? (
-            <div className="text-center py-2.5 bg-[#FFFBEB] rounded-lg border border-[#D97706]/20">
+            <div className="text-center py-2.5 bg-kds-preparing rounded-lg border border-warning/20">
               <div className="flex items-center justify-center gap-2 mb-0.5">
-                <Bell className="h-4 w-4 text-[#D97706]" />
-                <p className="text-sm font-semibold text-[#D97706]">Cuenta solicitada</p>
+                <Bell className="h-4 w-4 text-warning" />
+                <p className="text-sm font-semibold text-warning">Cuenta solicitada</p>
               </div>
-              <p className="text-[10px] text-[#D97706]/70">El mesero vendrá a cobrarte pronto</p>
+              <p className="text-[10px] text-warning/70">El mesero vendrá a cobrarte pronto</p>
             </div>
           ) : (
             <Button

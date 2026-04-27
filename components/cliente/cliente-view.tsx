@@ -71,13 +71,13 @@ function FeedbackScreen({ onFinish, sessionId, mesa }: { onFinish: () => void; s
           <WaitlessLogo size={48} color="dark" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
           <div>
             <h2 className="text-xl font-bold text-black">¡Gracias!</h2>
-            <p className="text-sm text-[#6B6B6B] mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Tu opinión nos ayuda a mejorar cada día.
             </p>
           </div>
           {rating >= 4 && (
             <div className="space-y-3">
-              <p className="text-xs text-[#6B6B6B]">
+              <p className="text-xs text-muted-foreground">
                 ¿Te animás a dejarnos una reseña en Google?
               </p>
               <Button
@@ -91,7 +91,7 @@ function FeedbackScreen({ onFinish, sessionId, mesa }: { onFinish: () => void; s
           )}
           <Button
             variant="ghost"
-            className="w-full text-[#BEBEBE] text-sm"
+            className="w-full text-muted-foreground text-sm"
             onClick={onFinish}
           >
             Finalizar
@@ -107,7 +107,7 @@ function FeedbackScreen({ onFinish, sessionId, mesa }: { onFinish: () => void; s
         <div className="text-center">
           <WaitlessLogo size={48} color="dark" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
           <h2 className="text-xl font-bold text-black mt-4">¿Cómo estuvo tu experiencia?</h2>
-          <p className="text-sm text-[#6B6B6B] mt-1">Tu opinión es muy importante para nosotros</p>
+          <p className="text-sm text-muted-foreground mt-1">Tu opinión es muy importante para nosotros</p>
         </div>
 
         {/* Estrellas */}
@@ -125,7 +125,7 @@ function FeedbackScreen({ onFinish, sessionId, mesa }: { onFinish: () => void; s
                   'h-10 w-10 transition-colors',
                   (hovered || rating) >= star
                     ? 'fill-black text-black'
-                    : 'text-[#E5E5E5]'
+                    : 'text-border'
                 )}
               />
             </button>
@@ -168,7 +168,7 @@ function FeedbackScreen({ onFinish, sessionId, mesa }: { onFinish: () => void; s
           </Button>
           <Button
             variant="ghost"
-            className="w-full text-[#BEBEBE] text-sm"
+            className="w-full text-muted-foreground text-sm"
             onClick={onFinish}
           >
             Omitir
@@ -339,9 +339,9 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {clienteUser && showBottomNav && (
-        <div className="flex items-center gap-2 px-4 py-2 bg-[#F9F9F9] border-b border-[#F0F0F0]">
-          <UserCircle2 className="h-4 w-4 text-[#BEBEBE] shrink-0" />
-          <span className="text-xs text-[#6B6B6B]">
+        <div className="flex items-center gap-2 px-4 py-2 bg-muted border-b border-border">
+          <UserCircle2 className="h-4 w-4 text-muted-foreground shrink-0" />
+          <span className="text-xs text-muted-foreground">
             Hola, <span className="font-semibold text-black">{clienteUser.nombre}</span>
           </span>
         </div>
@@ -377,7 +377,7 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
       )}
 
       {config.poweredByWaitless === true && (
-        <div className="text-center py-2 text-[10px] text-[#BEBEBE]">
+        <div className="text-center py-2 text-[10px] text-muted-foreground">
           Powered by WAITLESS
         </div>
       )}

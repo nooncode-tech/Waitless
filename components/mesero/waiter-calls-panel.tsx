@@ -38,9 +38,9 @@ export function WaiterCallsPanel() {
   
   const getCallColor = (tipo: string) => {
     switch (tipo) {
-      case 'cuenta': return 'bg-[#D97706]'
+      case 'cuenta': return 'bg-warning'
       case 'atencion': return 'bg-black'
-      default: return 'bg-[#BEBEBE]'
+      default: return 'bg-accent'
     }
   }
   
@@ -81,9 +81,9 @@ export function WaiterCallsPanel() {
             <Card 
               key={call.id} 
               className={`border-l-4 ${
-                call.tipo === 'cuenta' ? 'border-l-[#D97706] bg-[#FFFBEB]' :
-                call.tipo === 'atencion' ? 'border-l-black bg-[#F2F2F2]' :
-                'border-l-[#BEBEBE]'
+                call.tipo === 'cuenta' ? 'border-l-warning bg-kds-preparing' :
+                call.tipo === 'atencion' ? 'border-l-black bg-muted' :
+                'border-l-accent'
               }`}
             >
               <CardContent className="p-3">
@@ -123,7 +123,7 @@ export function WaiterCallsPanel() {
                   
                   <Button
                     size="sm"
-                    className="bg-[#16A34A] hover:bg-[#16A34A]/90 text-white h-8 text-xs shrink-0"
+                    className="bg-success hover:bg-success/90 text-white h-8 text-xs shrink-0"
                     onClick={() => handleAttendCall(call.id)}
                   >
                     <Check className="h-3 w-3 mr-1" />

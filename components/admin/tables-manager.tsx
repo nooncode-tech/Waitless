@@ -118,12 +118,12 @@ export function TablesManager() {
   }
 
   const getStatusStyle = (status: string, hasCall: boolean, hasBillRequest: boolean) => {
-    if (status === 'libre') return { bg: 'bg-white', border: 'border-[#E5E5E5]', dot: 'bg-[#BEBEBE]', text: 'text-[#BEBEBE]' }
-    if (status === 'pagada') return { bg: 'bg-[#F0FDF4]', border: 'border-[#16A34A]', dot: 'bg-[#16A34A]', text: 'text-[#16A34A]' }
-    if (status === 'listo') return { bg: 'bg-[#F0FDF4]', border: 'border-[#16A34A] border-2', dot: 'bg-[#16A34A] animate-pulse', text: 'text-[#16A34A]' }
-    if (status === 'preparando') return { bg: 'bg-[#FFFBEB]', border: 'border-[#D97706]', dot: 'bg-[#D97706] animate-pulse', text: 'text-[#D97706]' }
-    if (hasBillRequest) return { bg: 'bg-[#FFFBEB]', border: 'border-[#D97706] border-2', dot: 'bg-[#D97706] animate-pulse', text: 'text-[#D97706]' }
-    return { bg: 'bg-[#F2F2F2]', border: 'border-[#BEBEBE]', dot: 'bg-black', text: 'text-black' }
+    if (status === 'libre') return { bg: 'bg-white', border: 'border-border', dot: 'bg-accent', text: 'text-muted-foreground' }
+    if (status === 'pagada') return { bg: 'bg-green-50', border: 'border-success', dot: 'bg-success', text: 'text-success' }
+    if (status === 'listo') return { bg: 'bg-green-50', border: 'border-success border-2', dot: 'bg-success animate-pulse', text: 'text-success' }
+    if (status === 'preparando') return { bg: 'bg-kds-preparing', border: 'border-warning', dot: 'bg-warning animate-pulse', text: 'text-warning' }
+    if (hasBillRequest) return { bg: 'bg-kds-preparing', border: 'border-warning border-2', dot: 'bg-warning animate-pulse', text: 'text-warning' }
+    return { bg: 'bg-muted', border: 'border-accent', dot: 'bg-black', text: 'text-black' }
   }
 
   const freeTables = activeTables.filter(
@@ -151,10 +151,10 @@ export function TablesManager() {
         {/* Stats */}
         <div className="grid grid-cols-4 gap-2 mb-3">
           {[
-            { label: 'Libres', value: freeCount, color: 'text-[#BEBEBE]', bg: 'bg-[#F2F2F2]' },
-            { label: 'En cocina', value: preparingCount, color: 'text-[#D97706]', bg: 'bg-[#FFFBEB]' },
-            { label: 'Listos', value: readyCount, color: 'text-[#16A34A]', bg: 'bg-[#F0FDF4]' },
-            { label: 'Ocupadas', value: occupiedCount, color: 'text-black', bg: 'bg-[#F2F2F2]' },
+            { label: 'Libres', value: freeCount, color: 'text-muted-foreground', bg: 'bg-muted' },
+            { label: 'En cocina', value: preparingCount, color: 'text-warning', bg: 'bg-kds-preparing' },
+            { label: 'Listos', value: readyCount, color: 'text-success', bg: 'bg-green-50' },
+            { label: 'Ocupadas', value: occupiedCount, color: 'text-black', bg: 'bg-muted' },
           ].map(stat => (
             <div key={stat.label} className={cn('rounded-lg p-2', stat.bg)}>
               <p className={cn('text-xl font-bold', stat.color)}>{stat.value}</p>
@@ -167,10 +167,10 @@ export function TablesManager() {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3 flex-wrap">
             {[
-              { dot: 'bg-[#BEBEBE]', label: 'Libre' },
+              { dot: 'bg-accent', label: 'Libre' },
               { dot: 'bg-black', label: 'Ocupada' },
-              { dot: 'bg-[#D97706]', label: 'En cocina' },
-              { dot: 'bg-[#16A34A]', label: 'Listo' },
+              { dot: 'bg-warning', label: 'En cocina' },
+              { dot: 'bg-success', label: 'Listo' },
             ].map(l => (
               <div key={l.label} className="flex items-center gap-1">
                 <div className={cn('w-2 h-2 rounded-full', l.dot)} />
@@ -219,7 +219,7 @@ export function TablesManager() {
                         </span>
                       )}
                       {info.hasBillRequest && !info.hasCall && (
-                        <span className="w-5 h-5 bg-[#D97706] rounded-full flex items-center justify-center shadow">
+                        <span className="w-5 h-5 bg-warning rounded-full flex items-center justify-center shadow">
                           <Receipt className="h-2.5 w-2.5 text-white" />
                         </span>
                       )}
@@ -233,7 +233,7 @@ export function TablesManager() {
                   </div>
                   <div className="w-full">
                     {info.status === 'libre' ? (
-                      <p className="text-[9px] text-[#BEBEBE] text-center font-medium">Libre</p>
+                      <p className="text-[9px] text-muted-foreground text-center font-medium">Libre</p>
                     ) : info.elapsedMin > 0 ? (
                       <p className={cn('text-[9px] font-semibold text-center flex items-center justify-center gap-0.5', style.text)}>
                         <Clock className="h-2 w-2" />
@@ -278,7 +278,7 @@ export function TablesManager() {
                   )}
                   <div className="flex items-center gap-1 shrink-0">
                     {info.hasCall && <Bell className="h-3.5 w-3.5 text-red-500" />}
-                    {info.hasBillRequest && <Receipt className="h-3.5 w-3.5 text-[#D97706]" />}
+                    {info.hasBillRequest && <Receipt className="h-3.5 w-3.5 text-warning" />}
                   </div>
                 </button>
               )
@@ -329,7 +329,7 @@ export function TablesManager() {
                     {selectedInfo.tableOrders.map(order => (
                       <div key={order.id} className="flex items-center justify-between text-xs">
                         <span>#{order.numero} — {order.items.map(i => `${i.cantidad}x ${i.menuItem.nombre}`).join(', ').slice(0, 30)}{order.items.map(i => i.menuItem.nombre).join('').length > 30 ? '…' : ''}</span>
-                        <Badge variant="outline" className={cn('text-[9px] h-4 ml-1 shrink-0', order.status === 'entregado' ? 'text-[#16A34A]' : order.status === 'listo' ? 'text-[#16A34A]' : order.status === 'cancelado' ? 'text-red-500' : 'text-[#D97706]')}>
+                        <Badge variant="outline" className={cn('text-[9px] h-4 ml-1 shrink-0', order.status === 'entregado' ? 'text-success' : order.status === 'listo' ? 'text-success' : order.status === 'cancelado' ? 'text-red-500' : 'text-warning')}>
                           {order.status === 'entregado' ? 'Entregado' : order.status === 'listo' ? 'Listo' : order.status === 'cancelado' ? 'Cancelado' : order.status === 'preparando' ? 'Preparando' : 'Cola'}
                         </Badge>
                       </div>

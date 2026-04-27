@@ -137,16 +137,16 @@ export function RegistroForm() {
         </div>
         <div>
           <h2 className="text-xl font-bold text-black">¡Todo listo!</h2>
-          <p className="text-sm text-[#6B6B6B] mt-2">Tu negocio fue registrado correctamente.</p>
+          <p className="text-sm text-muted-foreground mt-2">Tu negocio fue registrado correctamente.</p>
         </div>
-        <div className="bg-[#F9F9F9] border border-[#E5E5E5] rounded-xl p-4 text-left space-y-2">
-          <p className="text-xs text-[#6B6B6B] uppercase font-semibold tracking-wide">Tus credenciales de acceso</p>
+        <div className="bg-muted border border-border rounded-xl p-4 text-left space-y-2">
+          <p className="text-xs text-muted-foreground uppercase font-semibold tracking-wide">Tus credenciales de acceso</p>
           <div className="flex items-center justify-between">
-            <span className="text-xs text-[#6B6B6B]">Usuario</span>
+            <span className="text-xs text-muted-foreground">Usuario</span>
             <span className="text-sm font-bold text-black font-mono">{success.username}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-xs text-[#6B6B6B]">Contraseña</span>
+            <span className="text-xs text-muted-foreground">Contraseña</span>
             <span className="text-sm text-black">la que elegiste</span>
           </div>
         </div>
@@ -178,13 +178,13 @@ export function RegistroForm() {
                 ? 'bg-black text-white'
                 : step > s.n
                 ? 'bg-green-100 text-green-700'
-                : 'bg-[#F2F2F2] text-[#6B6B6B]'
+                : 'bg-muted text-muted-foreground'
             )}>
               {step > s.n ? <CheckCircle2 className="h-3.5 w-3.5" /> : s.icon}
               <span className="hidden sm:inline">{s.label}</span>
             </div>
             {i < steps.length - 1 && (
-              <div className={cn('flex-1 h-px', step > s.n ? 'bg-green-300' : 'bg-[#E5E5E5]')} />
+              <div className={cn('flex-1 h-px', step > s.n ? 'bg-green-300' : 'bg-border')} />
             )}
           </div>
         ))}
@@ -197,7 +197,7 @@ export function RegistroForm() {
             <h2 className="text-xl font-bold text-black" style={{ letterSpacing: '-0.02em' }}>
               Datos de tu negocio
             </h2>
-            <p className="text-sm text-[#6B6B6B] mt-1">Así va a aparecer en tu plataforma</p>
+            <p className="text-sm text-muted-foreground mt-1">Así va a aparecer en tu plataforma</p>
           </div>
 
           {/* Nombre */}
@@ -210,7 +210,7 @@ export function RegistroForm() {
               placeholder="Ej: La Trattoria"
               value={nombre}
               onChange={(e) => handleNombreChange(e.target.value)}
-              className="h-11 border-[#E5E5E5] focus:border-black focus:ring-black rounded"
+              className="h-11 border-border focus:border-black focus:ring-black rounded"
               required
             />
           </div>
@@ -221,7 +221,7 @@ export function RegistroForm() {
               Identificador único
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#BEBEBE] select-none">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground select-none">
                 waitless.app/
               </span>
               <Input
@@ -229,10 +229,10 @@ export function RegistroForm() {
                 placeholder="la-trattoria"
                 value={slug}
                 onChange={(e) => handleSlugChange(e.target.value)}
-                className="h-11 pl-[92px] border-[#E5E5E5] focus:border-black focus:ring-black rounded font-mono text-sm"
+                className="h-11 pl-[92px] border-border focus:border-black focus:ring-black rounded font-mono text-sm"
               />
             </div>
-            <p className="text-[10px] text-[#BEBEBE]">Solo minúsculas, números y guiones. No se puede cambiar después.</p>
+            <p className="text-[10px] text-muted-foreground">Solo minúsculas, números y guiones. No se puede cambiar después.</p>
           </div>
 
           {/* Color */}
@@ -241,7 +241,7 @@ export function RegistroForm() {
               <Palette className="h-3.5 w-3.5" />
               Color principal de tu marca
             </label>
-            <div className="flex items-center gap-3 p-3 border border-[#E5E5E5] rounded-xl">
+            <div className="flex items-center gap-3 p-3 border border-border rounded-xl">
               <div className="relative">
                 <input
                   type="color"
@@ -253,7 +253,7 @@ export function RegistroForm() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-black">{primaryColor.toUpperCase()}</p>
-                <p className="text-xs text-[#6B6B6B]">Se aplica en botones, header y acentos</p>
+                <p className="text-xs text-muted-foreground">Se aplica en botones, header y acentos</p>
               </div>
               {/* Preview pill */}
               <div className="ml-auto flex gap-1.5">
@@ -267,29 +267,29 @@ export function RegistroForm() {
           {/* Logo upload */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-black uppercase tracking-wide">
-              Logo <span className="text-[#BEBEBE] font-normal">(opcional)</span>
+              Logo <span className="text-muted-foreground font-normal">(opcional)</span>
             </label>
             {logoPreview ? (
-              <div className="flex items-center gap-3 p-3 border border-[#E5E5E5] rounded-xl">
+              <div className="flex items-center gap-3 p-3 border border-border rounded-xl">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={logoPreview} alt="Logo preview" className="w-12 h-12 object-contain rounded-lg border border-[#E5E5E5]" />
+                <img src={logoPreview} alt="Logo preview" className="w-12 h-12 object-contain rounded-lg border border-border" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-black truncate">{logoFile?.name}</p>
-                  <p className="text-xs text-[#6B6B6B]">{((logoFile?.size ?? 0) / 1024).toFixed(0)} KB</p>
+                  <p className="text-xs text-muted-foreground">{((logoFile?.size ?? 0) / 1024).toFixed(0)} KB</p>
                 </div>
-                <button onClick={removeLogo} className="p-1.5 rounded-lg hover:bg-[#F2F2F2] transition-colors">
-                  <X className="h-4 w-4 text-[#BEBEBE]" />
+                <button onClick={removeLogo} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+                  <X className="h-4 w-4 text-muted-foreground" />
                 </button>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full flex flex-col items-center gap-2 p-6 border-2 border-dashed border-[#E5E5E5] rounded-xl hover:border-black hover:bg-[#F9F9F9] transition-colors"
+                className="w-full flex flex-col items-center gap-2 p-6 border-2 border-dashed border-border rounded-xl hover:border-black hover:bg-muted transition-colors"
               >
-                <Upload className="h-6 w-6 text-[#BEBEBE]" />
-                <span className="text-sm text-[#6B6B6B]">Subir logo</span>
-                <span className="text-xs text-[#BEBEBE]">PNG, JPG, WEBP · máx. 2 MB</span>
+                <Upload className="h-6 w-6 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Subir logo</span>
+                <span className="text-xs text-muted-foreground">PNG, JPG, WEBP · máx. 2 MB</span>
               </button>
             )}
             <input
@@ -329,20 +329,20 @@ export function RegistroForm() {
             <h2 className="text-xl font-bold text-black" style={{ letterSpacing: '-0.02em' }}>
               Crear cuenta de administrador
             </h2>
-            <p className="text-sm text-[#6B6B6B] mt-1">Con esto vas a entrar a tu plataforma</p>
+            <p className="text-sm text-muted-foreground mt-1">Con esto vas a entrar a tu plataforma</p>
           </div>
 
           {/* Google option — saves business data in sessionStorage for post-OAuth */}
           <GoogleAuthButton label="Registrarme con Google" />
 
           <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-[#E5E5E5]" />
-            <span className="text-xs text-[#BEBEBE]">o con email y contraseña</span>
-            <div className="flex-1 h-px bg-[#E5E5E5]" />
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-xs text-muted-foreground">o con email y contraseña</span>
+            <div className="flex-1 h-px bg-border" />
           </div>
 
           {/* Resumen del negocio */}
-          <div className="flex items-center gap-3 p-3 bg-[#F9F9F9] border border-[#E5E5E5] rounded-xl">
+          <div className="flex items-center gap-3 p-3 bg-muted border border-border rounded-xl">
             {logoPreview ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={logoPreview} alt="Logo" className="w-8 h-8 object-contain rounded" />
@@ -353,7 +353,7 @@ export function RegistroForm() {
             )}
             <div className="min-w-0">
               <p className="text-sm font-semibold text-black truncate">{nombre}</p>
-              <p className="text-xs text-[#BEBEBE] font-mono">/{slug}</p>
+              <p className="text-xs text-muted-foreground font-mono">/{slug}</p>
             </div>
             <div className="ml-auto w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: primaryColor }} />
           </div>
@@ -367,7 +367,7 @@ export function RegistroForm() {
               placeholder="tu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-11 border-[#E5E5E5] focus:border-black focus:ring-black rounded"
+              className="h-11 border-border focus:border-black focus:ring-black rounded"
               autoComplete="email"
               required
               disabled={isLoading}
@@ -384,7 +384,7 @@ export function RegistroForm() {
                 placeholder="Mínimo 6 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-11 pr-10 border-[#E5E5E5] focus:border-black focus:ring-black rounded"
+                className="h-11 pr-10 border-border focus:border-black focus:ring-black rounded"
                 autoComplete="new-password"
                 required
                 minLength={6}
@@ -393,7 +393,7 @@ export function RegistroForm() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#BEBEBE] hover:text-black transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-black transition-colors"
                 tabIndex={-1}
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

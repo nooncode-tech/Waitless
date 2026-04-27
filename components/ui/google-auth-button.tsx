@@ -39,7 +39,7 @@ export function GoogleAuthButton({
       type="button"
       onClick={handleClick}
       disabled={isLoading}
-      className={`w-full flex items-center justify-center gap-3 h-11 px-4 rounded border border-[#E5E5E5] bg-white hover:bg-[#F9F9F9] transition-colors text-sm font-semibold text-black disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      className={`w-full flex items-center justify-center gap-3 h-11 px-4 rounded border border-border bg-white hover:bg-muted transition-colors text-sm font-semibold text-black disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
     >
       {isLoading ? (
         <Spinner className="size-4 text-muted-foreground" />

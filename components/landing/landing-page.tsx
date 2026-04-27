@@ -221,12 +221,12 @@ export function LandingPage({ onLogin }: LandingPageProps) {
   }
 
   // Nav text adapts: white over dark hero, dark after scroll
-  const navText    = scrolled ? 'text-[#111]'              : 'text-white'
-  const navMuted   = scrolled ? 'text-zinc-500 hover:text-[#111]' : 'text-white/50 hover:text-white'
-  const navBtnBg   = scrolled ? 'bg-[#18181b] text-white'  : 'bg-white text-[#111]'
+  const navText    = scrolled ? 'text-foreground'              : 'text-white'
+  const navMuted   = scrolled ? 'text-zinc-500 hover:text-foreground' : 'text-white/50 hover:text-white'
+  const navBtnBg   = scrolled ? 'bg-zinc-900 text-white'  : 'bg-white text-foreground'
 
   return (
-    <div className="text-[#111] overflow-x-hidden" style={{ fontFamily: "'Sora', 'Inter', system-ui, sans-serif" }}>
+    <div className="text-foreground overflow-x-hidden" style={{ fontFamily: "'Sora', 'Inter', system-ui, sans-serif" }}>
 
       <style>{`
         @keyframes fadeUp  { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
@@ -294,7 +294,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           <div className="md:hidden bg-white border-t border-zinc-100 px-6 py-4 shadow-lg">
             {[['how','Cómo funciona'],['features','Funciones'],['pricing','Precios'],['testimonials','Clientes']].map(([id,l]) => (
               <button key={id} onClick={() => goTo(id)}
-                className="block w-full text-left text-zinc-600 text-sm py-2.5 font-medium hover:text-[#111] transition-colors cursor-pointer">
+                className="block w-full text-left text-zinc-600 text-sm py-2.5 font-medium hover:text-foreground transition-colors cursor-pointer">
                 {l}
               </button>
             ))}
@@ -304,7 +304,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                 Iniciar sesión
               </button>
               <button onClick={() => goTo('pricing')}
-                className="block w-full text-center text-sm font-medium px-5 py-3 rounded-full text-white bg-[#18181b] cursor-pointer hover:opacity-90">
+                className="block w-full text-center text-sm font-medium px-5 py-3 rounded-full text-white bg-zinc-900 cursor-pointer hover:opacity-90">
                 Ver planes
               </button>
             </div>
@@ -335,7 +335,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
             <div className="rv d3 flex flex-col sm:flex-row gap-3 mb-14 justify-center lg:justify-start">
               <button onClick={() => goTo('pricing')}
-                className="inline-flex items-center justify-center gap-2 font-medium px-6 py-3 rounded-full text-sm text-[#111] bg-white hover:bg-zinc-100 transition-all group active:scale-[0.98] cursor-pointer">
+                className="inline-flex items-center justify-center gap-2 font-medium px-6 py-3 rounded-full text-sm text-foreground bg-white hover:bg-zinc-100 transition-all group active:scale-[0.98] cursor-pointer">
                 Comenzar gratis
                 <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
               </button>
@@ -451,7 +451,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
         <div ref={stepsReveal.ref} className={`max-w-6xl mx-auto ${stepsReveal.visible ? 'show' : ''}`}>
           <div className="text-center mb-16">
             <span className="rv inline-block text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-400 mb-4">Cómo funciona</span>
-            <h2 className="rv d1 text-3xl md:text-4xl font-semibold tracking-tight leading-[1.1] text-[#111]">
+            <h2 className="rv d1 text-3xl md:text-4xl font-semibold tracking-tight leading-[1.1] text-foreground">
               Listo en 30 minutos.
             </h2>
             <p className="rv d2 text-zinc-400 text-base mt-3 max-w-sm mx-auto leading-relaxed">
@@ -463,14 +463,14 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             {STEPS.map((s, i) => (
               <div key={s.n} className={`rv d${i + 1} group text-center flex flex-col items-center`}>
                 <div className="relative mb-5">
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-zinc-100 group-hover:bg-[#18181b] transition-colors duration-300">
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-zinc-100 group-hover:bg-zinc-900 transition-colors duration-300">
                     <div className="text-zinc-400 group-hover:text-white transition-colors duration-300">{s.icon}</div>
                   </div>
-                  <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#18181b] flex items-center justify-center">
+                  <div className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center">
                     <span className="text-white text-[8px] font-semibold">{s.n}</span>
                   </div>
                 </div>
-                <h3 className="font-medium text-[#111] text-sm mb-1.5 leading-snug">{s.title}</h3>
+                <h3 className="font-medium text-foreground text-sm mb-1.5 leading-snug">{s.title}</h3>
                 <p className="text-zinc-400 text-sm leading-relaxed">{s.body}</p>
               </div>
             ))}
@@ -522,7 +522,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
         <div ref={pricingReveal.ref} className={`max-w-6xl mx-auto ${pricingReveal.visible ? 'show' : ''}`}>
           <div className="text-center mb-16">
             <span className="rv inline-block text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-400 mb-4">Precios</span>
-            <h2 className="rv d1 text-3xl md:text-4xl font-semibold tracking-tight leading-[1.1] text-[#111]">
+            <h2 className="rv d1 text-3xl md:text-4xl font-semibold tracking-tight leading-[1.1] text-foreground">
               Sin sorpresas.
             </h2>
             <p className="rv d2 text-zinc-400 text-base mt-3 max-w-sm mx-auto leading-relaxed">
@@ -555,7 +555,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                       {plan.name}
                     </p>
                     <div className="flex items-end gap-1 mb-3">
-                      <span className={`text-4xl font-semibold tracking-tight tabular-nums ${plan.highlight ? 'text-white' : 'text-[#111]'}`}>
+                      <span className={`text-4xl font-semibold tracking-tight tabular-nums ${plan.highlight ? 'text-white' : 'text-foreground'}`}>
                         {plan.price}
                       </span>
                       <span className={`text-sm mb-1.5 ${plan.highlight ? 'text-white/30' : 'text-zinc-400'}`}>{plan.period}</span>
@@ -636,7 +636,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
         <div ref={testReveal.ref} className={`max-w-6xl mx-auto px-6 mb-12 ${testReveal.visible ? 'show' : ''}`}>
           <div className="text-center">
             <span className="rv inline-block text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-400 mb-4">Testimonios</span>
-            <h2 className="rv d1 text-3xl md:text-4xl font-semibold tracking-tight leading-[1.1] text-[#111]">
+            <h2 className="rv d1 text-3xl md:text-4xl font-semibold tracking-tight leading-[1.1] text-foreground">
               Lo que dicen nuestros clientes
             </h2>
           </div>
@@ -653,7 +653,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               </div>
               <p className="text-zinc-500 text-sm leading-relaxed mb-4">"{t.text}"</p>
               <div>
-                <p className="font-medium text-sm text-[#111]">{t.name}</p>
+                <p className="font-medium text-sm text-foreground">{t.name}</p>
                 <p className="text-zinc-400 text-xs mt-0.5">{t.role}</p>
               </div>
             </div>
@@ -673,7 +673,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           </p>
           <div className="rv d3 flex flex-col sm:flex-row gap-3 justify-center">
             <button onClick={() => goTo('pricing')}
-              className="inline-flex items-center justify-center gap-2 font-medium px-8 py-3 rounded-full text-sm text-[#111] bg-white hover:bg-zinc-100 transition-all group active:scale-[0.98] cursor-pointer">
+              className="inline-flex items-center justify-center gap-2 font-medium px-8 py-3 rounded-full text-sm text-foreground bg-white hover:bg-zinc-100 transition-all group active:scale-[0.98] cursor-pointer">
               Ver planes y precios
               <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
             </button>
@@ -692,7 +692,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             <div className="col-span-2">
               <button onClick={goTop} className="flex items-center gap-2 mb-4 cursor-pointer group">
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: '#e4e4e7' }}>
-                  <span className="font-semibold text-[#111] text-sm">W</span>
+                  <span className="font-semibold text-foreground text-sm">W</span>
                 </div>
                 <span className="font-medium text-white/60 group-hover:text-white/90 transition-colors text-sm">WAITLESS</span>
               </button>

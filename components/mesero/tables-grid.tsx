@@ -157,56 +157,56 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
   const getStatusStyle = (info: ReturnType<typeof getTableInfo>) => {
     if (info.status === 'libre') return {
       bg: 'bg-white',
-      border: 'border-[#E5E5E5]',
-      dot: 'bg-[#BEBEBE]',
-      text: 'text-[#BEBEBE]',
+      border: 'border-border',
+      dot: 'bg-accent',
+      text: 'text-muted-foreground',
       badge: '',
     }
     if (info.status === 'limpieza') return {
-      bg: 'bg-[#EFF6FF]',
-      border: 'border-[#3B82F6]',
-      dot: 'bg-[#3B82F6] animate-pulse',
-      text: 'text-[#3B82F6]',
-      badge: 'bg-[#3B82F6] text-white',
+      bg: 'bg-blue-50',
+      border: 'border-blue-500',
+      dot: 'bg-blue-500 animate-pulse',
+      text: 'text-blue-500',
+      badge: 'bg-blue-500 text-white',
     }
     if (info.status === 'hold') return {
-      bg: 'bg-[#FAF5FF]',
-      border: 'border-[#9333EA]',
-      dot: 'bg-[#9333EA] animate-pulse',
-      text: 'text-[#9333EA]',
-      badge: 'bg-[#9333EA] text-white',
+      bg: 'bg-purple-50',
+      border: 'border-purple-500',
+      dot: 'bg-purple-500 animate-pulse',
+      text: 'text-purple-500',
+      badge: 'bg-purple-500 text-white',
     }
     if (info.status === 'pagada') return {
-      bg: 'bg-[#F0FDF4]',
-      border: 'border-[#16A34A]',
-      dot: 'bg-[#16A34A]',
-      text: 'text-[#16A34A]',
-      badge: 'bg-[#16A34A] text-white',
+      bg: 'bg-green-50',
+      border: 'border-success',
+      dot: 'bg-success',
+      text: 'text-success',
+      badge: 'bg-success text-white',
     }
     if (info.status === 'listo') return {
-      bg: 'bg-[#F0FDF4]',
-      border: 'border-[#16A34A] border-2',
-      dot: 'bg-[#16A34A] animate-pulse',
-      text: 'text-[#16A34A]',
-      badge: 'bg-[#16A34A] text-white',
+      bg: 'bg-green-50',
+      border: 'border-success border-2',
+      dot: 'bg-success animate-pulse',
+      text: 'text-success',
+      badge: 'bg-success text-white',
     }
     if (info.status === 'preparando') return {
-      bg: 'bg-[#FFFBEB]',
-      border: 'border-[#D97706]',
-      dot: 'bg-[#D97706] animate-pulse',
-      text: 'text-[#D97706]',
-      badge: 'bg-[#D97706] text-white',
+      bg: 'bg-kds-preparing',
+      border: 'border-warning',
+      dot: 'bg-warning animate-pulse',
+      text: 'text-warning',
+      badge: 'bg-warning text-white',
     }
     if (info.hasBillRequest) return {
-      bg: 'bg-[#FFFBEB]',
-      border: 'border-[#D97706] border-2',
-      dot: 'bg-[#D97706] animate-pulse',
-      text: 'text-[#D97706]',
-      badge: 'bg-[#D97706] text-white',
+      bg: 'bg-kds-preparing',
+      border: 'border-warning border-2',
+      dot: 'bg-warning animate-pulse',
+      text: 'text-warning',
+      badge: 'bg-warning text-white',
     }
     return {
-      bg: 'bg-[#F2F2F2]',
-      border: 'border-[#BEBEBE]',
+      bg: 'bg-muted',
+      border: 'border-accent',
       dot: 'bg-black',
       text: 'text-black',
       badge: 'bg-black text-white',
@@ -219,11 +219,11 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
       {/* Stats Row */}
       <div className="grid grid-cols-5 gap-2 mb-4">
         {[
-          { label: 'Libres', value: freeCount, color: 'text-[#BEBEBE]', bg: 'bg-[#F2F2F2]' },
-          { label: 'En cocina', value: preparingCount, color: 'text-[#D97706]', bg: 'bg-[#FFFBEB]', icon: <ChefHat className="h-3.5 w-3.5" /> },
-          { label: 'Listos', value: readyCount, color: 'text-[#16A34A]', bg: 'bg-[#F0FDF4]', icon: <CircleCheck className="h-3.5 w-3.5" /> },
-          { label: 'Ocupadas', value: occupiedCount, color: 'text-black', bg: 'bg-[#F2F2F2]' },
-          { label: 'Limpieza', value: cleaningCount, color: 'text-[#3B82F6]', bg: 'bg-[#EFF6FF]', icon: <Sparkles className="h-3.5 w-3.5" /> },
+          { label: 'Libres', value: freeCount, color: 'text-muted-foreground', bg: 'bg-muted' },
+          { label: 'En cocina', value: preparingCount, color: 'text-warning', bg: 'bg-kds-preparing', icon: <ChefHat className="h-3.5 w-3.5" /> },
+          { label: 'Listos', value: readyCount, color: 'text-success', bg: 'bg-green-50', icon: <CircleCheck className="h-3.5 w-3.5" /> },
+          { label: 'Ocupadas', value: occupiedCount, color: 'text-black', bg: 'bg-muted' },
+          { label: 'Limpieza', value: cleaningCount, color: 'text-blue-500', bg: 'bg-blue-50', icon: <Sparkles className="h-3.5 w-3.5" /> },
         ].map(stat => (
           <div key={stat.label} className={cn('rounded-lg p-2.5 md:p-3', stat.bg)}>
             <p className={cn('text-xl md:text-2xl font-bold', stat.color)}>{stat.value}</p>
@@ -252,22 +252,22 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3 flex-wrap">
           {[
-            { dot: 'bg-[#BEBEBE]', label: 'Libre' },
+            { dot: 'bg-accent', label: 'Libre' },
             { dot: 'bg-black', label: 'Ocupada' },
-            { dot: 'bg-[#D97706]', label: 'En cocina' },
-            { dot: 'bg-[#16A34A]', label: 'Listo' },
-            { dot: 'bg-[#3B82F6]', label: 'Limpieza' },
+            { dot: 'bg-warning', label: 'En cocina' },
+            { dot: 'bg-success', label: 'Listo' },
+            { dot: 'bg-blue-500', label: 'Limpieza' },
           ].map(l => (
             <div key={l.label} className="flex items-center gap-1.5">
               <div className={cn('w-2 h-2 rounded-full', l.dot)} />
-              <span className="text-[10px] text-[#6B6B6B]">{l.label}</span>
+              <span className="text-[10px] text-muted-foreground">{l.label}</span>
             </div>
           ))}
         </div>
-        <div className="flex items-center gap-1 bg-[#F2F2F2] rounded-lg p-1" role="group" aria-label="Modo de vista">
+        <div className="flex items-center gap-1 bg-muted rounded-lg p-1" role="group" aria-label="Modo de vista">
           <button
             onClick={() => setViewMode('grid')}
-            className={cn('p-1 rounded', viewMode === 'grid' ? 'bg-white shadow-sm' : 'text-[#BEBEBE]')}
+            className={cn('p-1 rounded', viewMode === 'grid' ? 'bg-white shadow-sm' : 'text-muted-foreground')}
             aria-label="Vista en cuadrícula"
             aria-pressed={viewMode === 'grid'}
           >
@@ -275,7 +275,7 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
           </button>
           <button
             onClick={() => setViewMode('list')}
-            className={cn('p-1 rounded', viewMode === 'list' ? 'bg-white shadow-sm' : 'text-[#BEBEBE]')}
+            className={cn('p-1 rounded', viewMode === 'list' ? 'bg-white shadow-sm' : 'text-muted-foreground')}
             aria-label="Vista en lista"
             aria-pressed={viewMode === 'list'}
           >
@@ -319,7 +319,7 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
                       </span>
                     )}
                     {info.hasBillRequest && !info.hasCall && (
-                      <span className="w-5 h-5 bg-[#D97706] rounded-full flex items-center justify-center shadow">
+                      <span className="w-5 h-5 bg-warning rounded-full flex items-center justify-center shadow">
                         <Receipt className="h-2.5 w-2.5 text-white" />
                       </span>
                     )}
@@ -343,13 +343,13 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
                   {info.status === 'limpieza' ? (
                     <button
                       onClick={(e) => { e.stopPropagation(); markTableClean(info.numero) }}
-                      className="w-full text-[8px] font-bold text-[#3B82F6] bg-[#DBEAFE] rounded px-1 py-0.5 leading-tight"
+                      className="w-full text-[8px] font-bold text-blue-500 bg-blue-100 rounded px-1 py-0.5 leading-tight"
                       aria-label={`Marcar mesa ${info.numero} como lista`}
                     >
                       ✓ Lista
                     </button>
                   ) : info.status === 'libre' ? (
-                    <p className="text-[9px] text-[#BEBEBE] text-center font-medium">Libre</p>
+                    <p className="text-[9px] text-muted-foreground text-center font-medium">Libre</p>
                   ) : info.elapsedMin > 0 ? (
                     <p className={cn('text-[9px] font-semibold text-center flex items-center justify-center gap-0.5', style.text)}>
                       <Clock className="h-2 w-2" />
@@ -394,7 +394,7 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
                 <div className="flex-1 min-w-0">
                   <p className={cn('text-xs font-semibold', style.text)}>{info.label}</p>
                   {info.orderCount > 0 && (
-                    <p className="text-[10px] text-[#6B6B6B]">{info.orderCount} pedido{info.orderCount !== 1 ? 's' : ''}</p>
+                    <p className="text-[10px] text-muted-foreground">{info.orderCount} pedido{info.orderCount !== 1 ? 's' : ''}</p>
                   )}
                 </div>
 
@@ -411,7 +411,7 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
                   {info.status === 'limpieza' ? (
                     <button
                       onClick={(e) => { e.stopPropagation(); markTableClean(info.numero) }}
-                      className="text-[10px] font-bold text-[#3B82F6] bg-[#DBEAFE] rounded px-2 py-0.5"
+                      className="text-[10px] font-bold text-blue-500 bg-blue-100 rounded px-2 py-0.5"
                       aria-label={`Marcar mesa ${info.numero} como lista`}
                     >
                       Mesa lista
@@ -419,7 +419,7 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
                   ) : (
                     <>
                       {info.hasCall && <Bell className="h-3.5 w-3.5 text-red-500" />}
-                      {info.hasBillRequest && <Receipt className="h-3.5 w-3.5 text-[#D97706]" />}
+                      {info.hasBillRequest && <Receipt className="h-3.5 w-3.5 text-warning" />}
                     </>
                   )}
                 </div>

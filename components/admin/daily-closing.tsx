@@ -414,7 +414,7 @@ export function DailyClosing() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold text-black tracking-tight">Turno & Caja</h2>
-          <p className="text-xs text-[#6B6B6B] mt-0.5">Ledger operativo del turno</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Ledger operativo del turno</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
           <Input
@@ -425,7 +425,7 @@ export function DailyClosing() {
             className="h-8 text-xs w-auto"
           />
           <Button variant="outline" size="sm" onClick={exportCSV}
-            className="gap-1.5 h-8 text-xs border-[#E5E5E5] bg-transparent hover:bg-[#F2F2F2] text-black">
+            className="gap-1.5 h-8 text-xs border-border bg-transparent hover:bg-muted text-black">
             <Download className="h-3 w-3" />
             CSV
           </Button>
@@ -441,24 +441,24 @@ export function DailyClosing() {
       <div className={cn(
         'border rounded-xl p-4',
         shiftOpen
-          ? 'border-[#16A34A] bg-[#F0FDF4]'
+          ? 'border-success bg-green-50'
           : shiftEnd
-          ? 'border-[#E5E5E5] bg-[#F2F2F2]'
-          : 'border-[#E5E5E5] bg-white'
+          ? 'border-border bg-muted'
+          : 'border-border bg-white'
       )}>
         <div className="flex items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <div className={cn(
                 'w-2 h-2 rounded-full',
-                shiftOpen ? 'bg-[#16A34A] animate-pulse' : 'bg-[#BEBEBE]'
+                shiftOpen ? 'bg-success animate-pulse' : 'bg-accent'
               )} />
               <span className="text-sm font-bold text-black">
                 {shiftOpen ? 'Turno activo' : shiftEnd ? 'Turno cerrado' : 'Sin turno abierto'}
               </span>
             </div>
             {shiftStart && (
-              <p className="text-xs text-[#6B6B6B] mt-0.5 ml-4">
+              <p className="text-xs text-muted-foreground mt-0.5 ml-4">
                 {shiftOpen
                   ? `Abierto a las ${formatShiftTime(shiftStart)}`
                   : `${formatShiftTime(shiftStart)} → ${shiftEnd ? formatShiftTime(shiftEnd) : '—'}`
@@ -471,9 +471,9 @@ export function DailyClosing() {
               <>
                 {showCloseConfirm ? (
                   <>
-                    <span className="text-xs text-[#6B6B6B]">¿Confirmar cierre?</span>
+                    <span className="text-xs text-muted-foreground">¿Confirmar cierre?</span>
                     <Button size="sm" variant="outline"
-                      className="h-8 text-xs border-[#E5E5E5]"
+                      className="h-8 text-xs border-border"
                       onClick={() => setShowCloseConfirm(false)}>
                       Cancelar
                     </Button>
@@ -529,17 +529,17 @@ export function DailyClosing() {
         const hasDif = efectivoContado !== '' && !isNaN(contadoNum)
 
         return (
-          <div className="border border-[#E5E5E5] rounded-xl bg-white overflow-hidden">
-            <div className="px-4 py-3 border-b border-[#E5E5E5] flex items-center justify-between">
+          <div className="border border-border rounded-xl bg-white overflow-hidden">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Banknote className="h-3.5 w-3.5 text-[#6B6B6B]" />
+                <Banknote className="h-3.5 w-3.5 text-muted-foreground" />
                 <p className="text-xs font-bold text-black uppercase tracking-wide">Conciliación de Efectivo</p>
               </div>
             </div>
             <div className="p-4 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] font-medium text-[#6B6B6B] uppercase tracking-wide block mb-1">
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide block mb-1">
                     Fondo apertura ($)
                   </label>
                   <Input
@@ -554,7 +554,7 @@ export function DailyClosing() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-medium text-[#6B6B6B] uppercase tracking-wide block mb-1">
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide block mb-1">
                     Efectivo contado ($)
                   </label>
                   <Input
@@ -569,28 +569,28 @@ export function DailyClosing() {
                 </div>
               </div>
 
-              <div className="space-y-1.5 pt-2 border-t border-[#E5E5E5]">
+              <div className="space-y-1.5 pt-2 border-t border-border">
                 <div className="flex justify-between text-xs">
-                  <span className="text-[#6B6B6B]">Fondo apertura</span>
+                  <span className="text-muted-foreground">Fondo apertura</span>
                   <span className="text-black">{fondoNum > 0 ? formatPrice(fondoNum) : '—'}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-[#6B6B6B]">+ Ventas en efectivo</span>
+                  <span className="text-muted-foreground">+ Ventas en efectivo</span>
                   <span className="text-black">{formatPrice(cashSales)}</span>
                 </div>
-                <div className="flex justify-between text-sm font-semibold border-t border-[#E5E5E5] pt-1.5">
+                <div className="flex justify-between text-sm font-semibold border-t border-border pt-1.5">
                   <span className="text-black">Efectivo esperado</span>
                   <span className="text-black">{formatPrice(esperado)}</span>
                 </div>
                 {hasDif && (
                   <div className={cn(
                     'flex justify-between text-sm font-bold pt-1 border-t-2',
-                    diferencia > 0 ? 'border-[#16A34A]' : diferencia < 0 ? 'border-[#DC2626]' : 'border-[#E5E5E5]'
+                    diferencia > 0 ? 'border-success' : diferencia < 0 ? 'border-destructive' : 'border-border'
                   )}>
-                    <span className={diferencia === 0 ? 'text-[#6B6B6B]' : diferencia > 0 ? 'text-[#16A34A]' : 'text-[#DC2626]'}>
+                    <span className={diferencia === 0 ? 'text-muted-foreground' : diferencia > 0 ? 'text-success' : 'text-destructive'}>
                       {diferencia > 0 ? 'Sobrante' : diferencia < 0 ? 'Faltante' : 'Cuadrado'}
                     </span>
-                    <span className={diferencia === 0 ? 'text-[#6B6B6B]' : diferencia > 0 ? 'text-[#16A34A]' : 'text-[#DC2626]'}>
+                    <span className={diferencia === 0 ? 'text-muted-foreground' : diferencia > 0 ? 'text-success' : 'text-destructive'}>
                       {diferencia > 0 ? '+' : ''}{formatPrice(diferencia)}
                     </span>
                   </div>
@@ -604,15 +604,15 @@ export function DailyClosing() {
       {/* KPI Cards — Task 2.9: datos reales desde Supabase RPC */}
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <p className="text-[10px] font-bold text-[#6B6B6B] uppercase tracking-wide">KPIs del día</p>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">KPIs del día</p>
           {kpiLoading && <Spinner className="size-3 text-muted-foreground" />}
           {!kpiLoading && kpiFromDB && !kpiError && (
-            <span className="text-[9px] text-[#BEBEBE]">calculado desde Supabase</span>
+            <span className="text-[9px] text-muted-foreground">calculado desde Supabase</span>
           )}
           {kpiError && (
             <button
               onClick={fetchKpis}
-              className="text-[9px] text-[#DC2626] underline"
+              className="text-[9px] text-destructive underline"
             >
               Error al cargar — Reintentar
             </button>
@@ -641,20 +641,20 @@ export function DailyClosing() {
               icon: <Users className="h-4 w-4" />,
             },
           ].map(kpi => (
-            <div key={kpi.label} className="border border-[#E5E5E5] rounded-xl p-3 bg-white">
+            <div key={kpi.label} className="border border-border rounded-xl p-3 bg-white">
               <div className="flex items-center gap-2 mb-1">
-                <div className="p-1 rounded bg-[#F2F2F2] text-black">
+                <div className="p-1 rounded bg-muted text-black">
                   {kpi.icon}
                 </div>
               </div>
               <p className="text-lg font-bold text-black leading-none">{kpi.value}</p>
-              <p className="text-[10px] text-[#6B6B6B] mt-0.5">{kpi.label}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{kpi.label}</p>
             </div>
           ))}
         </div>
         {/* Tasa de cancelación */}
         {!kpiLoading && kpiFromDB && kpiFromDB.canceladas > 0 && (
-          <div className="mt-2 flex items-center gap-1.5 text-xs text-[#DC2626]">
+          <div className="mt-2 flex items-center gap-1.5 text-xs text-destructive">
             <AlertTriangle className="h-3.5 w-3.5" />
             <span>{kpiFromDB.canceladas} órdenes canceladas ({kpiFromDB.tasa_cancelacion}% del total)</span>
           </div>
@@ -662,37 +662,37 @@ export function DailyClosing() {
       </div>
 
       {/* Financial Ledger */}
-      <div className="border border-[#E5E5E5] rounded-xl bg-white overflow-hidden">
-        <div className="px-4 py-3 border-b border-[#E5E5E5]">
+      <div className="border border-border rounded-xl bg-white overflow-hidden">
+        <div className="px-4 py-3 border-b border-border">
           <p className="text-xs font-bold text-black uppercase tracking-wide">Resumen Financiero</p>
         </div>
         <div className="p-4 space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-[#6B6B6B]">Ventas Brutas</span>
+            <span className="text-muted-foreground">Ventas Brutas</span>
             <span className="font-medium text-black">{formatPrice(stats.grossSales)}</span>
           </div>
           {stats.totalDiscounts > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-[#DC2626]">(−) Descuentos</span>
-              <span className="text-[#DC2626]">−{formatPrice(stats.totalDiscounts)}</span>
+              <span className="text-destructive">(−) Descuentos</span>
+              <span className="text-destructive">−{formatPrice(stats.totalDiscounts)}</span>
             </div>
           )}
           {stats.totalRefunds > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-[#DC2626]">(−) Reembolsos</span>
-              <span className="text-[#DC2626]">−{formatPrice(stats.totalRefunds)}</span>
+              <span className="text-destructive">(−) Reembolsos</span>
+              <span className="text-destructive">−{formatPrice(stats.totalRefunds)}</span>
             </div>
           )}
-          <div className="flex justify-between text-base font-bold text-black pt-2 border-t border-[#E5E5E5]">
+          <div className="flex justify-between text-base font-bold text-black pt-2 border-t border-border">
             <span>Ventas Netas</span>
             <span>{formatPrice(stats.netSales)}</span>
           </div>
-          <div className="flex justify-between text-xs text-[#6B6B6B] pt-1">
+          <div className="flex justify-between text-xs text-muted-foreground pt-1">
             <span>IVA (incluido en ventas)</span>
             <span>{formatPrice(stats.totalTax)}</span>
           </div>
           {stats.totalTips > 0 && (
-            <div className="flex justify-between text-sm text-[#16A34A]">
+            <div className="flex justify-between text-sm text-success">
               <span>+ Propinas recibidas</span>
               <span className="font-medium">{formatPrice(stats.totalTips)}</span>
             </div>
@@ -703,15 +703,15 @@ export function DailyClosing() {
       {/* Payment & Channel breakdown */}
       <div className="grid md:grid-cols-2 gap-3">
         {/* By Payment Method */}
-        <div className="border border-[#E5E5E5] rounded-xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-[#E5E5E5]">
+        <div className="border border-border rounded-xl bg-white overflow-hidden">
+          <div className="px-4 py-3 border-b border-border">
             <p className="text-xs font-bold text-black uppercase tracking-wide">Método de Pago</p>
           </div>
           <div className="p-4 space-y-2">
             {Object.entries(stats.salesByPayment).length > 0 ? (
               Object.entries(stats.salesByPayment).map(([method, amount]) => (
                 <div key={method} className="flex justify-between items-center text-sm">
-                  <div className="flex items-center gap-2 text-[#6B6B6B]">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     {paymentIcon(method)}
                     <span>{paymentLabel(method)}</span>
                   </div>
@@ -719,54 +719,54 @@ export function DailyClosing() {
                 </div>
               ))
             ) : (
-              <p className="text-xs text-[#BEBEBE] text-center py-3">Sin pagos registrados</p>
+              <p className="text-xs text-muted-foreground text-center py-3">Sin pagos registrados</p>
             )}
           </div>
         </div>
 
         {/* By Channel */}
-        <div className="border border-[#E5E5E5] rounded-xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-[#E5E5E5]">
+        <div className="border border-border rounded-xl bg-white overflow-hidden">
+          <div className="px-4 py-3 border-b border-border">
             <p className="text-xs font-bold text-black uppercase tracking-wide">Canal de Venta</p>
           </div>
           <div className="p-4 space-y-2">
             {Object.entries(stats.salesByChannel).length > 0 ? (
               Object.entries(stats.salesByChannel).map(([channel, amount]) => (
                 <div key={channel} className="flex justify-between items-center text-sm">
-                  <span className="text-[#6B6B6B]">{getChannelLabel(channel as Order['canal'])}</span>
+                  <span className="text-muted-foreground">{getChannelLabel(channel as Order['canal'])}</span>
                   <span className="font-semibold text-black">{formatPrice(amount)}</span>
                 </div>
               ))
             ) : (
-              <p className="text-xs text-[#BEBEBE] text-center py-3">Sin ventas</p>
+              <p className="text-xs text-muted-foreground text-center py-3">Sin ventas</p>
             )}
           </div>
         </div>
       </div>
 
       {/* Top Items — Task 2.9: desde Supabase RPC (JSONB de órdenes) */}
-      <div className="border border-[#E5E5E5] rounded-xl bg-white overflow-hidden">
-        <div className="px-4 py-3 border-b border-[#E5E5E5] flex items-center gap-2">
-          <ChefHat className="h-3.5 w-3.5 text-[#6B6B6B]" />
+      <div className="border border-border rounded-xl bg-white overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+          <ChefHat className="h-3.5 w-3.5 text-muted-foreground" />
           <p className="text-xs font-bold text-black uppercase tracking-wide">Más Vendidos</p>
           {kpiLoading && <Spinner className="size-3 text-muted-foreground ml-auto" />}
         </div>
         <div className="p-4">
           {kpiLoading ? (
-            <p className="text-xs text-[#BEBEBE] text-center py-4">Calculando desde Supabase...</p>
+            <p className="text-xs text-muted-foreground text-center py-4">Calculando desde Supabase...</p>
           ) : kpiError ? (
             <div className="text-center py-4">
-              <p className="text-xs text-[#DC2626]">No se pudo cargar</p>
-              <button onClick={fetchKpis} className="text-[10px] text-[#DC2626] underline mt-1">Reintentar</button>
+              <p className="text-xs text-destructive">No se pudo cargar</p>
+              <button onClick={fetchKpis} className="text-[10px] text-destructive underline mt-1">Reintentar</button>
             </div>
           ) : (kpiFromDB?.top_items ?? []).length > 0 ? (
             <div className="space-y-2">
               {(kpiFromDB!.top_items).map((item, index) => (
                 <div key={item.menu_item_id} className="flex justify-between items-center text-sm">
                   <div className="flex items-center gap-2">
-                    <span className="text-[#BEBEBE] text-xs w-4 text-right">{index + 1}</span>
+                    <span className="text-muted-foreground text-xs w-4 text-right">{index + 1}</span>
                     <span className="text-black">{item.nombre}</span>
-                    <span className="text-[10px] bg-[#F2F2F2] text-[#6B6B6B] px-1.5 py-0.5 rounded-full">
+                    <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
                       ×{item.total_cantidad}
                     </span>
                   </div>
@@ -775,32 +775,32 @@ export function DailyClosing() {
               ))}
             </div>
           ) : (
-            <p className="text-xs text-[#BEBEBE] text-center py-4">Sin ventas en este día</p>
+            <p className="text-xs text-muted-foreground text-center py-4">Sin ventas en este día</p>
           )}
         </div>
       </div>
 
       {/* Cancelled / Refunds alerts */}
       {(stats.cancelledOrders > 0 || stats.totalRefunds > 0) && (
-        <div className="border border-[#E5E5E5] rounded-xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-[#E5E5E5] flex items-center gap-2">
-            <XCircle className="h-3.5 w-3.5 text-[#DC2626]" />
-            <p className="text-xs font-bold text-[#DC2626] uppercase tracking-wide">Incidencias</p>
+        <div className="border border-border rounded-xl bg-white overflow-hidden">
+          <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+            <XCircle className="h-3.5 w-3.5 text-destructive" />
+            <p className="text-xs font-bold text-destructive uppercase tracking-wide">Incidencias</p>
           </div>
           <div className="p-4 space-y-2">
             {stats.cancelledOrders > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-[#6B6B6B]">Pedidos cancelados</span>
-                <span className="font-semibold text-[#DC2626]">{stats.cancelledOrders}</span>
+                <span className="text-muted-foreground">Pedidos cancelados</span>
+                <span className="font-semibold text-destructive">{stats.cancelledOrders}</span>
               </div>
             )}
             {stats.totalRefunds > 0 && (
               <div className="flex justify-between text-sm">
-                <div className="flex items-center gap-1.5 text-[#6B6B6B]">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
                   <RotateCcw className="h-3.5 w-3.5" />
                   <span>Total reembolsado</span>
                 </div>
-                <span className="font-semibold text-[#DC2626]">−{formatPrice(stats.totalRefunds)}</span>
+                <span className="font-semibold text-destructive">−{formatPrice(stats.totalRefunds)}</span>
               </div>
             )}
           </div>

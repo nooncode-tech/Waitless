@@ -104,12 +104,12 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
             <div className="flex items-center gap-2">
               <h2 className="text-base font-bold text-foreground">Mesa {mesa}</h2>
               {isPaid && (
-                <Badge className="bg-[#16A34A] text-white">
+                <Badge className="bg-success text-white">
                   Pagada
                 </Badge>
               )}
               {paymentRequested && !isPaid && (
-                <Badge className="bg-[#D97706] text-white animate-pulse">
+                <Badge className="bg-warning text-white animate-pulse">
                   <CreditCard className="h-3 w-3 mr-1" />
                   Cuenta solicitada
                 </Badge>
@@ -233,8 +233,8 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                         {order.seatNumber && <Badge variant="outline" className="text-[10px] h-5">Asiento {order.seatNumber}</Badge>}
                       </CardTitle>
                       <Badge variant="outline" className={`text-[10px] h-5 ${
-                        order.status === 'listo' ? 'bg-[#16A34A] text-white border-[#16A34A]' :
-                        order.status === 'preparando' ? 'bg-[#FFFBEB] text-[#D97706] border-[#D97706]/30' : ''
+                        order.status === 'listo' ? 'bg-success text-white border-success' :
+                        order.status === 'preparando' ? 'bg-kds-preparing text-warning border-warning/30' : ''
                       }`}>
                         {getStatusLabel(order.status)}
                       </Badge>
@@ -260,7 +260,7 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                             {item.extras && item.extras.length > 0 && (
                               <div className="ml-3 mt-0.5">
                                 {item.extras.map((extra) => (
-                                  <p key={extra.id} className="text-[10px] text-[#6B6B6B]">
+                                  <p key={extra.id} className="text-[10px] text-muted-foreground">
                                     + {extra.nombre} (+{formatPrice(extra.precio)})
                                   </p>
                                 ))}
@@ -279,8 +279,8 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                     {/* Kitchen Status */}
                     <div className="flex gap-1.5 text-[10px] mb-3">
                       <span className={`px-1.5 py-0.5 rounded ${
-                        order.cocinaStatus === 'listo' ? 'bg-[#F0FDF4] text-[#16A34A]' :
-                        order.cocinaStatus === 'preparando' ? 'bg-[#FFFBEB] text-[#D97706]' :
+                        order.cocinaStatus === 'listo' ? 'bg-green-50 text-success' :
+                        order.cocinaStatus === 'preparando' ? 'bg-kds-preparing text-warning' :
                         'bg-muted text-muted-foreground'
                       }`}>
                         Cocina: {order.cocinaStatus === 'listo' ? 'Listo' :
@@ -312,7 +312,7 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                       )}
                       {order.status === 'listo' && (
                         <Button
-                          className="flex-1 bg-[#16A34A] hover:bg-[#16A34A]/90 text-white h-8 text-xs"
+                          className="flex-1 bg-success hover:bg-success/90 text-white h-8 text-xs"
                           onClick={() => handleMarkDelivered(order.id)}
                         >
                           <Check className="h-3.5 w-3.5 mr-1.5" />
@@ -346,7 +346,7 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                         <div className="flex justify-between text-xs mb-0.5">
                           <span className="font-medium text-foreground">Pedido #{order.numero}</span>
                           <Badge variant="outline" className={`text-[10px] h-4 ${
-                            order.status === 'entregado' ? 'bg-[#F0FDF4] text-[#16A34A] border-[#16A34A]/30' :
+                            order.status === 'entregado' ? 'bg-green-50 text-success border-success/30' :
                             order.status === 'cancelado' ? 'bg-red-50 text-red-500 border-red-200' : ''
                           }`}>
                             {order.status === 'entregado' ? 'Entregado' : 
@@ -365,7 +365,7 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                               {item.extras && item.extras.length > 0 && (
                                 <div className="ml-3">
                                   {item.extras.map((extra) => (
-                                    <p key={extra.id} className="text-[10px] text-[#6B6B6B]">
+                                    <p key={extra.id} className="text-[10px] text-muted-foreground">
                                       + {extra.nombre}
                                     </p>
                                   ))}
@@ -394,7 +394,7 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                         <span>{formatPrice(session.impuestos)}</span>
                       </div>
                       {session.descuento > 0 && (
-                        <div className="flex justify-between text-xs text-[#16A34A]">
+                        <div className="flex justify-between text-xs text-success">
                           <span>Descuento</span>
                           <span>-{formatPrice(session.descuento)}</span>
                         </div>
@@ -410,7 +410,7 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                         <span>{formatPrice(session.total)}</span>
                       </div>
                       {isPaid && (
-                        <div className="mt-2 text-center text-xs font-medium text-[#16A34A] bg-[#F0FDF4] rounded-lg py-2">
+                        <div className="mt-2 text-center text-xs font-medium text-success bg-green-50 rounded-lg py-2">
                           Cuenta pagada
                           {session.paymentMethod && (
                             <span className="text-muted-foreground ml-1">

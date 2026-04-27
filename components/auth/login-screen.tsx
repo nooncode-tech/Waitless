@@ -58,7 +58,7 @@ export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginSc
       {onBack && (
         <button
           onClick={onBack}
-          className="absolute top-5 left-5 z-10 flex items-center gap-1.5 text-xs text-[#6B6B6B] hover:text-black transition-colors"
+          className="absolute top-5 left-5 z-10 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-black transition-colors"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M9 11L5 7L9 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -105,7 +105,7 @@ export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginSc
             >
               Iniciar sesión
             </h1>
-            <p className="text-sm text-[#6B6B6B] mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Ingresá tus credenciales para acceder
             </p>
           </div>
@@ -121,7 +121,7 @@ export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginSc
                 placeholder="Nombre de usuario"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="h-11 border-[#E5E5E5] focus:border-black focus:ring-black rounded"
+                className="h-11 border-border focus:border-black focus:ring-black rounded"
                 autoComplete="username"
                 required
                 disabled={isLoading}
@@ -139,7 +139,7 @@ export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginSc
                   placeholder="Contraseña"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-11 pr-10 border-[#E5E5E5] focus:border-black focus:ring-black rounded"
+                  className="h-11 pr-10 border-border focus:border-black focus:ring-black rounded"
                   autoComplete="current-password"
                   required
                   disabled={isLoading}
@@ -147,7 +147,7 @@ export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginSc
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#BEBEBE] hover:text-black transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-black transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -186,11 +186,11 @@ export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginSc
           <div className="mt-6 space-y-3">
             <GoogleAuthButton label="Continuar con Google" />
 
-            <p className="text-center text-xs text-[#ADADAD]">
+            <p className="text-center text-xs text-muted-foreground">
               ¿No tenés cuenta?{' '}
               <Link
                 href="/registro"
-                className="text-[#555] font-semibold underline underline-offset-2 hover:text-black transition-colors"
+                className="text-foreground font-semibold underline underline-offset-2 hover:text-black transition-colors"
               >
                 Registrá tu negocio
               </Link>
@@ -198,7 +198,7 @@ export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginSc
           </div>
         </div>
 
-        <p className="mt-8 text-[10px] text-[#ADADAD] text-center">
+        <p className="mt-8 text-[10px] text-muted-foreground text-center">
           {restaurantName ?? 'WAITLESS · Plataforma operativa para restaurantes'}
         </p>
       </div>

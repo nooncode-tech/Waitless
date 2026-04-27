@@ -88,7 +88,7 @@ function LandingScreen({ restaurantName, primaryColor, fontFamily, onLogin, onRe
         <h1 className="text-2xl font-bold text-black" style={{ fontFamily, letterSpacing: '-0.02em' }}>
           ¡Bienvenido{restaurantName ? ` a ${restaurantName}` : ''}!
         </h1>
-        <p className="text-sm text-[#6B6B6B] mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           ¿Cómo querés continuar?
         </p>
       </div>
@@ -96,7 +96,7 @@ function LandingScreen({ restaurantName, primaryColor, fontFamily, onLogin, onRe
       {/* Ya tengo cuenta */}
       <button
         onClick={onLogin}
-        className="w-full flex items-center justify-between px-5 py-4 rounded-xl border-2 border-[#E5E5E5] hover:border-black transition-colors group"
+        className="w-full flex items-center justify-between px-5 py-4 rounded-xl border-2 border-border hover:border-black transition-colors group"
       >
         <div className="flex items-center gap-3">
           <div
@@ -107,10 +107,10 @@ function LandingScreen({ restaurantName, primaryColor, fontFamily, onLogin, onRe
           </div>
           <div className="text-left">
             <p className="text-sm font-semibold text-black">Ya tengo cuenta</p>
-            <p className="text-xs text-[#6B6B6B]">Ingresá con tu email y contraseña</p>
+            <p className="text-xs text-muted-foreground">Ingresá con tu email y contraseña</p>
           </div>
         </div>
-        <ArrowRight className="h-4 w-4 text-[#BEBEBE] group-hover:text-black transition-colors" />
+        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-black transition-colors" />
       </button>
 
       {/* Soy nuevo */}
@@ -128,17 +128,17 @@ function LandingScreen({ restaurantName, primaryColor, fontFamily, onLogin, onRe
           </div>
           <div className="text-left">
             <p className="text-sm font-semibold text-black">Soy nuevo</p>
-            <p className="text-xs text-[#6B6B6B]">Creá tu cuenta en segundos</p>
+            <p className="text-xs text-muted-foreground">Creá tu cuenta en segundos</p>
           </div>
         </div>
-        <ArrowRight className="h-4 w-4 text-[#BEBEBE] group-hover:text-black transition-colors" />
+        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-black transition-colors" />
       </button>
 
       {/* Continuar sin cuenta */}
       <div className="pt-2 text-center">
         <button
           onClick={onGuest}
-          className="text-sm text-[#BEBEBE] hover:text-black underline underline-offset-2 transition-colors"
+          className="text-sm text-muted-foreground hover:text-black underline underline-offset-2 transition-colors"
         >
           Continuar sin cuenta
         </button>
@@ -184,7 +184,7 @@ function LoginForm({ primaryColor, fontFamily, onSuccess, onBack }: LoginFormPro
 
   return (
     <div>
-      <button onClick={onBack} className="flex items-center gap-1 text-sm text-[#6B6B6B] hover:text-black mb-6 transition-colors">
+      <button onClick={onBack} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-black mb-6 transition-colors">
         <ArrowLeft className="h-3.5 w-3.5" />
         Volver
       </button>
@@ -193,7 +193,7 @@ function LoginForm({ primaryColor, fontFamily, onSuccess, onBack }: LoginFormPro
         <h2 className="text-xl font-bold text-black" style={{ fontFamily, letterSpacing: '-0.02em' }}>
           Ingresá a tu cuenta
         </h2>
-        <p className="text-sm text-[#6B6B6B] mt-1">Usá el email con el que te registraste</p>
+        <p className="text-sm text-muted-foreground mt-1">Usá el email con el que te registraste</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -207,7 +207,7 @@ function LoginForm({ primaryColor, fontFamily, onSuccess, onBack }: LoginFormPro
             placeholder="tu@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-11 border-[#E5E5E5] focus:border-black focus:ring-black rounded"
+            className="h-11 border-border focus:border-black focus:ring-black rounded"
             autoComplete="email"
             required
             disabled={isLoading}
@@ -225,7 +225,7 @@ function LoginForm({ primaryColor, fontFamily, onSuccess, onBack }: LoginFormPro
               placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-11 pr-10 border-[#E5E5E5] focus:border-black focus:ring-black rounded"
+              className="h-11 pr-10 border-border focus:border-black focus:ring-black rounded"
               autoComplete="current-password"
               required
               disabled={isLoading}
@@ -233,7 +233,7 @@ function LoginForm({ primaryColor, fontFamily, onSuccess, onBack }: LoginFormPro
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#BEBEBE] hover:text-black transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-black transition-colors"
               tabIndex={-1}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -311,7 +311,7 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
 
   return (
     <div>
-      <button onClick={onBack} className="flex items-center gap-1 text-sm text-[#6B6B6B] hover:text-black mb-6 transition-colors">
+      <button onClick={onBack} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-black mb-6 transition-colors">
         <ArrowLeft className="h-3.5 w-3.5" />
         Volver
       </button>
@@ -320,7 +320,7 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
         <h2 className="text-xl font-bold text-black" style={{ fontFamily, letterSpacing: '-0.02em' }}>
           Crear cuenta
         </h2>
-        <p className="text-sm text-[#6B6B6B] mt-1">Tus pedidos quedan guardados para la próxima</p>
+        <p className="text-sm text-muted-foreground mt-1">Tus pedidos quedan guardados para la próxima</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -334,7 +334,7 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
             placeholder="Tu nombre"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
-            className="h-11 border-[#E5E5E5] focus:border-black focus:ring-black rounded"
+            className="h-11 border-border focus:border-black focus:ring-black rounded"
             autoComplete="given-name"
             required
             disabled={isLoading}
@@ -351,7 +351,7 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
             placeholder="tu@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-11 border-[#E5E5E5] focus:border-black focus:ring-black rounded"
+            className="h-11 border-border focus:border-black focus:ring-black rounded"
             autoComplete="email"
             required
             disabled={isLoading}
@@ -360,7 +360,7 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
 
         <div className="space-y-1.5">
           <label htmlFor="reg-tel" className="text-xs font-semibold text-black uppercase tracking-wide">
-            Teléfono <span className="text-[#BEBEBE] font-normal">(opcional)</span>
+            Teléfono <span className="text-muted-foreground font-normal">(opcional)</span>
           </label>
           <Input
             id="reg-tel"
@@ -368,7 +368,7 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
             placeholder="+54 9 11 1234-5678"
             value={telefono}
             onChange={(e) => setTelefono(e.target.value)}
-            className="h-11 border-[#E5E5E5] focus:border-black focus:ring-black rounded"
+            className="h-11 border-border focus:border-black focus:ring-black rounded"
             autoComplete="tel"
             disabled={isLoading}
           />
@@ -385,7 +385,7 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
               placeholder="Mínimo 6 caracteres"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-11 pr-10 border-[#E5E5E5] focus:border-black focus:ring-black rounded"
+              className="h-11 pr-10 border-border focus:border-black focus:ring-black rounded"
               autoComplete="new-password"
               required
               minLength={6}
@@ -394,7 +394,7 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#BEBEBE] hover:text-black transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-black transition-colors"
               tabIndex={-1}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

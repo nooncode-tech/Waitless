@@ -551,15 +551,15 @@ function OrderCard({ order, items, status, timeColor, timeBgColor, onStart, onCo
   return (
     <Card className={cn(
       "border-2 transition-all overflow-hidden",
-      status === 'preparando' && "border-[#D97706] bg-[#FFFBEB]",
-      status === 'listo' && "border-[#16A34A] bg-[#F0FDF4]",
-      status === 'en_cola' && elapsedMin >= SLA_CRITICAL && "border-[#DC2626] bg-red-50",
-      status === 'en_cola' && elapsedMin >= SLA_WARN && elapsedMin < SLA_CRITICAL && "border-[#D97706] bg-[#FFFBEB]",
+      status === 'preparando' && "border-warning bg-kds-preparing",
+      status === 'listo' && "border-success bg-green-50",
+      status === 'en_cola' && elapsedMin >= SLA_CRITICAL && "border-destructive bg-red-50",
+      status === 'en_cola' && elapsedMin >= SLA_WARN && elapsedMin < SLA_CRITICAL && "border-warning bg-kds-preparing",
       status === 'en_cola' && elapsedMin < SLA_WARN && "border-border bg-white"
     )}>
       {/* SLA progress bar */}
       {status !== 'listo' && (
-        <div className="h-1 w-full bg-[#F2F2F2]">
+        <div className="h-1 w-full bg-muted">
           <div
             className="h-full transition-all duration-1000"
             style={{ width: `${slaProgress}%`, backgroundColor: slaColor }}
@@ -567,7 +567,7 @@ function OrderCard({ order, items, status, timeColor, timeBgColor, onStart, onCo
         </div>
       )}
       {status === 'listo' && (
-        <div className="h-1 w-full bg-[#16A34A]" />
+        <div className="h-1 w-full bg-success" />
       )}
 
       <CardHeader className={cn("pb-2", large ? "p-4" : "p-2.5")}>
@@ -578,9 +578,9 @@ function OrderCard({ order, items, status, timeColor, timeBgColor, onStart, onCo
                 <span className={cn(
                   "font-bold px-2 py-1 rounded text-white",
                   large ? "text-sm" : "text-[10px]",
-                  priorityIndex === 0 ? 'bg-[#DC2626]' :
-                  priorityIndex < 3 ? 'bg-[#D97706]' :
-                  'bg-[#BEBEBE]'
+                  priorityIndex === 0 ? 'bg-destructive' :
+                  priorityIndex < 3 ? 'bg-warning' :
+                  'bg-accent'
                 )}>
                   #{priorityIndex + 1}
                 </span>
@@ -670,7 +670,7 @@ function OrderCard({ order, items, status, timeColor, timeBgColor, onStart, onCo
         {status === 'preparando' && onComplete && (
           <Button
             className={cn(
-              "w-full font-bold bg-[#16A34A] hover:bg-[#15803D] text-white",
+              "w-full font-bold bg-success hover:bg-green-700 text-white",
               large ? "h-12 text-base" : "h-8 text-xs"
             )}
             onClick={onComplete}

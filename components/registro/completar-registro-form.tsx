@@ -126,7 +126,7 @@ export function CompletarRegistroForm() {
         </div>
         <div>
           <h2 className="text-xl font-bold text-black">¡Tu plataforma está lista!</h2>
-          <p className="text-sm text-[#6B6B6B] mt-1">Redirigiendo al panel...</p>
+          <p className="text-sm text-muted-foreground mt-1">Redirigiendo al panel...</p>
         </div>
       </div>
     )
@@ -146,7 +146,7 @@ export function CompletarRegistroForm() {
         <h2 className="text-xl font-bold text-black" style={{ letterSpacing: '-0.02em' }}>
           Configurá tu negocio
         </h2>
-        <p className="text-sm text-[#6B6B6B] mt-1">Ya casi estás. Completá los datos de tu restaurante.</p>
+        <p className="text-sm text-muted-foreground mt-1">Ya casi estás. Completá los datos de tu restaurante.</p>
       </div>
 
       {/* Nombre */}
@@ -159,7 +159,7 @@ export function CompletarRegistroForm() {
           placeholder="Ej: La Trattoria"
           value={nombre}
           onChange={(e) => handleNombreChange(e.target.value)}
-          className="h-11 border-[#E5E5E5] focus:border-black focus:ring-black rounded"
+          className="h-11 border-border focus:border-black focus:ring-black rounded"
           required
           disabled={isLoading}
         />
@@ -171,7 +171,7 @@ export function CompletarRegistroForm() {
           Identificador único
         </label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#BEBEBE] select-none">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground select-none">
             waitless.app/
           </span>
           <Input
@@ -179,11 +179,11 @@ export function CompletarRegistroForm() {
             placeholder="la-trattoria"
             value={slug}
             onChange={(e) => handleSlugChange(e.target.value)}
-            className="h-11 pl-[92px] border-[#E5E5E5] focus:border-black focus:ring-black rounded font-mono text-sm"
+            className="h-11 pl-[92px] border-border focus:border-black focus:ring-black rounded font-mono text-sm"
             disabled={isLoading}
           />
         </div>
-        <p className="text-[10px] text-[#BEBEBE]">Solo minúsculas, números y guiones. No se puede cambiar después.</p>
+        <p className="text-[10px] text-muted-foreground">Solo minúsculas, números y guiones. No se puede cambiar después.</p>
       </div>
 
       {/* Color */}
@@ -192,7 +192,7 @@ export function CompletarRegistroForm() {
           <Palette className="h-3.5 w-3.5" />
           Color principal
         </label>
-        <div className="flex items-center gap-3 p-3 border border-[#E5E5E5] rounded-xl">
+        <div className="flex items-center gap-3 p-3 border border-border rounded-xl">
           <input
             type="color"
             value={primaryColor}
@@ -201,7 +201,7 @@ export function CompletarRegistroForm() {
           />
           <div>
             <p className="text-sm font-semibold text-black">{primaryColor.toUpperCase()}</p>
-            <p className="text-xs text-[#6B6B6B]">Botones, header y acentos</p>
+            <p className="text-xs text-muted-foreground">Botones, header y acentos</p>
           </div>
           <div className="ml-auto">
             <span className="px-3 py-1 rounded-full text-xs font-bold text-white" style={{ backgroundColor: primaryColor }}>
@@ -214,29 +214,29 @@ export function CompletarRegistroForm() {
       {/* Logo */}
       <div className="space-y-1.5">
         <label className="text-xs font-semibold text-black uppercase tracking-wide">
-          Logo <span className="text-[#BEBEBE] font-normal">(opcional)</span>
+          Logo <span className="text-muted-foreground font-normal">(opcional)</span>
         </label>
         {logoPreview ? (
-          <div className="flex items-center gap-3 p-3 border border-[#E5E5E5] rounded-xl">
+          <div className="flex items-center gap-3 p-3 border border-border rounded-xl">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoPreview} alt="Logo preview" className="w-12 h-12 object-contain rounded-lg border border-[#E5E5E5]" />
+            <img src={logoPreview} alt="Logo preview" className="w-12 h-12 object-contain rounded-lg border border-border" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-black truncate">{logoFile?.name}</p>
-              <p className="text-xs text-[#6B6B6B]">{((logoFile?.size ?? 0) / 1024).toFixed(0)} KB</p>
+              <p className="text-xs text-muted-foreground">{((logoFile?.size ?? 0) / 1024).toFixed(0)} KB</p>
             </div>
-            <button type="button" onClick={removeLogo} className="p-1.5 rounded-lg hover:bg-[#F2F2F2] transition-colors">
-              <X className="h-4 w-4 text-[#BEBEBE]" />
+            <button type="button" onClick={removeLogo} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+              <X className="h-4 w-4 text-muted-foreground" />
             </button>
           </div>
         ) : (
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full flex flex-col items-center gap-2 p-6 border-2 border-dashed border-[#E5E5E5] rounded-xl hover:border-black hover:bg-[#F9F9F9] transition-colors"
+            className="w-full flex flex-col items-center gap-2 p-6 border-2 border-dashed border-border rounded-xl hover:border-black hover:bg-muted transition-colors"
           >
-            <Upload className="h-6 w-6 text-[#BEBEBE]" />
-            <span className="text-sm text-[#6B6B6B]">Subir logo</span>
-            <span className="text-xs text-[#BEBEBE]">PNG, JPG, WEBP · máx. 2 MB</span>
+            <Upload className="h-6 w-6 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Subir logo</span>
+            <span className="text-xs text-muted-foreground">PNG, JPG, WEBP · máx. 2 MB</span>
           </button>
         )}
         <input

@@ -409,7 +409,7 @@ export function ReportsManager() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h2 className="text-lg font-bold text-black tracking-tight">Dashboard</h2>
-          <p className="text-xs text-[#6B6B6B] mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             {new Date().toLocaleDateString('es-MX', {
               weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
             })}
@@ -418,12 +418,12 @@ export function ReportsManager() {
         <div className="flex items-center gap-2">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#F2F2F2] text-[#6B6B6B] hover:bg-[#E5E5E5] transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-muted text-muted-foreground hover:bg-border transition-colors"
           >
             <Download className="h-3.5 w-3.5" />
             CSV
           </button>
-          <div className="flex items-center gap-1 bg-[#F2F2F2] rounded-lg p-0.5">
+          <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
             {(Object.keys(RANGE_LABELS) as DateRange[]).map(r => (
               <button
                 key={r}
@@ -432,7 +432,7 @@ export function ReportsManager() {
                   'px-3 py-1.5 text-xs font-semibold rounded-md transition-all',
                   dateRange === r
                     ? 'bg-black text-white'
-                    : 'text-[#6B6B6B] hover:text-black'
+                    : 'text-muted-foreground hover:text-black'
                 )}
               >
                 {RANGE_LABELS[r]}
@@ -455,12 +455,12 @@ export function ReportsManager() {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
         {kpis.map(kpi => (
-          <div key={kpi.label} className="border border-[#E5E5E5] rounded-xl p-4 bg-white min-w-0">
+          <div key={kpi.label} className="border border-border rounded-xl p-4 bg-white min-w-0">
             <div className="flex items-start justify-between gap-2 mb-3">
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-[#6B6B6B] leading-tight">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground leading-tight">
                 {kpi.label}
               </span>
-              <div className="p-1.5 rounded-lg bg-[#F2F2F2] text-black shrink-0">
+              <div className="p-1.5 rounded-lg bg-muted text-black shrink-0">
                 {kpi.icon}
               </div>
             </div>
@@ -468,20 +468,20 @@ export function ReportsManager() {
             {kpi.diff !== null && kpi.diff !== undefined ? (
               <p className={cn(
                 'text-[10px] mt-1 font-semibold',
-                kpi.diff > 0 ? 'text-[#16A34A]' : kpi.diff < 0 ? 'text-[#DC2626]' : 'text-[#BEBEBE]'
+                kpi.diff > 0 ? 'text-success' : kpi.diff < 0 ? 'text-destructive' : 'text-muted-foreground'
               )}>
                 {kpi.diff > 0 ? '↑' : kpi.diff < 0 ? '↓' : '='} {Math.abs(kpi.diff)}% vs período anterior
               </p>
             ) : (
-              <p className="text-[10px] text-[#BEBEBE] mt-1">{kpi.sub}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">{kpi.sub}</p>
             )}
           </div>
         ))}
       </div>
 
       {/* Gráfico ventas por hora */}
-      <div className="border border-[#E5E5E5] rounded-xl bg-white overflow-hidden">
-        <div className="px-4 py-3 border-b border-[#E5E5E5]">
+      <div className="border border-border rounded-xl bg-white overflow-hidden">
+        <div className="px-4 py-3 border-b border-border">
           <p className="text-xs font-bold text-black uppercase tracking-wide">Ventas por hora</p>
         </div>
         <div className="p-4">
@@ -522,7 +522,7 @@ export function ReportsManager() {
             </ResponsiveContainer>
           ) : (
             <div className="h-40 flex items-center justify-center">
-              <p className="text-xs text-[#BEBEBE]">Sin ventas en el período seleccionado</p>
+              <p className="text-xs text-muted-foreground">Sin ventas en el período seleccionado</p>
             </div>
           )}
         </div>
@@ -530,8 +530,8 @@ export function ReportsManager() {
 
       {/* Gráfico tendencia diaria — solo para 7d / 30d */}
       {dateRange !== 'hoy' && (
-        <div className="border border-[#E5E5E5] rounded-xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-[#E5E5E5]">
+        <div className="border border-border rounded-xl bg-white overflow-hidden">
+          <div className="px-4 py-3 border-b border-border">
             <p className="text-xs font-bold text-black uppercase tracking-wide">
               Tendencia de ventas — {RANGE_LABELS[dateRange]}
             </p>
@@ -570,7 +570,7 @@ export function ReportsManager() {
               </ResponsiveContainer>
             ) : (
               <div className="h-40 flex items-center justify-center">
-                <p className="text-xs text-[#BEBEBE]">Sin datos en el período seleccionado</p>
+                <p className="text-xs text-muted-foreground">Sin datos en el período seleccionado</p>
               </div>
             )}
           </div>
@@ -581,18 +581,18 @@ export function ReportsManager() {
       <div className="grid md:grid-cols-2 gap-3">
 
         {/* Canal */}
-        <div className="border border-[#E5E5E5] rounded-xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-[#E5E5E5]">
+        <div className="border border-border rounded-xl bg-white overflow-hidden">
+          <div className="px-4 py-3 border-b border-border">
             <p className="text-xs font-bold text-black uppercase tracking-wide">Pedidos por canal</p>
           </div>
           <div className="p-4 space-y-3">
             {byChannel.map(ch => (
               <div key={ch.label}>
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-[#6B6B6B]">{ch.label}</span>
+                  <span className="text-muted-foreground">{ch.label}</span>
                   <span className="font-semibold text-black">{ch.count} ({ch.pct}%)</span>
                 </div>
-                <div className="h-1.5 bg-[#F2F2F2] rounded-full overflow-hidden">
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-black rounded-full transition-all"
                     style={{ width: `${ch.pct}%` }}
@@ -601,36 +601,36 @@ export function ReportsManager() {
               </div>
             ))}
             {todayOrders.length === 0 && (
-              <p className="text-xs text-[#BEBEBE] text-center py-2">Sin pedidos en el período seleccionado</p>
+              <p className="text-xs text-muted-foreground text-center py-2">Sin pedidos en el período seleccionado</p>
             )}
           </div>
         </div>
 
         {/* SLA & Cancelaciones */}
-        <div className="border border-[#E5E5E5] rounded-xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-[#E5E5E5]">
+        <div className="border border-border rounded-xl bg-white overflow-hidden">
+          <div className="px-4 py-3 border-b border-border">
             <p className="text-xs font-bold text-black uppercase tracking-wide">Eficiencia operativa</p>
           </div>
           <div className="p-4 space-y-4">
             <div>
               <div className="flex justify-between text-xs mb-1">
-                <span className="text-[#6B6B6B]">Cumplimiento SLA (≤ 15 min)</span>
+                <span className="text-muted-foreground">Cumplimiento SLA (≤ 15 min)</span>
                 <span className={cn(
                   'font-bold',
-                  slaCompliance >= 90 ? 'text-[#16A34A]'
-                    : slaCompliance >= 70 ? 'text-[#D97706]'
-                    : 'text-[#DC2626]'
+                  slaCompliance >= 90 ? 'text-success'
+                    : slaCompliance >= 70 ? 'text-warning'
+                    : 'text-destructive'
                 )}>
                   {slaCompliance}%
                 </span>
               </div>
-              <div className="h-2 bg-[#F2F2F2] rounded-full overflow-hidden">
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className={cn(
                     'h-full rounded-full transition-all',
-                    slaCompliance >= 90 ? 'bg-[#16A34A]'
-                      : slaCompliance >= 70 ? 'bg-[#D97706]'
-                      : 'bg-[#DC2626]'
+                    slaCompliance >= 90 ? 'bg-success'
+                      : slaCompliance >= 70 ? 'bg-warning'
+                      : 'bg-destructive'
                   )}
                   style={{ width: `${slaCompliance}%` }}
                 />
@@ -640,17 +640,17 @@ export function ReportsManager() {
             <div className="grid grid-cols-3 gap-2 pt-1">
               <div className="text-center">
                 <p className="text-lg font-bold text-black">{completedOrders.length}</p>
-                <p className="text-[10px] text-[#6B6B6B]">Completados</p>
+                <p className="text-[10px] text-muted-foreground">Completados</p>
               </div>
-              <div className="text-center border-x border-[#E5E5E5]">
-                <p className="text-lg font-bold text-[#D97706]">
+              <div className="text-center border-x border-border">
+                <p className="text-lg font-bold text-warning">
                   {todayOrders.filter(o => !['entregado', 'cancelado'].includes(o.status)).length}
                 </p>
-                <p className="text-[10px] text-[#6B6B6B]">En proceso</p>
+                <p className="text-[10px] text-muted-foreground">En proceso</p>
               </div>
               <div className="text-center">
-                <p className="text-lg font-bold text-[#DC2626]">{cancelledOrders.length}</p>
-                <p className="text-[10px] text-[#6B6B6B]">Cancelados</p>
+                <p className="text-lg font-bold text-destructive">{cancelledOrders.length}</p>
+                <p className="text-[10px] text-muted-foreground">Cancelados</p>
               </div>
             </div>
           </div>
@@ -658,9 +658,9 @@ export function ReportsManager() {
       </div>
 
       {/* Top items */}
-      <div className="border border-[#E5E5E5] rounded-xl bg-white overflow-hidden">
-        <div className="px-4 py-3 border-b border-[#E5E5E5] flex items-center gap-2">
-          <ChefHat className="h-3.5 w-3.5 text-[#6B6B6B]" />
+      <div className="border border-border rounded-xl bg-white overflow-hidden">
+        <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+          <ChefHat className="h-3.5 w-3.5 text-muted-foreground" />
           <p className="text-xs font-bold text-black uppercase tracking-wide">Más vendidos ({RANGE_LABELS[dateRange]})</p>
         </div>
         <div className="p-4">
@@ -671,7 +671,7 @@ export function ReportsManager() {
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className={cn(
                       'w-5 h-5 rounded-full flex items-center justify-center shrink-0',
-                      i === 0 ? 'bg-black text-white' : 'bg-[#F2F2F2] text-[#6B6B6B]'
+                      i === 0 ? 'bg-black text-white' : 'bg-muted text-muted-foreground'
                     )}>
                       {i === 0
                         ? <Star className="h-2.5 w-2.5" />
@@ -679,7 +679,7 @@ export function ReportsManager() {
                       }
                     </span>
                     <span className="text-sm text-black truncate">{item.name}</span>
-                    <span className="text-[10px] bg-[#F2F2F2] text-[#6B6B6B] px-1.5 py-0.5 rounded-full shrink-0">
+                    <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full shrink-0">
                       ×{item.qty}
                     </span>
                   </div>
@@ -690,16 +690,16 @@ export function ReportsManager() {
               ))}
             </div>
           ) : (
-            <p className="text-xs text-[#BEBEBE] text-center py-4">Sin ventas en el período seleccionado</p>
+            <p className="text-xs text-muted-foreground text-center py-4">Sin ventas en el período seleccionado</p>
           )}
         </div>
       </div>
 
       {/* Feedback summary */}
       {feedbackSummary && feedbackSummary.total > 0 && (
-        <div className="border border-[#E5E5E5] rounded-xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-[#E5E5E5] flex items-center gap-2">
-            <MessageSquare className="h-3.5 w-3.5 text-[#6B6B6B]" />
+        <div className="border border-border rounded-xl bg-white overflow-hidden">
+          <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+            <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
             <p className="text-xs font-bold text-black uppercase tracking-wide">
               Satisfacción de clientes ({RANGE_LABELS[dateRange]})
             </p>
@@ -718,13 +718,13 @@ export function ReportsManager() {
                       className={cn(
                         'h-3 w-3',
                         s <= Math.round(feedbackSummary.avg_rating ?? 0)
-                          ? 'text-[#D97706] fill-[#D97706]'
-                          : 'text-[#E5E5E5] fill-[#E5E5E5]'
+                          ? 'text-warning fill-[#D97706]'
+                          : 'text-border fill-border'
                       )}
                     />
                   ))}
                 </div>
-                <p className="text-[10px] text-[#6B6B6B] mt-1">
+                <p className="text-[10px] text-muted-foreground mt-1">
                   {feedbackSummary.total} reseña{feedbackSummary.total !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -737,15 +737,15 @@ export function ReportsManager() {
                     : 0
                   return (
                     <div key={star} className="flex items-center gap-2">
-                      <span className="text-[10px] text-[#6B6B6B] w-3 shrink-0">{star}</span>
-                      <Star className="h-2.5 w-2.5 text-[#D97706] fill-[#D97706] shrink-0" />
-                      <div className="flex-1 h-1.5 bg-[#F2F2F2] rounded-full overflow-hidden">
+                      <span className="text-[10px] text-muted-foreground w-3 shrink-0">{star}</span>
+                      <Star className="h-2.5 w-2.5 text-warning fill-[#D97706] shrink-0" />
+                      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-[#D97706] rounded-full transition-all"
+                          className="h-full bg-warning rounded-full transition-all"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
-                      <span className="text-[10px] text-[#6B6B6B] w-6 text-right shrink-0">{count}</span>
+                      <span className="text-[10px] text-muted-foreground w-6 text-right shrink-0">{count}</span>
                     </div>
                   )
                 })}

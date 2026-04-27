@@ -32,21 +32,21 @@ export function DeliveryBoard() {
     <div className="p-4">
       {/* Stats */}
       <div className="grid grid-cols-4 gap-2 mb-4">
-        <div className="border border-[#16A34A]/20 bg-[#F0FDF4] rounded-xl p-2 text-center">
-          <p className="text-xl font-bold text-[#16A34A]">{readyCount}</p>
-          <p className="text-[9px] text-[#16A34A]">Listos</p>
+        <div className="border border-success/20 bg-green-50 rounded-xl p-2 text-center">
+          <p className="text-xl font-bold text-success">{readyCount}</p>
+          <p className="text-[9px] text-success">Listos</p>
         </div>
-        <div className="border border-[#E5E5E5] bg-[#F2F2F2] rounded-xl p-2 text-center">
+        <div className="border border-border bg-muted rounded-xl p-2 text-center">
           <p className="text-xl font-bold text-black">{enCaminoCount}</p>
-          <p className="text-[9px] text-[#6B6B6B]">En camino</p>
+          <p className="text-[9px] text-muted-foreground">En camino</p>
         </div>
-        <div className="border border-[#D97706]/20 bg-[#FFFBEB] rounded-xl p-2 text-center">
-          <p className="text-xl font-bold text-[#D97706]">{preparingCount}</p>
-          <p className="text-[9px] text-[#D97706]">Preparando</p>
+        <div className="border border-warning/20 bg-kds-preparing rounded-xl p-2 text-center">
+          <p className="text-xl font-bold text-warning">{preparingCount}</p>
+          <p className="text-[9px] text-warning">Preparando</p>
         </div>
-        <div className="border border-[#E5E5E5] bg-white rounded-xl p-2 text-center">
+        <div className="border border-border bg-white rounded-xl p-2 text-center">
           <p className="text-xl font-bold text-black">{pendingOrders.length}</p>
-          <p className="text-[9px] text-[#6B6B6B]">Total</p>
+          <p className="text-[9px] text-muted-foreground">Total</p>
         </div>
       </div>
 
@@ -55,9 +55,9 @@ export function DeliveryBoard() {
         <h3 className="font-semibold text-sm text-black">Tablero de entregas</h3>
 
         {pendingOrders.length === 0 ? (
-          <div className="border border-dashed border-[#E5E5E5] rounded-xl py-10 text-center">
-            <Package className="h-8 w-8 mx-auto text-[#BEBEBE] mb-2" />
-            <p className="text-sm text-[#BEBEBE]">Sin órdenes pendientes</p>
+          <div className="border border-dashed border-border rounded-xl py-10 text-center">
+            <Package className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">Sin órdenes pendientes</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
@@ -75,9 +75,9 @@ export function DeliveryBoard() {
                 <div
                   key={order.id}
                   className={`border rounded-xl transition-all ${
-                    isReady ? 'border-[#16A34A] bg-[#F0FDF4]/50' :
-                    isEnCamino ? 'border-[#BEBEBE] bg-[#F2F2F2]/50' :
-                    'border-[#E5E5E5] bg-white'
+                    isReady ? 'border-success bg-green-50/50' :
+                    isEnCamino ? 'border-accent bg-muted/50' :
+                    'border-border bg-white'
                   }`}
                 >
                   <div className="p-3 pb-2">
@@ -86,8 +86,8 @@ export function DeliveryBoard() {
                         <p className="text-sm font-bold text-black">#{order.numero}</p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <Badge variant="outline" className={`text-[10px] h-4 px-1 ${
-                            order.canal === 'delivery' ? 'border-[#6B6B6B] text-[#6B6B6B]' :
-                            order.canal === 'para_llevar' ? 'border-[#D97706] text-[#D97706]' :
+                            order.canal === 'delivery' ? 'border-muted-foreground text-muted-foreground' :
+                            order.canal === 'para_llevar' ? 'border-warning text-warning' :
                             ''
                           }`}>
                             {order.canal === 'delivery' && <Truck className="h-2.5 w-2.5 mr-0.5" />}
@@ -95,20 +95,20 @@ export function DeliveryBoard() {
                             {getChannelLabel(order.canal)}
                           </Badge>
                           {order.mesa && (
-                            <span className="text-[10px] text-[#6B6B6B]">Mesa {order.mesa}</span>
+                            <span className="text-[10px] text-muted-foreground">Mesa {order.mesa}</span>
                           )}
                         </div>
                       </div>
                       <div className="text-right">
                         <Badge className={`text-[10px] h-4 ${
-                          isReady ? 'bg-[#16A34A] text-white' :
+                          isReady ? 'bg-success text-white' :
                           isEnCamino ? 'bg-black text-white' :
-                          order.status === 'preparando' ? 'bg-[#F2F2F2] text-black' :
-                          'bg-[#F2F2F2] text-[#6B6B6B]'
+                          order.status === 'preparando' ? 'bg-muted text-black' :
+                          'bg-muted text-muted-foreground'
                         }`}>
                           {isEnCamino ? 'En camino' : getStatusLabel(order.status)}
                         </Badge>
-                        <p className="text-[10px] text-[#6B6B6B] mt-0.5 flex items-center justify-end gap-0.5">
+                        <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center justify-end gap-0.5">
                           <Clock className="h-2.5 w-2.5" />
                           {getTimeDiff(order.createdAt)}
                         </p>
@@ -119,20 +119,20 @@ export function DeliveryBoard() {
                   <div className="px-3 pb-3">
                     {/* Customer Info */}
                     {(order.canal === 'delivery' || order.canal === 'para_llevar') && order.nombreCliente && (
-                      <div className="mb-2 p-2 bg-[#F2F2F2] rounded-lg text-xs">
+                      <div className="mb-2 p-2 bg-muted rounded-lg text-xs">
                         <p className="font-semibold text-black">{order.nombreCliente}</p>
                         {order.telefono && (
-                          <p className="text-[#6B6B6B] flex items-center gap-1">
+                          <p className="text-muted-foreground flex items-center gap-1">
                             <Phone className="h-2.5 w-2.5" />{order.telefono}
                           </p>
                         )}
                         {order.direccion && (
-                          <p className="text-[#6B6B6B] flex items-center gap-1">
+                          <p className="text-muted-foreground flex items-center gap-1">
                             <MapPin className="h-2.5 w-2.5" />{order.direccion}
                           </p>
                         )}
                         {order.zonaReparto && (
-                          <span className="mt-1 inline-block text-[9px] bg-[#E5E5E5] text-[#6B6B6B] px-1.5 py-0.5 rounded-full">
+                          <span className="mt-1 inline-block text-[9px] bg-border text-muted-foreground px-1.5 py-0.5 rounded-full">
                             {order.zonaReparto}
                           </span>
                         )}
@@ -149,8 +149,8 @@ export function DeliveryBoard() {
                     </ul>
 
                     {/* Total */}
-                    <div className="flex justify-between text-xs mb-2 pt-1 border-t border-[#E5E5E5]">
-                      <span className="text-[#6B6B6B]">Total</span>
+                    <div className="flex justify-between text-xs mb-2 pt-1 border-t border-border">
+                      <span className="text-muted-foreground">Total</span>
                       <span className="font-semibold text-black">{formatPrice(total)}</span>
                     </div>
 
@@ -158,15 +158,15 @@ export function DeliveryBoard() {
                     {!isEnCamino && (
                       <div className="flex gap-1 text-[10px] mb-2">
                         <span className={`px-1.5 py-0.5 rounded ${
-                          order.cocinaStatus === 'listo' ? 'bg-[#F0FDF4] text-[#16A34A]' :
-                          order.cocinaStatus === 'preparando' ? 'bg-[#FFFBEB] text-[#D97706]' :
-                          'bg-[#F2F2F2] text-[#6B6B6B]'
+                          order.cocinaStatus === 'listo' ? 'bg-green-50 text-success' :
+                          order.cocinaStatus === 'preparando' ? 'bg-kds-preparing text-warning' :
+                          'bg-muted text-muted-foreground'
                         }`}>
                           Cocina: {order.cocinaStatus === 'listo' ? 'Listo' :
                                    order.cocinaStatus === 'preparando' ? 'Prep.' : 'Cola'}
                         </span>
                         {!allKitchensReady && (
-                          <span className="text-[9px] text-[#BEBEBE] flex items-center gap-0.5">
+                          <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
                             <AlertCircle className="h-2.5 w-2.5" />Esperando
                           </span>
                         )}
@@ -185,7 +185,7 @@ export function DeliveryBoard() {
                           </Button>
                         ) : (
                           <Button
-                            className="w-full bg-[#16A34A] hover:bg-[#16A34A]/90 text-white h-7 text-xs"
+                            className="w-full bg-success hover:bg-success/90 text-white h-7 text-xs"
                             onClick={() => handleMarkDelivered(order.id)}
                           >
                             <Check className="h-3 w-3 mr-1" />
@@ -197,7 +197,7 @@ export function DeliveryBoard() {
 
                     {isEnCamino && (
                       <Button
-                        className="w-full bg-[#16A34A] hover:bg-[#16A34A]/90 text-white h-7 text-xs"
+                        className="w-full bg-success hover:bg-success/90 text-white h-7 text-xs"
                         onClick={() => handleMarkDelivered(order.id)}
                       >
                         <Check className="h-3 w-3 mr-1" />Entregado

@@ -96,7 +96,7 @@ export function OrdersManager() {
             <Badge 
               variant="secondary" 
               className={`text-[9px] h-3.5 px-1 ${
-                activeTab === 'table' ? 'bg-white/20 text-white' : 'bg-[#F2F2F2] text-black'
+                activeTab === 'table' ? 'bg-white/20 text-white' : 'bg-muted text-black'
               }`}
             >
               {activeTable.length}
@@ -117,7 +117,7 @@ export function OrdersManager() {
             <Badge 
               variant="secondary" 
               className={`text-[9px] h-3.5 px-1 ${
-                activeTab === 'takeout' ? 'bg-white/20 text-white' : 'bg-[#F2F2F2] text-black'
+                activeTab === 'takeout' ? 'bg-white/20 text-white' : 'bg-muted text-black'
               }`}
             >
               {activeTakeout.length}
@@ -138,7 +138,7 @@ export function OrdersManager() {
             <Badge 
               variant="secondary" 
               className={`text-[9px] h-3.5 px-1 ${
-                activeTab === 'delivery' ? 'bg-white/20 text-white' : 'bg-[#F2F2F2] text-black'
+                activeTab === 'delivery' ? 'bg-white/20 text-white' : 'bg-muted text-black'
               }`}
             >
               {activeDelivery.length}
@@ -321,8 +321,8 @@ function TableOrderCard({ order, onUpdateStatus }: TableOrderCardProps) {
   return (
     <>
       <div className={`p-2 rounded-md border ${
-        order.status === 'listo' ? 'border-[#16A34A] bg-[#F0FDF4]' :
-        order.status === 'preparando' ? 'border-[#D97706]/50 bg-[#FFFBEB]' :
+        order.status === 'listo' ? 'border-success bg-green-50' :
+        order.status === 'preparando' ? 'border-warning/50 bg-kds-preparing' :
         'border-border bg-card'
       }`}>
         <div className="flex items-start justify-between gap-2">
@@ -349,8 +349,8 @@ function TableOrderCard({ order, onUpdateStatus }: TableOrderCardProps) {
             {/* Kitchen Status Badges */}
             {order.status !== 'listo' && order.status !== 'entregado' && (
               <span className={`text-[8px] px-1 py-0.5 rounded ${
-                order.cocinaStatus === 'listo' ? 'bg-[#F0FDF4] text-[#16A34A]' :
-                order.cocinaStatus === 'preparando' ? 'bg-[#FFFBEB] text-[#D97706]' :
+                order.cocinaStatus === 'listo' ? 'bg-green-50 text-success' :
+                order.cocinaStatus === 'preparando' ? 'bg-kds-preparing text-warning' :
                 'bg-muted text-muted-foreground'
               }`}>
                 {order.cocinaStatus === 'listo' ? 'Listo' : order.cocinaStatus === 'preparando' ? 'Prep.' : 'Cola'}
@@ -358,8 +358,8 @@ function TableOrderCard({ order, onUpdateStatus }: TableOrderCardProps) {
             )}
             
             <Badge className={`text-[9px] h-4 px-1.5 ${
-              order.status === 'listo' ? 'bg-[#16A34A] text-white' :
-              order.status === 'preparando' ? 'bg-[#FFFBEB] text-[#D97706]' :
+              order.status === 'listo' ? 'bg-success text-white' :
+              order.status === 'preparando' ? 'bg-kds-preparing text-warning' :
               'bg-secondary text-secondary-foreground'
             }`}>
               {getStatusLabel(order.status)}
@@ -402,7 +402,7 @@ function TableOrderCard({ order, onUpdateStatus }: TableOrderCardProps) {
           <div className="mt-2 pt-2 border-t border-border">
             <Button
               size="sm"
-              className="w-full h-6 text-[10px] bg-[#16A34A] hover:bg-[#16A34A]/90 text-white"
+              className="w-full h-6 text-[10px] bg-success hover:bg-success/90 text-white"
               onClick={() => onUpdateStatus(order.id, 'entregado')}
             >
               <Check className="h-2.5 w-2.5 mr-1" />
@@ -528,8 +528,8 @@ function OrderCard({ order, channel, onUpdateStatus }: OrderCardProps) {
     <div>
       <Card className={`border transition-all ${
         order.status === 'entregado' ? 'opacity-50' : ''
-      } ${order.status === 'listo' ? 'border-[#16A34A] bg-[#F0FDF4]' : ''} ${
-        order.status === 'en_camino' ? 'border-[#BEBEBE] bg-[#F2F2F2]' : ''
+      } ${order.status === 'listo' ? 'border-success bg-green-50' : ''} ${
+        order.status === 'en_camino' ? 'border-accent bg-muted' : ''
       }`}>
         <CardContent className="p-2">
           <div className="flex items-start justify-between gap-2 mb-1.5">
@@ -572,11 +572,11 @@ function OrderCard({ order, channel, onUpdateStatus }: OrderCardProps) {
                 </DropdownMenu>
               )}
               <Badge className={`text-[9px] h-4 px-1.5 ${
-                order.status === 'listo' ? 'bg-[#16A34A] text-white' :
-                order.status === 'preparando' ? 'bg-[#FFFBEB] text-[#D97706]' :
-                order.status === 'entregado' ? 'bg-[#F2F2F2] text-[#6B6B6B]' :
+                order.status === 'listo' ? 'bg-success text-white' :
+                order.status === 'preparando' ? 'bg-kds-preparing text-warning' :
+                order.status === 'entregado' ? 'bg-muted text-muted-foreground' :
                 order.status === 'en_camino' ? 'bg-black text-white' :
-                'bg-[#F2F2F2] text-[#6B6B6B]'
+                'bg-muted text-muted-foreground'
               }`}>
                 {order.status === 'en_camino' ? 'En camino' : getStatusLabel(order.status)}
               </Badge>
@@ -627,9 +627,9 @@ function OrderCard({ order, channel, onUpdateStatus }: OrderCardProps) {
           {order.status !== 'entregado' && order.status !== 'en_camino' && (
             <div className="flex gap-1 text-[9px] mb-2">
               <span className={`px-1.5 py-0.5 rounded ${
-                order.cocinaStatus === 'listo' ? 'bg-[#F0FDF4] text-[#16A34A]' :
-                order.cocinaStatus === 'preparando' ? 'bg-[#FFFBEB] text-[#D97706]' :
-                'bg-[#F2F2F2] text-[#6B6B6B]'
+                order.cocinaStatus === 'listo' ? 'bg-green-50 text-success' :
+                order.cocinaStatus === 'preparando' ? 'bg-kds-preparing text-warning' :
+                'bg-muted text-muted-foreground'
               }`}>
                 Cocina: {order.cocinaStatus === 'listo' ? 'Listo' :
                          order.cocinaStatus === 'preparando' ? 'Prep.' : 'Cola'}
@@ -653,7 +653,7 @@ function OrderCard({ order, channel, onUpdateStatus }: OrderCardProps) {
               <Button
                 size="sm"
                 className={`h-6 text-[10px] px-2 ${
-                  nextAction.status === 'entregado' ? 'bg-[#16A34A] hover:bg-[#16A34A]/90 text-white' :
+                  nextAction.status === 'entregado' ? 'bg-success hover:bg-success/90 text-white' :
                   nextAction.status === 'en_camino' ? 'bg-black hover:bg-black/90 text-white' :
                   'bg-black text-white'
                 }`}
