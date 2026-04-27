@@ -39,7 +39,7 @@ export function WaiterCallsPanel() {
   const getCallColor = (tipo: string) => {
     switch (tipo) {
       case 'cuenta': return 'bg-warning'
-      case 'atencion': return 'bg-black'
+      case 'atencion': return 'bg-foreground'
       default: return 'bg-accent'
     }
   }
@@ -65,10 +65,10 @@ export function WaiterCallsPanel() {
     <div className="p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Bell className="h-4 w-4 text-black animate-pulse" />
+          <Bell className="h-4 w-4 text-destructive animate-pulse" />
           <h2 className="text-sm font-semibold text-foreground">Llamadas de mesero</h2>
         </div>
-        <Badge className="bg-black text-white">
+        <Badge className="bg-destructive text-destructive-foreground">
           {pendingCalls.length} pendiente{pendingCalls.length !== 1 ? 's' : ''}
         </Badge>
       </div>
@@ -82,7 +82,7 @@ export function WaiterCallsPanel() {
               key={call.id} 
               className={`border-l-4 ${
                 call.tipo === 'cuenta' ? 'border-l-warning bg-kds-preparing' :
-                call.tipo === 'atencion' ? 'border-l-black bg-muted' :
+                call.tipo === 'atencion' ? 'border-l-foreground bg-muted' :
                 'border-l-accent'
               }`}
             >

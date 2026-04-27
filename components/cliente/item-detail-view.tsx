@@ -52,9 +52,7 @@ export function ItemDetailView({ item, onBack, onAddToCart, cartItemCount = 0, c
               className="w-full h-full object-cover"
             />
           ) : (
-            <span className="text-7xl">
-              {item.categoria === 'cat-1' ? '🌮' : item.categoria === 'cat-2' ? '🫓' : item.categoria === 'cat-3' ? '🥤' : item.categoria === 'cat-4' ? '🍮' : '🍽️'}
-            </span>
+            <span className="text-7xl">🍽️</span>
           )}
         </div>
         

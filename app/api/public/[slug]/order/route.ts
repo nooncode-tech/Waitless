@@ -1,7 +1,7 @@
 /**
  * POST /api/public/[slug]/order
  * Crea un pedido desde el menú digital (sin autenticación).
- * Canal: 'para_llevar'. Total calculado server-side.
+ * Canal: 'para_llevar' o 'delivery'. Total calculado server-side.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -23,8 +23,11 @@ export async function POST(
 
   let body: {
     items: CartItem[]
+    canal?: 'para_llevar' | 'delivery'
     nombreCliente?: string
     telefono?: string
+    direccion?: string
+    zonaReparto?: string
     metodoPago?: string
     notas?: string
     incluirPropina?: boolean
@@ -145,16 +148,20 @@ export async function POST(
 
   const orderId = crypto.randomUUID()
 
+  const canal = body.canal === 'delivery' ? 'delivery' : 'para_llevar'
+
   const orderPayload: Record<string, unknown> = {
     id: orderId,
     numero,
-    canal: 'para_llevar',
+    canal,
     mesa: null,
     items: orderItems,
     status: 'recibido',
     cocina_a_status: 'en_cola',
     nombre_cliente: body.nombreCliente?.trim() || null,
     telefono: body.telefono?.trim() || null,
+    direccion: body.direccion?.trim() || null,
+    zona_reparto: body.zonaReparto?.trim() || null,
     cancelado: false,
     payment_status: 'pendiente',
     payment_method: body.metodoPago || null,
@@ -184,5 +191,5 @@ export async function POST(
     await supabaseAdmin.from('feedback').insert(feedbackPayload).then(() => {})
   }
 
-  return NextResponse.json({ orderId, numero, subtotal, impuestos, propina, total })
+  return NextResponse.json({ orderId, numero, canal, subtotal, impuestos, propina, total })
 }

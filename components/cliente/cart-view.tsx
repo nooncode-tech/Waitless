@@ -64,13 +64,13 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
             <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
               <ShoppingBag className="w-7 h-7 text-muted-foreground" />
             </div>
-            <h2 className="text-base font-semibold text-foreground">Tu carrito esta vacio</h2>
-            <p className="text-sm text-muted-foreground mt-1">Agrega platillos del menu</p>
-            <Button 
-              className="mt-5 bg-foreground text-background h-10 px-6 text-sm rounded-xl" 
+            <h2 className="text-base font-semibold text-foreground">Tu carrito está vacío</h2>
+            <p className="text-sm text-muted-foreground mt-1">Agrega platillos del menú</p>
+            <Button
+              className="mt-5 bg-foreground text-background h-10 px-6 text-sm rounded-xl"
               onClick={onBack}
             >
-              Ver menu
+              Ver menú
             </Button>
           </div>
         </main>

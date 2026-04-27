@@ -22,8 +22,8 @@ export function WaiterCallDialog({ mesa, onClose }: WaiterCallDialogProps) {
   const callTypes = [
     {
       type: 'atencion' as CallType,
-      label: 'Necesito atencion',
-      description: 'El mesero se acercara a tu mesa',
+      label: 'Necesito atención',
+      description: 'El mesero se acercará a tu mesa',
       icon: Bell,
     },
     {
@@ -57,10 +57,10 @@ export function WaiterCallDialog({ mesa, onClose }: WaiterCallDialogProps) {
     return (
       <div className="fixed inset-0 z-50 flex items-end justify-center">
         <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-        <div className="relative bg-white w-full max-w-md rounded-t-2xl p-6 animate-in slide-in-from-bottom">
+        <div className="relative bg-background w-full max-w-md rounded-t-2xl p-6 animate-in slide-in-from-bottom">
           <div className="text-center py-8">
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check className="h-8 w-8 text-emerald-600" />
+            <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Check className="h-8 w-8 text-success" />
             </div>
             <h2 className="text-lg font-semibold text-foreground mb-2">
               Mesero notificado
@@ -77,7 +77,7 @@ export function WaiterCallDialog({ mesa, onClose }: WaiterCallDialogProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white w-full max-w-md rounded-t-2xl animate-in slide-in-from-bottom">
+      <div className="relative bg-background w-full max-w-md rounded-t-2xl animate-in slide-in-from-bottom">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div>

@@ -161,7 +161,7 @@ export function MeseroView({ onBack }: MeseroViewProps) {
                       "h-4 min-w-4 px-1 text-[10px] ml-1",
                       activeNavId === item.id
                         ? "bg-black text-white"
-                        : item.badgeVariant === 'destructive' ? "bg-destructive text-destructive-foreground" : "bg-amber-500 text-white"
+                        : item.badgeVariant === 'destructive' ? "bg-destructive text-destructive-foreground" : "bg-warning text-white"
                     )}>
                       {item.badge}
                     </Badge>
@@ -227,7 +227,7 @@ export function MeseroView({ onBack }: MeseroViewProps) {
                     className={cn(
                       "w-full justify-start gap-3 h-11 transition-colors",
                       sidebarCollapsed && "justify-center px-0",
-                      isActive && "bg-black/8 text-black font-semibold"
+                      isActive && "bg-foreground/8 text-foreground font-semibold"
                     )}
                     onClick={() => {
                       setScreen(item.id)
@@ -245,7 +245,7 @@ export function MeseroView({ onBack }: MeseroViewProps) {
                             className={cn(
                               "h-5 min-w-5 px-1.5 text-xs",
                               item.badgeVariant === 'destructive' && "bg-destructive text-destructive-foreground animate-pulse",
-                              item.badgeVariant === 'warning' && "bg-amber-500 text-white"
+                              item.badgeVariant === 'warning' && "bg-warning text-white"
                             )}
                           >
                             {item.badge}
@@ -266,7 +266,7 @@ export function MeseroView({ onBack }: MeseroViewProps) {
                             <span className={cn(
                               "absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-medium",
                               item.badgeVariant === 'destructive' && "bg-destructive text-destructive-foreground animate-pulse",
-                              item.badgeVariant === 'warning' && "bg-amber-500 text-white"
+                              item.badgeVariant === 'warning' && "bg-warning text-white"
                             )}>
                               {item.badge}
                             </span>
@@ -279,7 +279,7 @@ export function MeseroView({ onBack }: MeseroViewProps) {
                           <Badge className={cn(
                             "h-5 min-w-5 px-1.5 text-xs",
                             item.badgeVariant === 'destructive' && "bg-destructive text-destructive-foreground",
-                            item.badgeVariant === 'warning' && "bg-amber-500 text-white"
+                            item.badgeVariant === 'warning' && "bg-warning text-white"
                           )}>
                             {item.badge}
                           </Badge>
@@ -331,11 +331,11 @@ export function MeseroView({ onBack }: MeseroViewProps) {
                   onClick={onBack}
                 >
                   <LogOut className="h-4 w-4" />
-                  {!sidebarCollapsed && <span className="text-sm">Cerrar Sesion</span>}
+                  {!sidebarCollapsed && <span className="text-sm">Cerrar Sesión</span>}
                 </Button>
               </TooltipTrigger>
               {sidebarCollapsed && (
-                <TooltipContent side="right">Cerrar Sesion</TooltipContent>
+                <TooltipContent side="right">Cerrar Sesión</TooltipContent>
               )}
             </Tooltip>
           </div>

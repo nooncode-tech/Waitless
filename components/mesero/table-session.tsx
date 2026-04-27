@@ -156,7 +156,7 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
           {canCloseTable && (
             <Button
               variant="outline"
-              className="h-8 text-xs border-red-300 text-red-600 hover:bg-red-50 bg-transparent"
+              className="h-8 text-xs border-destructive/40 text-destructive hover:bg-destructive/10 bg-transparent"
               onClick={() => setShowCloseConfirm(true)}
             >
               <DoorOpen className="h-3.5 w-3.5 mr-1.5" />
@@ -166,7 +166,7 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
           {session && tableOrders.length > 0 && !isPaid && (
             <Button 
               variant="outline"
-              className="h-8 text-xs border-amber-500 text-amber-600 hover:bg-amber-50 bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-8 text-xs border-warning text-warning hover:bg-warning/10 bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={() => setShowBillDialog(true)}
               disabled={!canBill}
               title={!canBill ? 'Todos los pedidos deben estar entregados para cobrar' : undefined}
@@ -178,7 +178,7 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
           {isPaid && session && (
             <Button 
               variant="outline"
-              className="h-8 text-xs border-emerald-500 text-emerald-600 hover:bg-emerald-50 bg-transparent"
+              className="h-8 text-xs border-success text-success hover:bg-success/10 bg-transparent"
               onClick={() => setShowBillDialog(true)}
             >
               <Receipt className="h-3.5 w-3.5 mr-1.5" />
@@ -267,7 +267,7 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                               </div>
                             )}
                             {item.notas && (
-                              <p className="ml-3 mt-0.5 text-[10px] text-amber-600 italic">
+                              <p className="ml-3 mt-0.5 text-[10px] text-warning italic">
                                 Nota: {item.notas}
                               </p>
                             )}
@@ -279,7 +279,7 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                     {/* Kitchen Status */}
                     <div className="flex gap-1.5 text-[10px] mb-3">
                       <span className={`px-1.5 py-0.5 rounded ${
-                        order.cocinaStatus === 'listo' ? 'bg-green-50 text-success' :
+                        order.cocinaStatus === 'listo' ? 'bg-success/10 text-success' :
                         order.cocinaStatus === 'preparando' ? 'bg-kds-preparing text-warning' :
                         'bg-muted text-muted-foreground'
                       }`}>
@@ -303,7 +303,7 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                       {canCancelOrder(order.id) && (
                         <Button
                           variant="outline"
-                          className="flex-1 h-8 text-xs border-red-300 text-red-600 hover:bg-red-50 bg-transparent"
+                          className="flex-1 h-8 text-xs border-destructive/40 text-destructive hover:bg-destructive/10 bg-transparent"
                           onClick={() => setCancellingOrder(order)}
                         >
                           <XCircle className="h-3.5 w-3.5 mr-1.5" />
@@ -346,8 +346,8 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                         <div className="flex justify-between text-xs mb-0.5">
                           <span className="font-medium text-foreground">Pedido #{order.numero}</span>
                           <Badge variant="outline" className={`text-[10px] h-4 ${
-                            order.status === 'entregado' ? 'bg-green-50 text-success border-success/30' :
-                            order.status === 'cancelado' ? 'bg-red-50 text-red-500 border-red-200' : ''
+                            order.status === 'entregado' ? 'bg-success/10 text-success border-success/30' :
+                            order.status === 'cancelado' ? 'bg-destructive/10 text-destructive border-destructive/20' : ''
                           }`}>
                             {order.status === 'entregado' ? 'Entregado' : 
                              order.status === 'cancelado' ? 'Cancelado' : 'Pendiente'}
@@ -372,7 +372,7 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                                 </div>
                               )}
                               {item.notas && (
-                                <p className="ml-3 text-[10px] text-amber-600 italic">
+                                <p className="ml-3 text-[10px] text-warning italic">
                                   {item.notas}
                                 </p>
                               )}
@@ -410,7 +410,7 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                         <span>{formatPrice(session.total)}</span>
                       </div>
                       {isPaid && (
-                        <div className="mt-2 text-center text-xs font-medium text-success bg-green-50 rounded-lg py-2">
+                        <div className="mt-2 text-center text-xs font-medium text-success bg-success/10 rounded-lg py-2">
                           Cuenta pagada
                           {session.paymentMethod && (
                             <span className="text-muted-foreground ml-1">
@@ -452,7 +452,7 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                     <div className="mt-2">
                       <Button
                         variant="outline"
-                        className="w-full h-9 text-xs border-red-300 text-red-600 hover:bg-red-50 bg-transparent"
+                        className="w-full h-9 text-xs border-destructive/40 text-destructive hover:bg-destructive/10 bg-transparent"
                         onClick={() => setShowCloseConfirm(true)}
                       >
                         <DoorOpen className="h-3.5 w-3.5 mr-1.5" />
@@ -643,13 +643,13 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <Card className="w-full max-w-sm">
             <CardContent className="p-4 text-center">
-              <AlertTriangle className="h-12 w-12 mx-auto text-amber-500 mb-3" />
+              <AlertTriangle className="h-12 w-12 mx-auto text-warning mb-3" />
               <h3 className="text-lg font-bold text-foreground mb-1">Cerrar mesa {mesa}</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                {isPaid 
-                  ? 'La cuenta ya fue pagada. Al cerrar la mesa, el siguiente cliente podra iniciar una nueva sesion.'
-                  : tableOrders.length === 0 
-                  ? 'Esta mesa no tiene pedidos. Se cerrara la sesion actual.'
+                {isPaid
+                  ? 'La cuenta ya fue pagada. Al cerrar la mesa, el siguiente cliente podrá iniciar una nueva sesión.'
+                  : tableOrders.length === 0
+                  ? 'Esta mesa no tiene pedidos. Se cerrará la sesión actual.'
                   : 'La mesa debe estar pagada antes de poder cerrarla.'}
               </p>
               <div className="flex gap-2">
@@ -661,7 +661,7 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                   Cancelar
                 </Button>
                 <Button
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                  className="flex-1 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                   onClick={handleCloseTable}
                 >
                   Cerrar mesa

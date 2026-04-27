@@ -131,27 +131,27 @@ export function RegistroForm() {
     return (
       <div className="text-center space-y-6">
         <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-full bg-green-50 border-2 border-green-200 flex items-center justify-center">
-            <CheckCircle2 className="h-8 w-8 text-green-500" />
+          <div className="w-16 h-16 rounded-full bg-success/10 border-2 border-success/30 flex items-center justify-center">
+            <CheckCircle2 className="h-8 w-8 text-success" />
           </div>
         </div>
         <div>
-          <h2 className="text-xl font-bold text-black">¡Todo listo!</h2>
+          <h2 className="text-xl font-bold text-foreground">¡Todo listo!</h2>
           <p className="text-sm text-muted-foreground mt-2">Tu negocio fue registrado correctamente.</p>
         </div>
         <div className="bg-muted border border-border rounded-xl p-4 text-left space-y-2">
           <p className="text-xs text-muted-foreground uppercase font-semibold tracking-wide">Tus credenciales de acceso</p>
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Usuario</span>
-            <span className="text-sm font-bold text-black font-mono">{success.username}</span>
+            <span className="text-sm font-bold text-foreground font-mono">{success.username}</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Contraseña</span>
-            <span className="text-sm text-black">la que elegiste</span>
+            <span className="text-sm text-foreground">la que elegiste</span>
           </div>
         </div>
         <Button
-          className="w-full h-11 bg-black hover:bg-black/90 text-white font-semibold rounded"
+          className="w-full h-11 bg-foreground hover:bg-foreground/90 text-background font-semibold rounded"
           onClick={() => router.push('/')}
         >
           Ir al login
@@ -175,16 +175,16 @@ export function RegistroForm() {
             <div className={cn(
               'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors',
               step === s.n
-                ? 'bg-black text-white'
+                ? 'bg-foreground text-background'
                 : step > s.n
-                ? 'bg-green-100 text-green-700'
+                ? 'bg-success/15 text-success'
                 : 'bg-muted text-muted-foreground'
             )}>
               {step > s.n ? <CheckCircle2 className="h-3.5 w-3.5" /> : s.icon}
               <span className="hidden sm:inline">{s.label}</span>
             </div>
             {i < steps.length - 1 && (
-              <div className={cn('flex-1 h-px', step > s.n ? 'bg-green-300' : 'bg-border')} />
+              <div className={cn('flex-1 h-px', step > s.n ? 'bg-success/50' : 'bg-border')} />
             )}
           </div>
         ))}
@@ -194,7 +194,7 @@ export function RegistroForm() {
       {step === 1 && (
         <div className="space-y-4">
           <div>
-            <h2 className="text-xl font-bold text-black" style={{ letterSpacing: '-0.02em' }}>
+            <h2 className="text-xl font-bold text-foreground" style={{ letterSpacing: '-0.02em' }}>
               Datos de tu negocio
             </h2>
             <p className="text-sm text-muted-foreground mt-1">Así va a aparecer en tu plataforma</p>
@@ -202,7 +202,7 @@ export function RegistroForm() {
 
           {/* Nombre */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-black uppercase tracking-wide">
+            <label className="text-xs font-semibold text-foreground uppercase tracking-wide">
               Nombre del negocio
             </label>
             <Input
@@ -210,14 +210,14 @@ export function RegistroForm() {
               placeholder="Ej: La Trattoria"
               value={nombre}
               onChange={(e) => handleNombreChange(e.target.value)}
-              className="h-11 border-border focus:border-black focus:ring-black rounded"
+              className="h-11 border-border focus:border-foreground focus:ring-foreground rounded"
               required
             />
           </div>
 
           {/* Slug */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-black uppercase tracking-wide">
+            <label className="text-xs font-semibold text-foreground uppercase tracking-wide">
               Identificador único
             </label>
             <div className="relative">
@@ -229,7 +229,7 @@ export function RegistroForm() {
                 placeholder="la-trattoria"
                 value={slug}
                 onChange={(e) => handleSlugChange(e.target.value)}
-                className="h-11 pl-[92px] border-border focus:border-black focus:ring-black rounded font-mono text-sm"
+                className="h-11 pl-[92px] border-border focus:border-foreground focus:ring-foreground rounded font-mono text-sm"
               />
             </div>
             <p className="text-[10px] text-muted-foreground">Solo minúsculas, números y guiones. No se puede cambiar después.</p>
@@ -237,7 +237,7 @@ export function RegistroForm() {
 
           {/* Color */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-black uppercase tracking-wide flex items-center gap-1.5">
+            <label className="text-xs font-semibold text-foreground uppercase tracking-wide flex items-center gap-1.5">
               <Palette className="h-3.5 w-3.5" />
               Color principal de tu marca
             </label>
@@ -252,7 +252,7 @@ export function RegistroForm() {
                 />
               </div>
               <div>
-                <p className="text-sm font-semibold text-black">{primaryColor.toUpperCase()}</p>
+                <p className="text-sm font-semibold text-foreground">{primaryColor.toUpperCase()}</p>
                 <p className="text-xs text-muted-foreground">Se aplica en botones, header y acentos</p>
               </div>
               {/* Preview pill */}
@@ -266,7 +266,7 @@ export function RegistroForm() {
 
           {/* Logo upload */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-black uppercase tracking-wide">
+            <label className="text-xs font-semibold text-foreground uppercase tracking-wide">
               Logo <span className="text-muted-foreground font-normal">(opcional)</span>
             </label>
             {logoPreview ? (
@@ -274,7 +274,7 @@ export function RegistroForm() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={logoPreview} alt="Logo preview" className="w-12 h-12 object-contain rounded-lg border border-border" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-black truncate">{logoFile?.name}</p>
+                  <p className="text-sm font-semibold text-foreground truncate">{logoFile?.name}</p>
                   <p className="text-xs text-muted-foreground">{((logoFile?.size ?? 0) / 1024).toFixed(0)} KB</p>
                 </div>
                 <button onClick={removeLogo} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
@@ -285,7 +285,7 @@ export function RegistroForm() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full flex flex-col items-center gap-2 p-6 border-2 border-dashed border-border rounded-xl hover:border-black hover:bg-muted transition-colors"
+                className="w-full flex flex-col items-center gap-2 p-6 border-2 border-dashed border-border rounded-xl hover:border-foreground hover:bg-muted transition-colors"
               >
                 <Upload className="h-6 w-6 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">Subir logo</span>
@@ -302,7 +302,7 @@ export function RegistroForm() {
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 text-destructive text-xs bg-red-50 border border-red-200 p-3 rounded">
+            <div className="flex items-center gap-2 text-destructive text-xs bg-destructive/10 border border-destructive/30 p-3 rounded">
               <AlertCircle className="h-3.5 w-3.5 shrink-0" />
               {error}
             </div>
@@ -326,7 +326,7 @@ export function RegistroForm() {
       {step === 2 && (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <h2 className="text-xl font-bold text-black" style={{ letterSpacing: '-0.02em' }}>
+            <h2 className="text-xl font-bold text-foreground" style={{ letterSpacing: '-0.02em' }}>
               Crear cuenta de administrador
             </h2>
             <p className="text-sm text-muted-foreground mt-1">Con esto vas a entrar a tu plataforma</p>
@@ -352,14 +352,14 @@ export function RegistroForm() {
               </div>
             )}
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-black truncate">{nombre}</p>
+              <p className="text-sm font-semibold text-foreground truncate">{nombre}</p>
               <p className="text-xs text-muted-foreground font-mono">/{slug}</p>
             </div>
             <div className="ml-auto w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: primaryColor }} />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-black uppercase tracking-wide">
+            <label className="text-xs font-semibold text-foreground uppercase tracking-wide">
               Email
             </label>
             <Input
@@ -367,7 +367,7 @@ export function RegistroForm() {
               placeholder="tu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-11 border-border focus:border-black focus:ring-black rounded"
+              className="h-11 border-border focus:border-foreground focus:ring-foreground rounded"
               autoComplete="email"
               required
               disabled={isLoading}
@@ -375,7 +375,7 @@ export function RegistroForm() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-black uppercase tracking-wide">
+            <label className="text-xs font-semibold text-foreground uppercase tracking-wide">
               Contraseña
             </label>
             <div className="relative">
@@ -384,7 +384,7 @@ export function RegistroForm() {
                 placeholder="Mínimo 6 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-11 pr-10 border-border focus:border-black focus:ring-black rounded"
+                className="h-11 pr-10 border-border focus:border-foreground focus:ring-foreground rounded"
                 autoComplete="new-password"
                 required
                 minLength={6}
@@ -393,7 +393,7 @@ export function RegistroForm() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-black transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 tabIndex={-1}
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -402,7 +402,7 @@ export function RegistroForm() {
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 text-destructive text-xs bg-red-50 border border-red-200 p-3 rounded">
+            <div className="flex items-center gap-2 text-destructive text-xs bg-destructive/10 border border-destructive/30 p-3 rounded">
               <AlertCircle className="h-3.5 w-3.5 shrink-0" />
               {error}
             </div>

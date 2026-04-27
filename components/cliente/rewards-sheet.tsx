@@ -56,10 +56,10 @@ export function RewardsSheet({ sessionId, onClose }: RewardsSheetProps) {
     return (
       <div className="fixed inset-0 z-50 flex items-end justify-center">
         <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-        <div className="relative bg-white w-full max-w-md rounded-t-2xl p-6 animate-in slide-in-from-bottom">
+        <div className="relative bg-background w-full max-w-md rounded-t-2xl p-6 animate-in slide-in-from-bottom">
           <div className="text-center py-8">
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check className="h-8 w-8 text-emerald-600" />
+            <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Check className="h-8 w-8 text-success" />
             </div>
             <h2 className="text-lg font-semibold text-foreground mb-2">
               Descuento aplicado
@@ -76,7 +76,7 @@ export function RewardsSheet({ sessionId, onClose }: RewardsSheetProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white w-full max-w-md rounded-t-2xl animate-in slide-in-from-bottom">
+      <div className="relative bg-background w-full max-w-md rounded-t-2xl animate-in slide-in-from-bottom">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2">
@@ -109,14 +109,14 @@ export function RewardsSheet({ sessionId, onClose }: RewardsSheetProps) {
                 <div
                   key={reward.id}
                   className={`p-4 rounded-xl border-2 ${
-                    applied 
-                      ? 'border-emerald-200 bg-emerald-50' 
+                    applied
+                      ? 'border-success/30 bg-success/10'
                       : 'border-border'
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      applied ? 'bg-emerald-100 text-emerald-600' : 'bg-primary/10 text-primary'
+                      applied ? 'bg-success/10 text-success' : 'bg-primary/10 text-primary'
                     }`}>
                       <Icon className="h-5 w-5" />
                     </div>
@@ -154,7 +154,7 @@ export function RewardsSheet({ sessionId, onClose }: RewardsSheetProps) {
                       )}
                       
                       {applied && (
-                        <div className="flex items-center gap-1 mt-2 text-emerald-600">
+                        <div className="flex items-center gap-1 mt-2 text-success">
                           <Check className="h-3.5 w-3.5" />
                           <span className="text-xs font-medium">Aplicado</span>
                         </div>

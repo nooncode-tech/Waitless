@@ -342,7 +342,7 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
         <div className="flex items-center gap-2 px-4 py-2 bg-muted border-b border-border">
           <UserCircle2 className="h-4 w-4 text-muted-foreground shrink-0" />
           <span className="text-xs text-muted-foreground">
-            Hola, <span className="font-semibold text-black">{clienteUser.nombre}</span>
+            Hola, <span className="font-semibold text-foreground">{clienteUser.nombre}</span>
           </span>
         </div>
       )}

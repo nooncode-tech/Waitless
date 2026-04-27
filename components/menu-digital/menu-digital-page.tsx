@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { ShoppingCart, Plus, Minus, MessageCircle, Check, Phone, ChevronLeft, ArrowRight, Clock, Receipt } from 'lucide-react'
+import { ShoppingCart, Plus, Minus, MessageCircle, Check, Phone, ChevronLeft, ArrowRight, Clock, Receipt, Truck, ShoppingBag, MapPin, Copy } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -46,6 +46,8 @@ interface MenuData {
   tiendaAbierta?: boolean
   impuestoPorcentaje: number
   propinaSugeridaPorcentaje: number
+  zonasReparto: string[]
+  deliveryHabilitado: boolean
 }
 
 interface CartEntry {
@@ -55,7 +57,9 @@ interface CartEntry {
 }
 
 interface OrderResult {
+  orderId: string
   numero: number
+  canal: 'para_llevar' | 'delivery'
   subtotal: number
   impuestos: number
   propina: number
@@ -93,6 +97,10 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
   const [notas, setNotas] = useState('')
   const [incluirPropina, setIncluirPropina] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [modoEntrega, setModoEntrega] = useState<'para_llevar' | 'delivery'>('para_llevar')
+  const [direccion, setDireccion] = useState('')
+  const [zonaReparto, setZonaReparto] = useState('')
+  const [copiedTracking, setCopiedTracking] = useState(false)
 
   // Mensaje state
   const [msgNombre, setMsgNombre] = useState('')
@@ -186,6 +194,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
   // ─── Order ──────────────────────────────────────────────────────────────────
   const handleOrder = async () => {
     if (!metodoPago) return
+    if (modoEntrega === 'delivery' && !direccion.trim()) return
     setSubmitting(true)
     try {
       const res = await fetch(`/api/public/${slug}/order`, {
@@ -193,8 +202,11 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           items: cart.map(e => ({ itemId: e.item.id, cantidad: e.cantidad, extras: e.selectedExtras })),
+          canal: modoEntrega,
           nombreCliente: nombre.trim() || undefined,
           telefono: telefono.trim() || undefined,
+          direccion: modoEntrega === 'delivery' ? direccion.trim() : undefined,
+          zonaReparto: modoEntrega === 'delivery' && zonaReparto ? zonaReparto : undefined,
           metodoPago,
           notas: notas.trim() || undefined,
           incluirPropina,
@@ -202,7 +214,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       })
       const json = await res.json()
       if (json.error) { alert(json.error); return }
-      setOrderResult({ numero: json.numero, subtotal: json.subtotal, impuestos: json.impuestos, propina: json.propina, total: json.total })
+      setOrderResult({ orderId: json.orderId, numero: json.numero, canal: json.canal, subtotal: json.subtotal, impuestos: json.impuestos, propina: json.propina, total: json.total })
       setCart([])
       setScreen('success')
     } catch {
@@ -267,6 +279,15 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
 
   // ─── SUCCESS ─────────────────────────────────────────────────────────────────
   if (screen === 'success' && orderResult) {
+    const isDelivery = orderResult.canal === 'delivery'
+    const trackingUrl = typeof window !== 'undefined' ? `${window.location.origin}/tracking/${orderResult.orderId}` : ''
+
+    const copyTracking = () => {
+      navigator.clipboard.writeText(trackingUrl)
+      setCopiedTracking(true)
+      setTimeout(() => setCopiedTracking(false), 2000)
+    }
+
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
         {/* Check icon */}
@@ -278,7 +299,9 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
         <p className="font-black text-6xl mb-1" style={{ letterSpacing: '-0.04em', color: primary }}>
           #{orderResult.numero}
         </p>
-        <p className="text-sm text-black/40 mb-6">Tu pedido está en camino a la cocina.</p>
+        <p className="text-sm text-black/40 mb-6">
+          {isDelivery ? 'Tu pedido está en preparación. Te avisamos cuando salga.' : 'Tu pedido está en camino a la cocina.'}
+        </p>
 
         {/* Resumen financiero */}
         <div className="w-full max-w-xs bg-gray-50 rounded-2xl p-4 mb-6 text-left">
@@ -303,6 +326,12 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
                 <span>{fmt(orderResult.propina)}</span>
               </div>
             )}
+            {isDelivery && (
+              <div className="flex justify-between text-gray-500 text-xs">
+                <span>Envío</span>
+                <span className="italic">A confirmar</span>
+              </div>
+            )}
             <div className="flex justify-between font-black text-black pt-2 border-t border-gray-200 mt-2">
               <span>Total</span>
               <span>{fmt(orderResult.total)}</span>
@@ -311,6 +340,22 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
         </div>
 
         <div className="w-full max-w-xs space-y-2.5">
+          {/* Tracking link for delivery */}
+          {isDelivery && (
+            <button
+              onClick={copyTracking}
+              className="w-full h-12 rounded-xl border-2 text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+              style={copiedTracking
+                ? { borderColor: '#22c55e', color: '#22c55e', backgroundColor: '#f0fdf4' }
+                : { borderColor: 'rgba(0,0,0,0.1)', color: 'rgba(0,0,0,0.7)', backgroundColor: '#fff' }
+              }
+            >
+              {copiedTracking
+                ? <><Check className="h-4 w-4" />Link copiado</>
+                : <><Copy className="h-4 w-4" />Copiar link de seguimiento</>
+              }
+            </button>
+          )}
           {data.whatsappNumero && (
             <a
               href={`https://wa.me/${data.whatsappNumero.replace(/\D/g, '')}`}
@@ -324,7 +369,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
             </a>
           )}
           <button
-            onClick={() => { setScreen('menu'); setNombre(''); setTelefono(''); setNotas('') }}
+            onClick={() => { setScreen('menu'); setNombre(''); setTelefono(''); setNotas(''); setDireccion(''); setZonaReparto(''); setModoEntrega('para_llevar') }}
             className="w-full h-12 rounded-xl border border-gray-200 text-sm font-semibold text-black hover:bg-gray-50 transition-colors"
           >
             Seguir explorando el menú
@@ -403,6 +448,8 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
   if (screen === 'checkout') {
     const metodos = Object.entries(data.metodosPago).filter(([, v]) => v).map(([k]) => k)
     const metodoLabels: Record<string, string> = { efectivo: 'Efectivo', tarjeta: 'Tarjeta', transferencia: 'Transferencia' }
+    const isDeliveryMode = modoEntrega === 'delivery'
+    const canSubmit = !!metodoPago && (!isDeliveryMode || !!direccion.trim())
 
     return (
       <div className="min-h-screen bg-white flex flex-col" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
@@ -414,6 +461,71 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
         </header>
 
         <div className="flex-1 overflow-y-auto pb-28 max-w-lg mx-auto w-full">
+
+          {/* Modo de entrega */}
+          {data.deliveryHabilitado && (
+            <div className="px-5 pt-5">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Tipo de entrega</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setModoEntrega('para_llevar')}
+                  className="h-12 rounded-xl border-2 text-sm font-semibold flex items-center justify-center gap-2 transition-all"
+                  style={!isDeliveryMode
+                    ? { borderColor: primary, backgroundColor: primary, color: '#fff' }
+                    : { borderColor: 'rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.6)', backgroundColor: '#fff' }
+                  }
+                >
+                  <ShoppingBag className="h-4 w-4" />Para llevar
+                </button>
+                <button
+                  onClick={() => setModoEntrega('delivery')}
+                  className="h-12 rounded-xl border-2 text-sm font-semibold flex items-center justify-center gap-2 transition-all"
+                  style={isDeliveryMode
+                    ? { borderColor: primary, backgroundColor: primary, color: '#fff' }
+                    : { borderColor: 'rgba(0,0,0,0.08)', color: 'rgba(0,0,0,0.6)', backgroundColor: '#fff' }
+                  }
+                >
+                  <Truck className="h-4 w-4" />Delivery
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Campos de delivery */}
+          {isDeliveryMode && (
+            <div className="px-5 mt-5">
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                Dirección de entrega <span className="normal-case font-normal text-red-400">*</span>
+              </p>
+              <div className="space-y-3">
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300 pointer-events-none" />
+                  <input
+                    value={direccion}
+                    onChange={e => setDireccion(e.target.value)}
+                    placeholder="Calle, número, colonia..."
+                    className="w-full h-11 rounded-xl border border-gray-200 pl-9 pr-3 text-sm text-black placeholder:text-gray-300 focus:outline-none focus:border-gray-400"
+                  />
+                </div>
+                {data.zonasReparto.length > 0 && (
+                  <select
+                    value={zonaReparto}
+                    onChange={e => setZonaReparto(e.target.value)}
+                    className="w-full h-11 rounded-xl border border-gray-200 px-3 text-sm text-black focus:outline-none focus:border-gray-400 bg-white"
+                  >
+                    <option value="">Zona (opcional)</option>
+                    {data.zonasReparto.map(z => (
+                      <option key={z} value={z}>{z}</option>
+                    ))}
+                  </select>
+                )}
+                <p className="text-[10px] text-gray-400 flex items-center gap-1">
+                  <Truck className="h-3 w-3" />
+                  El costo de envío será confirmado por el restaurante.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Resumen del pedido */}
           <div className="px-5 pt-5">
@@ -512,7 +624,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
             <button
               className="w-full rounded-xl text-sm font-bold text-white flex items-center justify-between px-5 disabled:opacity-40 transition-opacity hover:opacity-90"
               style={{ backgroundColor: primary, height: '52px' }}
-              disabled={!metodoPago || submitting}
+              disabled={!canSubmit || submitting}
               onClick={handleOrder}
             >
               <span>{submitting ? 'Enviando...' : 'Hacer pedido'}</span>

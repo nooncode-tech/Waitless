@@ -1,6 +1,7 @@
 'use client'
 
-import { ChevronLeft, Check, ChefHat, Package, Truck } from 'lucide-react'
+import { useState } from 'react'
+import { ChevronLeft, Check, ChefHat, Package, Truck, AlertTriangle } from 'lucide-react'
 import { formatTime, getStatusLabel, type Order } from '@/lib/store'
 import { useApp } from '@/lib/context'
 
@@ -19,6 +20,7 @@ const STATUS_STEPS = [
 
 export function OrderStatusView({ orders, mesa, onBack }: OrderStatusViewProps) {
   const { cancelOrder, canCancelOrder } = useApp()
+  const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null)
 
   const getStepIndex = (status: string) => {
     return STATUS_STEPS.findIndex(s => s.key === status)
@@ -185,25 +187,40 @@ export function OrderStatusView({ orders, mesa, onBack }: OrderStatusViewProps) 
                     ))}
                   </ul>
 
-                  {/* 🔴 CANCELAR PEDIDO */}
                   {canCancelOrder(order.id) && (
-                    <button
-                      className="mt-3 text-xs text-red-600 underline"
-                      onClick={() => {
-                        const ok = confirm(
-                          '¿Cancelar este pedido? Esta acción no se puede deshacer.'
-                        )
-                        if (!ok) return
-
-                        cancelOrder(
-                          order.id,
-                          'cliente_solicito',
-                          'Cancelado antes de preparacion'
-                        )
-                      }}
-                    >
-                      Cancelar pedido
-                    </button>
+                    confirmCancelId === order.id ? (
+                      <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl">
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0" />
+                          <p className="text-xs font-semibold text-destructive">¿Cancelar este pedido?</p>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mb-3">Esta acción no se puede deshacer.</p>
+                        <div className="flex gap-2">
+                          <button
+                            className="flex-1 h-8 text-xs border border-border rounded-lg text-foreground"
+                            onClick={() => setConfirmCancelId(null)}
+                          >
+                            No, mantener
+                          </button>
+                          <button
+                            className="flex-1 h-8 text-xs bg-destructive text-white rounded-lg font-semibold"
+                            onClick={() => {
+                              cancelOrder(order.id, 'cliente_solicito', 'Cancelado antes de preparación')
+                              setConfirmCancelId(null)
+                            }}
+                          >
+                            Sí, cancelar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        className="mt-3 text-xs text-destructive underline"
+                        onClick={() => setConfirmCancelId(order.id)}
+                      >
+                        Cancelar pedido
+                      </button>
+                    )
                   )}
                 </div>
               </div>

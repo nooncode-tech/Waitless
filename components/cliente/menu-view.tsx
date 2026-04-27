@@ -61,13 +61,17 @@ export function MenuView({
   }
 
   const getCategoryEmoji = (categoriaId: string) => {
-    switch (categoriaId) {
-      case 'cat-1': return '🌮'
-      case 'cat-2': return '🫓'
-      case 'cat-3': return '🥤'
-      case 'cat-4': return '🍮'
-      default: return '🍽️'
-    }
+    const name = activeCategories.find(c => c.id === categoriaId)?.nombre?.toLowerCase() ?? ''
+    if (/taco|antoj|mexic/.test(name)) return '🌮'
+    if (/sand|torta|burger|hambur/.test(name)) return '🫓'
+    if (/bebida|drink|agua|refresc|jugo/.test(name)) return '🥤'
+    if (/postre|dulce|pastel|helado/.test(name)) return '🍮'
+    if (/pizza/.test(name)) return '🍕'
+    if (/sushi|japan/.test(name)) return '🍱'
+    if (/ensalada|salad/.test(name)) return '🥗'
+    if (/carne|steak|rib/.test(name)) return '🥩'
+    if (/pasta|spaghetti/.test(name)) return '🍝'
+    return '🍽️'
   }
 
   const getCategoryName = (categoriaId: string) =>

@@ -142,7 +142,7 @@ export function BillView({ sessionId, mesa, onBack, onShowRewards }: BillViewPro
           </div>
         ) : (
           <div className="text-center py-8">
-            <p className="text-sm text-muted-foreground">No hay consumos aun</p>
+            <p className="text-sm text-muted-foreground">No hay consumos aún</p>
           </div>
         )}
 
@@ -194,7 +194,7 @@ export function BillView({ sessionId, mesa, onBack, onShowRewards }: BillViewPro
                 <span className="text-[13px] font-semibold text-black">Dividir cuenta</span>
               </div>
               <span className="text-[11px] text-muted-foreground">
-                {showSplit ? `${formatPrice(splitAmount)} c/u` : 'Split bill'}
+                {showSplit ? `${formatPrice(splitAmount)} c/u` : 'Ver cálculo'}
               </span>
             </button>
 

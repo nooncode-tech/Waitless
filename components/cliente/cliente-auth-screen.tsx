@@ -29,7 +29,7 @@ export function ClienteAuthScreen({ onSuccess, initialBranding }: ClienteAuthScr
   const [screen, setScreen] = useState<Screen>('landing')
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex justify-center mb-8">
@@ -85,7 +85,7 @@ function LandingScreen({ restaurantName, primaryColor, fontFamily, onLogin, onRe
   return (
     <div className="space-y-4">
       <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-black" style={{ fontFamily, letterSpacing: '-0.02em' }}>
+        <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily, letterSpacing: '-0.02em' }}>
           ¡Bienvenido{restaurantName ? ` a ${restaurantName}` : ''}!
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -96,7 +96,7 @@ function LandingScreen({ restaurantName, primaryColor, fontFamily, onLogin, onRe
       {/* Ya tengo cuenta */}
       <button
         onClick={onLogin}
-        className="w-full flex items-center justify-between px-5 py-4 rounded-xl border-2 border-border hover:border-black transition-colors group"
+        className="w-full flex items-center justify-between px-5 py-4 rounded-xl border-2 border-border hover:border-foreground transition-colors group"
       >
         <div className="flex items-center gap-3">
           <div
@@ -106,17 +106,17 @@ function LandingScreen({ restaurantName, primaryColor, fontFamily, onLogin, onRe
             <LogIn className="h-4 w-4" style={{ color: primaryColor }} />
           </div>
           <div className="text-left">
-            <p className="text-sm font-semibold text-black">Ya tengo cuenta</p>
+            <p className="text-sm font-semibold text-foreground">Ya tengo cuenta</p>
             <p className="text-xs text-muted-foreground">Ingresá con tu email y contraseña</p>
           </div>
         </div>
-        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-black transition-colors" />
+        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
       </button>
 
       {/* Soy nuevo */}
       <button
         onClick={onRegister}
-        className="w-full flex items-center justify-between px-5 py-4 rounded-xl border-2 hover:border-black transition-colors group"
+        className="w-full flex items-center justify-between px-5 py-4 rounded-xl border-2 hover:border-foreground transition-colors group"
         style={{ borderColor: primaryColor, backgroundColor: `${primaryColor}08` }}
       >
         <div className="flex items-center gap-3">
@@ -127,18 +127,18 @@ function LandingScreen({ restaurantName, primaryColor, fontFamily, onLogin, onRe
             <UserPlus className="h-4 w-4 text-white" />
           </div>
           <div className="text-left">
-            <p className="text-sm font-semibold text-black">Soy nuevo</p>
+            <p className="text-sm font-semibold text-foreground">Soy nuevo</p>
             <p className="text-xs text-muted-foreground">Creá tu cuenta en segundos</p>
           </div>
         </div>
-        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-black transition-colors" />
+        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
       </button>
 
       {/* Continuar sin cuenta */}
       <div className="pt-2 text-center">
         <button
           onClick={onGuest}
-          className="text-sm text-muted-foreground hover:text-black underline underline-offset-2 transition-colors"
+          className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
         >
           Continuar sin cuenta
         </button>
@@ -184,13 +184,13 @@ function LoginForm({ primaryColor, fontFamily, onSuccess, onBack }: LoginFormPro
 
   return (
     <div>
-      <button onClick={onBack} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-black mb-6 transition-colors">
+      <button onClick={onBack} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
         <ArrowLeft className="h-3.5 w-3.5" />
         Volver
       </button>
 
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-black" style={{ fontFamily, letterSpacing: '-0.02em' }}>
+        <h2 className="text-xl font-bold text-foreground" style={{ fontFamily, letterSpacing: '-0.02em' }}>
           Ingresá a tu cuenta
         </h2>
         <p className="text-sm text-muted-foreground mt-1">Usá el email con el que te registraste</p>
@@ -198,7 +198,7 @@ function LoginForm({ primaryColor, fontFamily, onSuccess, onBack }: LoginFormPro
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
-          <label htmlFor="cl-email" className="text-xs font-semibold text-black uppercase tracking-wide">
+          <label htmlFor="cl-email" className="text-xs font-semibold text-foreground uppercase tracking-wide">
             Email
           </label>
           <Input
@@ -207,7 +207,7 @@ function LoginForm({ primaryColor, fontFamily, onSuccess, onBack }: LoginFormPro
             placeholder="tu@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-11 border-border focus:border-black focus:ring-black rounded"
+            className="h-11 border-border focus:border-foreground focus:ring-foreground rounded"
             autoComplete="email"
             required
             disabled={isLoading}
@@ -215,7 +215,7 @@ function LoginForm({ primaryColor, fontFamily, onSuccess, onBack }: LoginFormPro
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="cl-password" className="text-xs font-semibold text-black uppercase tracking-wide">
+          <label htmlFor="cl-password" className="text-xs font-semibold text-foreground uppercase tracking-wide">
             Contraseña
           </label>
           <div className="relative">
@@ -225,7 +225,7 @@ function LoginForm({ primaryColor, fontFamily, onSuccess, onBack }: LoginFormPro
               placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-11 pr-10 border-border focus:border-black focus:ring-black rounded"
+              className="h-11 pr-10 border-border focus:border-foreground focus:ring-foreground rounded"
               autoComplete="current-password"
               required
               disabled={isLoading}
@@ -233,7 +233,7 @@ function LoginForm({ primaryColor, fontFamily, onSuccess, onBack }: LoginFormPro
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-black transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               tabIndex={-1}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -242,7 +242,7 @@ function LoginForm({ primaryColor, fontFamily, onSuccess, onBack }: LoginFormPro
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 text-destructive text-xs bg-red-50 border border-red-200 p-3 rounded">
+          <div className="flex items-center gap-2 text-destructive text-xs bg-destructive/10 border border-destructive/30 p-3 rounded">
             <AlertCircle className="h-3.5 w-3.5 shrink-0" />
             {error}
           </div>
@@ -311,13 +311,13 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
 
   return (
     <div>
-      <button onClick={onBack} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-black mb-6 transition-colors">
+      <button onClick={onBack} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
         <ArrowLeft className="h-3.5 w-3.5" />
         Volver
       </button>
 
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-black" style={{ fontFamily, letterSpacing: '-0.02em' }}>
+        <h2 className="text-xl font-bold text-foreground" style={{ fontFamily, letterSpacing: '-0.02em' }}>
           Crear cuenta
         </h2>
         <p className="text-sm text-muted-foreground mt-1">Tus pedidos quedan guardados para la próxima</p>
@@ -325,7 +325,7 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
-          <label htmlFor="reg-nombre" className="text-xs font-semibold text-black uppercase tracking-wide">
+          <label htmlFor="reg-nombre" className="text-xs font-semibold text-foreground uppercase tracking-wide">
             Nombre
           </label>
           <Input
@@ -334,7 +334,7 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
             placeholder="Tu nombre"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
-            className="h-11 border-border focus:border-black focus:ring-black rounded"
+            className="h-11 border-border focus:border-foreground focus:ring-foreground rounded"
             autoComplete="given-name"
             required
             disabled={isLoading}
@@ -342,7 +342,7 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="reg-email" className="text-xs font-semibold text-black uppercase tracking-wide">
+          <label htmlFor="reg-email" className="text-xs font-semibold text-foreground uppercase tracking-wide">
             Email
           </label>
           <Input
@@ -351,7 +351,7 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
             placeholder="tu@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-11 border-border focus:border-black focus:ring-black rounded"
+            className="h-11 border-border focus:border-foreground focus:ring-foreground rounded"
             autoComplete="email"
             required
             disabled={isLoading}
@@ -359,7 +359,7 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="reg-tel" className="text-xs font-semibold text-black uppercase tracking-wide">
+          <label htmlFor="reg-tel" className="text-xs font-semibold text-foreground uppercase tracking-wide">
             Teléfono <span className="text-muted-foreground font-normal">(opcional)</span>
           </label>
           <Input
@@ -368,14 +368,14 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
             placeholder="+54 9 11 1234-5678"
             value={telefono}
             onChange={(e) => setTelefono(e.target.value)}
-            className="h-11 border-border focus:border-black focus:ring-black rounded"
+            className="h-11 border-border focus:border-foreground focus:ring-foreground rounded"
             autoComplete="tel"
             disabled={isLoading}
           />
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="reg-password" className="text-xs font-semibold text-black uppercase tracking-wide">
+          <label htmlFor="reg-password" className="text-xs font-semibold text-foreground uppercase tracking-wide">
             Contraseña
           </label>
           <div className="relative">
@@ -385,7 +385,7 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
               placeholder="Mínimo 6 caracteres"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-11 pr-10 border-border focus:border-black focus:ring-black rounded"
+              className="h-11 pr-10 border-border focus:border-foreground focus:ring-foreground rounded"
               autoComplete="new-password"
               required
               minLength={6}
@@ -394,7 +394,7 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-black transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               tabIndex={-1}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -403,7 +403,7 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 text-destructive text-xs bg-red-50 border border-red-200 p-3 rounded">
+          <div className="flex items-center gap-2 text-destructive text-xs bg-destructive/10 border border-destructive/30 p-3 rounded">
             <AlertCircle className="h-3.5 w-3.5 shrink-0" />
             {error}
           </div>

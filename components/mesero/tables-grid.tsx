@@ -177,7 +177,7 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
       badge: 'bg-purple-500 text-white',
     }
     if (info.status === 'pagada') return {
-      bg: 'bg-green-50',
+      bg: 'bg-success/10',
       border: 'border-success',
       dot: 'bg-success',
       text: 'text-success',
@@ -207,23 +207,23 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
     return {
       bg: 'bg-muted',
       border: 'border-accent',
-      dot: 'bg-black',
-      text: 'text-black',
-      badge: 'bg-black text-white',
+      dot: 'bg-foreground',
+      text: 'text-foreground',
+      badge: 'bg-foreground text-background',
     }
   }
 
   return (
-    <div className="p-3 md:p-5 bg-white min-h-full">
+    <div className="p-3 md:p-5 bg-card min-h-full">
 
       {/* Stats Row */}
       <div className="grid grid-cols-5 gap-2 mb-4">
         {[
           { label: 'Libres', value: freeCount, color: 'text-muted-foreground', bg: 'bg-muted' },
           { label: 'En cocina', value: preparingCount, color: 'text-warning', bg: 'bg-kds-preparing', icon: <ChefHat className="h-3.5 w-3.5" /> },
-          { label: 'Listos', value: readyCount, color: 'text-success', bg: 'bg-green-50', icon: <CircleCheck className="h-3.5 w-3.5" /> },
-          { label: 'Ocupadas', value: occupiedCount, color: 'text-black', bg: 'bg-muted' },
-          { label: 'Limpieza', value: cleaningCount, color: 'text-blue-500', bg: 'bg-blue-50', icon: <Sparkles className="h-3.5 w-3.5" /> },
+          { label: 'Listos', value: readyCount, color: 'text-success', bg: 'bg-success/10', icon: <CircleCheck className="h-3.5 w-3.5" /> },
+          { label: 'Ocupadas', value: occupiedCount, color: 'text-foreground', bg: 'bg-muted' },
+          { label: 'Limpieza', value: cleaningCount, color: 'text-primary', bg: 'bg-primary/10', icon: <Sparkles className="h-3.5 w-3.5" /> },
         ].map(stat => (
           <div key={stat.label} className={cn('rounded-lg p-2.5 md:p-3', stat.bg)}>
             <p className={cn('text-xl md:text-2xl font-bold', stat.color)}>{stat.value}</p>
@@ -239,10 +239,10 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
         <div
           role="status"
           aria-live="polite"
-          className="flex items-center gap-2 mb-4 bg-red-50 border border-red-200 rounded-lg px-3 py-2"
+          className="flex items-center gap-2 mb-4 bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2"
         >
-          <Bell className="h-4 w-4 text-red-500 animate-pulse shrink-0" aria-hidden="true" />
-          <span className="text-xs font-semibold text-red-700">
+          <Bell className="h-4 w-4 text-destructive animate-pulse shrink-0" aria-hidden="true" />
+          <span className="text-xs font-semibold text-destructive">
             {alertCount} mesa{alertCount !== 1 ? 's' : ''} requieren atención
           </span>
         </div>
@@ -307,14 +307,14 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
                   'p-3 md:p-4 aspect-square',
                   style.bg,
                   style.border,
-                  (info.hasCall || info.hasBillRequest) && 'ring-2 ring-red-500 ring-offset-1'
+                  (info.hasCall || info.hasBillRequest) && 'ring-2 ring-destructive ring-offset-1'
                 )}
               >
                 {/* Alert badges — decorative, described by button aria-label */}
                 {(info.hasCall || info.hasBillRequest) && (
                   <div className="absolute -top-1.5 -right-1.5 flex gap-0.5 z-10" aria-hidden="true">
                     {info.hasCall && (
-                      <span className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow">
+                      <span className="w-5 h-5 bg-destructive rounded-full flex items-center justify-center shadow">
                         <Bell className="h-2.5 w-2.5 text-white" />
                       </span>
                     )}
@@ -333,7 +333,7 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
 
                 {/* Table number */}
                 <div className="flex-1 flex items-center justify-center">
-                  <span className="text-lg md:text-xl font-bold text-black leading-none">
+                  <span className="text-lg md:text-xl font-bold text-foreground leading-none">
                     {info.numero}
                   </span>
                 </div>
@@ -343,7 +343,7 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
                   {info.status === 'limpieza' ? (
                     <button
                       onClick={(e) => { e.stopPropagation(); markTableClean(info.numero) }}
-                      className="w-full text-[8px] font-bold text-blue-500 bg-blue-100 rounded px-1 py-0.5 leading-tight"
+                      className="w-full text-[8px] font-bold text-primary bg-primary/10 rounded px-1 py-0.5 leading-tight"
                       aria-label={`Marcar mesa ${info.numero} como lista`}
                     >
                       ✓ Lista
@@ -381,14 +381,14 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
                   'hover:shadow-sm active:scale-[0.99] text-left',
                   style.bg,
                   style.border,
-                  (info.hasCall || info.hasBillRequest) && 'ring-1 ring-red-400'
+                  (info.hasCall || info.hasBillRequest) && 'ring-1 ring-destructive/50'
                 )}
               >
                 {/* Status dot */}
                 <div className={cn('w-2.5 h-2.5 rounded-full shrink-0', style.dot)} />
 
                 {/* Table number */}
-                <span className="text-base font-bold text-black w-12 shrink-0">Mesa {info.numero}</span>
+                <span className="text-base font-bold text-foreground w-12 shrink-0">Mesa {info.numero}</span>
 
                 {/* Status */}
                 <div className="flex-1 min-w-0">
@@ -411,14 +411,14 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
                   {info.status === 'limpieza' ? (
                     <button
                       onClick={(e) => { e.stopPropagation(); markTableClean(info.numero) }}
-                      className="text-[10px] font-bold text-blue-500 bg-blue-100 rounded px-2 py-0.5"
+                      className="text-[10px] font-bold text-primary bg-primary/10 rounded px-2 py-0.5"
                       aria-label={`Marcar mesa ${info.numero} como lista`}
                     >
                       Mesa lista
                     </button>
                   ) : (
                     <>
-                      {info.hasCall && <Bell className="h-3.5 w-3.5 text-red-500" />}
+                      {info.hasCall && <Bell className="h-3.5 w-3.5 text-destructive" />}
                       {info.hasBillRequest && <Receipt className="h-3.5 w-3.5 text-warning" />}
                     </>
                   )}

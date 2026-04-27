@@ -48,12 +48,12 @@ const quickDiscounts = [
   // Split bill state
   const [splitMode, setSplitMode] = useState(false)
   const [splitCount, setSplitCount] = useState(2)
-  const [splitPayments, setSplitPayments] = useState<Array<{ method: PaymentMethod | null; paid: boolean }>>(
-    Array.from({ length: 2 }, () => ({ method: null, paid: false }))
+  const [splitPayments, setSplitPayments] = useState<Array<{ method: PaymentMethod | null; paid: boolean; monto: string }>>(
+    Array.from({ length: 2 }, (_, i) => ({ method: null, paid: false, monto: '' }))
   )
 
   useEffect(() => {
-    setSplitPayments(Array.from({ length: splitCount }, () => ({ method: null, paid: false })))
+    setSplitPayments(Array.from({ length: splitCount }, (_, i) => ({ method: null, paid: false, monto: '' })))
   }, [splitCount])
 
   // Partial payment state
@@ -138,11 +138,26 @@ const quickDiscounts = [
   const allSplitPaid = splitPayments.length > 0 && splitPayments.every((p) => p.paid)
   const paidCount = splitPayments.filter((p) => p.paid).length
 
+  const setSplitPersonMonto = (index: number, monto: string) => {
+    setSplitPayments(prev => {
+      const next = [...prev]
+      next[index] = { ...next[index], monto }
+      return next
+    })
+  }
+
+  const unmarkSplitPersonPaid = (index: number) => {
+    setSplitPayments(prev => {
+      const next = [...prev]
+      next[index] = { ...next[index], paid: false }
+      return next
+    })
+  }
+
   const handleCloseSplitBill = async () => {
-    // Task 2.4: persiste ledger antes de marcar la sesión como pagada
-    const seats = splitPayments.map(p => ({
+    const seats = splitPayments.map((p, i) => ({
       method: p.method!,
-      monto: sharePerPerson,
+      monto: resolvedMontos[i],
     }))
     await persistSplitBill(sessionId, seats)
     await confirmPayment(sessionId)
@@ -181,7 +196,20 @@ const quickDiscounts = [
 
   const montoAbonado = session.montoAbonado ?? 0
   const pendiente = Math.max(0, calculatedTotal - montoAbonado)
-  const sharePerPerson = splitCount > 0 ? Math.ceil(calculatedTotal / splitCount) : calculatedTotal
+
+  // Equal share base: round down, last person absorbs the difference
+  const baseShare = splitCount > 0 ? Math.floor(calculatedTotal / splitCount) : calculatedTotal
+  const lastShare = calculatedTotal - baseShare * (splitCount - 1)
+
+  // Resolve each person's monto: use their custom value if set, else distribute equally
+  const resolvedMontos = splitPayments.map((p, i) => {
+    if (p.monto !== '') return Number(p.monto) || 0
+    return i === splitCount - 1 ? lastShare : baseShare
+  })
+  const sharePerPerson = baseShare // kept for display in the "c/u" indicator
+
+  const totalAsignado = resolvedMontos.reduce((s, m) => s + m, 0)
+  const diferencia = Math.round((calculatedTotal - totalAsignado) * 100) / 100
 
   const handlePartialPayment = () => {
     const amount = Number.parseFloat(partialAmount)
@@ -651,9 +679,19 @@ const quickDiscounts = [
                   {paidCount} de {splitCount} pagados
                 </span>
                 <span className="text-sm font-medium text-foreground">
-                  {formatPrice(sharePerPerson)} c/u
+                  ≈ {formatPrice(baseShare)} c/u
                 </span>
               </div>
+
+              {/* Balance warning */}
+              {diferencia !== 0 && (
+                <div className={`text-xs px-3 py-2 rounded-lg flex items-center justify-between ${
+                  diferencia > 0 ? 'bg-warning/10 text-warning' : 'bg-destructive/10 text-destructive'
+                }`}>
+                  <span>{diferencia > 0 ? 'Falta asignar' : 'Excede el total en'}</span>
+                  <span className="font-bold">{formatPrice(Math.abs(diferencia))}</span>
+                </div>
+              )}
 
               {/* Person cards */}
               <div className="space-y-3">
@@ -672,9 +710,22 @@ const quickDiscounts = [
                             Persona {index + 1}
                           </span>
                         </div>
-                        <span className="text-sm font-bold text-foreground">
-                          {formatPrice(sharePerPerson)}
-                        </span>
+                        {person.paid ? (
+                          <span className="text-sm font-bold text-foreground">
+                            {formatPrice(resolvedMontos[index])}
+                          </span>
+                        ) : (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-muted-foreground">$</span>
+                            <Input
+                              type="number"
+                              value={person.monto}
+                              onChange={e => setSplitPersonMonto(index, e.target.value)}
+                              placeholder={resolvedMontos[index].toFixed(2)}
+                              className="h-7 w-24 text-sm text-right"
+                            />
+                          </div>
+                        )}
                       </div>
 
                       {!person.paid ? (
@@ -709,16 +760,21 @@ const quickDiscounts = [
                           </Button>
                         </>
                       ) : (
-                        <p className="text-xs text-success font-medium text-center py-1">
-                          Pagado con{' '}
-                          {person.method === 'efectivo'
-                            ? 'Efectivo'
-                            : person.method === 'tarjeta'
-                            ? 'Tarjeta'
-                            : person.method === 'transferencia'
-                            ? 'Transferencia'
-                            : 'Apple Pay'}
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-success font-medium py-1">
+                            Pagado con{' '}
+                            {person.method === 'efectivo' ? 'Efectivo'
+                              : person.method === 'tarjeta' ? 'Tarjeta'
+                              : person.method === 'transferencia' ? 'Transferencia'
+                              : 'Apple Pay'}
+                          </p>
+                          <button
+                            onClick={() => unmarkSplitPersonPaid(index)}
+                            className="text-[10px] text-muted-foreground hover:text-destructive underline transition-colors"
+                          >
+                            Deshacer
+                          </button>
+                        </div>
                       )}
                     </CardContent>
                   </Card>
@@ -769,7 +825,11 @@ const quickDiscounts = [
                         <tr><td>Subtotal</td><td style="text-align:right">$${session.subtotal.toFixed(2)}</td></tr>
                         <tr><td>IVA</td><td style="text-align:right">$${session.impuestos.toFixed(2)}</td></tr>
                         <tr class="total-row"><td>TOTAL</td><td style="text-align:right">$${calculatedTotal.toFixed(2)}</td></tr>
-                        <tr><td style="font-size:11px;color:#666">Dividido entre ${splitCount}</td><td style="text-align:right;font-size:11px;color:#666">$${sharePerPerson.toFixed(2)} c/u</td></tr>
+                      </table>
+                      <div class="sep"></div>
+                      <div style="font-size:11px;color:#666;margin-bottom:4px">Dividido entre ${splitCount} personas:</div>
+                      <table>
+                        ${splitPayments.map((p, i) => `<tr><td style="font-size:11px">Persona ${i + 1}${p.method ? ' (' + (p.method === 'tarjeta' ? 'Tarjeta' : p.method === 'transferencia' ? 'Transferencia' : p.method === 'apple_pay' ? 'Apple Pay' : 'Efectivo') + ')' : ''}</td><td style="text-align:right;font-size:11px">$${resolvedMontos[i].toFixed(2)}</td></tr>`).join('')}
                       </table>
                       <div class="sep"></div>
                       <div class="center" style="font-size:11px;color:#666;margin-top:8px">Gracias por su visita</div>
@@ -784,7 +844,7 @@ const quickDiscounts = [
                   Imprimir
                 </Button>
 
-                {allSplitPaid ? (
+                {allSplitPaid && diferencia === 0 ? (
                   <Button
                     className="flex-1 h-10 bg-success hover:bg-success/90 text-success-foreground"
                     onClick={handleCloseSplitBill}
@@ -798,7 +858,12 @@ const quickDiscounts = [
                     disabled
                     variant="outline"
                   >
-                    {paidCount} de {splitCount} pagados
+                    {!allSplitPaid
+                      ? `${paidCount} de ${splitCount} pagados`
+                      : diferencia > 0
+                        ? `Falta ${formatPrice(diferencia)}`
+                        : `Excede ${formatPrice(Math.abs(diferencia))}`
+                    }
                   </Button>
                 )}
               </div>

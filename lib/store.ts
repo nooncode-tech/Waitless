@@ -231,6 +231,8 @@ export interface AppConfig {
   tiendaVisible?: boolean
   autoHorarioApertura?: string | null
   autoHorarioCierre?: string | null
+  // Delivery
+  deliveryHabilitado?: boolean
 }
 
 // ============ WAITLIST (P2-3) ============

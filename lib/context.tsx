@@ -415,6 +415,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
                 tiendaVisible: (configRow.tienda_visible as boolean | undefined) ?? prev.config.tiendaVisible ?? true,
                 autoHorarioApertura: (configRow.auto_horario_apertura as string | null | undefined) ?? prev.config.autoHorarioApertura ?? null,
                 autoHorarioCierre: (configRow.auto_horario_cierre as string | null | undefined) ?? prev.config.autoHorarioCierre ?? null,
+                deliveryHabilitado: (configRow.delivery_habilitado as boolean | undefined) ?? prev.config.deliveryHabilitado ?? false,
               },
             }))
           }

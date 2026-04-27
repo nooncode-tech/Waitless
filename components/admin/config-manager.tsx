@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Settings, Percent, Clock, CreditCard, Bell, MapPin, Save, Check, AlertTriangle, X, Star, ChefHat, Palette, Store, Power, Eye, EyeOff, Trash2 } from 'lucide-react'
+import { Settings, Percent, Clock, Bell, MapPin, Save, Check, AlertTriangle, X, Star, Palette, Store, Power, Eye, EyeOff, Trash2, Truck } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { DeleteAccountDialog } from '@/components/admin/delete-account-dialog'
 import { Button } from '@/components/ui/button'
@@ -38,6 +38,7 @@ export function ConfigManager() {
     tiendaVisible: config.tiendaVisible ?? true,
     autoHorarioApertura: config.autoHorarioApertura ?? null,
     autoHorarioCierre: config.autoHorarioCierre ?? null,
+    deliveryHabilitado: config.deliveryHabilitado ?? false,
   }
 
   const [localConfig, setLocalConfig] = useState({ ...safeConfig })
@@ -324,6 +325,29 @@ export function ConfigManager() {
                 </div>
               )}
             </div>
+            {/* Delivery */}
+            <div className="border-t border-border pt-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <Truck className="h-3 w-3 text-muted-foreground" />
+                    <p className="text-[10px] font-medium">Delivery habilitado</p>
+                  </div>
+                  <p className="text-[9px] text-muted-foreground mt-0.5">
+                    Muestra el toggle Para llevar / Delivery en el menú digital
+                  </p>
+                </div>
+                <Switch
+                  checked={localConfig.deliveryHabilitado}
+                  onCheckedChange={(checked) => {
+                    setLocalConfig(prev => ({ ...prev, deliveryHabilitado: checked }))
+                    updateConfig({ deliveryHabilitado: checked })
+                  }}
+                  className="scale-75"
+                />
+              </div>
+            </div>
+
             <div className="border-t border-border pt-3 space-y-2">
               <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1.5">
                 <MapPin className="h-3 w-3" />

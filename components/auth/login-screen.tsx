@@ -156,7 +156,7 @@ export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginSc
             </div>
 
             {error && (
-              <div className="flex items-center gap-2 text-destructive text-xs bg-red-50 border border-red-200 p-3 rounded">
+              <div className="flex items-center gap-2 text-destructive text-xs bg-destructive/10 border border-destructive/30 p-3 rounded">
                 <AlertCircle className="h-3.5 w-3.5 shrink-0" />
                 {error}
               </div>

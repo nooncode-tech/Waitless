@@ -44,6 +44,16 @@ export async function GET(
     return NextResponse.json({ error: 'Restaurante no encontrado' }, { status: 404 })
   }
 
+  // Cargar zonas de reparto
+  let zonasQuery = supabaseAdmin
+    .from('app_config')
+    .select('zonas_reparto, delivery_habilitado')
+  if (tenantId) zonasQuery = zonasQuery.eq('tenant_id', tenantId)
+  else zonasQuery = zonasQuery.eq('id', 'default')
+  const { data: zonasConfig } = await zonasQuery.single()
+  const zonasReparto = (zonasConfig?.zonas_reparto as string[] | null) ?? []
+  const deliveryHabilitado = (zonasConfig?.delivery_habilitado as boolean | null) ?? false
+
   // Cargar categorías
   let catQuery = supabaseAdmin
     .from('categories')
@@ -120,5 +130,7 @@ export async function GET(
     })),
     items,
     tenantId,
+    zonasReparto,
+    deliveryHabilitado,
   })
 }

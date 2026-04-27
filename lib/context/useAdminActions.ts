@@ -90,6 +90,7 @@ export function useAdminActions(state: AppState, setState: SetState) {
     if (updates.tiendaVisible !== undefined)                dbUpdates.tienda_visible = updates.tiendaVisible
     if (updates.autoHorarioApertura !== undefined)          dbUpdates.auto_horario_apertura = updates.autoHorarioApertura
     if (updates.autoHorarioCierre !== undefined)            dbUpdates.auto_horario_cierre = updates.autoHorarioCierre
+    if (updates.deliveryHabilitado !== undefined)           dbUpdates.delivery_habilitado = updates.deliveryHabilitado
 
     if (Object.keys(dbUpdates).length > 0) {
       // Usar el API route (supabaseAdmin) para bypasear RLS — requiere Bearer token
