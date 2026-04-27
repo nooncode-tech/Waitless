@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Plus, Edit2, Trash2, Check, X, Package } from 'lucide-react'
+import { Plus, Edit2, Trash2, Check, X, Package, Tag } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -221,9 +221,12 @@ export function IngredientCategoryManager() {
       </div>
       
       {allCategories.length === 0 && (
-        <div className="text-center py-8 text-muted-foreground text-sm">
-          No hay categorias. Agrega una para comenzar.
-        </div>
+        <Card className="border-dashed">
+          <CardContent className="py-8 text-center">
+            <Tag className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
+            <p className="text-xs text-muted-foreground">No hay categorías. Agregá una para comenzar.</p>
+          </CardContent>
+        </Card>
       )}
       
       {/* Delete confirmation dialog */}

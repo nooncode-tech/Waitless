@@ -235,7 +235,7 @@ export function MenuManager() {
 
           if (rows.length === 0) {
             return (
-              <div className="py-8 text-center text-[11px] text-muted-foreground">
+              <div className="py-8 text-center text-xs text-muted-foreground">
                 No hay platillos. Agregá uno con el botón de arriba.
               </div>
             )

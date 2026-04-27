@@ -60,7 +60,7 @@ export function ExpoView() {
 
       {tableKeys.length === 0 && (
         <Card className="border-dashed">
-          <CardContent className="py-16 text-center">
+          <CardContent className="py-8 text-center">
             <Utensils className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
             <p className="text-sm font-medium text-muted-foreground">Sin pedidos listos para entregar</p>
             <p className="text-xs text-muted-foreground mt-1">Los pedidos aparecerán aquí cuando la cocina los marque como listos</p>

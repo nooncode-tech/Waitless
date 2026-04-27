@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Search, ClipboardList, ChevronDown, ChevronRight } from 'lucide-react'
 import { useApp } from '@/lib/context'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -129,12 +130,14 @@ export function AuditLogViewer() {
 
       {/* Log table */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <ClipboardList className="h-10 w-10 text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">
-            {auditLogs.length === 0 ? 'No hay registros aún' : 'No se encontraron resultados'}
-          </p>
-        </div>
+        <Card className="border-dashed">
+          <CardContent className="py-8 text-center">
+            <ClipboardList className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+            <p className="text-xs text-muted-foreground">
+              {auditLogs.length === 0 ? 'No hay registros aún' : 'No se encontraron resultados'}
+            </p>
+          </CardContent>
+        </Card>
       ) : (
         <ScrollArea className="h-[calc(100vh-240px)]">
           <div className="space-y-1.5">
