@@ -113,7 +113,7 @@ export function MenuManager() {
           </p>
         </div>
         <Button
-          className="bg-primary text-primary-foreground h-7 text-[10px] px-2.5"
+          size="xs"
           onClick={handleAdd}
         >
           <Plus className="h-3 w-3 mr-1" />

@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { useApp } from '@/lib/context'
 import type { WaitlistEntry } from '@/lib/store'
 import { EmptyState } from '@/components/shared/empty-state'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { S } from '@/lib/strings'
 
@@ -83,24 +84,21 @@ export function WaitlistManager() {
     <section aria-label={S.waitlistTitle} className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold">{S.waitlistTitle}</h2>
-        <button
-          onClick={() => setShowForm(v => !v)}
-          className="text-xs px-3 py-1.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
-        >
+        <Button size="sm" variant={showForm ? 'outline' : 'default'} onClick={() => setShowForm(v => !v)}>
           {showForm ? S.cancel : S.waitlistAdd}
-        </button>
+        </Button>
       </div>
 
       {/* Add form */}
       {showForm && (
         <form
           onSubmit={handleAdd}
-          className="border rounded-xl p-4 space-y-3 bg-gray-50"
+          className="border rounded-xl p-4 space-y-3 bg-muted"
           aria-label="Formulario agregar a lista de espera"
         >
           <div className="grid grid-cols-2 gap-3">
             <label className="space-y-1">
-              <span className="text-xs text-gray-600">{S.waitlistName} *</span>
+              <span className="text-xs text-muted-foreground">{S.waitlistName} *</span>
               <Input
                 required
                 value={form.nombre}
@@ -110,7 +108,7 @@ export function WaitlistManager() {
               />
             </label>
             <label className="space-y-1">
-              <span className="text-xs text-gray-600">{S.waitlistPhone}</span>
+              <span className="text-xs text-muted-foreground">{S.waitlistPhone}</span>
               <Input
                 value={form.telefono}
                 onChange={e => setForm(p => ({ ...p, telefono: e.target.value }))}
@@ -122,7 +120,7 @@ export function WaitlistManager() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <label className="space-y-1">
-              <span className="text-xs text-gray-600">{S.waitlistGuests}</span>
+              <span className="text-xs text-muted-foreground">{S.waitlistGuests}</span>
               <Input
                 type="number"
                 min={1}
@@ -133,7 +131,7 @@ export function WaitlistManager() {
               />
             </label>
             <label className="space-y-1">
-              <span className="text-xs text-gray-600">{S.waitlistNotes}</span>
+              <span className="text-xs text-muted-foreground">{S.waitlistNotes}</span>
               <Input
                 value={form.notas}
                 onChange={e => setForm(p => ({ ...p, notas: e.target.value }))}
@@ -143,20 +141,21 @@ export function WaitlistManager() {
             </label>
           </div>
           <div className="flex gap-2 justify-end">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => { setShowForm(false); setForm(EMPTY_FORM) }}
-              className="text-xs px-3 py-1.5 border rounded-lg hover:bg-gray-100 transition-colors"
             >
               {S.cancel}
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              size="sm"
               disabled={submitting}
-              className="text-xs px-3 py-1.5 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
             >
               {submitting ? S.loading : S.add}
-            </button>
+            </Button>
           </div>
         </form>
       )}
@@ -184,7 +183,7 @@ export function WaitlistManager() {
 
       {/* Past entries (collapsed) */}
       {pastEntries.length > 0 && (
-        <details className="text-xs text-gray-500">
+        <details className="text-xs text-muted-foreground">
           <summary className="cursor-pointer select-none">
             {pastEntries.length} entradas anteriores
           </summary>
@@ -192,13 +191,13 @@ export function WaitlistManager() {
             {pastEntries.map(entry => (
               <li
                 key={entry.id}
-                className="flex items-center gap-2 py-1 px-2 rounded bg-gray-50"
+                className="flex items-center gap-2 py-1 px-2 rounded bg-muted"
               >
                 <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${ESTADO_COLORS[entry.estado]}`}>
                   {ESTADO_LABELS[entry.estado]}
                 </span>
-                <span className="font-medium text-gray-700">{entry.nombre}</span>
-                <span className="text-gray-400">{entry.personas} pers.</span>
+                <span className="font-medium text-foreground">{entry.nombre}</span>
+                <span className="text-muted-foreground">{entry.personas} pers.</span>
               </li>
             ))}
           </ul>
@@ -242,44 +241,47 @@ function WaitlistCard({ entry, onAssign, onCancel, onRemove }: WaitlistCardProps
               {ESTADO_LABELS[entry.estado]}
             </span>
           </div>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             {entry.personas} {entry.personas === 1 ? 'persona' : 'personas'}
             {entry.telefono && ` · ${entry.telefono}`}
             {entry.mesaAsignada && ` · Mesa ${entry.mesaAsignada}`}
           </p>
           {entry.notas && (
-            <p className="text-xs text-gray-400 italic">{entry.notas}</p>
+            <p className="text-xs text-muted-foreground italic">{entry.notas}</p>
           )}
-          <p className="text-[10px] text-gray-400">{formatMinutesAgo(entry.createdAt)}</p>
+          <p className="text-[10px] text-muted-foreground">{formatMinutesAgo(entry.createdAt)}</p>
         </div>
 
         {/* Actions */}
         {entry.estado === 'esperando' && (
           <div className="flex gap-1 shrink-0">
-            <button
+            <Button
+              size="xs"
               onClick={() => setAssigningMesa(v => !v)}
-              className="text-xs px-2 py-1 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
               aria-label="Asignar mesa"
             >
               Mesa
-            </button>
-            <button
+            </Button>
+            <Button
+              size="xs"
+              variant="outline"
               onClick={() => onCancel(entry)}
-              className="text-xs px-2 py-1 border rounded-lg hover:bg-gray-100 transition-colors"
               aria-label="Cancelar entrada"
             >
               ✕
-            </button>
+            </Button>
           </div>
         )}
         {(entry.estado === 'cancelada' || entry.estado === 'expirada') && (
-          <button
+          <Button
+            size="xs"
+            variant="ghost"
             onClick={() => onRemove(entry.id)}
-            className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+            className="text-muted-foreground hover:text-destructive"
             aria-label="Eliminar entrada"
           >
             Eliminar
-          </button>
+          </Button>
         )}
       </div>
 
@@ -294,19 +296,22 @@ function WaitlistCard({ entry, onAssign, onCancel, onRemove }: WaitlistCardProps
             className="h-8 text-xs w-28"
             autoFocus
           />
-          <button
+          <Button
             type="submit"
-            className="text-xs px-2 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            size="xs"
+            className="bg-success hover:bg-success/90"
           >
             Asignar
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            size="xs"
+            variant="ghost"
             onClick={() => setAssigningMesa(false)}
-            className="text-xs text-gray-400 hover:text-gray-600"
+            className="text-muted-foreground"
           >
             {S.cancel}
-          </button>
+          </Button>
         </form>
       )}
     </li>

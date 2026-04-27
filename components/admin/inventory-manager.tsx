@@ -141,16 +141,16 @@ export function InventoryManager() {
           {activeTab === 'low' ? 'Ingredientes con stock bajo' : 'Todos los ingredientes'}
         </h2>
         <div className="flex gap-1.5">
-          <Button 
+          <Button
             variant="outline"
-            className="h-7 text-[10px] px-2.5"
+            size="xs"
             onClick={() => setShowCategoryDialog(true)}
           >
             <FolderOpen className="h-3 w-3 mr-1" />
             Categorias
           </Button>
-          <Button 
-            className="bg-primary text-primary-foreground h-7 text-[10px] px-2.5"
+          <Button
+            size="xs"
             onClick={() => setShowAddDialog(true)}
           >
             <Plus className="h-3 w-3 mr-1" />
@@ -222,7 +222,8 @@ export function InventoryManager() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 h-7 text-[10px] bg-card"
+                    size="xs"
+                    className="flex-1 bg-card"
                     onClick={() => setShowAdjustDialog(ingredient)}
                   >
                     <Edit2 className="h-2.5 w-2.5 mr-1" />
@@ -232,7 +233,8 @@ export function InventoryManager() {
                   <Button
                     variant={inUse ? "outline" : "destructive"}
                     size="sm"
-                    className={`h-7 text-[10px] ${inUse ? 'bg-card text-muted-foreground' : ''}`}
+                    size="xs"
+                    className={inUse ? 'bg-card text-muted-foreground' : ''}
                     onClick={() => handleDeactivateIngredient(ingredient)}
                     title={inUse ? 'En uso - no se puede eliminar' : 'Eliminar ingrediente'}
                   >

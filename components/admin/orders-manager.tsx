@@ -160,7 +160,7 @@ export function OrdersManager() {
         </div>
         {activeTab !== 'table' && (
           <Button 
-            className="bg-primary text-primary-foreground h-7 text-[10px] px-2.5"
+            size="xs"
             onClick={() => handleCreateOrder(activeTab === 'takeout' ? 'para_llevar' : 'delivery')}
           >
             <Plus className="h-3 w-3 mr-1" />

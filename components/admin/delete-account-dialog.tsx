@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { AlertTriangle, Trash2, X, Eye, EyeOff } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 
 interface Props {
@@ -67,21 +68,21 @@ export function DeleteAccountDialog({ onClose }: Props) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-            <Trash2 className="w-6 h-6 text-gray-400" />
+          <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+            <Trash2 className="w-6 h-6 text-muted-foreground" />
           </div>
-          <h2 className="font-black text-xl text-black mb-2" style={{ letterSpacing: '-0.02em' }}>
+          <h2 className="font-black text-xl text-foreground mb-2" style={{ letterSpacing: '-0.02em' }}>
             Cuenta eliminada
           </h2>
-          <p className="text-sm text-gray-500 leading-relaxed mb-6">
+          <p className="text-sm text-muted-foreground leading-relaxed mb-6">
             Tu cuenta y todos los datos del restaurante fueron eliminados permanentemente.
           </p>
-          <button
+          <Button
             onClick={() => { window.location.href = '/' }}
-            className="w-full h-11 rounded-xl bg-black text-white text-sm font-semibold"
+            className="w-full h-11 rounded-xl"
           >
             Ir al inicio
-          </button>
+          </Button>
         </div>
       </div>
     )
@@ -94,7 +95,7 @@ export function DeleteAccountDialog({ onClose }: Props) {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
           {/* Header */}
-          <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+          <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-border">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
                 <AlertTriangle className="w-4 h-4 text-red-600" />
@@ -103,15 +104,15 @@ export function DeleteAccountDialog({ onClose }: Props) {
                 Eliminar cuenta
               </h2>
             </div>
-            <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors">
-              <X className="w-4 h-4 text-gray-400" />
-            </button>
+            <Button variant="ghost" size="icon-sm" onClick={onClose}>
+              <X className="w-4 h-4 text-muted-foreground" />
+            </Button>
           </div>
 
           {/* Body */}
           <div className="px-5 py-5 space-y-3">
-            <p className="text-sm text-gray-600 leading-relaxed">
-              Esta acción es <span className="font-bold text-black">permanente e irreversible</span>. Se eliminarán:
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Esta acción es <span className="font-bold text-foreground">permanente e irreversible</span>. Se eliminarán:
             </p>
             <ul className="space-y-2">
               {[
@@ -121,7 +122,7 @@ export function DeleteAccountDialog({ onClose }: Props) {
                 'Configuración y branding del restaurante',
                 'Datos de inventario y reportes',
               ].map(item => (
-                <li key={item} className="flex items-start gap-2 text-sm text-gray-500">
+                <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
                   <span className="mt-1 w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
                   {item}
                 </li>
@@ -136,18 +137,20 @@ export function DeleteAccountDialog({ onClose }: Props) {
 
           {/* Footer */}
           <div className="px-5 pb-5 flex gap-2">
-            <button
+            <Button
+              variant="outline"
               onClick={onClose}
-              className="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+              className="flex-1 h-11 rounded-xl"
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="destructive"
               onClick={() => setStep('confirm')}
-              className="flex-1 h-11 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors"
+              className="flex-1 h-11 rounded-xl"
             >
               Continuar
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -169,19 +172,19 @@ export function DeleteAccountDialog({ onClose }: Props) {
               Confirmar eliminación
             </h2>
           </div>
-          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors">
-            <X className="w-4 h-4 text-gray-400" />
-          </button>
+          <Button variant="ghost" size="icon-sm" onClick={onClose}>
+            <X className="w-4 h-4 text-muted-foreground" />
+          </Button>
         </div>
 
         {/* Body */}
         <div className="px-5 py-5 space-y-4">
-          <p className="text-sm text-gray-600 leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             Ingresá tu contraseña para confirmar que sos vos quien solicita la eliminación.
           </p>
 
           <div>
-            <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
+            <label className="block text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
               Contraseña
             </label>
             <div className="relative">
@@ -197,7 +200,7 @@ export function DeleteAccountDialog({ onClose }: Props) {
               <button
                 type="button"
                 onClick={() => setShowPassword(v => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -219,17 +222,19 @@ export function DeleteAccountDialog({ onClose }: Props) {
 
         {/* Footer */}
         <div className="px-5 pb-5 flex gap-2">
-          <button
+          <Button
+            variant="outline"
             onClick={() => setStep('warning')}
-            className="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+            className="flex-1 h-11 rounded-xl"
             disabled={loading}
           >
             Volver
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="destructive"
             onClick={handleDelete}
             disabled={loading || !password.trim()}
-            className="flex-1 h-11 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 h-11 rounded-xl gap-2"
           >
             {loading ? (
               <>
@@ -239,7 +244,7 @@ export function DeleteAccountDialog({ onClose }: Props) {
             ) : (
               'Eliminar cuenta'
             )}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

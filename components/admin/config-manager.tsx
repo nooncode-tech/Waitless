@@ -74,7 +74,8 @@ export function ConfigManager() {
           </p>
         </div>
         <Button 
-          className={`h-7 text-[10px] px-2.5 ${saved ? 'bg-success' : 'bg-primary'}`}
+          size="xs"
+          className={saved ? 'bg-success' : ''}
           onClick={handleSave}
           disabled={!hasChanges && !saved}
         >
