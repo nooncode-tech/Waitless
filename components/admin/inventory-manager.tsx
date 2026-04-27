@@ -221,7 +221,6 @@ export function InventoryManager() {
                 <div className="flex gap-1">
                   <Button
                     variant="outline"
-                    size="sm"
                     size="xs"
                     className="flex-1 bg-card"
                     onClick={() => setShowAdjustDialog(ingredient)}
@@ -229,10 +228,9 @@ export function InventoryManager() {
                     <Edit2 className="h-2.5 w-2.5 mr-1" />
                     Ajustar
                   </Button>
-                  
+
                   <Button
                     variant={inUse ? "outline" : "destructive"}
-                    size="sm"
                     size="xs"
                     className={inUse ? 'bg-card text-muted-foreground' : ''}
                     onClick={() => handleDeactivateIngredient(ingredient)}

@@ -290,6 +290,21 @@ export function useOrderActions(state: AppState, setState: SetState) {
     return order
   }, [state.cart, state.ingredients, state.tableSessions, state.config.impuestoPorcentaje, state.config.tiempoExpiracionSesionMinutos, state.currentUser, setState])
 
+  const assignRepartidor = useCallback((orderId: string, repartidorId: string) => {
+    const existing = state.orders.find(o => o.id === orderId)
+    if (!existing) return
+    const updatedOrder = { ...existing, repartidorId, updatedAt: new Date() }
+    setState(prev => ({
+      ...prev,
+      orders: prev.orders.map(o => o.id === orderId ? updatedOrder : o),
+      tableSessions: prev.tableSessions.map(session => ({
+        ...session,
+        orders: session.orders.map(o => o.id === orderId ? updatedOrder : o),
+      })),
+    }))
+    syncOrderToSupabase(updatedOrder)
+  }, [state.orders, setState])
+
   const updateOrderStatus = useCallback((orderId: string, status: OrderStatus) => {
     const existing = state.orders.find(o => o.id === orderId)
     if (!existing) return
@@ -570,6 +585,7 @@ export function useOrderActions(state: AppState, setState: SetState) {
     cancelOrder,
     updateOrderItems,
     markOrderDelivered,
+    assignRepartidor,
     canEditOrder,
     canCancelOrder,
     getOrdersForKitchen,

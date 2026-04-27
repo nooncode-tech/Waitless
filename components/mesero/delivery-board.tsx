@@ -1,14 +1,19 @@
 'use client'
 
-import { Check, Clock, Package, MapPin, Phone, Truck, ShoppingBag, AlertCircle } from 'lucide-react'
+import { useState } from 'react'
+import { Check, Clock, Package, MapPin, Phone, Truck, ShoppingBag, AlertCircle, User } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { formatPrice, formatTime, getChannelLabel, getStatusLabel, getTimeDiff, type OrderStatus } from '@/lib/store'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { formatPrice, getChannelLabel, getStatusLabel, getTimeDiff, type OrderStatus } from '@/lib/store'
 
 export function DeliveryBoard() {
-  const { orders, updateOrderStatus } = useApp()
+  const { orders, users, updateOrderStatus, assignRepartidor } = useApp()
+  const [assigningId, setAssigningId] = useState<string | null>(null)
+  const [selectedRepartidor, setSelectedRepartidor] = useState<string>('')
+
+  const deliveryStaff = users.filter(u => u.activo && (u.role === 'mesero' || u.role === 'manager'))
 
   const pendingOrders = orders.filter(o =>
     o.status !== 'entregado' &&
@@ -24,7 +29,15 @@ export function DeliveryBoard() {
   const handleMarkDelivered = (orderId: string) => updateOrderStatus(orderId, 'entregado')
   const handleMarkEnCamino = (orderId: string) => updateOrderStatus(orderId, 'en_camino')
 
-  const readyCount = pendingOrders.filter(o => o.status === 'listo').length
+  const handleConfirmRepartidor = (orderId: string) => {
+    if (!selectedRepartidor) return
+    assignRepartidor(orderId, selectedRepartidor)
+    handleMarkEnCamino(orderId)
+    setAssigningId(null)
+    setSelectedRepartidor('')
+  }
+
+  const readyCount    = pendingOrders.filter(o => o.status === 'listo').length
   const preparingCount = pendingOrders.filter(o => o.status === 'preparando').length
   const enCaminoCount = pendingOrders.filter(o => o.status === 'en_camino').length
 
@@ -37,22 +50,22 @@ export function DeliveryBoard() {
           <p className="text-[9px] text-success">Listos</p>
         </div>
         <div className="border border-border bg-muted rounded-xl p-2 text-center">
-          <p className="text-xl font-bold text-black">{enCaminoCount}</p>
+          <p className="text-xl font-bold text-foreground">{enCaminoCount}</p>
           <p className="text-[9px] text-muted-foreground">En camino</p>
         </div>
         <div className="border border-warning/20 bg-kds-preparing rounded-xl p-2 text-center">
           <p className="text-xl font-bold text-warning">{preparingCount}</p>
           <p className="text-[9px] text-warning">Preparando</p>
         </div>
-        <div className="border border-border bg-white rounded-xl p-2 text-center">
-          <p className="text-xl font-bold text-black">{pendingOrders.length}</p>
+        <div className="border border-border bg-card rounded-xl p-2 text-center">
+          <p className="text-xl font-bold text-foreground">{pendingOrders.length}</p>
           <p className="text-[9px] text-muted-foreground">Total</p>
         </div>
       </div>
 
       {/* Orders List */}
       <div className="space-y-3">
-        <h3 className="font-semibold text-sm text-black">Tablero de entregas</h3>
+        <h3 className="font-semibold text-sm text-foreground">Tablero de entregas</h3>
 
         {pendingOrders.length === 0 ? (
           <div className="border border-dashed border-border rounded-xl py-10 text-center">
@@ -62,9 +75,14 @@ export function DeliveryBoard() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
             {pendingOrders.map((order) => {
-              const isReady = order.status === 'listo'
+              const isReady    = order.status === 'listo'
               const isEnCamino = order.status === 'en_camino'
               const allKitchensReady = order.cocinaStatus === 'listo'
+              const isDelivery = order.canal === 'delivery'
+              const isAssigning = assigningId === order.id
+              const repartidorUser = order.repartidorId
+                ? users.find(u => u.id === order.repartidorId)
+                : null
 
               const total = order.items.reduce((sum, item) => {
                 const extrasTotal = item.extras?.reduce((e, ex) => e + ex.precio, 0) || 0
@@ -75,22 +93,22 @@ export function DeliveryBoard() {
                 <div
                   key={order.id}
                   className={`border rounded-xl transition-all ${
-                    isReady ? 'border-success bg-green-50/50' :
+                    isReady    ? 'border-success bg-green-50/50' :
                     isEnCamino ? 'border-accent bg-muted/50' :
-                    'border-border bg-white'
+                    'border-border bg-card'
                   }`}
                 >
                   <div className="p-3 pb-2">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-sm font-bold text-black">#{order.numero}</p>
+                        <p className="text-sm font-bold text-foreground">#{order.numero}</p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <Badge variant="outline" className={`text-[10px] h-4 px-1 ${
-                            order.canal === 'delivery' ? 'border-muted-foreground text-muted-foreground' :
+                            order.canal === 'delivery'    ? 'border-muted-foreground text-muted-foreground' :
                             order.canal === 'para_llevar' ? 'border-warning text-warning' :
                             ''
                           }`}>
-                            {order.canal === 'delivery' && <Truck className="h-2.5 w-2.5 mr-0.5" />}
+                            {order.canal === 'delivery'    && <Truck       className="h-2.5 w-2.5 mr-0.5" />}
                             {order.canal === 'para_llevar' && <ShoppingBag className="h-2.5 w-2.5 mr-0.5" />}
                             {getChannelLabel(order.canal)}
                           </Badge>
@@ -101,9 +119,9 @@ export function DeliveryBoard() {
                       </div>
                       <div className="text-right">
                         <Badge className={`text-[10px] h-4 ${
-                          isReady ? 'bg-success text-white' :
-                          isEnCamino ? 'bg-black text-white' :
-                          order.status === 'preparando' ? 'bg-muted text-black' :
+                          isReady    ? 'bg-success text-white' :
+                          isEnCamino ? 'bg-foreground text-background' :
+                          order.status === 'preparando' ? 'bg-muted text-foreground' :
                           'bg-muted text-muted-foreground'
                         }`}>
                           {isEnCamino ? 'En camino' : getStatusLabel(order.status)}
@@ -118,9 +136,9 @@ export function DeliveryBoard() {
 
                   <div className="px-3 pb-3">
                     {/* Customer Info */}
-                    {(order.canal === 'delivery' || order.canal === 'para_llevar') && order.nombreCliente && (
+                    {(isDelivery || order.canal === 'para_llevar') && order.nombreCliente && (
                       <div className="mb-2 p-2 bg-muted rounded-lg text-xs">
-                        <p className="font-semibold text-black">{order.nombreCliente}</p>
+                        <p className="font-semibold text-foreground">{order.nombreCliente}</p>
                         {order.telefono && (
                           <p className="text-muted-foreground flex items-center gap-1">
                             <Phone className="h-2.5 w-2.5" />{order.telefono}
@@ -139,10 +157,18 @@ export function DeliveryBoard() {
                       </div>
                     )}
 
+                    {/* Repartidor asignado */}
+                    {isEnCamino && repartidorUser && (
+                      <div className="mb-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                        <User className="h-3 w-3 shrink-0" />
+                        <span>{repartidorUser.nombre}</span>
+                      </div>
+                    )}
+
                     {/* Items */}
                     <ul className="space-y-0.5 mb-2">
                       {order.items.map(item => (
-                        <li key={item.id} className="text-xs text-black">
+                        <li key={item.id} className="text-xs text-foreground">
                           {item.cantidad}x {item.menuItem.nombre}
                         </li>
                       ))}
@@ -151,14 +177,14 @@ export function DeliveryBoard() {
                     {/* Total */}
                     <div className="flex justify-between text-xs mb-2 pt-1 border-t border-border">
                       <span className="text-muted-foreground">Total</span>
-                      <span className="font-semibold text-black">{formatPrice(total)}</span>
+                      <span className="font-semibold text-foreground">{formatPrice(total)}</span>
                     </div>
 
                     {/* Kitchen Status */}
                     {!isEnCamino && (
                       <div className="flex gap-1 text-[10px] mb-2">
                         <span className={`px-1.5 py-0.5 rounded ${
-                          order.cocinaStatus === 'listo' ? 'bg-green-50 text-success' :
+                          order.cocinaStatus === 'listo'      ? 'bg-green-50 text-success' :
                           order.cocinaStatus === 'preparando' ? 'bg-kds-preparing text-warning' :
                           'bg-muted text-muted-foreground'
                         }`}>
@@ -174,12 +200,12 @@ export function DeliveryBoard() {
                     )}
 
                     {/* Actions */}
-                    {allKitchensReady && isReady && (
+                    {allKitchensReady && isReady && !isAssigning && (
                       <div className="flex gap-1">
-                        {order.canal === 'delivery' ? (
+                        {isDelivery ? (
                           <Button
-                            className="flex-1 bg-black hover:bg-black/90 text-white h-7 text-xs"
-                            onClick={() => handleMarkEnCamino(order.id)}
+                            className="flex-1 h-7 text-xs"
+                            onClick={() => { setAssigningId(order.id); setSelectedRepartidor('') }}
                           >
                             <Truck className="h-3 w-3 mr-1" />En camino
                           </Button>
@@ -192,6 +218,43 @@ export function DeliveryBoard() {
                             {order.canal === 'para_llevar' ? 'Entregar' : 'Entregado'}
                           </Button>
                         )}
+                      </div>
+                    )}
+
+                    {/* Assign repartidor panel */}
+                    {isAssigning && (
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                          Asignar repartidor
+                        </p>
+                        <Select value={selectedRepartidor} onValueChange={setSelectedRepartidor}>
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue placeholder="Seleccioná quién lleva" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {deliveryStaff.map(u => (
+                              <SelectItem key={u.id} value={u.id}>
+                                {u.nombre}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="outline"
+                            className="flex-1 h-7 text-xs"
+                            onClick={() => { setAssigningId(null); setSelectedRepartidor('') }}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            className="flex-1 h-7 text-xs"
+                            disabled={!selectedRepartidor}
+                            onClick={() => handleConfirmRepartidor(order.id)}
+                          >
+                            <Truck className="h-3 w-3 mr-1" />Salir
+                          </Button>
+                        </div>
                       </div>
                     )}
 

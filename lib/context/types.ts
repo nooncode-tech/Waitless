@@ -83,6 +83,7 @@ export interface AppContextType extends AppState {
   cancelOrder: (orderId: string, reason: CancelReason, motivo?: string, userId?: string) => boolean
   updateOrderItems: (orderId: string, items: OrderItem[]) => boolean
   markOrderDelivered: (orderId: string, meseroId?: string) => void
+  assignRepartidor: (orderId: string, repartidorId: string) => void
 
   // Table Sessions
   setCurrentTable: (mesa: number | null) => void
