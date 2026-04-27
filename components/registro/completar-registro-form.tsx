@@ -3,8 +3,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
-  Palette, AlertCircle, CheckCircle2, Upload, X, Loader2,
+  Palette, AlertCircle, CheckCircle2, Upload, X,
 } from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
@@ -134,7 +135,7 @@ export function CompletarRegistroForm() {
   if (!userId) {
     return (
       <div className="flex justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-[#BEBEBE]" />
+        <Spinner className="size-6 text-muted-foreground" />
       </div>
     )
   }
@@ -262,7 +263,7 @@ export function CompletarRegistroForm() {
       >
         {isLoading ? (
           <span className="flex items-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Spinner className="size-4" />
             Creando tu plataforma...
           </span>
         ) : 'Crear mi plataforma'}

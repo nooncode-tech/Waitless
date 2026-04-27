@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Star, MessageSquare, TrendingUp } from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import type { Feedback } from '@/lib/store'
@@ -103,7 +104,10 @@ export function FeedbackManager() {
         </div>
         <div className="divide-y divide-[#E5E5E5]">
           {loading ? (
-            <p className="text-xs text-[#BEBEBE] text-center py-8">Cargando...</p>
+            <div className="flex items-center justify-center gap-2 py-8">
+              <Spinner className="size-3.5 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Cargando...</p>
+            </div>
           ) : feedbackList.filter(f => f.comentario).length === 0 ? (
             <p className="text-xs text-[#BEBEBE] text-center py-8">Sin comentarios aún</p>
           ) : (

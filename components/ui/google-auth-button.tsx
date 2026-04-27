@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
 import { supabase } from '@/lib/supabase'
 
 interface GoogleAuthButtonProps {
@@ -42,7 +42,7 @@ export function GoogleAuthButton({
       className={`w-full flex items-center justify-center gap-3 h-11 px-4 rounded border border-[#E5E5E5] bg-white hover:bg-[#F9F9F9] transition-colors text-sm font-semibold text-black disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
     >
       {isLoading ? (
-        <Loader2 className="h-4 w-4 animate-spin text-[#BEBEBE]" />
+        <Spinner className="size-4 text-muted-foreground" />
       ) : (
         /* Google SVG icon */
         <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">

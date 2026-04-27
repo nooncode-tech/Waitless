@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { AlertTriangle, Trash2, X, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { AlertTriangle, Trash2, X, Eye, EyeOff } from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
 import { supabase } from '@/lib/supabase'
 
 interface Props {
@@ -231,7 +232,7 @@ export function DeleteAccountDialog({ onClose }: Props) {
           >
             {loading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Spinner className="size-4" />
                 Eliminando...
               </>
             ) : (

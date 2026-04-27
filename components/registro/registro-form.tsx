@@ -4,8 +4,9 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Building2, Palette, User, Eye, EyeOff,
-  AlertCircle, CheckCircle2, Upload, X, ArrowRight, ArrowLeft, Loader2,
+  AlertCircle, CheckCircle2, Upload, X, ArrowRight, ArrowLeft,
 } from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { GoogleAuthButton } from '@/components/ui/google-auth-button'
@@ -425,7 +426,7 @@ export function RegistroForm() {
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Spinner className="size-4" />
                   Registrando...
                 </span>
               ) : (

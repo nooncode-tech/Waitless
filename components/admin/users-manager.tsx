@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Plus, Edit2, User, Shield, ChefHat, UserCheck, Trash2, Loader2 } from 'lucide-react'
+import { Plus, Edit2, User, Shield, ChefHat, UserCheck, Trash2 } from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
 import { useApp } from '@/lib/context'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -191,7 +192,7 @@ export function UsersManager() {
 
                     <div className="flex items-center gap-1">
                       {isToggling ? (
-                        <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                        <Spinner className="size-3 text-muted-foreground" />
                       ) : (
                         <Switch
                           checked={user.activo}
@@ -362,7 +363,7 @@ function UserDialog({ user, onClose, onSave, onDelete }: UserDialogProps) {
               onClick={handleSubmit}
               disabled={loading || !nombre.trim() || !username.trim() || (!user && !password.trim())}
             >
-              {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : user ? 'Guardar' : 'Agregar'}
+              {loading ? <Spinner className="size-3.5" /> : user ? 'Guardar' : 'Agregar'}
             </Button>
           </div>
         </CardContent>

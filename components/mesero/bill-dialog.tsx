@@ -3,7 +3,8 @@
 import React, { useEffect } from "react"
 
 import { useState } from 'react'
-import { X, Receipt, CreditCard, Banknote, Percent, Check, Printer, Smartphone, Users, PlusCircle, ExternalLink, Loader2 } from 'lucide-react'
+import { X, Receipt, CreditCard, Banknote, Percent, Check, Printer, Smartphone, Users, PlusCircle, ExternalLink } from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
 import { useApp } from '@/lib/context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -210,7 +211,7 @@ const quickDiscounts = [
           {/* en_pago banner — Stripe checkout in progress */}
           {session.billStatus === 'en_pago' && (
             <div className="flex items-center gap-3 rounded-xl border border-amber-500/40 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm">
-              <Loader2 className="h-4 w-4 shrink-0 animate-spin text-amber-600" />
+              <Spinner className="size-4 shrink-0 text-amber-600" />
               <div>
                 <p className="font-semibold text-amber-800 dark:text-amber-300">Pago online en curso</p>
                 <p className="text-amber-700 dark:text-amber-400 text-xs">Esperando confirmación de Stripe. No cerrés esta pantalla.</p>
@@ -591,7 +592,7 @@ const quickDiscounts = [
                       disabled={isCreatingOnlinePayment}
                     >
                       {isCreatingOnlinePayment ? (
-                        <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                        <Spinner className="size-4 mr-1.5" />
                       ) : (
                         <CreditCard className="h-4 w-4 mr-1.5" />
                       )}

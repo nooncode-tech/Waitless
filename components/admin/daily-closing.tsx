@@ -22,8 +22,8 @@ import {
   Smartphone,
   Users,
   AlertTriangle,
-  Loader2,
 } from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
 import {
   formatPrice,
   calculateOrderTotal,
@@ -603,7 +603,7 @@ export function DailyClosing() {
       <div>
         <div className="flex items-center gap-2 mb-2">
           <p className="text-[10px] font-bold text-[#6B6B6B] uppercase tracking-wide">KPIs del día</p>
-          {kpiLoading && <Loader2 className="h-3 w-3 animate-spin text-[#BEBEBE]" />}
+          {kpiLoading && <Spinner className="size-3 text-muted-foreground" />}
           {!kpiLoading && kpiFromDB && !kpiError && (
             <span className="text-[9px] text-[#BEBEBE]">calculado desde Supabase</span>
           )}
@@ -747,7 +747,7 @@ export function DailyClosing() {
         <div className="px-4 py-3 border-b border-[#E5E5E5] flex items-center gap-2">
           <ChefHat className="h-3.5 w-3.5 text-[#6B6B6B]" />
           <p className="text-xs font-bold text-black uppercase tracking-wide">Más Vendidos</p>
-          {kpiLoading && <Loader2 className="h-3 w-3 animate-spin text-[#BEBEBE] ml-auto" />}
+          {kpiLoading && <Spinner className="size-3 text-muted-foreground ml-auto" />}
         </div>
         <div className="p-4">
           {kpiLoading ? (

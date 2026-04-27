@@ -17,10 +17,10 @@ import {
   Star,
   ShoppingBag,
   Users,
-  Loader2,
   RefreshCw,
   BarChart2,
 } from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -176,7 +176,7 @@ export function AnalyticsDashboard() {
           </h3>
           {loading ? (
             <div className="flex items-center justify-center h-32">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <Spinner className="size-6 text-muted-foreground" />
             </div>
           ) : trend.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">Sin datos para el período</p>
@@ -253,7 +253,7 @@ export function AnalyticsDashboard() {
           </div>
           {loading ? (
             <div className="flex items-center justify-center h-20">
-              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              <Spinner className="size-5 text-muted-foreground" />
             </div>
           ) : !feedback || feedback.total === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">Sin feedback en este período</p>

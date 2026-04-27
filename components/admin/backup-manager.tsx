@@ -9,10 +9,10 @@ import {
   ShieldAlert,
   CheckCircle2,
   XCircle,
-  Loader2,
   DatabaseBackup,
   KeyRound,
 } from 'lucide-react'
+import { Spinner } from '@/components/ui/spinner'
 
 type ExportStatus = 'idle' | 'loading' | 'ok' | 'error'
 
@@ -86,7 +86,7 @@ export function BackupManager() {
             className="gap-2"
           >
             {exportStatus === 'loading' ? (
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              <Spinner className="size-4" aria-hidden="true" />
             ) : (
               <Download className="h-4 w-4" aria-hidden="true" />
             )}
