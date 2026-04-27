@@ -94,7 +94,7 @@ export function BackupManager() {
           </Button>
 
           {exportStatus === 'ok' && (
-            <p className="flex items-center gap-2 text-sm text-green-600" role="status">
+            <p className="flex items-center gap-2 text-sm text-success" role="status">
               <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
               Backup descargado correctamente.
             </p>

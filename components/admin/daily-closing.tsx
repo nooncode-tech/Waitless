@@ -612,7 +612,7 @@ export function DailyClosing() {
           {kpiError && (
             <button
               onClick={fetchKpis}
-              className="text-[9px] text-destructive underline"
+              className="text-[10px] text-destructive underline"
             >
               Error al cargar — Reintentar
             </button>

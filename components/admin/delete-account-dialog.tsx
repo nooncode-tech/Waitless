@@ -206,7 +206,7 @@ export function DeleteAccountDialog({ onClose }: Props) {
               </button>
             </div>
             {error && (
-              <p className="text-xs text-red-600 mt-2 flex items-center gap-1.5">
+              <p className="text-xs text-destructive mt-2 flex items-center gap-1.5">
                 <AlertTriangle className="w-3 h-3 shrink-0" />
                 {error}
               </p>
