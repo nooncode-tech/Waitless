@@ -27,6 +27,7 @@ export async function POST(
     telefono?: string
     metodoPago?: string
     notas?: string
+    incluirPropina?: boolean
   }
 
   try {
@@ -49,11 +50,13 @@ export async function POST(
 
   const tenantId: string | null = tenant?.id ?? null
 
-  // Verificar estado de la tienda
+  // Verificar estado de la tienda + cargar config de impuesto/propina
+  let impuestoPct = 0
+  let propinaPct = 0
   {
     let cfgQ = supabaseAdmin
       .from('app_config')
-      .select('tienda_abierta, auto_horario_apertura, auto_horario_cierre')
+      .select('tienda_abierta, auto_horario_apertura, auto_horario_cierre, impuesto_porcentaje, propina_sugerida_porcentaje')
     if (tenantId) cfgQ = cfgQ.eq('tenant_id', tenantId)
     else cfgQ = cfgQ.eq('id', 'default')
     const { data: cfg } = await cfgQ.single()
@@ -64,6 +67,8 @@ export async function POST(
     if (!storeOpen) {
       return NextResponse.json({ error: 'La tienda está cerrada en este momento.' }, { status: 503 })
     }
+    impuestoPct = Number(cfg?.impuesto_porcentaje ?? 0)
+    propinaPct  = Number(cfg?.propina_sugerida_porcentaje ?? 0)
   }
 
   // Obtener ítems del menú para calcular total server-side
@@ -120,10 +125,13 @@ export async function POST(
     return NextResponse.json({ error: 'Ningún ítem disponible en el carrito' }, { status: 400 })
   }
 
-  // Calcular total
-  const subtotal = orderItems.reduce((sum, item) => {
-    return sum + (item!.precioUnitario * item!.cantidad)
-  }, 0)
+  // Calcular total con impuesto y propina
+  const subtotal = orderItems.reduce((sum, item) => sum + (item!.precioUnitario * item!.cantidad), 0)
+  const impuestos = impuestoPct > 0 ? Math.round(subtotal * (impuestoPct / 100) * 100) / 100 : 0
+  const propina   = (propinaPct > 0 && body.incluirPropina)
+    ? Math.round(subtotal * (propinaPct / 100) * 100) / 100
+    : 0
+  const total = subtotal + impuestos + propina
 
   // Obtener número de pedido (max + 1 por tenant)
   let nextNumQuery = supabaseAdmin
@@ -151,9 +159,9 @@ export async function POST(
     payment_status: 'pendiente',
     payment_method: body.metodoPago || null,
     subtotal,
-    total: subtotal,
-    impuestos: 0,
-    propina: 0,
+    impuestos,
+    propina,
+    total,
   }
 
   if (tenantId) orderPayload.tenant_id = tenantId
@@ -176,5 +184,5 @@ export async function POST(
     await supabaseAdmin.from('feedback').insert(feedbackPayload).then(() => {})
   }
 
-  return NextResponse.json({ orderId, numero })
+  return NextResponse.json({ orderId, numero, subtotal, impuestos, propina, total })
 }

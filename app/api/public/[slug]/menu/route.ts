@@ -30,7 +30,7 @@ export async function GET(
   // Cargar config (branding + métodos de pago + whatsapp)
   let configQuery = supabaseAdmin
     .from('app_config')
-    .select('restaurant_name, logo_url, primary_color, accent_color, metodos_pago_activos, whatsapp_numero, powered_by_waitless, cover_url, descripcion, tienda_abierta, tienda_visible, auto_horario_apertura, auto_horario_cierre')
+    .select('restaurant_name, logo_url, primary_color, accent_color, metodos_pago_activos, whatsapp_numero, powered_by_waitless, cover_url, descripcion, tienda_abierta, tienda_visible, auto_horario_apertura, auto_horario_cierre, impuesto_porcentaje, propina_sugerida_porcentaje')
 
   if (tenantId) {
     configQuery = configQuery.eq('tenant_id', tenantId)
@@ -110,6 +110,8 @@ export async function GET(
     tiendaVisible,
     autoHorarioApertura: apertura,
     autoHorarioCierre: cierre,
+    impuestoPorcentaje: Number(config?.impuesto_porcentaje ?? 0),
+    propinaSugeridaPorcentaje: Number(config?.propina_sugerida_porcentaje ?? 0),
     metodosPago,
     categories: (categories ?? []).map(c => ({
       id: c.id as string,
