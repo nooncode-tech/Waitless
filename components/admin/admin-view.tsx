@@ -90,7 +90,7 @@ export function AdminView({ onBack }: AdminViewProps) {
   const [screen, setScreen] = useState<AdminScreen>('reports')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
-  const { orders, refunds, waitlist, currentUser, config } = useApp()
+  const { orders, refunds, waitlist, currentUser, config, hasPlanFeature } = useApp()
   const role = currentUser?.role
 
   // Calculate badges
@@ -108,10 +108,10 @@ export function AdminView({ onBack }: AdminViewProps) {
         { id: 'tables', label: 'Mesas', icon: <LayoutGrid className="h-5 w-5" /> },
         { id: 'orders', label: 'Pedidos', icon: <Package className="h-5 w-5" />, badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined },
         { id: 'closing', label: 'Turno & Caja', icon: <Receipt className="h-5 w-5" /> },
-        ...(canDo(role, 'hacer_refund') ? [{ id: 'refunds' as AdminScreen, label: 'Reembolsos', icon: <RotateCcw className="h-5 w-5" />, badge: pendingRefundsCount > 0 ? pendingRefundsCount : undefined }] : []),
-        { id: 'waitlist', label: 'Lista de espera', icon: <ClipboardList className="h-5 w-5" />, badge: waitingCount > 0 ? waitingCount : undefined },
+        ...(canDo(role, 'hacer_refund') && hasPlanFeature('refunds') ? [{ id: 'refunds' as AdminScreen, label: 'Reembolsos', icon: <RotateCcw className="h-5 w-5" />, badge: pendingRefundsCount > 0 ? pendingRefundsCount : undefined }] : []),
+        ...(hasPlanFeature('waitlist') ? [{ id: 'waitlist' as AdminScreen, label: 'Lista de espera', icon: <ClipboardList className="h-5 w-5" />, badge: waitingCount > 0 ? waitingCount : undefined }] : []),
         { id: 'feedback', label: 'Feedback', icon: <MessageSquare className="h-5 w-5" /> },
-        { id: 'analytics', label: 'Analítica', icon: <BarChart2 className="h-5 w-5" /> },
+        ...(hasPlanFeature('analytics') ? [{ id: 'analytics' as AdminScreen, label: 'Analítica', icon: <BarChart2 className="h-5 w-5" /> }] : []),
       ]
     },
     {

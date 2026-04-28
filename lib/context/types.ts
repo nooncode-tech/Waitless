@@ -58,6 +58,7 @@ export interface AppState {
   currentUser: User | null
   currentSessionId: string | null
   waitlist: WaitlistEntry[]
+  tenantPlan: 'starter' | 'pro' | 'enterprise'
 }
 
 export interface AppContextType extends AppState {
@@ -215,6 +216,8 @@ export interface AppContextType extends AppState {
 
   // Multi-tenant
   tenantId: string | undefined
+  tenantPlan: 'starter' | 'pro' | 'enterprise'
+  hasPlanFeature: (feature: string) => boolean
 }
 
 // Re-export store types used in context for convenience

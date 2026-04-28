@@ -178,6 +178,7 @@ function loadState(): AppState {
         currentUser: null, // Siempre null — se restaura desde Supabase Auth session, no desde localStorage
         currentSessionId: parsed.currentSessionId || null,
         waitlist: [], // Siempre se recarga desde Supabase, no desde localStorage
+        tenantPlan: parsed.tenantPlan ?? 'starter',
       }
 
       // Validate: clear currentTable/currentSessionId if there is no matching active session
@@ -229,6 +230,7 @@ function getDefaultState(): AppState {
     currentUser: null,
     currentSessionId: null,
     waitlist: [],
+    tenantPlan: 'starter',
   }
 }
 
@@ -373,16 +375,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
             configQuery = configQuery.eq('id', 'default')
           }
 
-          // Cargar nombre del tenant como fallback para restaurantName
+          // Cargar nombre y plan del tenant
           let tenantNombre: string | undefined
+          let tenantPlan: 'starter' | 'pro' | 'enterprise' = 'starter'
           if (user.tenantId) {
             const { data: tenantRow } = await supabase
               .from('tenants')
-              .select('nombre')
+              .select('nombre, plan')
               .eq('id', user.tenantId)
               .single()
             tenantNombre = (tenantRow?.nombre as string | undefined) ?? undefined
+            tenantPlan = (tenantRow?.plan as 'starter' | 'pro' | 'enterprise' | undefined) ?? 'starter'
           }
+          setState(prev => ({ ...prev, tenantPlan }))
 
           const { data: configRow } = await configQuery.single()
           if (configRow) {
@@ -1141,6 +1146,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     // Task 4.1 — Multi-tenant
     tenantId: state.currentUser?.tenantId,
+    tenantPlan: state.tenantPlan,
+    hasPlanFeature: (feature: string) => {
+      // Sin tenant (single-tenant mode) → acceso total sin restricciones
+      if (!state.currentUser?.tenantId) return true
+      const planFeatures: Record<string, Set<string>> = {
+        starter:    new Set(['orders', 'tables', 'kitchen', 'qr']),
+        pro:        new Set(['orders', 'tables', 'kitchen', 'qr', 'analytics', 'waitlist', 'push_notifications', 'refunds']),
+        enterprise: new Set(['orders', 'tables', 'kitchen', 'qr', 'analytics', 'waitlist', 'push_notifications', 'refunds', 'multi_tenant_admin', 'white_label']),
+      }
+      return planFeatures[state.tenantPlan]?.has(feature) ?? false
+    },
   }
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
 }
