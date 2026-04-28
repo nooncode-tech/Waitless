@@ -28,13 +28,7 @@ npm ci
 
 ### 2. Configurar variables de entorno
 
-Copiá el archivo de ejemplo y completá los valores:
-
-```bash
-cp .env.example .env.local
-```
-
-Abrí `.env.local` y completá:
+Creá el archivo `.env.local` en la raíz del proyecto y completá los valores:
 
 ```env
 # ── Supabase (requeridas) ──────────────────────────────────────────────────────
@@ -63,42 +57,15 @@ VAPID_CONTACT_EMAIL=admin@tu-dominio.com
 
 ### 3. Ejecutar migraciones en Supabase
 
-En el **SQL Editor** de tu proyecto Supabase ejecutá los archivos de la carpeta `supabase/` **en orden**.
-Cada archivo es idempotente (`CREATE TABLE IF NOT EXISTS`, `CREATE OR REPLACE FUNCTION`, etc.).
+En el **SQL Editor** de tu proyecto Supabase ejecutá el archivo consolidado:
 
-| # | Archivo | Descripción |
-|---|---|---|
-| 001 | `001_initial_schema.sql` | Esquema base: mesas, pedidos, menú, sesiones, perfiles |
-| 002 | `002_ingredients.sql` | Ingredientes e inventario |
-| 003 | `003_refunds_config.sql` | Reembolsos y configuración de app |
-| 004 | `004_realtime_tables.sql` | Habilita Realtime en tablas clave |
-| 005 | `005_fix_payment_method_constraint.sql` | Unifica enum de métodos de pago |
-| 006 | `006_menu_items_recipe_extras.sql` | Fichas de costo y recetario |
-| 007 | `007_missing_tables_and_columns.sql` | Llamadas al mesero, auditoría, turnos, asientos |
-| 008 | `008_manager_role_and_states.sql` | Rol manager, estados de sesión, feedback, KPIs |
-| 009 | `009_anon_rls_cliente.sql` | RLS para cliente anónimo (acceso QR) |
-| 010 | `010_qr_tokens_table.sql` | Tabla de tokens QR con expiración |
-| 011 | `011_app_config_extra_columns.sql` | Columnas adicionales de configuración |
-| 012 | `012_applied_rewards.sql` | Recompensas aplicadas por sesión |
-| 013 | `013_bill_status_states.sql` | Estados `en_pago` y `liberada` para sesiones |
-| 014 | `014_app_config_branding.sql` | Campos de white-label (logo, colores, powered_by) |
-| 015 | `015_tenant_foundation.sql` | Cimientos multi-tenant: tabla `tenants`, `tenant_id` en profiles |
-| 016 | `016_waitlist.sql` | Módulo de lista de espera |
-| 017 | `017_push_subscriptions.sql` | Suscripciones para notificaciones push |
-| 018 | `018_split_bills.sql` | Ledger de cuentas divididas |
-| 019 | `019_table_sessions_version.sql` | Versionado optimista para concurrencia |
-| 020 | `020_deduct_ingredients_rpc.sql` | RPC atómica de deducción de inventario |
-| 021 | `021_audit_logs_before_after.sql` | Campos antes/después en logs de auditoría |
-| 022 | `022_kpi_rpc.sql` | Funciones RPC: `get_revenue_trend`, `get_feedback_summary` |
-| 023 | `023_realtime_all_tables.sql` | Realtime en todas las tablas críticas |
-| 024 | `024_anon_rls_v2.sql` | RLS anon acotado por sesión (x-session-id) |
-| 025 | `025_tenant_rls_isolation.sql` | RLS multi-tenant: aísla datos por `tenant_id` |
-| 026 | `026_waitlist_hold_state.sql` | Estado `hold` en mesas para lista de espera |
-| 027 | `027_analytics_deep.sql` | Vistas y RPCs para analytics avanzado |
-| 028 | `028_admin_recovery.sql` | Herramientas de recuperación para admin |
+```
+docs/schema_completo.sql
+```
 
-> **En instalación nueva:** ejecutá todos en orden del 001 al 028.
-> **En instalación existente:** ejecutá solo los que falten a partir del último que corriste.
+Este archivo contiene el esquema completo y es idempotente (`CREATE TABLE IF NOT EXISTS`, `CREATE OR REPLACE FUNCTION`, etc.). Copiá su contenido y ejecutalo en una sola pasada.
+
+> **En instalación existente:** si ya tenés tablas, ejecutá solo las secciones nuevas que falten o usá las migraciones parciales en `docs/` según corresponda.
 
 ### 4. Correr en desarrollo
 
@@ -230,13 +197,10 @@ lib/
   theme.ts                  → Theming y variables CSS
   flags.ts                  → Feature flags
   env.ts                    → Validación de variables de entorno al inicio
-proxy.ts               → Rate limiting + security headers + auth pre-check + tenant slug
-supabase/                   → Migraciones SQL (001–028)
 tests/                      → Tests unitarios (Vitest)
 tests/e2e/                  → Tests E2E (Playwright)
-docs/                       → CHANGELOG.md, RELEASE_CHECKLIST.md
+docs/                       → schema_completo.sql, CHANGELOG.md, RELEASE_CHECKLIST.md, migraciones parciales
 public/                     → Iconos PWA, sw.js
-scripts/                    → smoke-test.ts, utilidades de CI
 ```
 
 ---
@@ -253,8 +217,8 @@ Funciona en modo offline para las pantallas ya cargadas; las mutaciones pendient
 
 ### La app no arranca: "Variables de entorno faltantes"
 
-Verificá que `.env.local` existe y tiene `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-Copiá desde `.env.example` si no existe.
+Verificá que `.env.local` existe en la raíz del proyecto y tiene `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+Crealo manualmente usando la plantilla del paso 2 del setup si no existe.
 
 ### Error 401 en `/api/admin/users`
 
