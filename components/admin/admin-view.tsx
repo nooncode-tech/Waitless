@@ -67,8 +67,10 @@ import { WaitlistManager } from './waitlist-manager'
 import { BackupManager } from './backup-manager'
 import { AnalyticsDashboard } from './analytics-dashboard'
 import { PushSubscribeButton } from '@/components/shared/push-subscribe-button'
+import { BillingManager } from './billing-manager'
+import { CreditCard } from 'lucide-react'
 
-type AdminScreen = 'reports' | 'menu' | 'orders' | 'inventory' | 'users' | 'config' | 'qr' | 'refunds' | 'closing' | 'history' | 'expo' | 'tables' | 'audit' | 'feedback' | 'health' | 'waitlist' | 'backup' | 'analytics'
+type AdminScreen = 'reports' | 'menu' | 'orders' | 'inventory' | 'users' | 'config' | 'qr' | 'refunds' | 'closing' | 'history' | 'expo' | 'tables' | 'audit' | 'feedback' | 'health' | 'waitlist' | 'backup' | 'analytics' | 'billing'
 
 interface AdminViewProps {
   onBack: () => void
@@ -129,6 +131,7 @@ export function AdminView({ onBack }: AdminViewProps) {
         { id: 'history', label: 'Historial de Mesas', icon: <History className="h-5 w-5" /> },
         ...(canDo(role, 'editar_config') ? [
           { id: 'backup' as AdminScreen, label: 'Backup y Recuperación', icon: <DatabaseBackup className="h-5 w-5" /> },
+          { id: 'billing' as AdminScreen, label: 'Plan & Facturación', icon: <CreditCard className="h-5 w-5" /> },
         ] : []),
       ]
     },
@@ -200,6 +203,7 @@ export function AdminView({ onBack }: AdminViewProps) {
             {screen === 'analytics' && <AnalyticsDashboard />}
             {screen === 'health' && <HealthPanel />}
             {screen === 'backup' && <BackupManager />}
+            {screen === 'billing' && <BillingManager />}
           </div>
         </main>
 
@@ -578,6 +582,7 @@ export function AdminView({ onBack }: AdminViewProps) {
               {screen === 'analytics' && <AnalyticsDashboard />}
               {screen === 'health' && <HealthPanel />}
               {screen === 'backup' && <BackupManager />}
+            {screen === 'billing' && <BillingManager />}
             </div>
           </main>
         </div>
