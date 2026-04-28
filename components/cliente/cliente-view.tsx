@@ -374,7 +374,7 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
         </div>
       )}
 
-      <div className={showBottomNav ? 'pb-16' : ''}>
+      <div className={showBottomNav ? 'pb-24' : ''}>
         {renderScreen()}
       </div>
 

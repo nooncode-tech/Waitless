@@ -150,13 +150,13 @@ export function AdminView({ onBack }: AdminViewProps) {
       <div className="min-h-screen bg-background flex flex-col md:hidden">
 
         {/* Mobile Header */}
-        <header className="sticky top-0 z-50 bg-black">
+        <header className="sticky top-0 z-50 bg-foreground">
           <div className="flex items-center justify-between px-4 h-14">
             <div className="flex items-center gap-2.5">
               <WaitlessLogo size={28} color="light" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
               <div className="flex flex-col">
-                <span className="text-xs font-bold text-white leading-tight">{config.restaurantName ?? 'WAITLESS'}</span>
-                <span className="text-[10px] text-white/40">Panel Admin</span>
+                <span className="text-xs font-bold text-background leading-tight">{config.restaurantName ?? 'WAITLESS'}</span>
+                <span className="text-[10px] text-background/40">Panel Admin</span>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -164,19 +164,19 @@ export function AdminView({ onBack }: AdminViewProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 text-white/70 hover:text-white hover:bg-white/10"
+                  className="h-10 w-10 p-0 text-background/70 hover:text-background hover:bg-background/10"
                   onClick={() => setScreen('config')}
                 >
-                  <Cog className="h-4 w-4" />
+                  <Cog className="h-5 w-5" />
                 </Button>
               )}
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-white/70 hover:text-white hover:bg-white/10"
+                className="h-10 w-10 p-0 text-background/70 hover:text-background hover:bg-background/10"
                 onClick={() => setMobileDrawerOpen(true)}
               >
-                <MenuIcon className="h-4 w-4" />
+                <MenuIcon className="h-5 w-5" />
               </Button>
             </div>
           </div>
@@ -208,7 +208,10 @@ export function AdminView({ onBack }: AdminViewProps) {
         </main>
 
         {/* Mobile Bottom Nav — 5 accesos principales */}
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-border flex md:hidden">
+        <nav
+          className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border flex md:hidden"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        >
           {[
             { id: 'reports' as AdminScreen,  label: 'Dashboard', icon: <TrendingUp className="h-5 w-5" /> },
             { id: 'tables'  as AdminScreen,  label: 'Mesas',     icon: <LayoutGrid className="h-5 w-5" /> },
@@ -220,21 +223,21 @@ export function AdminView({ onBack }: AdminViewProps) {
               key={item.id}
               onClick={() => setScreen(item.id)}
               className={cn(
-                'flex-1 flex flex-col items-center justify-center py-2 gap-0.5 relative transition-colors',
+                'flex-1 flex flex-col items-center justify-center py-3 min-h-[52px] gap-0.5 relative transition-colors',
                 screen === item.id ? 'text-foreground' : 'text-muted-foreground'
               )}
             >
               <div className="relative">
                 {item.icon}
                 {item.badge && (
-                  <span className="absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-black text-white text-[9px] font-bold px-0.5">
+                  <span className="absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground text-background text-[9px] font-bold px-0.5">
                     {item.badge}
                   </span>
                 )}
               </div>
               <span className="text-[10px] font-medium leading-none">{item.label}</span>
               {screen === item.id && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-black rounded-full" />
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-foreground rounded-full" />
               )}
             </button>
           ))}
@@ -249,7 +252,7 @@ export function AdminView({ onBack }: AdminViewProps) {
               onClick={() => setMobileDrawerOpen(false)}
             />
             {/* Panel */}
-            <div className="absolute right-0 top-0 bottom-0 w-72 bg-white flex flex-col shadow-2xl">
+            <div className="absolute right-0 top-0 bottom-0 w-72 max-w-[calc(100vw-3rem)] bg-background flex flex-col shadow-2xl">
               {/* Drawer Header */}
               <div className="flex items-center justify-between px-4 h-14 border-b border-border">
                 <div className="flex items-center gap-2">
@@ -281,16 +284,16 @@ export function AdminView({ onBack }: AdminViewProps) {
                         key={item.id}
                         onClick={() => { setScreen(item.id); setMobileDrawerOpen(false) }}
                         className={cn(
-                          'w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors',
+                          'w-full flex items-center gap-3 px-4 py-3 min-h-[48px] text-sm transition-colors',
                           screen === item.id
-                            ? 'bg-black text-white font-semibold'
+                            ? 'bg-foreground text-background font-semibold'
                             : 'text-foreground hover:bg-muted'
                         )}
                       >
                         <span className="shrink-0">{item.icon}</span>
                         <span className="flex-1 text-left">{item.label}</span>
                         {item.badge !== undefined && (
-                          <Badge className="h-5 min-w-5 px-1.5 text-xs bg-black text-white">
+                          <Badge className="h-5 min-w-5 px-1.5 text-xs bg-foreground text-background">
                             {item.badge}
                           </Badge>
                         )}
@@ -307,7 +310,7 @@ export function AdminView({ onBack }: AdminViewProps) {
                   {canDo(role, 'gestionar_usuarios') && (
                     <button
                       onClick={() => { setScreen('users'); setMobileDrawerOpen(false) }}
-                      className={cn('w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors', screen === 'users' ? 'bg-black text-white font-semibold' : 'text-foreground hover:bg-muted')}
+                      className={cn('w-full flex items-center gap-3 px-4 py-3 min-h-[48px] text-sm transition-colors', screen === 'users' ? 'bg-foreground text-background font-semibold' : 'text-foreground hover:bg-muted')}
                     >
                       <Users className="h-5 w-5 shrink-0" />
                       Usuarios
@@ -316,7 +319,7 @@ export function AdminView({ onBack }: AdminViewProps) {
                   {canDo(role, 'gestionar_usuarios') && (
                     <button
                       onClick={() => { setScreen('audit'); setMobileDrawerOpen(false) }}
-                      className={cn('w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors', screen === 'audit' ? 'bg-black text-white font-semibold' : 'text-foreground hover:bg-muted')}
+                      className={cn('w-full flex items-center gap-3 px-4 py-3 min-h-[48px] text-sm transition-colors', screen === 'audit' ? 'bg-foreground text-background font-semibold' : 'text-foreground hover:bg-muted')}
                     >
                       <ShieldCheck className="h-5 w-5 shrink-0" />
                       Auditoría
@@ -324,7 +327,7 @@ export function AdminView({ onBack }: AdminViewProps) {
                   )}
                   <button
                     onClick={() => { setScreen('health'); setMobileDrawerOpen(false) }}
-                    className={cn('w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors', screen === 'health' ? 'bg-black text-white font-semibold' : 'text-foreground hover:bg-muted')}
+                    className={cn('w-full flex items-center gap-3 px-4 py-3 min-h-[48px] text-sm transition-colors', screen === 'health' ? 'bg-foreground text-background font-semibold' : 'text-foreground hover:bg-muted')}
                   >
                     <HeartPulse className="h-5 w-5 shrink-0" />
                     Salud del sistema
@@ -337,7 +340,7 @@ export function AdminView({ onBack }: AdminViewProps) {
                 <PushSubscribeButton collapsed={false} />
                 <button
                   onClick={onBack}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors mt-1"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 min-h-[44px] text-sm text-destructive hover:bg-destructive/10 rounded-lg transition-colors mt-1"
                 >
                   <LogOut className="h-4 w-4 shrink-0" />
                   Cerrar sesión

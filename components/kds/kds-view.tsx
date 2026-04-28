@@ -159,7 +159,7 @@ export function KDSView({ onBack }: KDSViewProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 text-background/70 hover:text-background hover:bg-background/10"
+              className="h-10 text-background/70 hover:text-background hover:bg-background/10"
               onClick={onBack}
             >
               <LogOut className="h-4 w-4 mr-1" />
@@ -205,7 +205,7 @@ export function KDSView({ onBack }: KDSViewProps) {
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={cn(
-                "flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-lg text-xs font-medium transition-colors",
+                "flex-1 flex items-center justify-center gap-1.5 py-3 min-h-[48px] px-2 rounded-lg text-xs font-medium transition-colors",
                 activeTab === item.id
                   ? 'bg-foreground text-background'
                   : 'bg-secondary text-foreground'

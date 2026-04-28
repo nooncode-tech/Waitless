@@ -65,10 +65,11 @@ export function ClienteBottomNav({
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 max-w-md mx-auto"
+      className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50"
       aria-label="Navegación principal"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      <div className="flex items-center justify-around py-2">
+      <div className="flex items-center justify-around">
         {navItems
           .filter(item => !item.hidden)
           .map((item) => {
@@ -80,7 +81,7 @@ export function ClienteBottomNav({
                 onClick={item.onClick}
                 aria-label={item.label}
                 aria-current={item.active ? 'page' : undefined}
-                className={`flex flex-col items-center gap-0.5 px-4 py-1 rounded-lg transition-colors relative ${
+                className={`flex flex-col items-center gap-0.5 px-4 py-3 min-h-[52px] rounded-lg transition-colors relative ${
                   item.active
                     ? 'text-primary'
                     : item.isAlert
@@ -99,8 +100,6 @@ export function ClienteBottomNav({
             )
           })}
       </div>
-      {/* iOS safe area */}
-      <div className="h-safe-area-inset-bottom bg-background" />
     </nav>
   )
 }

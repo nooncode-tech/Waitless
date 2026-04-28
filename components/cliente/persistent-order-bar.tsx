@@ -25,6 +25,7 @@ export function PersistentOrderBar({
   onViewStatus,
   onViewBill,
 }: PersistentOrderBarProps) {
+  const barStyle = { bottom: 'calc(52px + env(safe-area-inset-bottom))' }
   const billStatus = session?.billStatus
   const isPaid = billStatus === 'pagada'
   const isBillRequested = session?.paymentStatus === 'pendiente' && activeOrderCount === 0
@@ -32,7 +33,7 @@ export function PersistentOrderBar({
   // Determine which action to show
   if (isPaid) {
     return (
-      <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto px-4 pb-3 z-40 pointer-events-none">
+      <div className="fixed left-0 right-0 px-4 pb-3 z-40 pointer-events-none" style={barStyle}>
         <div className="flex items-center justify-center gap-2 py-3 px-4 bg-success/10 border border-success/30 rounded-2xl pointer-events-auto">
           <CheckCircle2 className="h-4 w-4 text-success" />
           <span className="text-sm font-semibold text-success">Cuenta pagada — ¡Gracias!</span>
@@ -43,7 +44,7 @@ export function PersistentOrderBar({
 
   if (isBillRequested) {
     return (
-      <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto px-4 pb-3 z-40 pointer-events-none">
+      <div className="fixed left-0 right-0 px-4 pb-3 z-40 pointer-events-none" style={barStyle}>
         <button
           onClick={onViewBill}
           className="w-full flex items-center justify-between py-3 px-4 bg-warning/10 border border-warning/30 rounded-2xl pointer-events-auto"
@@ -60,7 +61,7 @@ export function PersistentOrderBar({
 
   if (cartCount > 0 && canOrder) {
     return (
-      <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto px-4 pb-3 z-40 pointer-events-none">
+      <div className="fixed left-0 right-0 px-4 pb-3 z-40 pointer-events-none" style={barStyle}>
         <button
           onClick={onViewCart}
           className="w-full flex items-center justify-between py-3 px-5 bg-foreground text-background rounded-2xl shadow-lg pointer-events-auto"
@@ -82,7 +83,7 @@ export function PersistentOrderBar({
 
   if (activeOrderCount > 0) {
     return (
-      <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto px-4 pb-3 z-40 pointer-events-none">
+      <div className="fixed left-0 right-0 px-4 pb-3 z-40 pointer-events-none" style={barStyle}>
         <button
           onClick={onViewStatus}
           className="w-full flex items-center justify-between py-3 px-5 bg-foreground/90 text-background rounded-2xl shadow-md pointer-events-auto"

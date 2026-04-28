@@ -156,39 +156,39 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
 
   const getStatusStyle = (info: ReturnType<typeof getTableInfo>) => {
     if (info.status === 'libre') return {
-      bg: 'bg-white',
+      bg: 'bg-background',
       border: 'border-border',
       dot: 'bg-accent',
       text: 'text-muted-foreground',
       badge: '',
     }
     if (info.status === 'limpieza') return {
-      bg: 'bg-blue-50',
-      border: 'border-blue-500',
-      dot: 'bg-blue-500 animate-pulse',
-      text: 'text-blue-500',
-      badge: 'bg-blue-500 text-white',
+      bg: 'bg-primary/5',
+      border: 'border-primary',
+      dot: 'bg-primary animate-pulse',
+      text: 'text-primary',
+      badge: 'bg-primary text-primary-foreground',
     }
     if (info.status === 'hold') return {
-      bg: 'bg-purple-50',
-      border: 'border-purple-500',
-      dot: 'bg-purple-500 animate-pulse',
-      text: 'text-purple-500',
-      badge: 'bg-purple-500 text-white',
+      bg: 'bg-secondary',
+      border: 'border-muted-foreground',
+      dot: 'bg-muted-foreground animate-pulse',
+      text: 'text-muted-foreground',
+      badge: 'bg-muted-foreground text-background',
     }
     if (info.status === 'pagada') return {
       bg: 'bg-success/10',
       border: 'border-success',
       dot: 'bg-success',
       text: 'text-success',
-      badge: 'bg-success text-white',
+      badge: 'bg-success text-background',
     }
     if (info.status === 'listo') return {
-      bg: 'bg-green-50',
+      bg: 'bg-success/10',
       border: 'border-success border-2',
       dot: 'bg-success animate-pulse',
       text: 'text-success',
-      badge: 'bg-success text-white',
+      badge: 'bg-success text-background',
     }
     if (info.status === 'preparando') return {
       bg: 'bg-kds-preparing',
@@ -198,15 +198,15 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
       badge: 'bg-warning text-white',
     }
     if (info.hasBillRequest) return {
-      bg: 'bg-kds-preparing',
+      bg: 'bg-warning/10',
       border: 'border-warning border-2',
       dot: 'bg-warning animate-pulse',
       text: 'text-warning',
-      badge: 'bg-warning text-white',
+      badge: 'bg-warning text-background',
     }
     return {
       bg: 'bg-muted',
-      border: 'border-accent',
+      border: 'border-border',
       dot: 'bg-foreground',
       text: 'text-foreground',
       badge: 'bg-foreground text-background',
@@ -253,14 +253,14 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
         <div className="flex items-center gap-3 flex-wrap">
           {[
             { dot: 'bg-accent', label: 'Libre' },
-            { dot: 'bg-black', label: 'Ocupada' },
+            { dot: 'bg-foreground', label: 'Ocupada' },
             { dot: 'bg-warning', label: 'En cocina' },
             { dot: 'bg-success', label: 'Listo' },
-            { dot: 'bg-blue-500', label: 'Limpieza' },
+            { dot: 'bg-primary', label: 'Limpieza' },
           ].map(l => (
             <div key={l.label} className="flex items-center gap-1.5">
-              <div className={cn('w-2 h-2 rounded-full', l.dot)} />
-              <span className="text-[10px] text-muted-foreground">{l.label}</span>
+              <div className={cn('w-2.5 h-2.5 rounded-full shrink-0', l.dot)} />
+              <span className="text-xs text-muted-foreground">{l.label}</span>
             </div>
           ))}
         </div>
@@ -304,7 +304,7 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
                 className={cn(
                   'relative flex flex-col items-center justify-between rounded-xl border transition-all duration-150',
                   'hover:shadow-md hover:-translate-y-0.5 active:scale-95',
-                  'p-3 md:p-4 aspect-square',
+                  'p-2 md:p-4 aspect-square min-h-[72px]',
                   style.bg,
                   style.border,
                   (info.hasCall || info.hasBillRequest) && 'ring-2 ring-destructive ring-offset-1'
@@ -349,10 +349,10 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
                       ✓ Lista
                     </button>
                   ) : info.status === 'libre' ? (
-                    <p className="text-[9px] text-muted-foreground text-center font-medium">Libre</p>
+                    <p className="text-[10px] text-muted-foreground text-center font-medium">Libre</p>
                   ) : info.elapsedMin > 0 ? (
-                    <p className={cn('text-[9px] font-semibold text-center flex items-center justify-center gap-0.5', style.text)}>
-                      <Clock className="h-2 w-2" />
+                    <p className={cn('text-[10px] font-semibold text-center flex items-center justify-center gap-0.5', style.text)}>
+                      <Clock className="h-2.5 w-2.5" />
                       {formatElapsed(info.elapsedMin)}
                     </p>
                   ) : null}
