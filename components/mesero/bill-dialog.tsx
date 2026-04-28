@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatPrice, type PaymentMethod } from '@/lib/store'
+import { canDo } from '@/lib/permissions'
 
 interface BillDialogProps {
   sessionId: string
@@ -27,7 +28,9 @@ export function BillDialog({ sessionId, onClose }: BillDialogProps) {
   persistSplitBill,
   addPartialPayment,
   config,
+  currentUser,
 } = useApp()
+  const canApplyDiscount = canDo(currentUser?.role, 'aplicar_descuento')
 
 
   const session = getSessionBill(sessionId)
@@ -324,68 +327,72 @@ const quickDiscounts = [
 
           {!splitMode ? (
             <>
-              {/* Discount */}
-              <div>
-        <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
-          <Percent className="h-4 w-4" />
-          Descuento
-        </h3>
+              {/* Discount — solo manager y admin */}
+              {canApplyDiscount ? (
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                    <Percent className="h-4 w-4" />
+                    Descuento
+                  </h3>
 
-        {/* Botones de descuento estilo propina */}
-        <div className="flex gap-2 mb-2">
-          {quickDiscounts.map((d) => {
-            const value = Math.round(session.subtotal * (d.percent / 100))
+                  {/* Botones de descuento estilo propina */}
+                  <div className="flex gap-2 mb-2">
+                    {quickDiscounts.map((d) => {
+                      const value = Math.round(session.subtotal * (d.percent / 100))
+                      return (
+                        <Button
+                          key={d.label}
+                          variant={Number.parseFloat(descuento) === value ? 'default' : 'outline'}
+                          size="sm"
+                          className="flex-1 h-9 text-xs"
+                          onClick={() => {
+                            setDescuento(value.toString())
+                            setMotivoDescuento(d.label)
+                          }}
+                        >
+                          {d.label} ({d.percent}%)
+                        </Button>
+                      )
+                    })}
+                  </div>
 
-            return (
-              <Button
-                key={d.label}
-                variant={Number.parseFloat(descuento) === value ? 'default' : 'outline'}
-                size="sm"
-                className="flex-1 h-9 text-xs"
-                onClick={() => {
-                  setDescuento(value.toString())
-                  setMotivoDescuento(d.label)
-                }}
-              >
-                {d.label} ({d.percent}%)
-              </Button>
-            )
-          })}
-        </div>
-
-        {/* Descuento manual */}
-        <div className="grid grid-cols-3 gap-2">
-          <div>
-            <Label className="text-xs text-muted-foreground">Monto</Label>
-            <Input
-              type="number"
-              value={descuento}
-              onChange={(e) => setDescuento(e.target.value)}
-              placeholder="0"
-              className="h-9 text-sm"
-            />
-          </div>
-
-          <div className="col-span-2 flex gap-1 items-end">
-            <Input
-              value={motivoDescuento}
-              onChange={(e) => setMotivoDescuento(e.target.value)}
-              placeholder="Motivo del descuento"
-              className="h-9 text-sm"
-            />
-
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-9 shrink-0"
-              onClick={handleApplyDiscount}
-              disabled={!motivoDescuento.trim() || Number.parseFloat(descuento) <= 0}
-            >
-              Aplicar
-            </Button>
-          </div>
-        </div>
-      </div>
+                  {/* Descuento manual */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Monto</Label>
+                      <Input
+                        type="number"
+                        value={descuento}
+                        onChange={(e) => setDescuento(e.target.value)}
+                        placeholder="0"
+                        className="h-9 text-sm"
+                      />
+                    </div>
+                    <div className="col-span-2 flex gap-1 items-end">
+                      <Input
+                        value={motivoDescuento}
+                        onChange={(e) => setMotivoDescuento(e.target.value)}
+                        placeholder="Motivo del descuento"
+                        className="h-9 text-sm"
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-9 shrink-0"
+                        onClick={handleApplyDiscount}
+                        disabled={!motivoDescuento.trim() || Number.parseFloat(descuento) <= 0}
+                      >
+                        Aplicar
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 p-3 bg-secondary rounded-xl">
+                  <Percent className="h-4 w-4 text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground">Solo managers y admins pueden aplicar descuentos.</p>
+                </div>
+              )}
 
               {/* Tip */}
               <div>

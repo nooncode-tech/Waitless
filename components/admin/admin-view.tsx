@@ -157,14 +157,16 @@ export function AdminView({ onBack }: AdminViewProps) {
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-white/70 hover:text-white hover:bg-white/10"
-                onClick={() => setScreen('config')}
-              >
-                <Cog className="h-4 w-4" />
-              </Button>
+              {canDo(role, 'editar_config') && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 text-white/70 hover:text-white hover:bg-white/10"
+                  onClick={() => setScreen('config')}
+                >
+                  <Cog className="h-4 w-4" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
@@ -479,20 +481,22 @@ export function AdminView({ onBack }: AdminViewProps) {
                 <h1 className="text-lg font-semibold text-foreground">{getScreenTitle()}</h1>
               </div>
               <div className="flex items-center gap-2">
-                {/* Quick action: Config */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground"
-                      onClick={() => setScreen('config')}
-                    >
-                      <Cog className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Configuración</TooltipContent>
-                </Tooltip>
+                {/* Quick action: Config — admin only */}
+                {canDo(role, 'editar_config') && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground"
+                        onClick={() => setScreen('config')}
+                      >
+                        <Cog className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Configuración</TooltipContent>
+                  </Tooltip>
+                )}
 
                 {/* User menu */}
                 <DropdownMenu>
@@ -523,18 +527,24 @@ export function AdminView({ onBack }: AdminViewProps) {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setScreen('users')}>
-                      <Users className="h-4 w-4 mr-2" />
-                      Usuarios
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setScreen('audit')}>
-                      <ShieldCheck className="h-4 w-4 mr-2" />
-                      Auditoría
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setScreen('health')}>
-                      <HeartPulse className="h-4 w-4 mr-2" />
-                      Salud del sistema
-                    </DropdownMenuItem>
+                    {canDo(role, 'gestionar_usuarios') && (
+                      <DropdownMenuItem onClick={() => setScreen('users')}>
+                        <Users className="h-4 w-4 mr-2" />
+                        Usuarios
+                      </DropdownMenuItem>
+                    )}
+                    {canDo(role, 'gestionar_usuarios') && (
+                      <DropdownMenuItem onClick={() => setScreen('audit')}>
+                        <ShieldCheck className="h-4 w-4 mr-2" />
+                        Auditoría
+                      </DropdownMenuItem>
+                    )}
+                    {canDo(role, 'editar_config') && (
+                      <DropdownMenuItem onClick={() => setScreen('health')}>
+                        <HeartPulse className="h-4 w-4 mr-2" />
+                        Salud del sistema
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={onBack}

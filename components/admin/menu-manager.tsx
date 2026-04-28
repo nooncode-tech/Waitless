@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Plus, Edit2, ImageIcon, ExternalLink, Copy, Check, Settings2, X, Save } from 'lucide-react'
 import { useApp } from '@/lib/context'
+import { canDo } from '@/lib/permissions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -13,6 +14,9 @@ import { supabase } from '@/lib/supabase'
 
 export function MenuManager() {
   const { menuItems, updateMenuItem, categories, ingredients, currentUser, config, updateConfig } = useApp()
+  const role = currentUser?.role
+  const canEditMenu = canDo(role, 'editar_menu')
+  const canEditConfig = canDo(role, 'editar_config')
   const [tenantSlug, setTenantSlug] = useState<string>('default')
   const [copied, setCopied] = useState(false)
   const [showCustomize, setShowCustomize] = useState(false)
@@ -112,13 +116,15 @@ export function MenuManager() {
             {menuItems.length} platillos en total
           </p>
         </div>
-        <Button
-          size="xs"
-          onClick={handleAdd}
-        >
-          <Plus className="h-3 w-3 mr-1" />
-          Agregar
-        </Button>
+        {canEditMenu && (
+          <Button
+            size="xs"
+            onClick={handleAdd}
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            Agregar
+          </Button>
+        )}
       </div>
 
       {/* Banner menú digital */}
@@ -137,13 +143,15 @@ export function MenuManager() {
               : <><Copy className="h-3.5 w-3.5" />Copiar enlace</>
             }
           </button>
-          <button
-            onClick={() => setShowCustomize(true)}
-            className="flex-1 flex items-center justify-center gap-1.5 h-9 text-[11px] font-semibold text-foreground hover:bg-secondary/50 transition-colors"
-          >
-            <Settings2 className="h-3.5 w-3.5" />
-            Personalizar
-          </button>
+          {canEditConfig && (
+            <button
+              onClick={() => setShowCustomize(true)}
+              className="flex-1 flex items-center justify-center gap-1.5 h-9 text-[11px] font-semibold text-foreground hover:bg-secondary/50 transition-colors"
+            >
+              <Settings2 className="h-3.5 w-3.5" />
+              Personalizar
+            </button>
+          )}
           <a
             href={menuUrl}
             target="_blank"
