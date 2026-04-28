@@ -44,7 +44,7 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
   
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto">
+      <div className="min-h-screen bg-background flex flex-col max-w-md mx-auto">
         {/* Header */}
         <header className="px-4 pt-3 pb-2">
           <div className="flex items-center justify-between">
@@ -79,9 +79,9 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
   }
   
   return (
-    <div className="min-h-screen bg-white flex flex-col max-w-md mx-auto">
+    <div className="min-h-screen bg-background flex flex-col max-w-md mx-auto">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white px-4 pt-3 pb-3 border-b border-border">
+      <header className="sticky top-0 z-50 bg-background px-4 pt-3 pb-3 border-b border-border">
         <div className="flex items-center justify-between">
           <button 
             onClick={onBack}
@@ -184,13 +184,13 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
       </main>
 
       {/* Bottom Summary */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border p-4 space-y-3 max-w-md mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 space-y-3 max-w-md mx-auto">
 
         {/* Loyalty widget */}
         {!loyaltyPhone && !showPhoneInput && (
           <button
             onClick={() => setShowPhoneInput(true)}
-            className="w-full flex items-center gap-2 px-3 py-2 border border-border rounded-xl text-xs text-muted-foreground hover:border-black transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 border border-border rounded-xl text-xs text-muted-foreground hover:border-foreground transition-colors"
           >
             <Gift className="h-3.5 w-3.5 shrink-0" />
             <span>Acumula puntos — identifícate con tu teléfono</span>
@@ -206,7 +206,7 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
                 value={phoneInput}
                 onChange={e => setPhoneInput(e.target.value)}
                 placeholder="Número de teléfono"
-                className="flex-1 text-xs py-2 bg-transparent outline-none text-black placeholder:text-muted-foreground"
+                className="flex-1 text-xs py-2 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
                 onKeyDown={e => e.key === 'Enter' && handleIdentify()}
                 autoFocus
               />
@@ -214,7 +214,7 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
             <button
               onClick={handleIdentify}
               disabled={phoneInput.trim().length < 8}
-              className="px-3 h-9 bg-black text-white text-xs font-semibold rounded-xl disabled:opacity-40"
+              className="px-3 h-9 bg-foreground text-background text-xs font-semibold rounded-xl disabled:opacity-40"
             >
               OK
             </button>
@@ -228,7 +228,7 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
         )}
 
         {customer && (
-          <div className="flex items-center justify-between px-3 py-2 bg-green-50 border border-success/20 rounded-xl">
+          <div className="flex items-center justify-between px-3 py-2 bg-success/10 border border-success/20 rounded-xl">
             <div className="flex items-center gap-2">
               <Gift className="h-3.5 w-3.5 text-success" />
               <span className="text-xs font-semibold text-success">
@@ -256,7 +256,7 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Armchair className="h-3.5 w-3.5" />
-            <span>¿Cuál es tu asiento? <span className="text-muted-foreground">(opcional)</span></span>
+            <span>¿En qué asiento estás? El mesero te lo lleva ahí. <span className="opacity-60">(opcional)</span></span>
           </div>
           <div className="flex gap-1.5 flex-wrap">
             {[1,2,3,4,5,6,7,8].map(n => (
@@ -265,8 +265,8 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
                 onClick={() => setSeatNumber(seatNumber === n ? null : n)}
                 className={`w-9 h-9 rounded-xl text-sm font-semibold border transition-colors ${
                   seatNumber === n
-                    ? 'bg-black text-white border-black'
-                    : 'bg-white text-black border-border hover:border-black'
+                    ? 'bg-foreground text-background border-foreground'
+                    : 'bg-background text-foreground border-border hover:border-foreground'
                 }`}
               >
                 {n}

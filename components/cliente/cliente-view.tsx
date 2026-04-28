@@ -7,13 +7,16 @@ import { MenuView } from './menu-view'
 import { CartView } from './cart-view'
 import { OrderStatusView } from './order-status-view'
 import { ItemDetailView } from './item-detail-view'
+import { BillView } from './bill-view'
 import { ClienteBottomNav } from './cliente-bottom-nav'
+import { TableSessionBar } from './table-session-bar'
+import { PersistentOrderBar } from './persistent-order-bar'
 import { WaiterCallDialog } from './waiter-call-dialog'
 import { RewardsSheet } from './rewards-sheet'
 
 import type { MenuItem } from '@/lib/store'
 import type { ClienteUser } from '@/lib/cliente-auth'
-import { ExternalLink, Star, UserCircle2 } from 'lucide-react'
+import { ExternalLink, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { WaitlessLogo } from '@/components/ui/waitless-logo'
@@ -24,7 +27,7 @@ const GOOGLE_REVIEW_URL_FALLBACK = 'https://g.page/r/review/write'
 /* =======================
    TYPES
 ======================= */
-type ClienteScreen = 'menu' | 'item' | 'cart' | 'status' | 'feedback'
+type ClienteScreen = 'menu' | 'item' | 'cart' | 'status' | 'bill' | 'feedback'
 
 interface ClienteViewProps {
   mesa: number
@@ -56,7 +59,6 @@ function FeedbackScreen({ onFinish, sessionId, mesa }: { onFinish: () => void; s
     if (isSubmitting || rating === 0) return
     setIsSubmitting(true)
     try {
-      // Task 2.5: usar addFeedback del contexto (soporta offline queue)
       await addFeedback(mesa, rating, comment, sessionId)
     } finally {
       setSubmitted(true)
@@ -66,11 +68,11 @@ function FeedbackScreen({ onFinish, sessionId, mesa }: { onFinish: () => void; s
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-6">
+      <div className="min-h-screen bg-background flex items-center justify-center px-6">
         <div className="w-full max-w-sm text-center space-y-6">
           <WaitlessLogo size={48} color="dark" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
           <div>
-            <h2 className="text-xl font-bold text-black">¡Gracias!</h2>
+            <h2 className="text-xl font-bold text-foreground">¡Gracias!</h2>
             <p className="text-sm text-muted-foreground mt-1">
               Tu opinión nos ayuda a mejorar cada día.
             </p>
@@ -81,7 +83,7 @@ function FeedbackScreen({ onFinish, sessionId, mesa }: { onFinish: () => void; s
                 ¿Te animás a dejarnos una reseña en Google?
               </p>
               <Button
-                className="w-full bg-black hover:bg-black/90 text-white h-11 text-sm font-bold rounded-xl gap-2"
+                className="w-full bg-foreground hover:bg-foreground/90 text-background h-11 text-sm font-bold rounded-xl gap-2"
                 onClick={() => window.open(googleReviewUrl, '_blank')}
               >
                 <ExternalLink className="h-4 w-4" />
@@ -102,15 +104,14 @@ function FeedbackScreen({ onFinish, sessionId, mesa }: { onFinish: () => void; s
   }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-6">
+    <div className="min-h-screen bg-background flex items-center justify-center px-6">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <WaitlessLogo size={48} color="dark" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
-          <h2 className="text-xl font-bold text-black mt-4">¿Cómo estuvo tu experiencia?</h2>
+          <h2 className="text-xl font-bold text-foreground mt-4">¿Cómo estuvo tu experiencia?</h2>
           <p className="text-sm text-muted-foreground mt-1">Tu opinión es muy importante para nosotros</p>
         </div>
 
-        {/* Estrellas */}
         <div className="flex justify-center gap-3">
           {[1, 2, 3, 4, 5].map(star => (
             <button
@@ -124,7 +125,7 @@ function FeedbackScreen({ onFinish, sessionId, mesa }: { onFinish: () => void; s
                 className={cn(
                   'h-10 w-10 transition-colors',
                   (hovered || rating) >= star
-                    ? 'fill-black text-black'
+                    ? 'fill-foreground text-foreground'
                     : 'text-border'
                 )}
               />
@@ -132,16 +133,14 @@ function FeedbackScreen({ onFinish, sessionId, mesa }: { onFinish: () => void; s
           ))}
         </div>
 
-        {/* Label de rating */}
         <div className="text-center h-5">
           {(hovered || rating) > 0 && (
-            <p className="text-sm font-semibold text-black">
+            <p className="text-sm font-semibold text-foreground">
               {labels[hovered || rating]}
             </p>
           )}
         </div>
 
-        {/* Comentario */}
         {rating > 0 && (
           <div>
             <Textarea
@@ -161,7 +160,7 @@ function FeedbackScreen({ onFinish, sessionId, mesa }: { onFinish: () => void; s
         <div className="space-y-2">
           <Button
             disabled={rating === 0 || isSubmitting}
-            className="w-full bg-black hover:bg-black/90 text-white h-11 text-sm font-bold rounded-xl disabled:opacity-40"
+            className="w-full bg-foreground hover:bg-foreground/90 text-background h-11 text-sm font-bold rounded-xl disabled:opacity-40"
             onClick={handleSubmit}
           >
             {isSubmitting ? 'Enviando...' : 'Enviar opinión'}
@@ -217,9 +216,7 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
      DETECT SESSION CLOSED BY MESERO
   ======================= */
   useEffect(() => {
-    // If the session is no longer active (mesero closed it), show feedback
     if (!session && screen !== 'feedback') {
-      // Check if there was a session before that got closed
       const closedSession = tableSessions.find(
         s => s.mesa === mesa && !s.activa && s.billStatus === 'cerrada'
       )
@@ -230,7 +227,6 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
     }
   }, [session, mesa, tableSessions, screen])
 
-  // If session is paid, auto-navigate to feedback when no more active orders
   useEffect(() => {
     if (session?.billStatus === 'pagada') {
       const activeOrders = (session.orders || []).filter(
@@ -250,12 +246,20 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
     o => o.mesa === mesa && o.status !== 'entregado' && o.status !== 'cancelado'
   )
 
+  const cartSubtotal = cart.reduce((sum, item) => {
+    const extrasTotal = item.extras?.reduce((e, ex) => e + ex.precio, 0) || 0
+    return sum + (item.menuItem.precio + extrasTotal) * item.cantidad
+  }, 0)
+
   const canOrder = !session || session.billStatus === 'abierta'
 
   const hasActiveWaiterCall = waiterCalls.some(
     c => c.mesa === mesa && !c.atendido
   )
 
+  // Screens that show the persistent bar + bottom nav
+  const showChrome = ['menu', 'status', 'bill'].includes(screen)
+  // Only menu + status get the bottom nav tabs; bill has its own bottom action
   const showBottomNav = ['menu', 'status'].includes(screen)
 
   /* =======================
@@ -317,6 +321,16 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
           />
         )
 
+      case 'bill':
+        return session ? (
+          <BillView
+            sessionId={sessionId}
+            mesa={mesa}
+            onBack={goMenu}
+            onShowRewards={() => setShowRewards(true)}
+          />
+        ) : null
+
       default:
         return (
           <MenuView
@@ -337,28 +351,59 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
      JSX
   ======================= */
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {clienteUser && showBottomNav && (
-        <div className="flex items-center gap-2 px-4 py-2 bg-muted border-b border-border">
-          <UserCircle2 className="h-4 w-4 text-muted-foreground shrink-0" />
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Persistent session context bar — visible on menu/status/bill */}
+      {showChrome && (
+        <TableSessionBar
+          mesa={mesa}
+          restaurantName={config.restaurantName}
+          logoUrl={config.logoUrl}
+          session={session}
+          activeOrderCount={tableOrders.length}
+          cartCount={cart.length}
+          onViewBill={session ? () => setScreen('bill') : undefined}
+        />
+      )}
+
+      {/* User greeting strip — shown when logged in */}
+      {clienteUser && showChrome && (
+        <div className="flex items-center gap-2 px-4 py-1.5 bg-muted/50 border-b border-border">
           <span className="text-xs text-muted-foreground">
             Hola, <span className="font-semibold text-foreground">{clienteUser.nombre}</span>
           </span>
         </div>
       )}
+
       <div className={showBottomNav ? 'pb-16' : ''}>
         {renderScreen()}
       </div>
 
+      {/* Persistent bottom action bar — menu and status screens */}
+      {showBottomNav && (
+        <PersistentOrderBar
+          cartCount={cart.length}
+          cartSubtotal={cartSubtotal}
+          activeOrderCount={tableOrders.length}
+          session={session}
+          canOrder={canOrder}
+          onViewCart={() => setScreen('cart')}
+          onViewStatus={() => setScreen('status')}
+          onViewBill={() => setScreen('bill')}
+        />
+      )}
+
+      {/* Bottom nav tabs */}
       {showBottomNav && (
         <ClienteBottomNav
           activeScreen={screen}
           onMenuClick={() => setScreen('menu')}
           onStatusClick={() => setScreen('status')}
+          onBillClick={() => setScreen('bill')}
           onCallWaiter={() => setShowWaiterCall(true)}
           hasActiveOrders={tableOrders.length > 0}
           cartCount={cart.length}
           hasActiveWaiterCall={hasActiveWaiterCall}
+          hasSession={!!session}
         />
       )}
 

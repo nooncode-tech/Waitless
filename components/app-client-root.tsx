@@ -104,7 +104,8 @@ function AppContent({ initialBranding }: AppContentProps) {
       setQrError(null)
       setClienteMesa(mesaNum)
       setCurrentTable(mesaNum)
-      setView('cliente-auth')
+      setClienteUser(null)
+      setView('cliente')
     })
   }, [setCurrentTable, validateTableQR])
 
@@ -166,17 +167,7 @@ function AppContent({ initialBranding }: AppContentProps) {
     )
   }
 
-  // Pantalla de auth para clientes (luego de validar QR)
-  if (view === 'cliente-auth' && clienteMesa) {
-    return (
-      <ClienteAuthScreen
-        onSuccess={handleClienteAuthSuccess}
-        initialBranding={initialBranding}
-      />
-    )
-  }
-
-  // Vista cliente (acceso por QR — con o sin cuenta registrada)
+  // Vista cliente (acceso por QR — sin fricción de login)
   if (view === 'cliente' && clienteMesa) {
     return <ClienteView mesa={clienteMesa} onBack={handleClienteExit} clienteUser={clienteUser} />
   }
