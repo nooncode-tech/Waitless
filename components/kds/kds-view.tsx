@@ -187,12 +187,12 @@ export function KDSView({ onBack }: KDSViewProps) {
         <div className={cn(
           "px-3 py-1.5 flex items-center justify-between text-xs font-medium",
           preparingOrders.length >= config.pacingMaxPreparando
-            ? 'bg-amber-50 text-amber-700 border-b border-amber-200'
-            : 'bg-green-50 text-green-700 border-b border-green-200'
+            ? 'bg-warning/10 text-warning border-b border-warning/30'
+            : 'bg-success/10 text-success border-b border-success/30'
         )}>
           <span>En preparación: {preparingOrders.length} / {config.pacingMaxPreparando}</span>
           {pacingBlocked && (
-            <span className="text-red-600 font-semibold animate-pulse">⚠ Límite de pacing alcanzado</span>
+            <span className="text-destructive font-semibold animate-pulse">⚠ Límite de pacing alcanzado</span>
           )}
         </div>
       )}
@@ -233,14 +233,14 @@ export function KDSView({ onBack }: KDSViewProps) {
       <main className="flex-1 p-3 overflow-y-auto">
         {/* Fire-by-table panel (queue only) */}
         {activeTab === 'queue' && tablesWithQueue.length > 0 && (
-          <div className="mb-3 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-[10px] font-semibold text-amber-700 mb-1.5 uppercase tracking-wide">Fuego por mesa</p>
+          <div className="mb-3 p-2.5 bg-warning/10 border border-warning/30 rounded-lg">
+            <p className="text-[10px] font-semibold text-warning mb-1.5 uppercase tracking-wide">Fuego por mesa</p>
             <div className="flex flex-wrap gap-1.5">
               {tablesWithQueue.map(mesa => (
                 <Button
                   key={mesa}
                   size="sm"
-                  className="h-8 text-xs bg-amber-500 hover:bg-amber-600 text-white font-bold"
+                  className="h-8 text-xs bg-warning hover:bg-warning/90 text-background font-bold"
                   onClick={() => handleFireTable(mesa)}
                 >
                   🔥 Mesa {mesa}
@@ -274,9 +274,9 @@ export function KDSView({ onBack }: KDSViewProps) {
                 {activeTab === 'ready' && <CircleCheck className="h-8 w-8 text-muted-foreground" />}
               </div>
               <p className="text-base text-muted-foreground font-medium">
-                {activeTab === 'queue' && 'Sin ordenes en cola'}
-                {activeTab === 'preparing' && 'Nada preparandose'}
-                {activeTab === 'ready' && 'Sin ordenes listas'}
+                {activeTab === 'queue' && 'Sin órdenes en cola'}
+                {activeTab === 'preparing' && 'Nada preparándose'}
+                {activeTab === 'ready' && 'Sin órdenes listas'}
               </p>
             </div>
           )}
@@ -435,8 +435,8 @@ export function KDSView({ onBack }: KDSViewProps) {
                   <div className={cn(
                     "flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border",
                     preparingOrders.length >= config.pacingMaxPreparando
-                      ? 'bg-amber-50 text-amber-700 border-amber-300'
-                      : 'bg-green-50 text-green-700 border-green-300'
+                      ? 'bg-warning/10 text-warning border-warning/30'
+                      : 'bg-success/10 text-success border-success/30'
                   )}>
                     <span>En preparación: {preparingOrders.length} / {config.pacingMaxPreparando}</span>
                   </div>
@@ -444,7 +444,7 @@ export function KDSView({ onBack }: KDSViewProps) {
               </div>
               <div className="flex items-center gap-3">
                 {pacingBlocked && (
-                  <div className="flex items-center gap-2 text-red-600 bg-red-50 border border-red-200 px-3 py-1 rounded-full animate-pulse">
+                  <div className="flex items-center gap-2 text-destructive bg-destructive/10 border border-destructive/30 px-3 py-1 rounded-full animate-pulse">
                     <AlertTriangle className="h-4 w-4" />
                     <span className="text-sm font-semibold">Límite de pacing alcanzado</span>
                   </div>
@@ -453,9 +453,9 @@ export function KDSView({ onBack }: KDSViewProps) {
                   const minutes = Math.floor((currentTime.getTime() - new Date(o.createdAt).getTime()) / 1000 / 60)
                   return minutes >= 10
                 }) && (
-                  <div className="flex items-center gap-2 text-amber-500">
+                  <div className="flex items-center gap-2 text-warning">
                     <AlertTriangle className="h-4 w-4" />
-                    <span className="text-sm font-medium">Ordenes con espera larga</span>
+                    <span className="text-sm font-medium">Órdenes con espera larga</span>
                   </div>
                 )}
               </div>
@@ -466,14 +466,14 @@ export function KDSView({ onBack }: KDSViewProps) {
           <div className="flex-1 overflow-auto p-6">
             {/* Fire-by-table panel (queue only, desktop) */}
             {activeTab === 'queue' && tablesWithQueue.length > 0 && (
-              <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3">
-                <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide whitespace-nowrap">Fuego por mesa</p>
+              <div className="mb-4 p-3 bg-warning/10 border border-warning/30 rounded-xl flex items-center gap-3">
+                <p className="text-xs font-semibold text-warning uppercase tracking-wide whitespace-nowrap">Fuego por mesa</p>
                 <div className="flex flex-wrap gap-2">
                   {tablesWithQueue.map(mesa => (
                     <Button
                       key={mesa}
                       size="sm"
-                      className="h-8 text-xs bg-amber-500 hover:bg-amber-600 text-white font-bold"
+                      className="h-8 text-xs bg-warning hover:bg-warning/90 text-background font-bold"
                       onClick={() => handleFireTable(mesa)}
                     >
                       🔥 Mesa {mesa}
@@ -552,10 +552,10 @@ function OrderCard({ order, items, status, timeColor, timeBgColor, onStart, onCo
     <Card className={cn(
       "border-2 transition-all overflow-hidden",
       status === 'preparando' && "border-warning bg-kds-preparing",
-      status === 'listo' && "border-success bg-green-50",
-      status === 'en_cola' && elapsedMin >= SLA_CRITICAL && "border-destructive bg-red-50",
+      status === 'listo' && "border-success bg-success/10",
+      status === 'en_cola' && elapsedMin >= SLA_CRITICAL && "border-destructive bg-destructive/10",
       status === 'en_cola' && elapsedMin >= SLA_WARN && elapsedMin < SLA_CRITICAL && "border-warning bg-kds-preparing",
-      status === 'en_cola' && elapsedMin < SLA_WARN && "border-border bg-white"
+      status === 'en_cola' && elapsedMin < SLA_WARN && "border-border bg-background"
     )}>
       {/* SLA progress bar */}
       {status !== 'listo' && (
@@ -629,7 +629,7 @@ function OrderCard({ order, items, status, timeColor, timeBgColor, onStart, onCo
           {items.map((item) => (
             <li key={item.id} className="flex items-start gap-2">
               <span className={cn(
-                "bg-black text-white font-bold rounded flex-shrink-0 flex items-center justify-center",
+                "bg-foreground text-background font-bold rounded flex-shrink-0 flex items-center justify-center",
                 large ? "text-sm px-2 py-1 min-w-8" : "text-[9px] px-1 py-0.5"
               )}>
                 {item.cantidad}x
@@ -639,7 +639,7 @@ function OrderCard({ order, items, status, timeColor, timeBgColor, onStart, onCo
                   {item.menuItem.nombre}
                 </p>
                 {item.notas && (
-                  <p className={cn("text-black font-medium italic", large ? "text-sm mt-0.5" : "text-[9px]")}>
+                  <p className={cn("text-foreground font-medium italic", large ? "text-sm mt-0.5" : "text-[9px]")}>
                     ↳ {item.notas}
                   </p>
                 )}
@@ -657,7 +657,7 @@ function OrderCard({ order, items, status, timeColor, timeBgColor, onStart, onCo
         {status === 'en_cola' && onStart && (
           <Button
             className={cn(
-              "w-full font-bold bg-black hover:bg-black/90 text-white",
+              "w-full font-bold bg-foreground hover:bg-foreground/90 text-background",
               large ? "h-12 text-base" : "h-8 text-xs"
             )}
             onClick={onStart}
@@ -670,7 +670,7 @@ function OrderCard({ order, items, status, timeColor, timeBgColor, onStart, onCo
         {status === 'preparando' && onComplete && (
           <Button
             className={cn(
-              "w-full font-bold bg-success hover:bg-green-700 text-white",
+              "w-full font-bold bg-success hover:bg-success/90 text-background",
               large ? "h-12 text-base" : "h-8 text-xs"
             )}
             onClick={onComplete}
