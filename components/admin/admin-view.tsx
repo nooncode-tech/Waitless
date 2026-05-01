@@ -70,9 +70,10 @@ import { PushSubscribeButton } from '@/components/shared/push-subscribe-button'
 import { BillingManager } from './billing-manager'
 import { PaymentMethodsManager } from './payment-methods-manager'
 import { PaymentsReviewManager } from './payments-review-manager'
-import { CreditCard, Banknote } from 'lucide-react'
+import { SalesNotesManager } from './sales-notes-manager'
+import { CreditCard, Banknote, FileText } from 'lucide-react'
 
-type AdminScreen = 'reports' | 'menu' | 'orders' | 'inventory' | 'users' | 'config' | 'qr' | 'refunds' | 'closing' | 'history' | 'expo' | 'tables' | 'audit' | 'feedback' | 'health' | 'waitlist' | 'backup' | 'analytics' | 'billing' | 'payment-methods' | 'payments-review'
+type AdminScreen = 'reports' | 'menu' | 'orders' | 'inventory' | 'users' | 'config' | 'qr' | 'refunds' | 'closing' | 'history' | 'expo' | 'tables' | 'audit' | 'feedback' | 'health' | 'waitlist' | 'backup' | 'analytics' | 'billing' | 'payment-methods' | 'payments-review' | 'sales-notes'
 
 interface AdminViewProps {
   onBack: () => void
@@ -112,7 +113,10 @@ export function AdminView({ onBack }: AdminViewProps) {
         { id: 'tables', label: 'Mesas', icon: <LayoutGrid className="h-5 w-5" /> },
         { id: 'orders', label: 'Pedidos', icon: <Package className="h-5 w-5" />, badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined },
         { id: 'closing', label: 'Turno & Caja', icon: <Receipt className="h-5 w-5" /> },
-        ...(canDo(role, 'validar_pago') ? [{ id: 'payments-review' as AdminScreen, label: 'Pagos pendientes', icon: <Banknote className="h-5 w-5" /> }] : []),
+        ...(canDo(role, 'validar_pago') ? [
+          { id: 'payments-review' as AdminScreen, label: 'Pagos pendientes', icon: <Banknote className="h-5 w-5" /> },
+          { id: 'sales-notes' as AdminScreen, label: 'Notas de venta', icon: <FileText className="h-5 w-5" /> },
+        ] : []),
         ...(canDo(role, 'hacer_refund') && hasPlanFeature('refunds') ? [{ id: 'refunds' as AdminScreen, label: 'Reembolsos', icon: <RotateCcw className="h-5 w-5" />, badge: pendingRefundsCount > 0 ? pendingRefundsCount : undefined }] : []),
         ...(hasPlanFeature('waitlist') ? [{ id: 'waitlist' as AdminScreen, label: 'Lista de espera', icon: <ClipboardList className="h-5 w-5" />, badge: waitingCount > 0 ? waitingCount : undefined }] : []),
         { id: 'feedback', label: 'Feedback', icon: <MessageSquare className="h-5 w-5" /> },
@@ -210,6 +214,7 @@ export function AdminView({ onBack }: AdminViewProps) {
             {screen === 'billing' && <BillingManager />}
             {screen === 'payment-methods' && <PaymentMethodsManager />}
             {screen === 'payments-review' && <PaymentsReviewManager />}
+            {screen === 'sales-notes' && <SalesNotesManager />}
           </div>
         </main>
 

@@ -5,11 +5,6 @@ import { useApp } from '@/lib/context'
 import { canDo } from '@/lib/permissions'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
-
-async function getToken(): Promise<string | null> {
-  const { data: { session } } = await supabase.auth.getSession()
-  return session?.access_token ?? null
-}
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -19,7 +14,13 @@ import {
   ChevronDown, ChevronUp, Clock, RefreshCw,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
 import type { PaymentStatus2 } from '@/lib/store'
+
+async function getToken(): Promise<string | null> {
+  const { data: { session } } = await supabase.auth.getSession()
+  return session?.access_token ?? null
+}
 
 interface Receipt {
   id: string
@@ -82,6 +83,7 @@ export function PaymentsReviewManager() {
   const [correctionModal, setCorrectionModal] = useState<{ id: string } | null>(null)
   const [correctionNotas, setCorrectionNotas] = useState('')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [approvedNote, setApprovedNote] = useState<{ numero: string } | null>(null)
 
   const fetchPayments = useCallback(async () => {
     setLoading(true)
@@ -110,12 +112,12 @@ export function PaymentsReviewManager() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: body ? JSON.stringify(body) : undefined,
       })
+      const json = await res.json()
       if (!res.ok) {
-        const j = await res.json()
-        alert(j.error ?? 'Error al procesar la acción')
-        return false
+        alert(json.error ?? 'Error al procesar la acción')
+        return null
       }
-      return true
+      return json
     } finally {
       setActionLoading(null)
     }
@@ -123,21 +125,24 @@ export function PaymentsReviewManager() {
 
   const handleApprove = async (paymentId: string) => {
     if (!confirm('¿Aprobar este pago y generar nota interna?')) return
-    const ok = await callAction(paymentId, 'approve')
-    if (ok) fetchPayments()
+    const result = await callAction(paymentId, 'approve')
+    if (result) {
+      setApprovedNote({ numero: result.numeroInterno })
+      fetchPayments()
+    }
   }
 
   const handleReject = async () => {
     if (!rejectModal) return
     if (!rejectMotivo.trim()) { alert('El motivo es obligatorio'); return }
-    const ok = await callAction(rejectModal.id, 'reject', { motivo: rejectMotivo })
-    if (ok) { setRejectModal(null); setRejectMotivo(''); fetchPayments() }
+    const result = await callAction(rejectModal.id, 'reject', { motivo: rejectMotivo })
+    if (result) { setRejectModal(null); setRejectMotivo(''); fetchPayments() }
   }
 
   const handleCorrection = async () => {
     if (!correctionModal) return
-    const ok = await callAction(correctionModal.id, 'correction', { notas: correctionNotas })
-    if (ok) { setCorrectionModal(null); setCorrectionNotas(''); fetchPayments() }
+    const result = await callAction(correctionModal.id, 'correction', { notas: correctionNotas })
+    if (result) { setCorrectionModal(null); setCorrectionNotas(''); fetchPayments() }
   }
 
   const pendingCount = payments.filter(
@@ -162,6 +167,20 @@ export function PaymentsReviewManager() {
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* Confirmación nota generada */}
+      {approvedNote && (
+        <div className="flex items-center justify-between p-3 bg-success/10 border border-success/30 rounded-xl">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-success">Pago aprobado</p>
+              <p className="text-xs text-success/80 font-mono">{approvedNote.numero}</p>
+            </div>
+          </div>
+          <button onClick={() => setApprovedNote(null)} className="text-xs text-success/60 hover:text-success">✕</button>
+        </div>
+      )}
 
       {/* Filtro de status */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 no-scrollbar">
