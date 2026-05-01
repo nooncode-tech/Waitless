@@ -1032,3 +1032,104 @@ export function getDeliveryZoneCost(zonaNombre: string, zones: DeliveryZone[]): 
   const zone = zones.find(z => z.nombre === zonaNombre && z.activa)
   return zone?.costoEnvio || 0
 }
+
+// ============ MÓDULO DE PAGOS — tipos nuevos (no modifican los existentes) ============
+
+export type PaymentStatus2 =
+  | 'PENDIENTE_DE_PAGO'
+  | 'COMPROBANTE_CARGADO'
+  | 'EN_REVISION'
+  | 'PAGO_VALIDADO'
+  | 'PAGO_RECHAZADO'
+  | 'PAGO_PARCIAL'
+  | 'CORRECCION_SOLICITADA'
+  | 'ANULADO'
+
+export type PaymentMethodTipo =
+  | 'efectivo'
+  | 'pago_movil'
+  | 'transferencia'
+  | 'zelle'
+  | 'paypal'
+  | 'punto_venta'
+  | 'otro'
+
+export interface PaymentMethod2 {
+  id: string
+  tenantId: string
+  nombre: string
+  tipo: PaymentMethodTipo
+  moneda: string
+  instrucciones: string
+  datosPago: Record<string, string>
+  requiereComprobante: boolean
+  requiereValidacionManual: boolean
+  activo: boolean
+  orden: number
+  createdAt: Date
+}
+
+export interface PaymentReceipt {
+  id: string
+  paymentId: string
+  tenantId: string
+  fileUrl: string | null
+  fileType: 'imagen' | 'pdf' | 'referencia' | null
+  referencia: string | null
+  montoDeclarado: number | null
+  moneda: string
+  uploadedBy: string | null
+  reviewStatus: 'pendiente' | 'aprobado' | 'rechazado'
+  reviewedBy: string | null
+  reviewNotes: string | null
+  reviewedAt: Date | null
+  createdAt: Date
+}
+
+export interface Payment {
+  id: string
+  tenantId: string
+  sessionId: string
+  paymentMethodId: string | null
+  montoRequerido: number
+  montoDeclarado: number | null
+  moneda: string
+  status: PaymentStatus2
+  motivoRechazo: string | null
+  notasInternas: string | null
+  createdBy: string | null
+  reviewedBy: string | null
+  reviewedAt: Date | null
+  createdAt: Date
+  updatedAt: Date
+  receipts?: PaymentReceipt[]
+}
+
+export type SalesNoteStatus =
+  | 'BORRADOR'
+  | 'EMITIDA_INTERNAMENTE'
+  | 'ANULADA'
+  | 'CORREGIDA'
+  | 'EXPORTADA'
+
+export interface InternalSalesNote {
+  id: string
+  numeroInterno: string
+  tenantId: string
+  sessionId: string | null
+  paymentId: string | null
+  status: SalesNoteStatus
+  subtotal: number
+  descuentosTotal: number
+  impuestosTotal: number
+  total: number
+  moneda: string
+  snapshotItems: unknown[]
+  generatedBy: string | null
+  generatedAt: Date
+  voidedBy: string | null
+  voidedAt: Date | null
+  voidReason: string | null
+  correctedFromNoteId: string | null
+  exportedAt: Date | null
+}

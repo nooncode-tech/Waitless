@@ -11,11 +11,12 @@ interface BillViewProps {
   mesa: number
   onBack: () => void
   onShowRewards: () => void
+  onPayNow?: () => void
 }
 
 type PayMode = 'full' | 'split' | 'items'
 
-export function BillView({ sessionId, mesa, onBack, onShowRewards }: BillViewProps) {
+export function BillView({ sessionId, mesa, onBack, onShowRewards, onPayNow }: BillViewProps) {
   const {
     tableSessions,
     config,
@@ -340,13 +341,27 @@ export function BillView({ sessionId, mesa, onBack, onShowRewards }: BillViewPro
               </div>
             </div>
           ) : (
-            <Button
-              className="w-full bg-foreground hover:bg-foreground/90 text-background h-12 text-sm font-bold rounded-xl gap-2"
-              onClick={handleRequestBill}
-            >
-              <Bell className="h-4 w-4" />
-              Pedir la cuenta
-            </Button>
+            <div className="space-y-2">
+              {onPayNow && (
+                <Button
+                  className="w-full bg-foreground hover:bg-foreground/90 text-background h-12 text-sm font-bold rounded-xl gap-2"
+                  onClick={onPayNow}
+                >
+                  <CreditCard className="h-4 w-4" />
+                  Pagar ahora (transferencia / Zelle…)
+                </Button>
+              )}
+              <Button
+                variant={onPayNow ? 'outline' : 'default'}
+                className={onPayNow
+                  ? 'w-full h-11 text-sm font-semibold rounded-xl gap-2'
+                  : 'w-full bg-foreground hover:bg-foreground/90 text-background h-12 text-sm font-bold rounded-xl gap-2'}
+                onClick={handleRequestBill}
+              >
+                <Bell className="h-4 w-4" />
+                Llamar al mesero
+              </Button>
+            </div>
           )}
         </div>
       )}

@@ -42,7 +42,7 @@ export function TableSessionBar({
     <div className="flex items-center justify-between px-4 py-2 bg-secondary/60 border-b border-border">
       {/* Identity */}
       <div className="flex items-center gap-2 min-w-0">
-        <WaitlessLogo size={20} color="dark" imageUrl={logoUrl} imageAlt={restaurantName ?? 'Logo'} />
+        <WaitlessLogo size={20} color="dark" imageUrl={logoUrl ?? undefined} imageAlt={restaurantName ?? 'Logo'} />
         <div className="min-w-0">
           {restaurantName && (
             <p className="text-[11px] font-semibold text-foreground truncate leading-none">{restaurantName}</p>

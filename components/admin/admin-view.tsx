@@ -68,9 +68,11 @@ import { BackupManager } from './backup-manager'
 import { AnalyticsDashboard } from './analytics-dashboard'
 import { PushSubscribeButton } from '@/components/shared/push-subscribe-button'
 import { BillingManager } from './billing-manager'
-import { CreditCard } from 'lucide-react'
+import { PaymentMethodsManager } from './payment-methods-manager'
+import { PaymentsReviewManager } from './payments-review-manager'
+import { CreditCard, Banknote } from 'lucide-react'
 
-type AdminScreen = 'reports' | 'menu' | 'orders' | 'inventory' | 'users' | 'config' | 'qr' | 'refunds' | 'closing' | 'history' | 'expo' | 'tables' | 'audit' | 'feedback' | 'health' | 'waitlist' | 'backup' | 'analytics' | 'billing'
+type AdminScreen = 'reports' | 'menu' | 'orders' | 'inventory' | 'users' | 'config' | 'qr' | 'refunds' | 'closing' | 'history' | 'expo' | 'tables' | 'audit' | 'feedback' | 'health' | 'waitlist' | 'backup' | 'analytics' | 'billing' | 'payment-methods' | 'payments-review'
 
 interface AdminViewProps {
   onBack: () => void
@@ -110,6 +112,7 @@ export function AdminView({ onBack }: AdminViewProps) {
         { id: 'tables', label: 'Mesas', icon: <LayoutGrid className="h-5 w-5" /> },
         { id: 'orders', label: 'Pedidos', icon: <Package className="h-5 w-5" />, badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined },
         { id: 'closing', label: 'Turno & Caja', icon: <Receipt className="h-5 w-5" /> },
+        ...(canDo(role, 'validar_pago') ? [{ id: 'payments-review' as AdminScreen, label: 'Pagos pendientes', icon: <Banknote className="h-5 w-5" /> }] : []),
         ...(canDo(role, 'hacer_refund') && hasPlanFeature('refunds') ? [{ id: 'refunds' as AdminScreen, label: 'Reembolsos', icon: <RotateCcw className="h-5 w-5" />, badge: pendingRefundsCount > 0 ? pendingRefundsCount : undefined }] : []),
         ...(hasPlanFeature('waitlist') ? [{ id: 'waitlist' as AdminScreen, label: 'Lista de espera', icon: <ClipboardList className="h-5 w-5" />, badge: waitingCount > 0 ? waitingCount : undefined }] : []),
         { id: 'feedback', label: 'Feedback', icon: <MessageSquare className="h-5 w-5" /> },
@@ -130,6 +133,7 @@ export function AdminView({ onBack }: AdminViewProps) {
         ...(canDo(role, 'gestionar_usuarios') ? [{ id: 'qr' as AdminScreen, label: 'Códigos QR', icon: <QrCode className="h-5 w-5" /> }] : []),
         { id: 'history', label: 'Historial de Mesas', icon: <History className="h-5 w-5" /> },
         ...(canDo(role, 'editar_config') ? [
+          { id: 'payment-methods' as AdminScreen, label: 'Métodos de pago', icon: <CreditCard className="h-5 w-5" /> },
           { id: 'backup' as AdminScreen, label: 'Backup y Recuperación', icon: <DatabaseBackup className="h-5 w-5" /> },
           { id: 'billing' as AdminScreen, label: 'Plan & Facturación', icon: <CreditCard className="h-5 w-5" /> },
         ] : []),
@@ -204,6 +208,8 @@ export function AdminView({ onBack }: AdminViewProps) {
             {screen === 'health' && <HealthPanel />}
             {screen === 'backup' && <BackupManager />}
             {screen === 'billing' && <BillingManager />}
+            {screen === 'payment-methods' && <PaymentMethodsManager />}
+            {screen === 'payments-review' && <PaymentsReviewManager />}
           </div>
         </main>
 
@@ -585,7 +591,9 @@ export function AdminView({ onBack }: AdminViewProps) {
               {screen === 'analytics' && <AnalyticsDashboard />}
               {screen === 'health' && <HealthPanel />}
               {screen === 'backup' && <BackupManager />}
-            {screen === 'billing' && <BillingManager />}
+              {screen === 'billing' && <BillingManager />}
+              {screen === 'payment-methods' && <PaymentMethodsManager />}
+              {screen === 'payments-review' && <PaymentsReviewManager />}
             </div>
           </main>
         </div>

@@ -2,7 +2,7 @@
 
 import { ClipboardList, Bell, UtensilsCrossed, Receipt } from 'lucide-react'
 
-type ClienteScreen = 'menu' | 'item' | 'cart' | 'status' | 'bill' | 'feedback'
+type ClienteScreen = 'menu' | 'item' | 'cart' | 'status' | 'bill' | 'payment' | 'feedback'
 
 interface ClienteBottomNavProps {
   activeScreen: ClienteScreen

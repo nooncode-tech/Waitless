@@ -20,6 +20,7 @@ export type Action =
   | 'editar_config'
   | 'ver_reportes'
   | 'override_precio'
+  | 'validar_pago'
 
 /**
  * Matriz de permisos: { accion: [roles_permitidos] }
@@ -41,6 +42,7 @@ const PERMISSIONS: Record<Action, UserRole[]> = {
   editar_config:     ['admin'],
   ver_reportes:      ['manager', 'admin'],
   override_precio:   ['admin'],
+  validar_pago:      ['manager', 'admin'],
 }
 
 /**

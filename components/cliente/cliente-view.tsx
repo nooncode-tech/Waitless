@@ -8,6 +8,7 @@ import { CartView } from './cart-view'
 import { OrderStatusView } from './order-status-view'
 import { ItemDetailView } from './item-detail-view'
 import { BillView } from './bill-view'
+import { PaymentSubmitView } from './payment-submit-view'
 import { ClienteBottomNav } from './cliente-bottom-nav'
 import { TableSessionBar } from './table-session-bar'
 import { PersistentOrderBar } from './persistent-order-bar'
@@ -27,7 +28,7 @@ const GOOGLE_REVIEW_URL_FALLBACK = 'https://g.page/r/review/write'
 /* =======================
    TYPES
 ======================= */
-type ClienteScreen = 'menu' | 'item' | 'cart' | 'status' | 'bill' | 'feedback'
+type ClienteScreen = 'menu' | 'item' | 'cart' | 'status' | 'bill' | 'payment' | 'feedback'
 
 interface ClienteViewProps {
   mesa: number
@@ -191,6 +192,7 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
     waiterCalls,
     addLoyaltyPoints,
     config,
+    tenantId,
   } = useApp()
 
   const [screen, setScreen] = useState<ClienteScreen>('menu')
@@ -328,6 +330,18 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
             mesa={mesa}
             onBack={goMenu}
             onShowRewards={() => setShowRewards(true)}
+            onPayNow={tenantId ? () => setScreen('payment') : undefined}
+          />
+        ) : null
+
+      case 'payment':
+        return session && tenantId ? (
+          <PaymentSubmitView
+            sessionId={sessionId}
+            tenantId={tenantId}
+            totalMonto={session.total ?? 0}
+            onBack={() => setScreen('bill')}
+            onSubmitted={goMenu}
           />
         ) : null
 
