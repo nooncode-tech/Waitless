@@ -55,6 +55,9 @@ export interface AppState {
   tables: TableConfig[]
   cart: OrderItem[]
   currentTable: number | null
+  /** Cuenta del restaurante vinculada al dispositivo — persiste con la sesión Supabase */
+  deviceUser: User | null
+  /** Perfil del staff activo en este momento — null muestra la pantalla de bloqueo */
   currentUser: User | null
   currentSessionId: string | null
   waitlist: WaitlistEntry[]
@@ -66,6 +69,10 @@ export interface AppContextType extends AppState {
   // Auth
   login: (username: string, password: string) => Promise<User | null>
   logout: () => Promise<void>
+  /** Cierra el perfil activo y muestra la pantalla de bloqueo (no cierra la sesión del restaurante) */
+  lockProfile: () => void
+  /** Valida credenciales de un perfil y lo activa sin cambiar la sesión Supabase del dispositivo */
+  switchProfile: (username: string, password: string) => Promise<User | null>
 
   // Cart
   addToCart: (item: MenuItem, cantidad: number, notas?: string, extras?: MenuItem['extras']) => void

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Check, Clock, Receipt, CreditCard, Edit3, XCircle, DoorOpen, AlertTriangle, ArrowLeftRight, Merge, Scissors, RefreshCw } from 'lucide-react'
+import { Plus, Check, Clock, Receipt, CreditCard, Edit3, XCircle, DoorOpen, AlertTriangle, ArrowLeftRight, Merge, Scissors, RefreshCw, MoreHorizontal } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { canDo } from '@/lib/permissions'
 import { BackButton } from '@/components/back-button'
@@ -22,6 +22,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface TableSessionProps {
   mesa: number
@@ -96,114 +103,140 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
   }
   
   return (
-    <div className="p-4">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
+    <div className="p-3 md:p-4">
+      {/* Header — diseño mobile-first */}
+      <div className="flex items-center justify-between mb-4 gap-2">
+        {/* Izquierda: back + título */}
+        <div className="flex items-center gap-2.5 min-w-0">
           <BackButton onClick={onBack} />
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-foreground">Mesa {mesa}</h2>
-              {isPaid && (
-                <Badge className="bg-success text-white">
-                  Pagada
-                </Badge>
-              )}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-base font-bold text-foreground shrink-0">Mesa {mesa}</h2>
+              {isPaid && <Badge className="bg-success text-white text-xs">Pagada</Badge>}
               {paymentRequested && !isPaid && (
-                <Badge className="bg-warning text-white animate-pulse">
+                <Badge className="bg-warning text-white animate-pulse text-xs">
                   <CreditCard className="h-3 w-3 mr-1" />
-                  Cuenta solicitada
+                  Cuenta
                 </Badge>
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              {activeOrders.length} pedido{activeOrders.length !== 1 ? 's' : ''} activo{activeOrders.length !== 1 ? 's' : ''}
+              {activeOrders.length} activo{activeOrders.length !== 1 ? 's' : ''}
               {deliveredOrders.length > 0 && ` / ${deliveredOrders.length} entregado${deliveredOrders.length !== 1 ? 's' : ''}`}
             </p>
           </div>
         </div>
-        
-        <div className="flex gap-2">
-          {session && !isPaid && (
+
+        {/* Derecha: CTA principal + dropdown de acciones secundarias */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* CTA principal siempre visible */}
+          {!isPaid && (
             <Button
-              variant="outline"
-              className="h-8 text-xs bg-transparent"
-              onClick={() => setShowMoveDialog(true)}
+              className="bg-primary text-primary-foreground h-11 text-sm px-3"
+              onClick={() => setShowAddOrder(true)}
             >
-              <ArrowLeftRight className="h-3.5 w-3.5 mr-1.5" />
-              Mover
-            </Button>
-          )}
-          {session && !isPaid && (
-            <Button
-              variant="outline"
-              className="h-8 text-xs bg-transparent"
-              onClick={() => setShowMergeDialog(true)}
-            >
-              <Merge className="h-3.5 w-3.5 mr-1.5" />
-              Unir
-            </Button>
-          )}
-          {session && !isPaid && activeOrders.length > 1 && (
-            <Button
-              variant="outline"
-              className="h-8 text-xs bg-transparent"
-              onClick={() => { setSplitSelectedOrders([]); setSplitTargetMesa(null); setShowSplitDialog(true) }}
-            >
-              <Scissors className="h-3.5 w-3.5 mr-1.5" />
-              Separar
-            </Button>
-          )}
-          {canCloseTable && (
-            <Button
-              variant="outline"
-              className="h-8 text-xs border-destructive/40 text-destructive hover:bg-destructive/10 bg-transparent"
-              onClick={() => setShowCloseConfirm(true)}
-            >
-              <DoorOpen className="h-3.5 w-3.5 mr-1.5" />
-              Cerrar mesa
-            </Button>
-          )}
-          {session && tableOrders.length > 0 && !isPaid && (
-            <Button 
-              variant="outline"
-              className="h-8 text-xs border-warning text-warning hover:bg-warning/10 bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={() => setShowBillDialog(true)}
-              disabled={!canBill}
-              title={!canBill ? 'Todos los pedidos deben estar entregados para cobrar' : undefined}
-            >
-              <Receipt className="h-3.5 w-3.5 mr-1.5" />
-              Cobrar
+              <Plus className="h-4 w-4 mr-1.5" />
+              <span className="hidden sm:inline">Agregar pedido</span>
+              <span className="sm:hidden">Pedido</span>
             </Button>
           )}
           {isPaid && session && (
-            <Button 
+            <Button
               variant="outline"
-              className="h-8 text-xs border-success text-success hover:bg-success/10 bg-transparent"
+              className="h-11 text-sm border-success text-success hover:bg-success/10 bg-transparent"
               onClick={() => setShowBillDialog(true)}
             >
-              <Receipt className="h-3.5 w-3.5 mr-1.5" />
+              <Receipt className="h-4 w-4 mr-1.5" />
               Ver cuenta
             </Button>
           )}
-          {!isPaid && (
-            <Button
-              className="bg-primary text-primary-foreground h-8 text-xs"
-              onClick={() => setShowAddOrder(true)}
-            >
-              <Plus className="h-3.5 w-3.5 mr-1.5" />
-              Agregar pedido
-            </Button>
-          )}
-          {/* Reopen session — manager o admin */}
           {canReopen && closedSession && (
             <Button
               variant="outline"
-              className="h-8 text-xs border-purple-400 text-purple-600 hover:bg-purple-50 bg-transparent"
+              className="h-11 text-sm border-purple-400 text-purple-600 hover:bg-purple-50 bg-transparent"
               onClick={() => { setReopenReason(''); setShowReopenDialog(true) }}
             >
-              <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-              Reabrir sesión
+              <RefreshCw className="h-4 w-4 mr-1.5" />
+              <span className="hidden sm:inline">Reabrir sesión</span>
+              <span className="sm:hidden">Reabrir</span>
             </Button>
+          )}
+
+          {/* Acciones secundarias — dropdown en mobile, botones en desktop */}
+          {session && !isPaid && (
+            <>
+              {/* Mobile: dropdown compacto */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-11 w-11 md:hidden bg-transparent shrink-0">
+                    <MoreHorizontal className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => setShowMoveDialog(true)}>
+                    <ArrowLeftRight className="h-4 w-4 mr-2" />
+                    Mover mesa
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShowMergeDialog(true)}>
+                    <Merge className="h-4 w-4 mr-2" />
+                    Unir con otra mesa
+                  </DropdownMenuItem>
+                  {activeOrders.length > 1 && (
+                    <DropdownMenuItem onClick={() => { setSplitSelectedOrders([]); setSplitTargetMesa(null); setShowSplitDialog(true) }}>
+                      <Scissors className="h-4 w-4 mr-2" />
+                      Separar pedidos
+                    </DropdownMenuItem>
+                  )}
+                  {tableOrders.length > 0 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => setShowBillDialog(true)}
+                        disabled={!canBill}
+                        className="text-warning focus:text-warning"
+                      >
+                        <Receipt className="h-4 w-4 mr-2" />
+                        Cobrar
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {canCloseTable && (
+                    <DropdownMenuItem
+                      onClick={() => setShowCloseConfirm(true)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <DoorOpen className="h-4 w-4 mr-2" />
+                      Cerrar mesa
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Desktop: botones expandidos */}
+              <div className="hidden md:flex gap-2">
+                <Button variant="outline" className="h-9 text-xs bg-transparent" onClick={() => setShowMoveDialog(true)}>
+                  <ArrowLeftRight className="h-3.5 w-3.5 mr-1.5" />Mover
+                </Button>
+                <Button variant="outline" className="h-9 text-xs bg-transparent" onClick={() => setShowMergeDialog(true)}>
+                  <Merge className="h-3.5 w-3.5 mr-1.5" />Unir
+                </Button>
+                {activeOrders.length > 1 && (
+                  <Button variant="outline" className="h-9 text-xs bg-transparent" onClick={() => { setSplitSelectedOrders([]); setSplitTargetMesa(null); setShowSplitDialog(true) }}>
+                    <Scissors className="h-3.5 w-3.5 mr-1.5" />Separar
+                  </Button>
+                )}
+                {tableOrders.length > 0 && (
+                  <Button variant="outline" className="h-9 text-xs border-warning text-warning hover:bg-warning/10 bg-transparent disabled:opacity-50" onClick={() => setShowBillDialog(true)} disabled={!canBill}>
+                    <Receipt className="h-3.5 w-3.5 mr-1.5" />Cobrar
+                  </Button>
+                )}
+                {canCloseTable && (
+                  <Button variant="outline" className="h-9 text-xs border-destructive/40 text-destructive hover:bg-destructive/10 bg-transparent" onClick={() => setShowCloseConfirm(true)}>
+                    <DoorOpen className="h-3.5 w-3.5 mr-1.5" />Cerrar mesa
+                  </Button>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -288,34 +321,34 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                       </span>
                     </div>
                     
-                    {/* Action buttons */}
+                    {/* Action buttons — h-11 (44px) para tap targets adecuados */}
                     <div className="flex gap-2">
                       {canEditOrder(order.id) && (
                         <Button
                           variant="outline"
-                          className="flex-1 h-8 text-xs bg-transparent"
+                          className="flex-1 h-11 text-sm bg-transparent"
                           onClick={() => setEditingOrder(order)}
                         >
-                          <Edit3 className="h-3.5 w-3.5 mr-1.5" />
+                          <Edit3 className="h-4 w-4 mr-1.5" />
                           Editar
                         </Button>
                       )}
                       {canCancelOrder(order.id) && (
                         <Button
                           variant="outline"
-                          className="flex-1 h-8 text-xs border-destructive/40 text-destructive hover:bg-destructive/10 bg-transparent"
+                          className="flex-1 h-11 text-sm border-destructive/40 text-destructive hover:bg-destructive/10 bg-transparent"
                           onClick={() => setCancellingOrder(order)}
                         >
-                          <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                          <XCircle className="h-4 w-4 mr-1.5" />
                           Cancelar
                         </Button>
                       )}
                       {order.status === 'listo' && (
                         <Button
-                          className="flex-1 bg-success hover:bg-success/90 text-white h-8 text-xs"
+                          className="flex-1 bg-success hover:bg-success/90 text-white h-11 text-sm font-semibold"
                           onClick={() => handleMarkDelivered(order.id)}
                         >
-                          <Check className="h-3.5 w-3.5 mr-1.5" />
+                          <Check className="h-4 w-4 mr-1.5" />
                           Entregado
                         </Button>
                       )}
@@ -433,16 +466,16 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                     </div>
                   )}
                   
-                  {/* Quick Action Buttons */}
+                  {/* Quick Action Buttons — h-12 para CTAs primarios */}
                   {!isPaid && session && (
                     <div className="mt-3 pt-3 border-t border-border">
                       <Button
-                        className="w-full bg-black hover:bg-black/90 text-white h-9 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full bg-black hover:bg-black/90 text-white h-12 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={() => setShowBillDialog(true)}
                         disabled={!canBill}
                         title={!canBill ? 'Todos los pedidos deben estar entregados para cobrar' : undefined}
                       >
-                        <CreditCard className="h-3.5 w-3.5 mr-1.5" />
+                        <CreditCard className="h-4 w-4 mr-2" />
                         {canBill ? 'Procesar cobro' : 'Pedidos pendientes'}
                       </Button>
                     </div>
@@ -452,10 +485,10 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                     <div className="mt-2">
                       <Button
                         variant="outline"
-                        className="w-full h-9 text-xs border-destructive/40 text-destructive hover:bg-destructive/10 bg-transparent"
+                        className="w-full h-11 text-sm border-destructive/40 text-destructive hover:bg-destructive/10 bg-transparent"
                         onClick={() => setShowCloseConfirm(true)}
                       >
-                        <DoorOpen className="h-3.5 w-3.5 mr-1.5" />
+                        <DoorOpen className="h-4 w-4 mr-2" />
                         Cerrar mesa
                       </Button>
                     </div>
@@ -505,14 +538,14 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
               <DialogTitle>Mover Mesa {mesa}</DialogTitle>
             </DialogHeader>
             <p className="text-sm text-muted-foreground mb-3">Selecciona la mesa destino (solo mesas libres)</p>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {getActiveTables()
                 .filter(t => t.numero !== mesa && !tableSessions.some(s => s.mesa === t.numero && s.activa))
                 .map(t => (
                   <Button
                     key={t.numero}
                     variant="outline"
-                    className="h-10 font-semibold"
+                    className="h-12 text-base font-semibold"
                     onClick={() => {
                       moveTableSession(session.id, t.numero)
                       setShowMoveDialog(false)
@@ -540,14 +573,14 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
             <p className="text-sm text-muted-foreground mb-3">
               Selecciona una mesa activa para traer sus pedidos a esta mesa.
             </p>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {tableSessions
                 .filter(s => s.activa && s.mesa !== mesa)
                 .map(s => (
                   <Button
                     key={s.id}
                     variant="outline"
-                    className="h-10 font-semibold"
+                    className="h-12 text-base font-semibold"
                     onClick={() => {
                       mergeTableSessions(session.id, s.id)
                       setShowMergeDialog(false)
@@ -574,10 +607,10 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
             <p className="text-sm text-muted-foreground mb-2">
               Selecciona los pedidos a mover y la mesa destino (debe estar libre).
             </p>
-            {/* Order checkboxes */}
-            <div className="space-y-2 mb-4 max-h-52 overflow-y-auto">
+            {/* Order checkboxes — min-h para tap targets */}
+            <div className="space-y-1.5 mb-4 max-h-52 overflow-y-auto">
               {activeOrders.map(order => (
-                <label key={order.id} className="flex items-start gap-2 cursor-pointer">
+                <label key={order.id} className="flex items-center gap-3 cursor-pointer min-h-[48px] px-1 rounded-lg hover:bg-muted transition-colors">
                   <Checkbox
                     checked={splitSelectedOrders.includes(order.id)}
                     onCheckedChange={(checked) => {
@@ -587,11 +620,11 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
                           : prev.filter(id => id !== order.id)
                       )
                     }}
-                    className="mt-0.5"
+                    className="h-5 w-5 shrink-0"
                   />
-                  <div className="text-xs">
+                  <div className="text-sm">
                     <p className="font-medium">Pedido #{order.numero}</p>
-                    <p className="text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {order.items.map(i => `${i.cantidad}x ${i.menuItem.nombre}`).join(', ')}
                     </p>
                   </div>
@@ -599,30 +632,30 @@ export function TableSession({ mesa, onBack }: TableSessionProps) {
               ))}
             </div>
             {/* Free table selector */}
-            <p className="text-xs font-medium mb-2">Mesa destino:</p>
-            <div className="grid grid-cols-5 gap-1.5 mb-4">
+            <p className="text-sm font-medium mb-2">Mesa destino:</p>
+            <div className="grid grid-cols-4 gap-2 mb-4">
               {getActiveTables()
                 .filter(t => t.numero !== mesa && !tableSessions.some(s => s.mesa === t.numero && s.activa))
                 .map(t => (
                   <Button
                     key={t.numero}
                     variant={splitTargetMesa === t.numero ? 'default' : 'outline'}
-                    className="h-9 text-xs font-semibold"
+                    className="h-12 text-base font-semibold"
                     onClick={() => setSplitTargetMesa(t.numero)}
                   >
                     {t.numero}
                   </Button>
                 ))}
               {getActiveTables().filter(t => t.numero !== mesa && !tableSessions.some(s => s.mesa === t.numero && s.activa)).length === 0 && (
-                <p className="col-span-5 text-xs text-center text-muted-foreground py-2">No hay mesas libres</p>
+                <p className="col-span-4 text-sm text-center text-muted-foreground py-2">No hay mesas libres</p>
               )}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setShowSplitDialog(false)}>
+              <Button variant="outline" className="flex-1 h-11 bg-transparent" onClick={() => setShowSplitDialog(false)}>
                 Cancelar
               </Button>
               <Button
-                className="flex-1 bg-primary"
+                className="flex-1 h-11 bg-primary"
                 disabled={splitSelectedOrders.length === 0 || splitTargetMesa === null}
                 onClick={() => {
                   if (splitTargetMesa !== null) {

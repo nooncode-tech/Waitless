@@ -25,11 +25,12 @@ import {
 
 interface KDSViewProps {
   onBack: () => void
+  onLockProfile?: () => void
 }
 
 type KDSTab = 'queue' | 'preparing' | 'ready'
 
-export function KDSView({ onBack }: KDSViewProps) {
+export function KDSView({ onBack, onLockProfile }: KDSViewProps) {
   const { orders, updateKitchenStatus, config } = useApp()
   const [currentTime, setCurrentTime] = useState(new Date())
   const [activeTab, setActiveTab] = useState<KDSTab>('queue')
@@ -160,16 +161,16 @@ export function KDSView({ onBack }: KDSViewProps) {
               variant="ghost"
               size="sm"
               className="h-10 text-background/70 hover:text-background hover:bg-background/10"
-              onClick={onBack}
+              onClick={onLockProfile ?? onBack}
             >
               <LogOut className="h-4 w-4 mr-1" />
-              Salir
+              {onLockProfile ? 'Cerrar perfil' : 'Salir'}
             </Button>
             <div className="border-l border-background/20 pl-2 flex items-center gap-1.5 min-w-0">
               <WaitlessLogo size={22} color="light" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
               <div className="min-w-0">
                 <h1 className="text-xs font-bold truncate">{kitchenName}</h1>
-                <p className="text-background/70 text-[10px] truncate">{kitchenDesc}</p>
+                <p className="text-background/70 text-xs truncate">{kitchenDesc}</p>
               </div>
             </div>
           </div>
@@ -234,13 +235,13 @@ export function KDSView({ onBack }: KDSViewProps) {
         {/* Fire-by-table panel (queue only) */}
         {activeTab === 'queue' && tablesWithQueue.length > 0 && (
           <div className="mb-3 p-2.5 bg-warning/10 border border-warning/30 rounded-lg">
-            <p className="text-[10px] font-semibold text-warning mb-1.5 uppercase tracking-wide">Fuego por mesa</p>
+            <p className="text-xs font-semibold text-warning mb-1.5 uppercase tracking-wide">Fuego por mesa</p>
             <div className="flex flex-wrap gap-1.5">
               {tablesWithQueue.map(mesa => (
                 <Button
                   key={mesa}
                   size="sm"
-                  className="h-8 text-xs bg-warning hover:bg-warning/90 text-background font-bold"
+                  className="h-11 text-sm bg-warning hover:bg-warning/90 text-background font-bold"
                   onClick={() => handleFireTable(mesa)}
                 >
                   🔥 Mesa {mesa}
@@ -397,17 +398,17 @@ export function KDSView({ onBack }: KDSViewProps) {
                 <Button
                   variant="ghost"
                   className={cn(
-                    "w-full justify-start gap-3 h-10 text-background/60 hover:text-destructive hover:bg-destructive/20",
+                    "w-full justify-start gap-3 h-10 text-background/60 hover:text-background hover:bg-background/10",
                     sidebarCollapsed && "justify-center px-0"
                   )}
-                  onClick={onBack}
+                  onClick={onLockProfile ?? onBack}
                 >
                   <LogOut className="h-4 w-4" />
-                  {!sidebarCollapsed && <span className="text-sm">Salir</span>}
+                  {!sidebarCollapsed && <span className="text-sm">{onLockProfile ? 'Cerrar perfil' : 'Salir'}</span>}
                 </Button>
               </TooltipTrigger>
               {sidebarCollapsed && (
-                <TooltipContent side="right">Salir</TooltipContent>
+                <TooltipContent side="right">{onLockProfile ? 'Cerrar perfil' : 'Salir'}</TooltipContent>
               )}
             </Tooltip>
           </div>
@@ -473,7 +474,7 @@ export function KDSView({ onBack }: KDSViewProps) {
                     <Button
                       key={mesa}
                       size="sm"
-                      className="h-8 text-xs bg-warning hover:bg-warning/90 text-background font-bold"
+                      className="h-10 text-sm bg-warning hover:bg-warning/90 text-background font-bold"
                       onClick={() => handleFireTable(mesa)}
                     >
                       🔥 Mesa {mesa}

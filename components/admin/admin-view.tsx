@@ -16,6 +16,7 @@ import {
   UtensilsCrossed,
   History,
   LogOut,
+  Lock,
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
@@ -77,6 +78,7 @@ type AdminScreen = 'reports' | 'menu' | 'orders' | 'inventory' | 'users' | 'conf
 
 interface AdminViewProps {
   onBack: () => void
+  onLockProfile?: () => void
 }
 
 interface NavItem {
@@ -91,7 +93,7 @@ interface NavGroup {
   items: NavItem[]
 }
 
-export function AdminView({ onBack }: AdminViewProps) {
+export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
   const [screen, setScreen] = useState<AdminScreen>('reports')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
@@ -164,7 +166,7 @@ export function AdminView({ onBack }: AdminViewProps) {
               <WaitlessLogo size={28} color="light" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
               <div className="flex flex-col">
                 <span className="text-xs font-bold text-background leading-tight">{config.restaurantName ?? 'WAITLESS'}</span>
-                <span className="text-[10px] text-background/40">Panel Admin</span>
+                <span className="text-xs text-background/40">Panel Admin</span>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -241,12 +243,12 @@ export function AdminView({ onBack }: AdminViewProps) {
               <div className="relative">
                 {item.icon}
                 {item.badge && (
-                  <span className="absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground text-background text-[9px] font-bold px-0.5">
+                  <span className="absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground text-background text-[10px] font-bold px-0.5">
                     {item.badge}
                   </span>
                 )}
               </div>
-              <span className="text-[10px] font-medium leading-none">{item.label}</span>
+              <span className="text-xs font-medium leading-none">{item.label}</span>
               {screen === item.id && (
                 <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-foreground rounded-full" />
               )}
@@ -272,7 +274,7 @@ export function AdminView({ onBack }: AdminViewProps) {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs font-semibold text-foreground">{currentUser?.nombre ?? 'Admin'}</span>
-                    <span className="text-[10px] text-muted-foreground capitalize">{currentUser?.role ?? 'admin'}</span>
+                    <span className="text-xs text-muted-foreground capitalize">{currentUser?.role ?? 'admin'}</span>
                   </div>
                 </div>
                 <button
@@ -287,7 +289,7 @@ export function AdminView({ onBack }: AdminViewProps) {
               <div className="flex-1 overflow-y-auto py-3">
                 {navGroups.map(group => (
                   <div key={group.title} className="mb-1">
-                    <p className="px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <p className="px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       {group.title}
                     </p>
                     {group.items.map(item => (
@@ -349,6 +351,15 @@ export function AdminView({ onBack }: AdminViewProps) {
               {/* Drawer Footer */}
               <div className="border-t border-border p-3">
                 <PushSubscribeButton collapsed={false} />
+                {onLockProfile && (
+                  <button
+                    onClick={onLockProfile}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 min-h-[44px] text-sm text-foreground hover:bg-muted rounded-lg transition-colors mt-1"
+                  >
+                    <Lock className="h-4 w-4 shrink-0" />
+                    Cerrar perfil
+                  </button>
+                )}
                 <button
                   onClick={onBack}
                   className="w-full flex items-center gap-3 px-3 py-2.5 min-h-[44px] text-sm text-destructive hover:bg-destructive/10 rounded-lg transition-colors mt-1"
@@ -564,6 +575,12 @@ export function AdminView({ onBack }: AdminViewProps) {
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
+                    {onLockProfile && (
+                      <DropdownMenuItem onClick={onLockProfile}>
+                        <Lock className="h-4 w-4 mr-2" />
+                        Cerrar perfil
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem
                       onClick={onBack}
                       className="text-destructive focus:text-destructive"

@@ -227,7 +227,7 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
         ].map(stat => (
           <div key={stat.label} className={cn('rounded-lg p-2.5 md:p-3', stat.bg)}>
             <p className={cn('text-xl md:text-2xl font-bold', stat.color)}>{stat.value}</p>
-            <p className={cn('text-[10px] md:text-xs font-medium flex items-center gap-1', stat.color)}>
+            <p className={cn('text-xs font-medium flex items-center gap-1', stat.color)}>
               {stat.icon}{stat.label}
             </p>
           </div>
@@ -267,19 +267,19 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
         <div className="flex items-center gap-1 bg-muted rounded-lg p-1" role="group" aria-label="Modo de vista">
           <button
             onClick={() => setViewMode('grid')}
-            className={cn('p-1 rounded', viewMode === 'grid' ? 'bg-white shadow-sm' : 'text-muted-foreground')}
+            className={cn('h-9 w-9 flex items-center justify-center rounded-lg transition-colors', viewMode === 'grid' ? 'bg-white shadow-sm' : 'text-muted-foreground')}
             aria-label="Vista en cuadrícula"
             aria-pressed={viewMode === 'grid'}
           >
-            <LayoutGrid className="h-3.5 w-3.5" aria-hidden="true" />
+            <LayoutGrid className="h-4 w-4" aria-hidden="true" />
           </button>
           <button
             onClick={() => setViewMode('list')}
-            className={cn('p-1 rounded', viewMode === 'list' ? 'bg-white shadow-sm' : 'text-muted-foreground')}
+            className={cn('h-9 w-9 flex items-center justify-center rounded-lg transition-colors', viewMode === 'list' ? 'bg-white shadow-sm' : 'text-muted-foreground')}
             aria-label="Vista en lista"
             aria-pressed={viewMode === 'list'}
           >
-            <List className="h-3.5 w-3.5" aria-hidden="true" />
+            <List className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -343,15 +343,15 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
                   {info.status === 'limpieza' ? (
                     <button
                       onClick={(e) => { e.stopPropagation(); markTableClean(info.numero) }}
-                      className="w-full text-[8px] font-bold text-primary bg-primary/10 rounded px-1 py-0.5 leading-tight"
+                      className="w-full text-xs font-bold text-primary bg-primary/10 rounded px-1 py-1 leading-tight"
                       aria-label={`Marcar mesa ${info.numero} como lista`}
                     >
                       ✓ Lista
                     </button>
                   ) : info.status === 'libre' ? (
-                    <p className="text-[10px] text-muted-foreground text-center font-medium">Libre</p>
+                    <p className="text-xs text-muted-foreground text-center font-medium">Libre</p>
                   ) : info.elapsedMin > 0 ? (
-                    <p className={cn('text-[10px] font-semibold text-center flex items-center justify-center gap-0.5', style.text)}>
+                    <p className={cn('text-xs font-semibold text-center flex items-center justify-center gap-0.5', style.text)}>
                       <Clock className="h-2.5 w-2.5" />
                       {formatElapsed(info.elapsedMin)}
                     </p>
@@ -394,7 +394,7 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
                 <div className="flex-1 min-w-0">
                   <p className={cn('text-xs font-semibold', style.text)}>{info.label}</p>
                   {info.orderCount > 0 && (
-                    <p className="text-[10px] text-muted-foreground">{info.orderCount} pedido{info.orderCount !== 1 ? 's' : ''}</p>
+                    <p className="text-xs text-muted-foreground">{info.orderCount} pedido{info.orderCount !== 1 ? 's' : ''}</p>
                   )}
                 </div>
 
@@ -411,7 +411,7 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
                   {info.status === 'limpieza' ? (
                     <button
                       onClick={(e) => { e.stopPropagation(); markTableClean(info.numero) }}
-                      className="text-[10px] font-bold text-primary bg-primary/10 rounded px-2 py-0.5"
+                      className="text-xs font-bold text-primary bg-primary/10 rounded px-2 py-1.5 min-h-[44px] flex items-center"
                       aria-label={`Marcar mesa ${info.numero} como lista`}
                     >
                       Mesa lista

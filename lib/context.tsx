@@ -175,10 +175,12 @@ function loadState(): AppState {
         })) || DEFAULT_TABLES,
         cart: parsed.cart || [],
         currentTable: parsed.currentTable ?? null,
-        currentUser: null, // Siempre null — se restaura desde Supabase Auth session, no desde localStorage
+        deviceUser: null,  // Siempre null — se restaura desde Supabase Auth session
+        currentUser: null, // Siempre null — lo elige el staff en la pantalla de perfil
         currentSessionId: parsed.currentSessionId || null,
         waitlist: [], // Siempre se recarga desde Supabase, no desde localStorage
         tenantPlan: parsed.tenantPlan ?? 'starter',
+        tenantSlug: parsed.tenantSlug ?? undefined,
       }
 
       // Validate: clear currentTable/currentSessionId if there is no matching active session
@@ -227,6 +229,7 @@ function getDefaultState(): AppState {
     tables: DEFAULT_TABLES,
     cart: [],
     currentTable: null,
+    deviceUser: null,
     currentUser: null,
     currentSessionId: null,
     waitlist: [],
@@ -354,7 +357,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
           .single()
         if (profile && profile.activo !== false) {
           const user = buildUserFromProfile(profile as Record<string, unknown>)
-          setState(prev => ({ ...prev, currentUser: user }))
+          // Sólo seteamos deviceUser — currentUser queda null hasta que el staff
+          // elige su perfil en la pantalla de bloqueo (ProfilePicker)
+          setState(prev => ({ ...prev, deviceUser: user }))
           // Cargar lista de usuarios del staff — scoped por tenant cuando aplica
           const profilesTenantId = user.tenantId
           let profilesQuery = supabase.from('profiles').select('*').order('created_at')
@@ -470,7 +475,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // 5. Escuchar cambios de sesión (SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT') {
-        setState(prev => ({ ...prev, currentUser: null, users: [], cart: [] }))
+        setState(prev => ({ ...prev, deviceUser: null, currentUser: null, users: [], cart: [] }))
         return
       }
       if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
@@ -480,9 +485,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
           .eq('id', session.user.id)
           .single()
         if (profile && profile.activo !== false) {
+          // Actualiza deviceUser (cuenta del dispositivo) pero NO toca currentUser
           setState(prev => ({
             ...prev,
-            currentUser: buildUserFromProfile(profile as Record<string, unknown>),
+            deviceUser: buildUserFromProfile(profile as Record<string, unknown>),
           }))
         }
       }
@@ -492,7 +498,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [])
   
   useEffect(() => {
-    const tenantId = state.currentUser?.tenantId
+    // Usar deviceUser para tenant scope: se conoce apenas el dispositivo se autentica,
+    // antes de que el staff elija su perfil. Esto precarga datos para que la vista
+    // esté lista al instante cuando el usuario selecciona su perfil.
+    const tenantId = state.deviceUser?.tenantId ?? state.currentUser?.tenantId
     cargarMenu(setState, tenantId)
     cargarCategorias(setState, tenantId)
     cargarOrdenes(setState, tenantId)
@@ -502,7 +511,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     cargarReembolsos(setState, tenantId)
     cargarIngredientes(setState, tenantId)
     cargarWaitlist(setState, tenantId)
-  }, [state.currentUser?.tenantId])
+  }, [state.deviceUser?.tenantId, state.currentUser?.tenantId])
 
   // P2-1: Apply white-label CSS variables whenever branding config changes
   useEffect(() => {
@@ -1086,7 +1095,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
       teardown()
     }
-  }, [isHydrated, state.currentUser?.tenantId])
+  }, [isHydrated, state.deviceUser?.tenantId, state.currentUser?.tenantId])
   
   // ============ AUTH ACTIONS ============
   // Lógica de Supabase Auth extraída a lib/context/auth.ts.
@@ -1094,7 +1103,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (username: string, password: string): Promise<User | null> => {
     const user = await authLogin(username, password)
     if (!user) return null
-    setState(prev => ({ ...prev, currentUser: user }))
+    // Login completo: establece tanto la cuenta del dispositivo como el perfil activo
+    setState(prev => ({ ...prev, deviceUser: user, currentUser: user }))
     authLoadUsers(user.tenantId).then(users => {
       setState(prev => ({ ...prev, users }))
     })
@@ -1102,8 +1112,46 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = useCallback(async (): Promise<void> => {
-    setState(prev => ({ ...prev, currentUser: null, currentTable: null, currentSessionId: null, cart: [], users: [] }))
+    setState(prev => ({
+      ...prev,
+      deviceUser: null,
+      currentUser: null,
+      currentTable: null,
+      currentSessionId: null,
+      cart: [],
+      users: [],
+    }))
     await authLogout()
+  }, [])
+
+  // Cierra el perfil activo sin cerrar la sesión del dispositivo.
+  // El staff verá la pantalla de bloqueo (ProfilePicker) y podrá elegir otro perfil.
+  const lockProfile = useCallback((): void => {
+    setState(prev => ({ ...prev, currentUser: null }))
+  }, [])
+
+  // Valida credenciales de un perfil sin cambiar la sesión Supabase del navegador.
+  // Llama al API route server-side que valida contra Supabase Auth de forma aislada.
+  const switchProfile = useCallback(async (username: string, password: string): Promise<User | null> => {
+    const res = await fetch('/api/auth/validate-profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    })
+    if (!res.ok) return null
+    const json = await res.json()
+    if (!json.profile) return null
+    const user: User = {
+      id: json.profile.id as string,
+      username: json.profile.username as string,
+      nombre: json.profile.nombre as string,
+      role: json.profile.role as UserRole,
+      activo: json.profile.activo as boolean,
+      tenantId: json.profile.tenantId as string | undefined,
+      createdAt: new Date(json.profile.createdAt as string),
+    }
+    setState(prev => ({ ...prev, currentUser: user }))
+    return user
   }, [])
 
   // ============ DOMAIN HOOKS ============
@@ -1120,6 +1168,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     ...state,
     login,
     logout,
+    lockProfile,
+    switchProfile,
     ...cartActions,
     ...orderActions,
     ...sessionActions,
@@ -1148,12 +1198,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     realtimeConnected,
 
     // Task 4.1 — Multi-tenant
-    tenantId: state.currentUser?.tenantId,
+    tenantId: state.currentUser?.tenantId ?? state.deviceUser?.tenantId,
     tenantSlug: state.tenantSlug,
     tenantPlan: state.tenantPlan,
     hasPlanFeature: (feature: string) => {
+      const activeTenantId = state.currentUser?.tenantId ?? state.deviceUser?.tenantId
       // Sin tenant (single-tenant mode) → acceso total sin restricciones
-      if (!state.currentUser?.tenantId) return true
+      if (!activeTenantId) return true
       const planFeatures: Record<string, Set<string>> = {
         starter:    new Set(['orders', 'tables', 'kitchen', 'qr']),
         pro:        new Set(['orders', 'tables', 'kitchen', 'qr', 'analytics', 'waitlist', 'push_notifications', 'refunds']),

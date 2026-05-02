@@ -27,9 +27,10 @@ type MeseroScreen = 'tables' | 'session' | 'deliveries' | 'calls' | 'waitlist'
 
 interface MeseroViewProps {
   onBack: () => void
+  onLockProfile?: () => void
 }
 
-export function MeseroView({ onBack }: MeseroViewProps) {
+export function MeseroView({ onBack, onLockProfile }: MeseroViewProps) {
   const { getPendingCalls, orders, waitlist, config } = useApp()
   const [screen, setScreen] = useState<MeseroScreen>('tables')
   const [selectedTable, setSelectedTable] = useState<number | null>(null)
@@ -122,11 +123,11 @@ export function MeseroView({ onBack }: MeseroViewProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 text-white/70 hover:text-white hover:bg-white/10"
-                onClick={onBack}
+                className="h-10 text-white/70 hover:text-white hover:bg-white/10"
+                onClick={onLockProfile ?? onBack}
               >
                 <LogOut className="h-4 w-4 mr-1" />
-                Salir
+                {onLockProfile ? 'Cerrar perfil' : 'Salir'}
               </Button>
               <div className="border-l border-white/20 pl-2 flex items-center gap-2">
                 <WaitlessLogo size={22} color="light" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
@@ -148,7 +149,7 @@ export function MeseroView({ onBack }: MeseroViewProps) {
                     }
                   }}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors relative",
+                    "flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-colors relative",
                     activeNavId === item.id
                       ? 'bg-white text-black'
                       : 'bg-white/10 text-white hover:bg-white/20'
@@ -319,25 +320,47 @@ export function MeseroView({ onBack }: MeseroViewProps) {
             {/* Push notifications toggle */}
             <PushSubscribeButton collapsed={sidebarCollapsed} />
 
-            {/* Logout */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className={cn(
-                    "w-full justify-start gap-3 h-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
-                    sidebarCollapsed && "justify-center px-0"
-                  )}
-                  onClick={onBack}
-                >
-                  <LogOut className="h-4 w-4" />
-                  {!sidebarCollapsed && <span className="text-sm">Cerrar Sesión</span>}
-                </Button>
-              </TooltipTrigger>
-              {sidebarCollapsed && (
-                <TooltipContent side="right">Cerrar Sesión</TooltipContent>
-              )}
-            </Tooltip>
+            {/* Cerrar perfil / Cerrar sesión */}
+            {onLockProfile && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "w-full justify-start gap-3 h-9 text-muted-foreground hover:text-foreground hover:bg-muted",
+                      sidebarCollapsed && "justify-center px-0"
+                    )}
+                    onClick={onLockProfile}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {!sidebarCollapsed && <span className="text-sm">Cerrar perfil</span>}
+                  </Button>
+                </TooltipTrigger>
+                {sidebarCollapsed && (
+                  <TooltipContent side="right">Cerrar perfil</TooltipContent>
+                )}
+              </Tooltip>
+            )}
+            {!onLockProfile && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "w-full justify-start gap-3 h-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
+                      sidebarCollapsed && "justify-center px-0"
+                    )}
+                    onClick={onBack}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {!sidebarCollapsed && <span className="text-sm">Cerrar sesión</span>}
+                  </Button>
+                </TooltipTrigger>
+                {sidebarCollapsed && (
+                  <TooltipContent side="right">Cerrar sesión</TooltipContent>
+                )}
+              </Tooltip>
+            )}
           </div>
         </aside>
 

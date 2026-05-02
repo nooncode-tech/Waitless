@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { Toaster } from '@/components/ui/sonner'
 import { Spinner } from '@/components/ui/spinner'
 import { LoginScreen } from '@/components/auth/login-screen'
+import { ProfilePicker } from '@/components/auth/profile-picker'
 import { LandingPage } from '@/components/landing/landing-page'
 import { ClienteView } from '@/components/cliente/cliente-view'
 import { ClienteAuthScreen } from '@/components/cliente/cliente-auth-screen'
@@ -17,14 +18,14 @@ import type { UserRole } from '@/lib/store'
 import type { TenantBranding } from '@/lib/tenant-server'
 import type { ClienteUser } from '@/lib/cliente-auth'
 
-type AppView = 'landing' | 'login' | 'cliente-auth' | 'cliente' | 'admin' | 'mesero' | 'cocina'
+type AppView = 'landing' | 'login' | 'profile-picker' | 'cliente-auth' | 'cliente' | 'admin' | 'mesero' | 'cocina'
 
 interface AppContentProps {
   initialBranding: TenantBranding
 }
 
 function AppContent({ initialBranding }: AppContentProps) {
-  const { currentUser, setCurrentTable, logout, validateTableQR } = useApp()
+  const { currentUser, deviceUser, setCurrentTable, logout, lockProfile, validateTableQR } = useApp()
   const [view, setView] = useState<AppView>('landing')
   const [clienteMesa, setClienteMesa] = useState<number | null>(null)
   const [clienteUser, setClienteUser] = useState<ClienteUser | null>(null)
@@ -115,12 +116,19 @@ function AppContent({ initialBranding }: AppContentProps) {
     return role as AppView
   }
 
-  // Auto-redirect cuando hay sesión Supabase activa
+  // Auto-redirect según estado de auth:
+  // - deviceUser sin currentUser → pantalla de bloqueo (perfil picker)
+  // - currentUser activo → vista del rol correspondiente
   useEffect(() => {
-    if (currentUser && (view === 'login' || view === 'landing')) {
-      setView(roleToView(currentUser.role)) // eslint-disable-line react-hooks/set-state-in-effect -- intentional reactive navigation on auth state change
+    const clientViews: AppView[] = ['cliente', 'cliente-auth']
+    if (deviceUser && !currentUser && !clientViews.includes(view)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: redirect to lock screen when device session exists but no active profile
+      setView('profile-picker')
+    } else if (currentUser && (view === 'login' || view === 'landing' || view === 'profile-picker')) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional reactive navigation on auth state change
+      setView(roleToView(currentUser.role))
     }
-  }, [currentUser, view])
+  }, [currentUser, deviceUser, view])
 
   const handleLoginSuccess = (role: UserRole) => {
     setView(roleToView(role))
@@ -131,6 +139,11 @@ function AppContent({ initialBranding }: AppContentProps) {
     setClienteMesa(null)
     window.history.replaceState({}, '', window.location.pathname)
     await logout()
+  }
+
+  const handleLockProfile = () => {
+    lockProfile()
+    // El useEffect detecta deviceUser && !currentUser y setea view a 'profile-picker'
   }
 
   const handleClienteAuthSuccess = (user: ClienteUser | null) => {
@@ -182,6 +195,11 @@ function AppContent({ initialBranding }: AppContentProps) {
     return <LoginScreen onLoginSuccess={handleLoginSuccess} onBack={() => setView('landing')} initialBranding={initialBranding} />
   }
 
+  // Pantalla de bloqueo: sesión de dispositivo activa pero sin perfil seleccionado
+  if (view === 'profile-picker') {
+    return <ProfilePicker onLogout={handleLogout} />
+  }
+
   // Estado transitorio: view ya cambió a rol pero currentUser del contexto aún no propagó
   // (race entre setState del provider y setView del componente hijo en React 18)
   if (!currentUser) {
@@ -197,24 +215,24 @@ function AppContent({ initialBranding }: AppContentProps) {
     case 'admin':
       // FIX P0.5: admin Y manager usan la vista admin (manager tiene permisos acotados dentro)
       if (currentUser.role !== 'admin' && currentUser.role !== 'manager') {
-        setView('login')
+        setView('profile-picker')
         return null
       }
-      return <AdminView onBack={handleLogout} />
+      return <AdminView onBack={handleLogout} onLockProfile={handleLockProfile} />
 
     case 'mesero':
       if (currentUser.role !== 'mesero') {
-        setView('login')
+        setView('profile-picker')
         return null
       }
-      return <MeseroView onBack={handleLogout} />
+      return <MeseroView onBack={handleLogout} onLockProfile={handleLockProfile} />
 
     case 'cocina':
       if (currentUser.role !== 'cocina') {
-        setView('login')
+        setView('profile-picker')
         return null
       }
-      return <KDSView onBack={handleLogout} />
+      return <KDSView onBack={handleLogout} onLockProfile={handleLockProfile} />
 
     default:
     return <LandingPage onLogin={() => setView('login')} />
