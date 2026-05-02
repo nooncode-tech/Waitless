@@ -10,13 +10,29 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { formatPrice, type MenuItem } from '@/lib/store'
 import { MenuItemDialog } from './menu-item-dialog'
-import { uploadMenuImage } from '@/lib/context/sync'
+import { supabase } from '@/lib/supabase'
 
 export function MenuManager() {
   const { menuItems, updateMenuItem, categories, ingredients, currentUser, config, updateConfig, tenantSlug } = useApp()
   const role = currentUser?.role
   const canEditMenu = canDo(role, 'editar_menu')
   const canEditConfig = canDo(role, 'editar_config')
+  const uploadBrandingImage = async (file: File): Promise<string | null> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('bucket', 'menu-images')
+    const res = await fetch('/api/admin/upload', {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: fd,
+    })
+    if (!res.ok) return null
+    const json = await res.json()
+    return json.url ?? null
+  }
+
   const [copied, setCopied] = useState(false)
   const [showCustomize, setShowCustomize] = useState(false)
   const [customSaved, setCustomSaved] = useState(false)
@@ -340,10 +356,13 @@ export function MenuManager() {
                         const file = e.target.files?.[0]
                         if (!file) return
                         setUploadingLogo(true)
-                        const url = await uploadMenuImage(file)
-                        if (url) setLocalBranding(p => ({ ...p, logoUrl: url }))
-                        setUploadingLogo(false)
-                        e.target.value = ''
+                        try {
+                          const url = await uploadBrandingImage(file)
+                          if (url) setLocalBranding(p => ({ ...p, logoUrl: url }))
+                        } finally {
+                          setUploadingLogo(false)
+                          e.target.value = ''
+                        }
                       }} />
                     </div>
                   </div>
@@ -377,10 +396,13 @@ export function MenuManager() {
                       const file = e.target.files?.[0]
                       if (!file) return
                       setUploadingCover(true)
-                      const url = await uploadMenuImage(file)
-                      if (url) setLocalBranding(p => ({ ...p, coverUrl: url }))
-                      setUploadingCover(false)
-                      e.target.value = ''
+                      try {
+                        const url = await uploadBrandingImage(file)
+                        if (url) setLocalBranding(p => ({ ...p, coverUrl: url }))
+                      } finally {
+                        setUploadingCover(false)
+                        e.target.value = ''
+                      }
                     }} />
                   </div>
                 </div>
