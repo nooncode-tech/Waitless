@@ -817,10 +817,10 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
     <div className="min-h-screen bg-gray-50 flex flex-col" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
 
       {/* ── Cover ─────────────────────────────────────────────────────────── */}
-      <div className="relative w-full overflow-hidden" style={{ height: 160 }}>
+      <div className="relative w-full overflow-hidden" style={{ aspectRatio: '16/7', minHeight: 180, maxHeight: 280 }}>
         {data.coverUrl ? (
           <img src={data.coverUrl} alt="Portada"
-            className={`w-full h-full object-cover ${cerrada ? 'grayscale opacity-70' : ''}`} />
+            className={`w-full h-full object-cover object-center ${cerrada ? 'grayscale opacity-70' : ''}`} />
         ) : (
           <div className="w-full h-full flex items-center justify-center"
             style={{ background: `linear-gradient(135deg, ${primary} 0%, ${primary}88 100%)` }}>
@@ -839,11 +839,11 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
 
       {/* ── Perfil ────────────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-gray-100 px-5 pb-4">
-        <div className="flex items-end justify-between -mt-8 mb-3">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden border-[3px] border-white shadow-lg shrink-0"
+        <div className="flex items-end justify-between -mt-10 mb-3">
+          <div className="w-20 h-20 rounded-2xl overflow-hidden border-[3px] border-white shadow-lg shrink-0"
             style={{ backgroundColor: primary }}>
             {data.logoUrl
-              ? <img src={data.logoUrl} alt={data.restaurantName} className="w-full h-full object-cover" />
+              ? <img src={data.logoUrl} alt={data.restaurantName} className="w-full h-full object-cover object-center" />
               : <div className="w-full h-full flex items-center justify-center">
                   <span className="text-white font-black text-2xl" style={{ letterSpacing: '-0.03em' }}>
                     {data.restaurantName.charAt(0).toUpperCase()}
