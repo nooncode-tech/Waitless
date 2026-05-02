@@ -64,6 +64,8 @@ export function MenuItemDialog({ item, onClose }: MenuItemDialogProps) {
   const [ingredientSearch, setIngredientSearch] = useState('')
   const [editingExtraId, setEditingExtraId] = useState<string | null>(null)
   const [extraIngredientSearch, setExtraIngredientSearch] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const activeCategories = categories.filter(c => c.activa).sort((a, b) => a.orden - b.orden)
 
@@ -114,8 +116,10 @@ export function MenuItemDialog({ item, onClose }: MenuItemDialogProps) {
   }
 
   // ── Submit ───────────────────────────────────────────────────────
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSubmitError(null)
+    setSubmitting(true)
 
     const pendingFiles = imageFiles.map((f, i) => {
       const url = imagenes[i]
@@ -136,18 +140,23 @@ export function MenuItemDialog({ item, onClose }: MenuItemDialogProps) {
       colorBorde: usarColorBorde ? colorBorde : undefined,
       stockHabilitado,
       stockCantidad: parseInt(stockCantidad) || 0,
+      mostrarEnMenuDigital: true,
       extras: extras.length > 0 ? extras : undefined,
       receta: receta.length > 0 ? receta : undefined,
       disponible: item?.disponible ?? true,
     }
 
-    if (item) {
-      updateMenuItem(item.id, data, pendingFiles)
-    } else {
-      addMenuItem(data, pendingFiles)
+    try {
+      if (item) {
+        await updateMenuItem(item.id, data, pendingFiles)
+      } else {
+        await addMenuItem(data, pendingFiles)
+      }
+      onClose()
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Error al guardar. Intenta de nuevo.')
+      setSubmitting(false)
     }
-
-    onClose()
   }
 
   const content = (
@@ -694,20 +703,28 @@ export function MenuItemDialog({ item, onClose }: MenuItemDialogProps) {
             </div>
           )}
 
+          {submitError && (
+            <p className="text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-md px-2 py-1.5">
+              {submitError}
+            </p>
+          )}
+
           <div className="pt-2 flex gap-2">
             <Button
               type="button"
               variant="outline"
               className="flex-1 bg-transparent h-8 text-xs"
               onClick={onClose}
+              disabled={submitting}
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               className="flex-1 bg-primary text-primary-foreground h-8 text-xs"
+              disabled={submitting}
             >
-              {item ? 'Guardar' : 'Crear'}
+              {submitting ? 'Guardando...' : item ? 'Guardar' : 'Crear'}
             </Button>
           </div>
         </form>

@@ -64,9 +64,8 @@ export function useMenuActions(state: AppState, setState: SetState) {
 
       if (!res.ok) {
         const json = await res.json().catch(() => ({}))
-        console.error("Error actualizando platillo:", json.error ?? res.status)
         setState(prev => ({ ...prev, menuItems: prevItems }))
-        return
+        throw new Error(json.error ?? `Error ${res.status}`)
       }
 
       // Apply final image values if they changed during upload
@@ -129,8 +128,7 @@ export function useMenuActions(state: AppState, setState: SetState) {
 
       if (!res.ok) {
         const json = await res.json().catch(() => ({}))
-        console.error("Error creando platillo:", json.error ?? res.status)
-        return
+        throw new Error(json.error ?? `Error ${res.status}`)
       }
 
       const json = await res.json()
