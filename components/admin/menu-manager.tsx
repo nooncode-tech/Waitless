@@ -23,14 +23,23 @@ export function MenuManager() {
     const fd = new FormData()
     fd.append('file', file)
     fd.append('bucket', 'menu-images')
-    const res = await fetch('/api/admin/upload', {
-      method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      body: fd,
-    })
-    if (!res.ok) return null
-    const json = await res.json()
-    return json.url ?? null
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 30_000)
+    try {
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+        signal: controller.signal,
+      })
+      if (!res.ok) return null
+      const json = await res.json()
+      return json.url ?? null
+    } catch {
+      return null
+    } finally {
+      clearTimeout(timer)
+    }
   }
 
   const [copied, setCopied] = useState(false)
