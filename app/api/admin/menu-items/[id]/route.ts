@@ -34,20 +34,19 @@ export async function PATCH(
     return NextResponse.json({ error: 'Sin campos para actualizar' }, { status: 400 })
   }
 
-  const baseQuery = supabaseAdmin
+  let updateQuery = supabaseAdmin
     .from('menu_items')
     .update(payload)
     .eq('id', id)
 
-  const { data: updated, error } = auth.tenantId
-    ? await baseQuery.eq('tenant_id', auth.tenantId).select('id')
-    : await baseQuery.select('id')
+  if (auth.tenantId) {
+    updateQuery = updateQuery.eq('tenant_id', auth.tenantId)
+  }
+
+  const { error } = await updateQuery
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-  if (!updated || updated.length === 0) {
-    return NextResponse.json({ error: 'Item no encontrado o sin permiso' }, { status: 404 })
   }
 
   return NextResponse.json({ ok: true })
