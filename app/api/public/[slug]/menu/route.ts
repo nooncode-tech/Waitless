@@ -108,7 +108,7 @@ export async function GET(
   const cierre = (config?.auto_horario_cierre as string | null) ?? null
   const storeOpen = computeStoreOpen(tiendaAbierta, apertura, cierre)
 
-  return NextResponse.json({
+  const body = {
     restaurantName: (config?.restaurant_name as string | null) ?? (tenant?.nombre as string | null) ?? 'Restaurante',
     logoUrl: (config?.logo_url as string | null) ?? null,
     primaryColor: (config?.primary_color as string | null) ?? '#000000',
@@ -133,5 +133,13 @@ export async function GET(
     tenantId,
     zonasReparto,
     deliveryHabilitado,
+  }
+
+  return new NextResponse(JSON.stringify(body), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+    },
   })
 }
