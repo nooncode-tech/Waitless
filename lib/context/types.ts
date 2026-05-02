@@ -59,6 +59,7 @@ export interface AppState {
   currentSessionId: string | null
   waitlist: WaitlistEntry[]
   tenantPlan: 'starter' | 'pro' | 'enterprise'
+  tenantSlug: string | undefined
 }
 
 export interface AppContextType extends AppState {
@@ -216,6 +217,7 @@ export interface AppContextType extends AppState {
 
   // Multi-tenant
   tenantId: string | undefined
+  tenantSlug: string | undefined
   tenantPlan: 'starter' | 'pro' | 'enterprise'
   hasPlanFeature: (feature: string) => boolean
 }

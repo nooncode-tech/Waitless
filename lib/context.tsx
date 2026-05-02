@@ -231,6 +231,7 @@ function getDefaultState(): AppState {
     currentSessionId: null,
     waitlist: [],
     tenantPlan: 'starter',
+    tenantSlug: undefined,
   }
 }
 
@@ -375,19 +376,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
             configQuery = configQuery.eq('id', 'default')
           }
 
-          // Cargar nombre y plan del tenant
+          // Cargar nombre, slug y plan del tenant
           let tenantNombre: string | undefined
+          let tenantSlug: string | undefined
           let tenantPlan: 'starter' | 'pro' | 'enterprise' = 'starter'
           if (user.tenantId) {
             const { data: tenantRow } = await supabase
               .from('tenants')
-              .select('nombre, plan')
+              .select('nombre, slug, plan')
               .eq('id', user.tenantId)
               .single()
             tenantNombre = (tenantRow?.nombre as string | undefined) ?? undefined
+            tenantSlug = (tenantRow?.slug as string | undefined) ?? undefined
             tenantPlan = (tenantRow?.plan as 'starter' | 'pro' | 'enterprise' | undefined) ?? 'starter'
           }
-          setState(prev => ({ ...prev, tenantPlan }))
+          setState(prev => ({ ...prev, tenantPlan, tenantSlug }))
 
           const { data: configRow } = await configQuery.single()
           if (configRow) {
@@ -1146,6 +1149,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     // Task 4.1 — Multi-tenant
     tenantId: state.currentUser?.tenantId,
+    tenantSlug: state.tenantSlug,
     tenantPlan: state.tenantPlan,
     hasPlanFeature: (feature: string) => {
       // Sin tenant (single-tenant mode) → acceso total sin restricciones

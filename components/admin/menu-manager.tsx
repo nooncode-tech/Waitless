@@ -10,14 +10,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { formatPrice, type MenuItem } from '@/lib/store'
 import { MenuItemDialog } from './menu-item-dialog'
-import { supabase } from '@/lib/supabase'
 
 export function MenuManager() {
-  const { menuItems, updateMenuItem, categories, ingredients, currentUser, config, updateConfig } = useApp()
+  const { menuItems, updateMenuItem, categories, ingredients, currentUser, config, updateConfig, tenantSlug } = useApp()
   const role = currentUser?.role
   const canEditMenu = canDo(role, 'editar_menu')
   const canEditConfig = canDo(role, 'editar_config')
-  const [tenantSlug, setTenantSlug] = useState<string>('default')
   const [copied, setCopied] = useState(false)
   const [showCustomize, setShowCustomize] = useState(false)
   const [customSaved, setCustomSaved] = useState(false)
@@ -53,19 +51,9 @@ export function MenuManager() {
     setTimeout(() => setCustomSaved(false), 2000)
   }
 
-  useEffect(() => {
-    if (!currentUser?.tenantId) return
-    supabase
-      .from('tenants')
-      .select('slug')
-      .eq('id', currentUser.tenantId)
-      .single()
-      .then(({ data }) => { if (data?.slug) setTenantSlug(data.slug as string) })
-  }, [currentUser?.tenantId])
-
   const menuUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/menu/${tenantSlug}`
-    : `/menu/${tenantSlug}`
+    ? `${window.location.origin}/menu/${tenantSlug ?? 'default'}`
+    : `/menu/${tenantSlug ?? 'default'}`
 
   const handleCopyUrl = () => {
     if (!menuUrl) return
