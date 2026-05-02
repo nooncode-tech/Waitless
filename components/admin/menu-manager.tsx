@@ -72,8 +72,12 @@ export function MenuManager() {
   const [showDialog, setShowDialog] = useState(false)
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null)
   
-  const handleToggleAvailability = (item: MenuItem) => {
-    updateMenuItem(item.id, { disponible: !item.disponible })
+  const handleToggleAvailability = async (item: MenuItem) => {
+    try {
+      await updateMenuItem(item.id, { disponible: !item.disponible })
+    } catch {
+      // el optimistic revert ya se aplicó en updateMenuItem
+    }
   }
   
   const handleEdit = (item: MenuItem) => {

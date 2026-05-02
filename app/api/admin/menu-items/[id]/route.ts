@@ -38,6 +38,7 @@ export async function PATCH(
     .from('menu_items')
     .update(payload)
     .eq('id', id)
+    .eq('tenant_id', auth.tenantId)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
