@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useRef } from "react"
-import { useState } from 'react'
+import React, { useRef, useEffect, useState } from "react"
+import { createPortal } from 'react-dom'
 import { X, Plus, Trash2, ImageIcon, Archive, AlertTriangle, FolderOpen, Package } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { Button } from '@/components/ui/button'
@@ -22,6 +22,9 @@ interface MenuItemDialogProps {
 const MAX_FOTOS = 3
 
 export function MenuItemDialog({ item, onClose }: MenuItemDialogProps) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
   const { updateMenuItem, addMenuItem, deleteMenuItem, categories, ingredients } = useApp()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showCategoryManager, setShowCategoryManager] = useState(false)
@@ -147,8 +150,8 @@ export function MenuItemDialog({ item, onClose }: MenuItemDialogProps) {
     onClose()
   }
 
-  return (
-    <div className="fixed inset-0 z-50 bg-foreground/50 flex items-center justify-center p-4 overflow-y-auto">
+  const content = (
+    <div className="fixed inset-0 z-[9999] bg-foreground/50 flex items-center justify-center p-4 overflow-y-auto">
       <div className="bg-background rounded-xl w-full max-w-md my-4">
         {/* Header */}
         <div className="flex items-center justify-between p-3 border-b border-border">
@@ -711,4 +714,7 @@ export function MenuItemDialog({ item, onClose }: MenuItemDialogProps) {
       </div>
     </div>
   )
+
+  if (!mounted) return null
+  return createPortal(content, document.body)
 }
