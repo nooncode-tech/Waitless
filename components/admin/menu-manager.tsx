@@ -1,15 +1,15 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { Plus, Edit2, ImageIcon, ExternalLink, Copy, Check, Settings2, X, Save } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { Plus, Edit2, ImageIcon, ExternalLink, Copy, Check, Settings2, X, Save, Upload } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { canDo } from '@/lib/permissions'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { formatPrice, type MenuItem } from '@/lib/store'
 import { MenuItemDialog } from './menu-item-dialog'
+import { uploadMenuImage } from '@/lib/context/sync'
 
 export function MenuManager() {
   const { menuItems, updateMenuItem, categories, ingredients, currentUser, config, updateConfig, tenantSlug } = useApp()
@@ -19,6 +19,10 @@ export function MenuManager() {
   const [copied, setCopied] = useState(false)
   const [showCustomize, setShowCustomize] = useState(false)
   const [customSaved, setCustomSaved] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [uploadingCover, setUploadingCover] = useState(false)
+  const logoInputRef = useRef<HTMLInputElement>(null)
+  const coverInputRef = useRef<HTMLInputElement>(null)
   const [localBranding, setLocalBranding] = useState({
     restaurantName: config.restaurantName ?? '',
     logoUrl: config.logoUrl ?? '',
@@ -313,35 +317,71 @@ export function MenuManager() {
               {/* Imágenes */}
               <div>
                 <p className="text-[9px] font-semibold uppercase tracking-widest text-foreground/30 mb-2.5">Imágenes</p>
-                <div className="space-y-2.5">
+                <div className="space-y-3">
+                  {/* Logo */}
                   <div>
-                    <label className="text-[10px] font-semibold text-foreground/50 block mb-1">URL del logo</label>
-                    <Input
-                      value={localBranding.logoUrl}
-                      onChange={e => setLocalBranding(p => ({ ...p, logoUrl: e.target.value }))}
-                      placeholder="https://..."
-                      className="h-9 text-xs"
-                    />
+                    <label className="text-[10px] font-semibold text-foreground/50 block mb-1.5">Logo</label>
+                    <div className="flex items-center gap-2">
+                      {localBranding.logoUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={localBranding.logoUrl} alt="Logo" className="h-10 w-10 object-cover rounded-lg border border-black/10 shrink-0" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => logoInputRef.current?.click()}
+                        disabled={uploadingLogo}
+                        className="flex-1 h-10 rounded-lg border border-dashed border-black/20 flex items-center justify-center gap-2 text-xs text-foreground/50 hover:border-black/40 hover:text-foreground/70 transition-colors disabled:opacity-50"
+                      >
+                        <Upload className="h-3.5 w-3.5" />
+                        {uploadingLogo ? 'Subiendo...' : localBranding.logoUrl ? 'Cambiar logo' : 'Subir logo'}
+                      </button>
+                      <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={async e => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        setUploadingLogo(true)
+                        const url = await uploadMenuImage(file)
+                        if (url) setLocalBranding(p => ({ ...p, logoUrl: url }))
+                        setUploadingLogo(false)
+                        e.target.value = ''
+                      }} />
+                    </div>
                   </div>
+
+                  {/* Portada */}
                   <div>
-                    <label className="text-[10px] font-semibold text-foreground/50 block mb-1">URL de portada</label>
-                    <Input
-                      value={localBranding.coverUrl}
-                      onChange={e => setLocalBranding(p => ({ ...p, coverUrl: e.target.value }))}
-                      placeholder="https://..."
-                      className="h-9 text-xs"
-                    />
+                    <label className="text-[10px] font-semibold text-foreground/50 block mb-1.5">Imagen de portada</label>
+                    <button
+                      type="button"
+                      onClick={() => coverInputRef.current?.click()}
+                      disabled={uploadingCover}
+                      className="w-full rounded-lg border border-dashed border-black/20 overflow-hidden hover:border-black/40 transition-colors disabled:opacity-50"
+                    >
+                      {localBranding.coverUrl ? (
+                        <div className="relative">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={localBranding.coverUrl} alt="Portada" className="w-full h-24 object-cover" />
+                          <div className="absolute inset-0 bg-black/30 flex items-center justify-center gap-1.5 text-white text-xs opacity-0 hover:opacity-100 transition-opacity">
+                            <Upload className="h-3.5 w-3.5" />
+                            {uploadingCover ? 'Subiendo...' : 'Cambiar portada'}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-20 flex items-center justify-center gap-2 text-xs text-foreground/50">
+                          <Upload className="h-3.5 w-3.5" />
+                          {uploadingCover ? 'Subiendo...' : 'Subir imagen de portada'}
+                        </div>
+                      )}
+                    </button>
+                    <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={async e => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      setUploadingCover(true)
+                      const url = await uploadMenuImage(file)
+                      if (url) setLocalBranding(p => ({ ...p, coverUrl: url }))
+                      setUploadingCover(false)
+                      e.target.value = ''
+                    }} />
                   </div>
-                  {/* Preview portada */}
-                  {localBranding.coverUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={localBranding.coverUrl}
-                      alt="Preview portada"
-                      className="w-full h-24 object-cover rounded-lg border border-black/8"
-                      onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-                    />
-                  )}
                 </div>
               </div>
 
