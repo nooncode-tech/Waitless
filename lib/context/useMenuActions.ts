@@ -52,9 +52,13 @@ export function useMenuActions(state: AppState, setState: SetState) {
       if (updates.stockCantidad !== undefined) payload.stock_cantidad = updates.stockCantidad
       if (updates.mostrarEnMenuDigital !== undefined) payload.mostrar_en_menu_digital = updates.mostrarEnMenuDigital
 
+      const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch(`/api/admin/menu-items/${itemId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
         body: JSON.stringify(payload),
       })
 

@@ -77,11 +77,12 @@ export async function GET(
     console.error('[public/menu] Error cargando ítems:', itemsError.message)
   }
 
-  // Filtrar: disponibles y con stock
+  // Filtrar: disponibles, visibles en menú digital y con stock
   const items = (rawItems ?? []).filter(item => {
     const disponible = (item.available ?? item.disponible ?? true) as boolean
+    const enMenuDigital = (item.mostrar_en_menu_digital ?? true) as boolean
     const conStock = item.stock_habilitado ? (item.stock_cantidad ?? 0) > 0 : true
-    return disponible && conStock
+    return disponible && enMenuDigital && conStock
   }).map(item => ({
     id: item.id as string,
     nombre: (item.name ?? item.nombre) as string,
