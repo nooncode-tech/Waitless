@@ -20,14 +20,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Archivo requerido' }, { status: 400 })
   }
 
-  const ext = file.name.split('.').pop() ?? 'jpg'
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+
+  const arrayBuffer = await file.arrayBuffer()
+  const buffer = Buffer.from(arrayBuffer)
 
   const { error } = await supabaseAdmin.storage
     .from(bucket)
-    .upload(fileName, file, { contentType: file.type })
+    .upload(fileName, buffer, { contentType: file.type, upsert: false })
 
   if (error) {
+    console.error('[upload]', error.message)
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
