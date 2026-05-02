@@ -109,25 +109,29 @@ export function useAdminActions(state: AppState, setState: SetState) {
     }
   }, [state.currentUser, setState])
 
-  // refreshUsers: recarga la lista de staff desde Supabase profiles — scoped por tenant
+  // refreshUsers: recarga la lista de staff vía API (supabaseAdmin, bypasa RLS)
   const refreshUsers = useCallback(async (): Promise<void> => {
-    let q = supabase.from('profiles').select('*').order('created_at')
-    if (state.currentUser?.tenantId) q = q.eq('tenant_id', state.currentUser.tenantId)
-    const { data } = await q
-    if (data) {
-      setState(prev => ({
-        ...prev,
-        users: data.map(p => ({
-          id: p.id as string,
-          username: p.username as string,
-          nombre: p.nombre as string,
-          role: p.role as UserRole,
-          activo: p.activo as boolean,
-          createdAt: new Date(p.created_at as string),
-        })),
-      }))
-    }
-  }, [state.currentUser, setState])
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+    if (!token) return
+    const res = await fetch('/api/admin/users', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!res.ok) return
+    const json = await res.json()
+    const data = json.users ?? []
+    setState(prev => ({
+      ...prev,
+      users: data.map((p: Record<string, unknown>) => ({
+        id: p.id as string,
+        username: p.username as string,
+        nombre: p.nombre as string,
+        role: p.role as UserRole,
+        activo: p.activo as boolean,
+        createdAt: new Date(p.created_at as string),
+      })),
+    }))
+  }, [setState])
 
   // ============ REWARD ACTIONS ============
   const applyReward = useCallback((sessionId: string, rewardId: string): boolean => {

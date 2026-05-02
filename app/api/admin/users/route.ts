@@ -2,7 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireRole } from '@/lib/api-auth'
 
-const requireAdmin = (req: NextRequest) => requireRole(req, ['admin'])
+const requireAdmin = (req: NextRequest) => requireRole(req, ['admin', 'manager'])
+
+// ── GET /api/admin/users — listar staff del tenant ───────────────────────────
+export async function GET(req: NextRequest) {
+  const auth = await requireRole(req, ['admin', 'manager'])
+  if ('error' in auth) return auth.error
+
+  let q = supabaseAdmin.from('profiles').select('*').order('created_at')
+  if (auth.tenantId) q = q.eq('tenant_id', auth.tenantId)
+
+  const { data, error } = await q
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ users: data ?? [] })
+}
 
 // ── POST /api/admin/users — crear usuario en Auth + profiles ─────────────────
 export async function POST(req: NextRequest) {

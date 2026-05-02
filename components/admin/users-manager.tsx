@@ -75,35 +75,25 @@ export function UsersManager() {
 
   const handleSave = async (userData: Partial<UserType> & { password?: string }) => {
     if (editingUser) {
-      // Actualizar usuario existente
       const updates: Record<string, unknown> = {}
       if (userData.nombre)   updates.nombre = userData.nombre
       if (userData.role)     updates.role   = userData.role
       if (userData.password) updates.password = userData.password
 
       const result = await callUsersApi('PUT', { userId: editingUser.id, updates })
-      if (result.ok) {
-        await refreshUsers()
-        toast.success('Usuario actualizado')
-      } else {
-        toast.error(result.error ?? 'Error al actualizar')
-        return // no cerrar el dialog si falló
-      }
+      if (!result.ok) throw new Error(result.error ?? 'Error al actualizar')
+      await refreshUsers()
+      toast.success('Usuario actualizado')
     } else {
-      // Crear nuevo usuario
       const result = await callUsersApi('POST', {
         username: userData.username,
         password: userData.password,
         nombre:   userData.nombre,
         role:     userData.role,
       })
-      if (result.ok) {
-        await refreshUsers()
-        toast.success(`Usuario @${userData.username} creado`)
-      } else {
-        toast.error(result.error ?? 'Error al crear usuario')
-        return
-      }
+      if (!result.ok) throw new Error(result.error ?? 'Error al crear usuario')
+      await refreshUsers()
+      toast.success(`Usuario @${userData.username} creado`)
     }
 
     setShowAddDialog(false)
