@@ -98,54 +98,62 @@ export function useMenuActions(state: AppState, setState: SetState) {
 
       const primaryImage = imagenes[0] ?? null
 
-      const { data, error } = await supabase
-        .from("menu_items")
-        .insert([
-          {
-            name: item.nombre,
-            description: item.descripcion,
-            price: item.precio,
-            available: item.disponible ?? true,
-            image: primaryImage,
-            imagenes,
-            identificador: item.identificador ?? null,
-            color_fondo: item.colorFondo ?? null,
-            color_borde: item.colorBorde ?? null,
-            stock_habilitado: item.stockHabilitado ?? false,
-            stock_cantidad: item.stockCantidad ?? 0,
-            mostrar_en_menu_digital: item.mostrarEnMenuDigital ?? true,
-            category_id: item.categoria ?? null,
-            extras: item.extras ?? [],
-            receta: item.receta ?? [],
-            orden: item.orden ?? 0,
-          }
-        ])
-        .select()
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
 
-      if (error) {
-        console.error("Error creando platillo:", error)
+      const res = await fetch('/api/admin/menu-items', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          name: item.nombre,
+          description: item.descripcion,
+          price: item.precio,
+          available: item.disponible ?? true,
+          image: primaryImage,
+          imagenes,
+          identificador: item.identificador ?? null,
+          color_fondo: item.colorFondo ?? null,
+          color_borde: item.colorBorde ?? null,
+          stock_habilitado: item.stockHabilitado ?? false,
+          stock_cantidad: item.stockCantidad ?? 0,
+          mostrar_en_menu_digital: item.mostrarEnMenuDigital ?? true,
+          category_id: item.categoria ?? null,
+          extras: item.extras ?? [],
+          receta: item.receta ?? [],
+          orden: item.orden ?? 0,
+        }),
+      })
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}))
+        console.error("Error creando platillo:", json.error ?? res.status)
         return
       }
 
-      if (data) {
+      const json = await res.json()
+      const row = json.item
+      if (row) {
         const nuevo: MenuItem = {
-          id: data[0].id,
-          nombre: data[0].name,
-          descripcion: data[0].description ?? '',
-          precio: Number(data[0].price),
-          categoria: data[0].category_id,
-          disponible: data[0].available,
-          imagen: data[0].image ?? undefined,
-          imagenes: (data[0].imagenes as string[] | null) ?? [],
-          identificador: data[0].identificador ?? undefined,
-          colorFondo: data[0].color_fondo ?? undefined,
-          colorBorde: data[0].color_borde ?? undefined,
-          stockHabilitado: data[0].stock_habilitado ?? false,
-          stockCantidad: data[0].stock_cantidad ?? 0,
-          mostrarEnMenuDigital: data[0].mostrar_en_menu_digital ?? true,
-          extras: (data[0].extras ?? []) as Extra[],
-          receta: (data[0].receta ?? []) as RecipeIngredient[],
-          orden: data[0].orden ?? 0,
+          id: row.id,
+          nombre: row.name,
+          descripcion: row.description ?? '',
+          precio: Number(row.price),
+          categoria: row.category_id,
+          disponible: row.available,
+          imagen: row.image ?? undefined,
+          imagenes: (row.imagenes as string[] | null) ?? [],
+          identificador: row.identificador ?? undefined,
+          colorFondo: row.color_fondo ?? undefined,
+          colorBorde: row.color_borde ?? undefined,
+          stockHabilitado: row.stock_habilitado ?? false,
+          stockCantidad: row.stock_cantidad ?? 0,
+          mostrarEnMenuDigital: row.mostrar_en_menu_digital ?? true,
+          extras: (row.extras ?? []) as Extra[],
+          receta: (row.receta ?? []) as RecipeIngredient[],
+          orden: row.orden ?? 0,
         }
 
         setState(prev => ({
@@ -159,13 +167,17 @@ export function useMenuActions(state: AppState, setState: SetState) {
 
   const deleteMenuItem = useCallback(async (itemId: string) => {
 
-    const { error } = await supabase
-      .from("menu_items")
-      .delete()
-      .eq("id", itemId)
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
 
-    if (error) {
-      console.error("Error eliminando platillo:", error)
+    const res = await fetch(`/api/admin/menu-items/${itemId}`, {
+      method: 'DELETE',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}))
+      console.error("Error eliminando platillo:", json.error ?? res.status)
       return
     }
 

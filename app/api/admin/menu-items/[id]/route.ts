@@ -45,3 +45,25 @@ export async function PATCH(
 
   return NextResponse.json({ ok: true })
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const auth = await requireRole(req, ['admin', 'manager'])
+  if ('error' in auth) return auth.error
+
+  const { id } = await params
+
+  const { error } = await supabaseAdmin
+    .from('menu_items')
+    .delete()
+    .eq('id', id)
+    .eq('tenant_id', auth.tenantId)
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ ok: true })
+}
