@@ -5,6 +5,7 @@ import { Plus, Edit2, ImageIcon, ExternalLink, Copy, Check, Settings2, X, Save, 
 import { useApp } from '@/lib/context'
 import { canDo } from '@/lib/permissions'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { formatPrice, type MenuItem } from '@/lib/store'
