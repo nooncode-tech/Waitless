@@ -320,6 +320,11 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               </button>
             ))}
             <div className="pt-3 border-t border-zinc-100 mt-1 space-y-2">
+              <a href="/explore"
+                className="flex items-center gap-1.5 w-full text-zinc-600 text-sm py-2 font-medium cursor-pointer">
+                Explorar restaurantes
+                <ChevronRight className="h-3.5 w-3.5" />
+              </a>
               <button onClick={() => { setMenuOpen(false); onLogin() }}
                 className="block w-full text-left text-zinc-500 text-sm py-2 cursor-pointer">
                 Iniciar sesión
