@@ -4,8 +4,20 @@ import { useState, useEffect, useRef } from 'react'
 import {
   ChevronRight, Star, ArrowRight,
   Menu, X, Check, LayoutGrid, ChefHat, BarChart2,
-  CreditCard, Bell, Building2, Minus, Shield, Smartphone,
+  CreditCard, Bell, Building2, Minus, Shield, Smartphone, Utensils,
 } from 'lucide-react'
+
+interface ExploreRestaurant {
+  slug: string
+  nombre: string
+  logoUrl: string | null
+  coverUrl: string | null
+  descripcion: string | null
+  primaryColor: string
+  rating: number
+  totalRatings: number
+  featuredItems: { id: string; nombre: string; precio: number; imagen: string | null }[]
+}
 
 interface LandingPageProps {
   onLogin: () => void
@@ -135,6 +147,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
   const [planEmail, setPlanEmail] = useState('')
   const [showEmailFor, setShowEmailFor] = useState<string | null>(null)
+  const [restaurants, setRestaurants] = useState<ExploreRestaurant[]>([])
   const carouselRef = useRef<HTMLDivElement>(null)
 
   const heroReveal    = useReveal(0.05)
@@ -142,6 +155,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
   const featReveal    = useReveal(0.1)
   const pricingReveal = useReveal(0.1)
   const testReveal    = useReveal(0.1)
+  const restoReveal   = useReveal(0.1)
   const ctaReveal     = useReveal(0.1)
 
   const c1 = useCounter(2,   900,  heroReveal.visible)
@@ -155,6 +169,13 @@ export function LandingPage({ onLogin }: LandingPageProps) {
     }
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/public/explore')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setRestaurants(Array.isArray(data) ? data.slice(0, 6) : []))
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -660,6 +681,86 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           ))}
         </div>
       </section>
+
+      {/* ── RESTAURANTS ── white ─────────────────────────────── */}
+      {restaurants.length > 0 && (
+        <section id="restaurants" className="bg-white py-28 px-6">
+          <div ref={restoReveal.ref} className={`max-w-6xl mx-auto ${restoReveal.visible ? 'show' : ''}`}>
+            <div className="text-center mb-16">
+              <span className="rv inline-block text-[10px] font-medium uppercase tracking-[0.22em] text-zinc-400 mb-4">En Waitless</span>
+              <h2 className="rv d1 text-3xl md:text-4xl font-semibold tracking-tight leading-[1.1] text-foreground">
+                Restaurantes que ya usan Waitless
+              </h2>
+              <p className="rv d2 text-zinc-400 text-base mt-3 max-w-sm mx-auto leading-relaxed">
+                Descubre sus menús, ordena y vive la experiencia.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+              {restaurants.map((r, i) => (
+                <a
+                  key={r.slug}
+                  href={`/menu/${r.slug}`}
+                  className={`rv d${Math.min(i + 1, 6)} group rounded-2xl overflow-hidden border border-zinc-100 bg-white hover:shadow-xl hover:-translate-y-1 transition-all duration-300`}
+                >
+                  {/* Cover */}
+                  <div className="relative h-44 overflow-hidden" style={{ background: r.primaryColor }}>
+                    {r.coverUrl
+                      ? <img src={r.coverUrl} alt={r.nombre} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      : <div className="w-full h-full flex items-center justify-center opacity-20">
+                          <Utensils className="w-12 h-12 text-white" />
+                        </div>
+                    }
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+                    {/* Logo */}
+                    {r.logoUrl && (
+                      <div className="absolute bottom-3 left-3 w-10 h-10 rounded-xl bg-white shadow-md overflow-hidden border-2 border-white">
+                        <img src={r.logoUrl} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+
+                    {/* Rating */}
+                    <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-white/95 backdrop-blur-sm rounded-full px-2.5 py-1 shadow">
+                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                      <span className="text-xs font-bold text-black">{r.rating > 0 ? r.rating.toFixed(1) : 'Nuevo'}</span>
+                    </div>
+                  </div>
+
+                  {/* Info */}
+                  <div className="p-4">
+                    <h3 className="font-bold text-[15px] text-foreground tracking-tight leading-tight">{r.nombre}</h3>
+                    {r.descripcion
+                      ? <p className="text-xs text-zinc-400 mt-1 line-clamp-2 leading-relaxed">{r.descripcion}</p>
+                      : r.featuredItems.length > 0
+                      ? <p className="text-xs text-zinc-400 mt-1 line-clamp-1">{r.featuredItems.map(it => it.nombre).join(' · ')}</p>
+                      : null
+                    }
+                    <div className="mt-3 flex items-center justify-between">
+                      <span className="text-[11px] text-zinc-400">
+                        {r.totalRatings > 0 ? `${r.totalRatings} reseña${r.totalRatings !== 1 ? 's' : ''}` : 'Sin reseñas aún'}
+                      </span>
+                      <span className="text-[11px] font-semibold text-foreground flex items-center gap-1 group-hover:gap-2 transition-all">
+                        Ver menú <ChevronRight className="w-3 h-3" />
+                      </span>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+
+            <div className="rv d5 text-center">
+              <a
+                href="/explore"
+                className="inline-flex items-center gap-2 text-sm font-medium text-foreground border border-zinc-200 rounded-full px-6 py-3 hover:bg-zinc-900 hover:text-white hover:border-zinc-900 transition-all duration-200"
+              >
+                Ver todos los restaurantes
+                <ChevronRight className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── CTA ── #111 ──────────────────────────────────────── */}
       <section className="py-28 px-6 text-center" style={{ background: '#111' }}>
