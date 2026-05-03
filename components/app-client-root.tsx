@@ -44,6 +44,11 @@ function AppContent({ initialBranding }: AppContentProps) {
   useEffect(() => {
     if (oauthHandled.current) return
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Password recovery link lands on root URL — redirect to the reset page
+      if (event === 'PASSWORD_RECOVERY') {
+        router.replace('/reset-password')
+        return
+      }
       if (event !== 'SIGNED_IN' || !session || oauthHandled.current) return
       // Only act if context hasn't already resolved the user
       if (currentUser) return

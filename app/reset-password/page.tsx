@@ -17,10 +17,14 @@ export default function ResetPasswordPage() {
   const [done, setDone] = useState(false)
   const [ready, setReady] = useState(false)
 
-  // Supabase sends the recovery token via URL hash; onAuthStateChange fires with SIGNED_IN
   useEffect(() => {
+    // If we arrived here via redirect from app-client-root, session is already set
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) { setReady(true); return }
+    })
+    // Also handle direct landing (if /reset-password is whitelisted in Supabase)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') setReady(true)
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') setReady(true)
     })
     return () => subscription.unsubscribe()
   }, [])
