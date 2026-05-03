@@ -155,6 +155,7 @@ export function MenuItemDialog({ item, onClose }: MenuItemDialogProps) {
       onClose()
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Error al guardar. Intenta de nuevo.')
+    } finally {
       setSubmitting(false)
     }
   }

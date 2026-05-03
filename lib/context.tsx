@@ -357,8 +357,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
           .single()
         if (profile && profile.activo !== false) {
           const user = buildUserFromProfile(profile as Record<string, unknown>)
-          // Sólo seteamos deviceUser — currentUser queda null hasta que el staff
-          // elige su perfil en la pantalla de bloqueo (ProfilePicker)
           setState(prev => ({ ...prev, deviceUser: user }))
           // Cargar lista de usuarios del staff — scoped por tenant cuando aplica
           const profilesTenantId = user.tenantId
@@ -366,9 +364,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
           if (profilesTenantId) profilesQuery = profilesQuery.eq('tenant_id', profilesTenantId)
           const { data: allProfiles } = await profilesQuery
           if (allProfiles) {
+            const staffUsers = allProfiles.map(p => buildUserFromProfile(p as Record<string, unknown>))
+            // Restaurar el perfil activo guardado en localStorage (persiste entre recargas)
+            const savedProfileId = typeof window !== 'undefined'
+              ? localStorage.getItem('waitless_active_profile_id')
+              : null
+            const restoredProfile = savedProfileId
+              ? staffUsers.find(u => u.id === savedProfileId && u.activo)
+              : null
             setState(prev => ({
               ...prev,
-              users: allProfiles.map(p => buildUserFromProfile(p as Record<string, unknown>)),
+              users: staffUsers,
+              currentUser: restoredProfile ?? prev.currentUser,
             }))
           }
 
@@ -1105,6 +1112,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!user) return null
     // Login completo: establece tanto la cuenta del dispositivo como el perfil activo
     setState(prev => ({ ...prev, deviceUser: user, currentUser: user }))
+    localStorage.setItem('waitless_active_profile_id', user.id)
     authLoadUsers(user.tenantId).then(users => {
       setState(prev => ({ ...prev, users }))
     })
@@ -1112,6 +1120,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = useCallback(async (): Promise<void> => {
+    localStorage.removeItem('waitless_active_profile_id')
     setState(prev => ({
       ...prev,
       deviceUser: null,
@@ -1127,6 +1136,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Cierra el perfil activo sin cerrar la sesión del dispositivo.
   // El staff verá la pantalla de bloqueo (ProfilePicker) y podrá elegir otro perfil.
   const lockProfile = useCallback((): void => {
+    localStorage.removeItem('waitless_active_profile_id')
     setState(prev => ({ ...prev, currentUser: null }))
   }, [])
 
@@ -1151,6 +1161,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       createdAt: new Date(json.profile.createdAt as string),
     }
     setState(prev => ({ ...prev, currentUser: user }))
+    localStorage.setItem('waitless_active_profile_id', user.id)
     return user
   }, [])
 
