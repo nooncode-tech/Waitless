@@ -661,7 +661,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto pb-36 max-w-lg mx-auto w-full">
+            <div className="flex-1 overflow-y-auto pb-52 max-w-lg mx-auto w-full">
               {cart.map((entry, i) => {
                 const ext = entry.selectedExtras.reduce((s, e) => s + e.precio, 0)
                 const foto = entry.item.imagenes[0] ?? entry.item.imagen
@@ -699,8 +699,38 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
             </div>
 
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4">
-              <div className="max-w-lg mx-auto">
-                <div className="flex justify-between items-center mb-3 px-1">
+              <div className="max-w-lg mx-auto space-y-3">
+
+                {/* Delivery / Recoger selector */}
+                {data.deliveryHabilitado && (
+                  <div>
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">¿Cómo querés recibirlo?</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setModoEntrega('para_llevar')}
+                        className={`flex-1 h-12 rounded-xl border-2 text-sm font-semibold flex flex-col items-center justify-center gap-0.5 transition-all`}
+                        style={modoEntrega === 'para_llevar'
+                          ? { borderColor: primary, backgroundColor: primary, color: '#fff' }
+                          : { borderColor: '#e5e7eb', color: '#6b7280', backgroundColor: '#fff' }}
+                      >
+                        <ShoppingBag className="h-4 w-4" />
+                        <span className="text-[11px]">Recoger en tienda</span>
+                      </button>
+                      <button
+                        onClick={() => setModoEntrega('delivery')}
+                        className={`flex-1 h-12 rounded-xl border-2 text-sm font-semibold flex flex-col items-center justify-center gap-0.5 transition-all`}
+                        style={modoEntrega === 'delivery'
+                          ? { borderColor: primary, backgroundColor: primary, color: '#fff' }
+                          : { borderColor: '#e5e7eb', color: '#6b7280', backgroundColor: '#fff' }}
+                      >
+                        <Truck className="h-4 w-4" />
+                        <span className="text-[11px]">Envío a domicilio</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center px-1">
                   <p className="text-sm text-gray-400">Subtotal</p>
                   <p className="text-xl font-black text-black" style={{ letterSpacing: '-0.03em' }}>{fmt(cartSubtotal)}</p>
                 </div>
@@ -709,7 +739,9 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
                   style={{ backgroundColor: primary, height: '52px' }}
                   onClick={() => setScreen('checkout')}
                 >
-                  <span className="text-sm">Continuar al pago</span>
+                  <span className="text-sm">
+                    {modoEntrega === 'delivery' ? 'Continuar — Ingresar dirección' : 'Continuar al pago'}
+                  </span>
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </div>
