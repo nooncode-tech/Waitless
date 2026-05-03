@@ -820,7 +820,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       <div className="bg-white border-b border-gray-100">
 
         {/* Cover */}
-        <div className="relative w-full overflow-hidden" style={{ height: 200 }}>
+        <div className="relative w-full overflow-hidden" style={{ height: 150 }}>
           {data.coverUrl ? (
             <>
               <img src={data.coverUrl} alt="Portada"
@@ -832,6 +832,15 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
             <div className="w-full h-full"
               style={{ background: `linear-gradient(135deg, ${primary}22 0%, ${primary}44 100%)` }} />
           )}
+
+          {/* Back button */}
+          <button
+            onClick={() => history.back()}
+            className="absolute top-3 left-3 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+
           {cerrada && (
             <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full flex items-center gap-1.5">
               <Clock className="w-3 h-3" />
@@ -841,19 +850,19 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
         </div>
 
         {/* Perfil */}
-        <div className="px-5 pb-5">
-          <div className="flex items-end justify-between" style={{ marginTop: -36 }}>
+        <div className="px-5 pb-4">
+          <div className="flex items-end justify-between" style={{ marginTop: -24 }}>
             {/* Logo */}
-            <div className="w-[72px] h-[72px] rounded-2xl overflow-hidden shrink-0 shadow-xl"
+            <div className="w-[60px] h-[60px] rounded-xl overflow-hidden shrink-0 shadow-lg"
               style={{
                 backgroundColor: primary,
                 border: '3px solid white',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
               }}>
               {data.logoUrl
                 ? <img src={data.logoUrl} alt={data.restaurantName} className="w-full h-full object-cover object-center" />
                 : <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-white font-black text-2xl" style={{ letterSpacing: '-0.03em' }}>
+                    <span className="text-white font-black text-xl" style={{ letterSpacing: '-0.03em' }}>
                       {data.restaurantName.charAt(0).toUpperCase()}
                     </span>
                   </div>
