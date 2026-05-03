@@ -198,13 +198,18 @@ export function ExploreClient({ restaurants }: Props) {
               )}
             </div>
 
-            {/* Brand — desktop only */}
-            <Link href="/" className="hidden sm:flex items-center gap-2 shrink-0">
-              <div className="w-7 h-7 bg-black rounded-lg flex items-center justify-center">
-                <span className="text-white font-black text-[11px] tracking-tight">W</span>
-              </div>
-              <span className="font-black text-sm text-gray-900" style={{ letterSpacing: '-0.02em' }}>WAITLESS</span>
-            </Link>
+            {/* Brand + Mi cuenta — desktop only */}
+            <div className="hidden sm:flex items-center gap-3 shrink-0">
+              <Link href="/consumidor" className="text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors whitespace-nowrap">
+                Mi cuenta
+              </Link>
+              <Link href="/" className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-black rounded-lg flex items-center justify-center">
+                  <span className="text-white font-black text-[11px] tracking-tight">W</span>
+                </div>
+                <span className="font-black text-sm text-gray-900" style={{ letterSpacing: '-0.02em' }}>WAITLESS</span>
+              </Link>
+            </div>
           </div>
 
           {/* Category chips */}

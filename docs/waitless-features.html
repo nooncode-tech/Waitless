@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Waitless — Plataforma Operativa</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --black: #0a0a0a;
+      --white: #ffffff;
+      --gray: #6b7280;
+      --light: #f4f4f4;
+      --accent: #e5e5e5;
+    }
+
+    body {
+      font-family: 'Sora', sans-serif;
+      background: var(--white);
+      color: var(--black);
+      line-height: 1.6;
+    }
+
+    /* ── COVER PAGE ── */
+    .cover {
+      width: 100%;
+      min-height: 100vh;
+      background: var(--black);
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 60px;
+      page-break-after: always;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Grid decoration */
+    .cover::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* Big W watermark */
+    .cover::after {
+      content: 'W';
+      position: absolute;
+      right: -40px;
+      bottom: -80px;
+      font-size: 480px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.04);
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .cover-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo-box {
+      width: 48px;
+      height: 48px;
+      background: var(--white);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--black);
+    }
+
+    .logo-name {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .cover-body {
+      position: relative;
+      z-index: 1;
+    }
+
+    .cover-tag {
+      display: inline-block;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 999px;
+      padding: 6px 18px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 32px;
+    }
+
+    .cover-title {
+      font-size: 72px;
+      font-weight: 800;
+      line-height: 1.0;
+      letter-spacing: -3px;
+      margin-bottom: 24px;
+    }
+
+    .cover-title span {
+      color: rgba(255,255,255,0.25);
+    }
+
+    .cover-sub {
+      font-size: 17px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.55);
+      max-width: 480px;
+      line-height: 1.7;
+    }
+
+    /* Pill stats row */
+    .cover-stats {
+      display: flex;
+      gap: 12px;
+      margin-top: 48px;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 999px;
+      padding: 10px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .stat-pill strong {
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .stat-pill span {
+      font-size: 10px;
+      color: rgba(255,255,255,0.45);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    .cover-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 24px;
+    }
+
+    .cover-footer p {
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .status-badge {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.7);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ade80;
+    }
+
+    /* ── CONTENT PAGES ── */
+    .page {
+      width: 100%;
+      min-height: 100vh;
+      padding: 60px;
+      page-break-after: always;
+      position: relative;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 56px;
+      border-bottom: 1px solid var(--accent);
+      padding-bottom: 20px;
+    }
+
+    .page-header .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: -0.3px;
+    }
+
+    .brand-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--black);
+    }
+
+    .page-num {
+      font-size: 12px;
+      color: var(--gray);
+    }
+
+    /* Section title */
+    .section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      margin-bottom: 40px;
+    }
+
+    /* Feature panels grid */
+    .panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .panel {
+      border: 1px solid var(--accent);
+      border-radius: 16px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel.dark {
+      background: var(--black);
+      color: var(--white);
+      border-color: var(--black);
+    }
+
+    .panel.light {
+      background: var(--light);
+      border-color: var(--light);
+    }
+
+    .panel-icon {
+      font-size: 28px;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .panel-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      letter-spacing: -0.4px;
+    }
+
+    .panel.dark .panel-title {
+      color: var(--white);
+    }
+
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .feature-list li {
+      font-size: 12.5px;
+      color: var(--gray);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.4;
+    }
+
+    .panel.dark .feature-list li {
+      color: rgba(255,255,255,0.55);
+    }
+
+    .feature-list li::before {
+      content: '—';
+      color: var(--black);
+      font-weight: 600;
+      flex-shrink: 0;
+      margin-top: 0;
+    }
+
+    .panel.dark .feature-list li::before {
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* Full-width panel */
+    .panel-full {
+      border: 1px solid var(--accent);
+      border-radius: 16px;
+      padding: 28px 32px;
+      display: flex;
+      gap: 40px;
+    }
+
+    .panel-full-col {
+      flex: 1;
+    }
+
+    .panel-full-col .panel-title {
+      font-size: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Infra pills */
+    .infra-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .infra-pill {
+      border: 1px solid var(--accent);
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .infra-pill.filled {
+      background: var(--black);
+      color: var(--white);
+      border-color: var(--black);
+    }
+
+    /* Plans page */
+    .plans {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .plan-card {
+      border: 1.5px solid var(--accent);
+      border-radius: 16px;
+      padding: 28px 24px;
+    }
+
+    .plan-card.featured {
+      background: var(--black);
+      color: var(--white);
+      border-color: var(--black);
+    }
+
+    .plan-badge {
+      display: inline-block;
+      background: var(--white);
+      color: var(--black);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border-radius: 999px;
+      padding: 3px 10px;
+      margin-bottom: 16px;
+    }
+
+    .plan-name {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      margin-bottom: 4px;
+    }
+
+    .plan-price {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 20px;
+    }
+
+    .plan-price sub {
+      font-size: 13px;
+      font-weight: 400;
+      opacity: 0.5;
+    }
+
+    .plan-features {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .plan-features li {
+      font-size: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.4;
+      opacity: 0.7;
+    }
+
+    .plan-card.featured .plan-features li {
+      opacity: 0.75;
+    }
+
+    .plan-features li::before {
+      content: '✓';
+      font-weight: 700;
+      flex-shrink: 0;
+      opacity: 1;
+    }
+
+    /* Footer page */
+    .footer-page {
+      background: var(--black);
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      min-height: 100vh;
+      padding: 60px;
+      page-break-after: avoid;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .footer-page::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    .footer-logo {
+      width: 72px;
+      height: 72px;
+      background: var(--white);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      font-weight: 800;
+      color: var(--black);
+      margin: 0 auto 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-title {
+      font-size: 52px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-sub {
+      font-size: 15px;
+      color: rgba(255,255,255,0.45);
+      max-width: 400px;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 48px;
+    }
+
+    .footer-url {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 1px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Divider line decoration */
+    .deco-line {
+      width: 40px;
+      height: 3px;
+      background: var(--white);
+      border-radius: 999px;
+      margin: 0 auto 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .cover, .page, .footer-page { page-break-after: always; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     COVER
+════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-header">
+    <div class="logo-box">W</div>
+    <span class="logo-name">Waitless</span>
+  </div>
+
+  <div class="cover-body">
+    <div class="cover-tag">Plataforma Operativa · 2026</div>
+    <div class="cover-title">
+      Todo lo<br>que<br><span>necesitás.</span>
+    </div>
+    <p class="cover-sub">
+      Sistema integral de gestión para restaurantes. Pedidos, cocina, cobros, analítica y más — desde un solo lugar.
+    </p>
+    <div class="cover-stats">
+      <div class="stat-pill">
+        <strong>5</strong>
+        <span>Paneles</span>
+      </div>
+      <div class="stat-pill">
+        <strong>30+</strong>
+        <span>Features</span>
+      </div>
+      <div class="stat-pill">
+        <strong>3</strong>
+        <span>Planes</span>
+      </div>
+      <div class="stat-pill">
+        <strong>100%</strong>
+        <span>Funcional</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cover-footer">
+    <p>waitless-v1.vercel.app</p>
+    <div class="status-badge">
+      <div class="status-dot"></div>
+      Producción activa
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE 2 — PANELES CORE
+════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><div class="brand-dot"></div> Waitless</div>
+    <span class="page-num">01 / 03</span>
+  </div>
+
+  <div class="section-label">Funcionalidades principales</div>
+  <div class="section-title">Cuatro paneles,<br>una operación.</div>
+
+  <div class="panels">
+
+    <!-- Admin -->
+    <div class="panel dark">
+      <span class="panel-icon">⚙️</span>
+      <div class="panel-title">Panel Admin</div>
+      <ul class="feature-list">
+        <li>Dashboard con métricas en tiempo real</li>
+        <li>Gestión de mesas, pedidos y turno</li>
+        <li>Menú completo con categorías y extras</li>
+        <li>Inventario con alertas de stock</li>
+        <li>Gestión de usuarios y roles (RBAC)</li>
+        <li>Reembolsos y descuentos</li>
+        <li>Lista de espera con notificaciones</li>
+        <li>Analítica de ventas</li>
+        <li>Backup y recuperación de datos</li>
+        <li>Auditoría de acciones</li>
+        <li>Plan & Facturación via Stripe</li>
+        <li>Códigos QR por mesa</li>
+        <li>Feedback de clientes</li>
+        <li>Monitor de salud del sistema</li>
+      </ul>
+    </div>
+
+    <!-- Mesero -->
+    <div class="panel light">
+      <span class="panel-icon">🍽️</span>
+      <div class="panel-title">Panel Mesero</div>
+      <ul class="feature-list">
+        <li>Grilla de mesas con estado en tiempo real</li>
+        <li>Tomar pedidos con extras y notas</li>
+        <li>Seguimiento de órdenes por mesa</li>
+        <li>Cobrar cuenta con múltiples métodos</li>
+        <li>División de cuenta por personas</li>
+        <li>Descuentos y propinas</li>
+        <li>Abonos parciales</li>
+        <li>Imprimir recibo térmico</li>
+        <li>Link de pago online (Stripe)</li>
+        <li>Alertas de llamadas de clientes</li>
+      </ul>
+    </div>
+
+    <!-- KDS -->
+    <div class="panel light">
+      <span class="panel-icon">👨‍🍳</span>
+      <div class="panel-title">Panel KDS (Cocina)</div>
+      <ul class="feature-list">
+        <li>Cola de órdenes por prioridad SLA</li>
+        <li>Semáforo visual por tiempo de espera</li>
+        <li>Estados: Cola → Preparando → Listo</li>
+        <li>Fuego por mesa (batch de órdenes)</li>
+        <li>Pacing máximo configurable</li>
+        <li>Barra de progreso SLA por orden</li>
+        <li>Sidebar colapsable en desktop</li>
+      </ul>
+    </div>
+
+    <!-- Cliente -->
+    <div class="panel dark">
+      <span class="panel-icon">📱</span>
+      <div class="panel-title">Panel Cliente (QR)</div>
+      <ul class="feature-list">
+        <li>Menú digital con búsqueda e imágenes</li>
+        <li>Carrito con extras y notas por ítem</li>
+        <li>Selector de asiento por mesa</li>
+        <li>Seguimiento de pedidos en tiempo real</li>
+        <li>Solicitar cuenta / llamar al mesero</li>
+        <li>Safe area iOS nativa</li>
+        <li>Menú público sin login (/slug)</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Expo strip -->
+  <div class="panel-full">
+    <div class="panel-full-col">
+      <div class="panel-title">🚚 Panel Expo / Entrega</div>
+      <ul class="feature-list">
+        <li>Vista dedicada para el puesto de despacho</li>
+        <li>Órdenes listas agrupadas por mesa</li>
+      </ul>
+    </div>
+    <div class="panel-full-col">
+      <div class="panel-title">🌐 Menú Digital Público</div>
+      <ul class="feature-list">
+        <li>Página pública accesible por QR o URL directa</li>
+        <li>Explorador de restaurantes en /explore</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE 3 — PLANES & INFRAESTRUCTURA
+════════════════════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand"><div class="brand-dot"></div> Waitless</div>
+    <span class="page-num">02 / 03</span>
+  </div>
+
+  <div class="section-label">Planes disponibles</div>
+  <div class="section-title">Crecé a tu ritmo.</div>
+
+  <div class="plans">
+
+    <div class="plan-card">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">Gratis</div>
+      <ul class="plan-features">
+        <li>Pedidos por mesa</li>
+        <li>KDS (cocina)</li>
+        <li>Menú QR</li>
+        <li>Hasta 5 mesas</li>
+        <li>Dashboard básico</li>
+      </ul>
+    </div>
+
+    <div class="plan-card featured">
+      <div class="plan-badge">Más popular</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">$29 <sub>/ mes</sub></div>
+      <ul class="plan-features">
+        <li>Todo de Starter</li>
+        <li>Analítica de ventas</li>
+        <li>Lista de espera</li>
+        <li>Notificaciones push</li>
+        <li>Reembolsos</li>
+        <li>Mesas ilimitadas</li>
+      </ul>
+    </div>
+
+    <div class="plan-card">
+      <div class="plan-name">Enterprise</div>
+      <div class="plan-price">$99 <sub>/ mes</sub></div>
+      <ul class="plan-features">
+        <li>Todo de Pro</li>
+        <li>Multi-sucursal</li>
+        <li>White label</li>
+        <li>Soporte prioritario</li>
+        <li>SLA garantizado</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Infra section -->
+  <div style="margin-top: 48px;">
+    <div class="section-label">Infraestructura & Seguridad</div>
+    <div class="section-title" style="font-size:28px; margin-bottom: 24px;">Construido para durar.</div>
+
+    <div class="infra-grid">
+      <div class="infra-pill filled">RBAC por rol</div>
+      <div class="infra-pill filled">Plan gates automáticos</div>
+      <div class="infra-pill filled">Stripe Billing</div>
+      <div class="infra-pill filled">Webhook automático</div>
+      <div class="infra-pill">Google OAuth</div>
+      <div class="infra-pill">Push Notifications</div>
+      <div class="infra-pill">Safe Area iOS</div>
+      <div class="infra-pill">Modo offline</div>
+      <div class="infra-pill">Tema claro / oscuro</div>
+      <div class="infra-pill">Auditoría de acciones</div>
+      <div class="infra-pill">Supabase (Waitless Org)</div>
+      <div class="infra-pill">Vercel (producción)</div>
+      <div class="infra-pill">Next.js App Router</div>
+      <div class="infra-pill">Tiempo real via Supabase</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE 4 — CLOSING
+════════════════════════════════════════════ -->
+<div class="footer-page">
+  <div class="footer-logo">W</div>
+  <div class="footer-title">Listo para<br>el servicio.</div>
+  <div class="deco-line"></div>
+  <p class="footer-sub">
+    Waitless está en producción, completamente funcional y listo para operar restaurantes desde el primer día.
+  </p>
+  <div class="footer-url">waitless-v1.vercel.app</div>
+</div>
+
+</body>
+</html>

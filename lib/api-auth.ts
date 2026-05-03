@@ -76,3 +76,34 @@ export async function requireRole(
 
   return auth
 }
+
+export interface ConsumerAuthResult {
+  userId: string
+}
+
+/**
+ * Validates a Bearer JWT and verifies the user has a consumer_profiles record.
+ */
+export async function requireConsumerAuth(req: NextRequest): Promise<ConsumerAuthResult | AuthError> {
+  const token = req.headers.get('authorization')?.replace('Bearer ', '').trim()
+  if (!token) {
+    return { error: NextResponse.json({ error: 'Token requerido' }, { status: 401 }) }
+  }
+
+  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
+  if (error || !user) {
+    return { error: NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 }) }
+  }
+
+  const { data: consumer } = await supabaseAdmin
+    .from('consumer_profiles')
+    .select('id')
+    .eq('id', user.id)
+    .single()
+
+  if (!consumer) {
+    return { error: NextResponse.json({ error: 'Perfil de consumidor no encontrado' }, { status: 403 }) }
+  }
+
+  return { userId: user.id }
+}

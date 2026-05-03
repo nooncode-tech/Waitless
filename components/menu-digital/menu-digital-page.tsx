@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { ShoppingCart, Plus, Minus, MessageCircle, Check, Phone, ChevronLeft, ArrowRight, Clock, Receipt, Truck, ShoppingBag, MapPin, Copy } from 'lucide-react'
+import { ReviewSection } from '@/components/consumidor/review-section'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -968,6 +969,8 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
             </p>
           )}
         </div>
+
+        <ReviewSection slug={slug} />
       </main>
 
       {/* ── Botón carrito flotante ─────────────────────────────────────────── */}
