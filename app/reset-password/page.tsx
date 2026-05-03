@@ -39,14 +39,19 @@ export default function ResetPasswordPage() {
     if (password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres'); return }
     setError('')
     setIsLoading(true)
-    const { error } = await supabase.auth.updateUser({ password })
-    if (error) {
-      setError('No se pudo actualizar la contraseña. Solicitá un nuevo enlace.')
-    } else {
-      setDone(true)
-      setTimeout(() => router.replace('/'), 3000)
+    try {
+      const { error } = await supabase.auth.updateUser({ password })
+      if (error) {
+        setError(`Error: ${error.message}`)
+      } else {
+        setDone(true)
+        setTimeout(() => router.replace('/'), 3000)
+      }
+    } catch (err) {
+      setError(`Error inesperado: ${err instanceof Error ? err.message : String(err)}`)
+    } finally {
+      setIsLoading(false)
     }
-    setIsLoading(false)
   }
 
   return (
