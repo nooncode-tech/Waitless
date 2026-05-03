@@ -819,24 +819,22 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       {/* ── Cover + Perfil ────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-gray-100">
 
-        {/* Cover */}
-        <div className="relative w-full overflow-hidden" style={{ height: 150 }}>
+        {/* Cover strip — short, fades hard to white */}
+        <div className="relative w-full overflow-hidden" style={{ height: 96 }}>
           {data.coverUrl ? (
-            <>
-              <img src={data.coverUrl} alt="Portada"
-                className={`w-full h-full object-cover object-center ${cerrada ? 'grayscale opacity-60' : ''}`} />
-              {/* gradient fade bottom */}
-              <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-white/60" />
-            </>
+            <img src={data.coverUrl} alt=""
+              className={`w-full h-full object-cover object-top ${cerrada ? 'grayscale' : ''} opacity-60`} />
           ) : (
             <div className="w-full h-full"
-              style={{ background: `linear-gradient(135deg, ${primary}22 0%, ${primary}44 100%)` }} />
+              style={{ background: `linear-gradient(135deg, ${primary}44 0%, ${primary}88 100%)` }} />
           )}
+          {/* Aggressive fade to white so any image looks fine */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-white/20 to-white" />
 
           {/* Back button */}
           <button
             onClick={() => history.back()}
-            className="absolute top-3 left-3 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm text-white"
+            className="absolute top-3 left-3 w-9 h-9 flex items-center justify-center rounded-full bg-black/30 backdrop-blur-sm text-white"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -849,20 +847,20 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
           )}
         </div>
 
-        {/* Perfil */}
-        <div className="px-5 pb-4">
-          <div className="flex items-end justify-between" style={{ marginTop: -24 }}>
-            {/* Logo */}
-            <div className="w-[60px] h-[60px] rounded-xl overflow-hidden shrink-0 shadow-lg"
+        {/* Logo + info */}
+        <div className="px-5 pb-5" style={{ marginTop: -40 }}>
+          {/* Logo row */}
+          <div className="flex items-end justify-between">
+            <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0"
               style={{
                 backgroundColor: primary,
                 border: '3px solid white',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
               }}>
               {data.logoUrl
                 ? <img src={data.logoUrl} alt={data.restaurantName} className="w-full h-full object-cover object-center" />
                 : <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-white font-black text-xl" style={{ letterSpacing: '-0.03em' }}>
+                    <span className="text-white font-black text-2xl" style={{ letterSpacing: '-0.03em' }}>
                       {data.restaurantName.charAt(0).toUpperCase()}
                     </span>
                   </div>
