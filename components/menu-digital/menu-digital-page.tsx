@@ -819,72 +819,84 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       {/* ── Cover + Perfil ────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-gray-100">
 
-        {/* Cover strip — short, fades hard to white */}
-        <div className="relative w-full overflow-hidden" style={{ height: 96 }}>
-          {data.coverUrl ? (
-            <img src={data.coverUrl} alt=""
-              className={`w-full h-full object-cover object-top ${cerrada ? 'grayscale' : ''} opacity-60`} />
-          ) : (
-            <div className="w-full h-full"
-              style={{ background: `linear-gradient(135deg, ${primary}44 0%, ${primary}88 100%)` }} />
+        {/* Hero — primary color block with logo centered */}
+        <div
+          className="relative w-full flex flex-col items-center justify-center gap-3"
+          style={{ height: 192, background: primary }}
+        >
+          {/* Cover image as subtle texture (low opacity) */}
+          {data.coverUrl && (
+            <img
+              src={data.coverUrl} alt=""
+              className={`absolute inset-0 w-full h-full object-cover object-center ${cerrada ? 'grayscale' : ''}`}
+              style={{ opacity: 0.12 }}
+            />
           )}
-          {/* Aggressive fade to white so any image looks fine */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-white/20 to-white" />
+          {/* Gradient overlay for depth */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-black/40" />
 
           {/* Back button */}
           <button
             onClick={() => history.back()}
-            className="absolute top-3 left-3 w-9 h-9 flex items-center justify-center rounded-full bg-black/30 backdrop-blur-sm text-white"
+            className="absolute top-3 left-3 w-9 h-9 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-sm text-white"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
 
+          {/* Closed badge */}
           {cerrada && (
-            <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full flex items-center gap-1.5">
+            <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full flex items-center gap-1.5">
               <Clock className="w-3 h-3" />
               Cerrada
             </div>
           )}
+
+          {/* Logo centered */}
+          <div
+            className="relative w-20 h-20 rounded-2xl overflow-hidden"
+            style={{
+              backgroundColor: primary,
+              border: '3px solid rgba(255,255,255,0.9)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+            }}
+          >
+            {data.logoUrl
+              ? <img src={data.logoUrl} alt={data.restaurantName} className="w-full h-full object-cover object-center" />
+              : <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-white font-black text-2xl" style={{ letterSpacing: '-0.03em' }}>
+                    {data.restaurantName.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+            }
+          </div>
+
+          {/* Restaurant name inside cover */}
+          <h1
+            className="relative font-black text-white text-lg text-center leading-tight px-10 drop-shadow"
+            style={{ letterSpacing: '-0.02em', textShadow: '0 1px 6px rgba(0,0,0,0.4)' }}
+          >
+            {data.restaurantName}
+          </h1>
         </div>
 
-        {/* Logo + info */}
-        <div className="px-5 pb-5" style={{ marginTop: -40 }}>
-          {/* Logo row */}
-          <div className="flex items-end justify-between">
-            <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0"
-              style={{
-                backgroundColor: primary,
-                border: '3px solid white',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
-              }}>
-              {data.logoUrl
-                ? <img src={data.logoUrl} alt={data.restaurantName} className="w-full h-full object-cover object-center" />
-                : <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-white font-black text-2xl" style={{ letterSpacing: '-0.03em' }}>
-                      {data.restaurantName.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-              }
+        {/* Info row below hero */}
+        <div className="px-5 py-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1">
+              {data.descripcion && (
+                <p className="text-sm text-gray-500 leading-relaxed">{data.descripcion}</p>
+              )}
             </div>
-
-            {/* WhatsApp */}
             {data.whatsappNumero && (
-              <a href={`https://wa.me/${data.whatsappNumero.replace(/\D/g, '')}`}
+              <a
+                href={`https://wa.me/${data.whatsappNumero.replace(/\D/g, '')}`}
                 target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white shadow-md transition-opacity hover:opacity-90"
-                style={{ backgroundColor: '#25D366' }}>
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white shadow-md transition-opacity hover:opacity-90 shrink-0"
+                style={{ backgroundColor: '#25D366' }}
+              >
                 <Phone className="h-3.5 w-3.5" />
                 WhatsApp
               </a>
-            )}
-          </div>
-
-          <div className="mt-3">
-            <h1 className="font-black text-black text-xl leading-tight" style={{ letterSpacing: '-0.03em' }}>
-              {data.restaurantName}
-            </h1>
-            {data.descripcion && (
-              <p className="text-sm text-gray-400 mt-1 leading-relaxed">{data.descripcion}</p>
             )}
           </div>
 
