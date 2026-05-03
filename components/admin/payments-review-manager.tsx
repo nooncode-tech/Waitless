@@ -89,13 +89,16 @@ export function PaymentsReviewManager() {
     setLoading(true)
     try {
       const token = await getToken()
+      if (!token) { setPayments([]); return }
       const params = new URLSearchParams()
       if (filterStatus) params.set('status', filterStatus)
       const res = await fetch(`/api/admin/payments?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      const json = await res.json()
+      const json = await res.json().catch(() => ({}))
       setPayments(json.payments ?? [])
+    } catch {
+      setPayments([])
     } finally {
       setLoading(false)
     }

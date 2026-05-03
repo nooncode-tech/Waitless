@@ -70,11 +70,12 @@ export function PaymentMethodsManager() {
   const [error, setError] = useState<string | null>(null)
 
   const fetchMethods = useCallback(async () => {
-    if (!currentUser?.tenantId) return
+    if (!currentUser?.tenantId) { setLoading(false); return }
     setLoading(true)
     try {
       const res = await fetch(`/api/payment-methods?tenantId=${currentUser.tenantId}`)
       const json = await res.json()
+      if (!res.ok) { setError(json.error ?? 'Error al cargar métodos'); return }
       setMethods(
         (json.methods ?? []).map((m: Record<string, unknown>) => ({
           ...m,
@@ -82,6 +83,8 @@ export function PaymentMethodsManager() {
           tenantId: currentUser.tenantId ?? '',
         }))
       )
+    } catch {
+      setError('Error de conexión al cargar métodos de pago')
     } finally {
       setLoading(false)
     }
@@ -116,6 +119,7 @@ export function PaymentMethodsManager() {
     setSaving(true)
     setError(null)
     const token = await getToken()
+    if (!token) { setError('Sesión expirada. Recargá la página.'); setSaving(false); return }
     try {
       const payload = {
         nombre: form.nombre,
@@ -134,12 +138,14 @@ export function PaymentMethodsManager() {
         body: JSON.stringify(payload),
       })
       if (!res.ok) {
-        const j = await res.json()
-        setError(j.error ?? 'Error al guardar')
+        const j = await res.json().catch(() => ({}))
+        setError(j.error ?? `Error ${res.status} al guardar`)
         return
       }
       setShowForm(false)
       fetchMethods()
+    } catch {
+      setError('Error de conexión. Verificá tu red.')
     } finally {
       setSaving(false)
     }

@@ -53,14 +53,22 @@ export function useMenuActions(state: AppState, setState: SetState) {
       if (updates.mostrarEnMenuDigital !== undefined) payload.mostrar_en_menu_digital = updates.mostrarEnMenuDigital
 
       const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch(`/api/admin/menu-items/${itemId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
-        },
-        body: JSON.stringify(payload),
-      })
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 15000)
+      let res: Response
+      try {
+        res = await fetch(`/api/admin/menu-items/${itemId}`, {
+          method: 'PATCH',
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+          },
+          body: JSON.stringify(payload),
+        })
+      } finally {
+        clearTimeout(timeout)
+      }
 
       if (!res.ok) {
         const json = await res.json().catch(() => ({}))
