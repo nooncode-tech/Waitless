@@ -98,7 +98,7 @@ export async function cargarOrdenes(setState: SetState, tenantId?: string) {
     let query = supabase
       .from('orders')
       .select('*')
-      .not('status', 'in', '("entregado","cancelado")')
+      .not('status', 'in', '(entregado,cancelado)')
       .order('created_at', { ascending: true })
     if (tenantId) query = query.eq('tenant_id', tenantId)
     const { data, error } = await query

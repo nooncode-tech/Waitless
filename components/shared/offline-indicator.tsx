@@ -76,7 +76,13 @@ export function OfflineIndicator() {
       {failed > 0 && (
         <div className="flex items-center gap-2 px-4 py-2 rounded-full shadow-lg text-sm font-medium bg-amber-600 text-white">
           <AlertTriangle className="h-4 w-4" />
-          {failed} operación{failed !== 1 ? 'es' : ''} no sincronizada{failed !== 1 ? 's' : ''} — contactá soporte
+          {failed} operación{failed !== 1 ? 'es' : ''} no sincronizada{failed !== 1 ? 's' : ''}
+          <button
+            onClick={() => { offlineQueue.clearFailedOps(); setFailed(0) }}
+            className="ml-1 underline underline-offset-2 text-white/80 hover:text-white text-xs"
+          >
+            Descartar
+          </button>
         </div>
       )}
     </div>
