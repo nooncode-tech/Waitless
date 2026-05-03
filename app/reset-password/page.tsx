@@ -18,13 +18,17 @@ export default function ResetPasswordPage() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    // If we arrived here via redirect from app-client-root, session is already set
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) { setReady(true); return }
-    })
-    // Also handle direct landing (if /reset-password is whitelisted in Supabase)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') setReady(true)
+    // INITIAL_SESSION fires immediately on mount with any stored session (covers the
+    // redirect case where app-client-root already processed the hash).
+    // PASSWORD_RECOVERY fires when the page loads directly with the hash in the URL.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (
+        event === 'PASSWORD_RECOVERY' ||
+        event === 'SIGNED_IN' ||
+        (event === 'INITIAL_SESSION' && !!session)
+      ) {
+        setReady(true)
+      }
     })
     return () => subscription.unsubscribe()
   }, [])
