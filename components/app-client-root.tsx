@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { AppProvider, useApp } from '@/lib/context'
 import { supabase } from '@/lib/supabase'
@@ -33,6 +33,15 @@ function AppContent({ initialBranding }: AppContentProps) {
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const oauthHandled = useRef(false)
+
+  // Redirect recovery links directly to /reset-password BEFORE first paint.
+  // Supabase sends the token as a URL hash; detect it synchronously so the
+  // landing page never flickers on screen.
+  useLayoutEffect(() => {
+    if (window.location.hash.includes('type=recovery')) {
+      window.location.replace('/reset-password' + window.location.hash)
+    }
+  }, [])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- initializing mounted flag after hydration, standard SSR pattern

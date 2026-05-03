@@ -75,7 +75,9 @@ export function ProfilePicker({ onLogout }: ProfilePickerProps) {
     setRecoveryError('')
     setIsLoading(true)
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(recoveryEmail.trim())
+      const { error } = await supabase.auth.resetPasswordForEmail(recoveryEmail.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
       if (error) {
         setRecoveryError('No se pudo enviar el correo. Verificá el email.')
       } else {
