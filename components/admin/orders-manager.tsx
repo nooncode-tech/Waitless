@@ -495,44 +495,55 @@ function OrderCard({ order, channel, onUpdateStatus }: OrderCardProps) {
   const { canEditOrder, canCancelOrder } = useApp()
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
-  
+
   const canEdit = canEditOrder(order.id)
   const canCancel = canCancelOrder(order.id)
   const total = order.items.reduce((sum, item) => {
     const extrasTotal = item.extras?.reduce((e, ex) => e + ex.precio, 0) || 0
     return sum + (item.menuItem.precio + extrasTotal) * item.cantidad
   }, 0)
-  
-  const allKitchensReady = order.cocinaStatus === 'listo'
-  
-  const getNextAction = () => {
-    if (order.status === 'entregado') return null
-    
-    if (order.status === 'listo') {
-      if (channel === 'delivery') {
-        return { label: 'En camino', status: 'en_camino' as OrderStatus }
-      }
-      return { label: 'Entregado', status: 'entregado' as OrderStatus }
-    }
-    
-    if (order.status === 'en_camino') {
-      return { label: 'Entregado', status: 'entregado' as OrderStatus }
-    }
-    
-    return null
+
+  const isFinished = order.status === 'entregado' || order.status === 'cancelado'
+
+  // Full phase chain per channel
+  const phases: OrderStatus[] = channel === 'delivery'
+    ? ['recibido', 'preparando', 'listo', 'en_camino', 'entregado']
+    : ['recibido', 'preparando', 'listo', 'entregado']
+
+  const PHASE_LABELS: Record<string, string> = {
+    recibido: 'Recibido', preparando: 'Preparando', listo: 'Listo',
+    en_camino: 'En camino', entregado: 'Entregado',
   }
-  
-  const nextAction = getNextAction()
-  
+
+  const currentIdx = phases.indexOf(order.status as OrderStatus)
+  const nextStatus = !isFinished && currentIdx >= 0 && currentIdx < phases.length - 1
+    ? phases[currentIdx + 1]
+    : null
+
+  // Button appearance per next status
+  const nextBtnStyle: Record<string, string> = {
+    preparando: 'bg-orange-500 hover:bg-orange-600 text-white',
+    listo:      'bg-success hover:bg-success/90 text-white',
+    en_camino:  'bg-black hover:bg-black/90 text-white',
+    entregado:  'bg-success hover:bg-success/90 text-white',
+  }
+
+  // Dot color per phase (current)
+  const dotColor: Record<string, string> = {
+    recibido: 'bg-blue-500', preparando: 'bg-orange-500',
+    listo: 'bg-green-500', en_camino: 'bg-gray-900', entregado: 'bg-gray-400',
+  }
+
   return (
     <div>
       <Card className={`border transition-all ${
-        order.status === 'entregado' ? 'opacity-50' : ''
-      } ${order.status === 'listo' ? 'border-success bg-green-50' : ''} ${
-        order.status === 'en_camino' ? 'border-accent bg-muted' : ''
-      }`}>
-        <CardContent className="p-2">
-          <div className="flex items-start justify-between gap-2 mb-1.5">
+        isFinished ? 'opacity-50' : ''
+      } ${order.status === 'listo' ? 'border-success/40 bg-green-50/50' : ''}
+      ${order.status === 'en_camino' ? 'border-gray-300 bg-gray-50' : ''}`}>
+        <CardContent className="p-3">
+
+          {/* Header */}
+          <div className="flex items-start justify-between gap-2 mb-2">
             <div className="flex items-center gap-2">
               <CardTitle className="text-xs">#{order.numero}</CardTitle>
               <p className="text-[9px] text-muted-foreground flex items-center gap-0.5">
@@ -540,9 +551,8 @@ function OrderCard({ order, channel, onUpdateStatus }: OrderCardProps) {
                 {formatTime(order.createdAt)} ({getTimeDiff(order.createdAt)})
               </p>
             </div>
-            
             <div className="flex items-center gap-1">
-              {(canEdit || canCancel) && order.status !== 'entregado' && order.status !== 'cancelado' && (
+              {(canEdit || canCancel) && !isFinished && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-5 w-5">
@@ -552,37 +562,59 @@ function OrderCard({ order, channel, onUpdateStatus }: OrderCardProps) {
                   <DropdownMenuContent align="end">
                     {canEdit && (
                       <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
-                        <Edit3 className="h-3 w-3 mr-2" />
-                        Editar pedido
+                        <Edit3 className="h-3 w-3 mr-2" />Editar pedido
                       </DropdownMenuItem>
                     )}
                     {canCancel && (
                       <>
                         {canEdit && <DropdownMenuSeparator />}
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => setShowCancelDialog(true)}
                           className="text-destructive focus:text-destructive"
                         >
-                          <X className="h-3 w-3 mr-2" />
-                          Cancelar pedido
+                          <X className="h-3 w-3 mr-2" />Cancelar pedido
                         </DropdownMenuItem>
                       </>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
-              <Badge className={`text-[9px] h-4 px-1.5 ${
-                order.status === 'listo' ? 'bg-success text-white' :
-                order.status === 'preparando' ? 'bg-kds-preparing text-warning' :
-                order.status === 'entregado' ? 'bg-muted text-muted-foreground' :
-                order.status === 'en_camino' ? 'bg-black text-white' :
-                'bg-muted text-muted-foreground'
-              }`}>
-                {order.status === 'en_camino' ? 'En camino' : getStatusLabel(order.status)}
-              </Badge>
             </div>
           </div>
-          
+
+          {/* Phase stepper */}
+          {!isFinished && (
+            <div className="mb-3">
+              <div className="flex items-center">
+                {phases.map((phase, i) => {
+                  const done    = i < currentIdx
+                  const current = i === currentIdx
+                  return (
+                    <div key={phase} className="flex items-center flex-1 last:flex-none">
+                      <div className={`w-2.5 h-2.5 rounded-full shrink-0 transition-all ${
+                        done    ? 'bg-gray-400' :
+                        current ? dotColor[phase] :
+                        'bg-gray-200'
+                      } ${current ? 'ring-2 ring-offset-1 ring-current/40' : ''}`} />
+                      {i < phases.length - 1 && (
+                        <div className={`flex-1 h-px mx-0.5 ${done ? 'bg-gray-400' : 'bg-gray-200'}`} />
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="flex justify-between mt-1 px-px">
+                {phases.map((phase, i) => (
+                  <span key={phase} className={`text-[8px] leading-none ${
+                    i === currentIdx ? 'font-bold text-foreground' : 'text-muted-foreground'
+                  } ${i === phases.length - 1 ? 'text-right' : ''}`}>
+                    {PHASE_LABELS[phase]}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Customer Info */}
           {order.nombreCliente && (
             <div className="mb-1.5 p-1.5 bg-secondary rounded text-[10px]">
@@ -590,8 +622,7 @@ function OrderCard({ order, channel, onUpdateStatus }: OrderCardProps) {
               <div className="flex flex-wrap gap-x-2 gap-y-0.5 mt-0.5">
                 {order.telefono && (
                   <p className="text-muted-foreground flex items-center gap-0.5">
-                    <Phone className="h-2 w-2" />
-                    {order.telefono}
+                    <Phone className="h-2 w-2" />{order.telefono}
                   </p>
                 )}
                 {order.direccion && (
@@ -601,14 +632,12 @@ function OrderCard({ order, channel, onUpdateStatus }: OrderCardProps) {
                   </p>
                 )}
                 {order.zonaReparto && (
-                  <Badge variant="outline" className="text-[8px] h-3.5">
-                    {order.zonaReparto}
-                  </Badge>
+                  <Badge variant="outline" className="text-[8px] h-3.5">{order.zonaReparto}</Badge>
                 )}
               </div>
             </div>
           )}
-          
+
           {/* Items */}
           <ul className="space-y-0.5 mb-1.5">
             {order.items.slice(0, 3).map((item) => (
@@ -617,68 +646,48 @@ function OrderCard({ order, channel, onUpdateStatus }: OrderCardProps) {
               </li>
             ))}
             {order.items.length > 3 && (
-              <li className="text-[9px] text-muted-foreground">
-                +{order.items.length - 3} mas...
-              </li>
+              <li className="text-[9px] text-muted-foreground">+{order.items.length - 3} más…</li>
             )}
           </ul>
-          
-          {/* Kitchen Status */}
-          {order.status !== 'entregado' && order.status !== 'en_camino' && (
+
+          {/* Kitchen status chip (informational only) */}
+          {!isFinished && order.status !== 'en_camino' && (
             <div className="flex gap-1 text-[9px] mb-2">
               <span className={`px-1.5 py-0.5 rounded ${
-                order.cocinaStatus === 'listo' ? 'bg-green-50 text-success' :
-                order.cocinaStatus === 'preparando' ? 'bg-kds-preparing text-warning' :
+                order.cocinaStatus === 'listo'      ? 'bg-green-50 text-success' :
+                order.cocinaStatus === 'preparando' ? 'bg-orange-50 text-orange-600' :
                 'bg-muted text-muted-foreground'
               }`}>
                 Cocina: {order.cocinaStatus === 'listo' ? 'Listo' :
-                         order.cocinaStatus === 'preparando' ? 'Prep.' : 'Cola'}
+                         order.cocinaStatus === 'preparando' ? 'Prep.' : 'En cola'}
               </span>
-              {!allKitchensReady && (
-                <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
-                  <AlertCircle className="h-2.5 w-2.5" />
-                  Esperando cocina
-                </span>
-              )}
             </div>
           )}
-          
-          <div className="flex justify-between items-center pt-1.5 border-t border-border">
+
+          {/* Footer: total + advance button */}
+          <div className="flex justify-between items-center pt-2 border-t border-border">
             <div>
               <span className="text-[9px] text-muted-foreground">Total</span>
               <span className="font-semibold text-xs text-foreground ml-1">{formatPrice(total)}</span>
             </div>
-            
-            {nextAction && allKitchensReady && (
+
+            {nextStatus && (
               <Button
                 size="sm"
-                className={`h-6 text-[10px] px-2 ${
-                  nextAction.status === 'entregado' ? 'bg-success hover:bg-success/90 text-white' :
-                  nextAction.status === 'en_camino' ? 'bg-black hover:bg-black/90 text-white' :
-                  'bg-black text-white'
-                }`}
-                onClick={() => onUpdateStatus(order.id, nextAction.status)}
+                className={`h-7 text-[10px] px-3 ${nextBtnStyle[nextStatus] ?? 'bg-black text-white'}`}
+                onClick={() => onUpdateStatus(order.id, nextStatus)}
               >
-                {nextAction.status === 'en_camino' && <Truck className="h-2.5 w-2.5 mr-1" />}
-                {nextAction.status === 'entregado' && <Check className="h-2.5 w-2.5 mr-1" />}
-                {nextAction.label}
+                {nextStatus === 'en_camino' && <Truck className="h-2.5 w-2.5 mr-1" />}
+                {nextStatus === 'entregado' && <Check className="h-2.5 w-2.5 mr-1" />}
+                {PHASE_LABELS[nextStatus]}
               </Button>
             )}
           </div>
         </CardContent>
       </Card>
-      
-      <CancelOrderDialog
-        order={order}
-        open={showCancelDialog}
-        onOpenChange={setShowCancelDialog}
-      />
-      
-      <EditOrderDialog
-        order={order}
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-      />
+
+      <CancelOrderDialog order={order} open={showCancelDialog} onOpenChange={setShowCancelDialog} />
+      <EditOrderDialog   order={order} open={showEditDialog}   onOpenChange={setShowEditDialog} />
     </div>
   )
 }
