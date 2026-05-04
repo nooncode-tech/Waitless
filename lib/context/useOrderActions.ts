@@ -305,25 +305,43 @@ export function useOrderActions(state: AppState, setState: SetState) {
     syncOrderToSupabase(updatedOrder)
   }, [state.orders, setState])
 
-  const updateOrderStatus = useCallback((orderId: string, status: OrderStatus) => {
+  const updateOrderStatus = useCallback(async (orderId: string, status: OrderStatus) => {
     const existing = state.orders.find(o => o.id === orderId)
     if (!existing) return
 
-    const updates: Partial<Order> = { status, updatedAt: new Date() }
-    if (status === 'preparando' && !existing.tiempoInicioPreparacion) updates.tiempoInicioPreparacion = new Date()
-    if ((status === 'listo' || status === 'entregado') && !existing.tiempoFinPreparacion) updates.tiempoFinPreparacion = new Date()
+    const now = new Date()
+    const updates: Partial<Order> = { status, updatedAt: now }
+    if (status === 'preparando' && !existing.tiempoInicioPreparacion) updates.tiempoInicioPreparacion = now
+    if ((status === 'listo' || status === 'entregado') && !existing.tiempoFinPreparacion) updates.tiempoFinPreparacion = now
     const updatedOrder = { ...existing, ...updates }
 
-    setState(prev => {
-      const updatedOrders = prev.orders.map(o => o.id === orderId ? updatedOrder : o)
-      const updatedSessions = prev.tableSessions.map(session => ({
+    // Optimistic update
+    setState(prev => ({
+      ...prev,
+      orders: prev.orders.map(o => o.id === orderId ? updatedOrder : o),
+      tableSessions: prev.tableSessions.map(session => ({
         ...session,
         orders: session.orders.map(o => o.id === orderId ? updatedOrder : o),
-      }))
-      return { ...prev, orders: updatedOrders, tableSessions: updatedSessions }
-    })
+      })),
+    }))
 
-    syncOrderToSupabase(updatedOrder)
+    // Persist via API (supabaseAdmin, bypasses RLS)
+    const { data: { session } } = await supabase.auth.getSession()
+    const payload: Record<string, unknown> = {
+      status,
+      updated_at: now.toISOString(),
+    }
+    if (updates.tiempoInicioPreparacion) payload.tiempo_inicio_preparacion = updates.tiempoInicioPreparacion.toISOString()
+    if (updates.tiempoFinPreparacion) payload.tiempo_fin_preparacion = updates.tiempoFinPreparacion.toISOString()
+
+    fetch(`/api/admin/orders/${orderId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    }).catch(() => {/* optimistic already applied */})
 
     if (status === 'listo') {
       pushTriggers.orderReady(existing.mesa, orderId)
@@ -426,8 +444,22 @@ export function useOrderActions(state: AppState, setState: SetState) {
       }
     })
 
-    // Sync cancelled order to Supabase (before local state removes it)
-    syncOrderToSupabase({ ...order, status: 'cancelado', updatedAt: new Date() })
+    // Persist cancellation via API (supabaseAdmin, bypasses RLS)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      fetch(`/api/admin/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({
+          status: 'cancelado',
+          cancelado: true,
+          cancelado_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }),
+      }).catch(() => {/* optimistic already applied */})
+    })
 
     // Audit log
     // Task 2.8: audit corregido — user_id (no usuario_id), detalles como string

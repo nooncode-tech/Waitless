@@ -87,7 +87,7 @@ export interface AppContextType extends AppState {
     clienteInfo?: { nombre?: string; telefono?: string; direccion?: string; zonaReparto?: string; costoEnvio?: number },
     seatNumber?: number,
   ) => Promise<Order | null>
-  updateOrderStatus: (orderId: string, status: OrderStatus) => void
+  updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>
   updateKitchenStatus: (orderId: string, status: KitchenStatus) => void
   cancelOrder: (orderId: string, reason: CancelReason, motivo?: string, userId?: string) => boolean
   updateOrderItems: (orderId: string, items: OrderItem[]) => boolean
