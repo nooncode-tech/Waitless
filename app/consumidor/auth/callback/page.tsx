@@ -62,7 +62,7 @@ function CallbackInner() {
 
       if (!res.ok) {
         const json = await res.json().catch(() => ({}))
-        setErrorMsg(json.error ?? 'Error al completar el perfil')
+        setErrorMsg(`[${json.code ?? res.status}] ${json.error ?? 'Error al completar el perfil'}`)
         return
       }
 

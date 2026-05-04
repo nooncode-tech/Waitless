@@ -61,8 +61,8 @@ export async function POST(req: NextRequest) {
     })
 
   if (insertError) {
-    console.error('[google-complete] Error creando perfil:', insertError.message)
-    return NextResponse.json({ error: 'Error al crear perfil' }, { status: 500 })
+    console.error('[google-complete] Error creando perfil:', insertError.message, insertError.code)
+    return NextResponse.json({ error: insertError.message, code: insertError.code }, { status: 500 })
   }
 
   return NextResponse.json({ ok: true, created: true })
