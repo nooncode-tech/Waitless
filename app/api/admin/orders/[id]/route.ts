@@ -30,10 +30,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Sin campos para actualizar' }, { status: 400 })
   }
 
-  let q = supabaseAdmin.from('orders').update(payload).eq('id', id)
-  if (auth.tenantId) q = q.eq('tenant_id', auth.tenantId)
-
-  const { error } = await q
+  const { error } = await supabaseAdmin.from('orders').update(payload).eq('id', id)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

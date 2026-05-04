@@ -15,13 +15,16 @@ export function useMenuActions(state: AppState, setState: SetState) {
     async (itemId: string, updates: Partial<MenuItem>, imageFiles?: (File | null)[]) => {
 
       // Optimistic update — reverted on error
-      const prevItems = state.menuItems
-      setState(prev => ({
-        ...prev,
-        menuItems: prev.menuItems.map(item =>
-          item.id === itemId ? { ...item, ...updates } : item
-        ),
-      }))
+      let prevItems: MenuItem[] = []
+      setState(prev => {
+        prevItems = prev.menuItems
+        return {
+          ...prev,
+          menuItems: prev.menuItems.map(item =>
+            item.id === itemId ? { ...item, ...updates } : item
+          ),
+        }
+      })
 
       let finalImagenes: string[] | undefined = updates.imagenes
 

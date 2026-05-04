@@ -34,16 +34,10 @@ export async function PATCH(
     return NextResponse.json({ error: 'Sin campos para actualizar' }, { status: 400 })
   }
 
-  let updateQuery = supabaseAdmin
+  const { error } = await supabaseAdmin
     .from('menu_items')
     .update(payload)
     .eq('id', id)
-
-  if (auth.tenantId) {
-    updateQuery = updateQuery.eq('tenant_id', auth.tenantId)
-  }
-
-  const { error } = await updateQuery
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
