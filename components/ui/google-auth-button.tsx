@@ -7,11 +7,13 @@ import { supabase } from '@/lib/supabase'
 interface GoogleAuthButtonProps {
   label?: string
   className?: string
+  redirectTo?: string
 }
 
 export function GoogleAuthButton({
   label = 'Continuar con Google',
   className = '',
+  redirectTo,
 }: GoogleAuthButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
 
@@ -21,7 +23,7 @@ export function GoogleAuthButton({
       await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectTo ?? `${window.location.origin}/auth/callback`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',

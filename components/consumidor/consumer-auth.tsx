@@ -6,6 +6,7 @@ import { Eye, EyeOff, Mail, Lock, User, Phone, AlertCircle, ChevronRight } from 
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { GoogleAuthButton } from '@/components/ui/google-auth-button'
 
 type Mode = 'login' | 'register'
 
@@ -111,6 +112,19 @@ export function ConsumerAuth() {
               {m === 'login' ? 'Iniciar sesión' : 'Registrarme'}
             </button>
           ))}
+        </div>
+
+        {/* Google OAuth */}
+        <div className="mb-5">
+          <GoogleAuthButton
+            label="Continuar con Google"
+            redirectTo={typeof window !== 'undefined' ? `${window.location.origin}/consumidor/auth/callback` : '/consumidor/auth/callback'}
+          />
+          <div className="flex items-center gap-3 my-4">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-xs text-gray-400 font-medium">o</span>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
         </div>
 
         {/* Form */}
