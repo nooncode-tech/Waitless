@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   User, MapPin, CreditCard, Star, Plus, Trash2, Home, Briefcase,
-  Edit3, Check, X, LogOut, ChevronRight, AlertCircle
+  Edit3, Check, X, LogOut, ChevronRight, AlertCircle, ArrowLeft
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -163,6 +163,10 @@ export function ConsumerProfileView() {
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
+            <button onClick={() => router.push('/consumidor/explorar')}
+              className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-900 transition-colors mr-1">
+              <ArrowLeft className="h-4 w-4" />
+            </button>
             <div className="w-7 h-7 bg-black rounded-lg flex items-center justify-center">
               <span className="text-white font-black text-[11px]">W</span>
             </div>

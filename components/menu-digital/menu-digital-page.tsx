@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { ShoppingCart, Plus, Minus, MessageCircle, Check, Phone, ChevronLeft, ArrowRight, Clock, Receipt, Truck, ShoppingBag, MapPin, Copy } from 'lucide-react'
+import { ShoppingCart, Plus, Minus, MessageCircle, Check, Phone, ChevronLeft, ArrowRight, Clock, Receipt, Truck, ShoppingBag, MapPin, Copy, User } from 'lucide-react'
 import { ReviewSection } from '@/components/consumidor/review-section'
+import { supabase } from '@/lib/supabase'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -111,6 +112,25 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
   const [msgSent, setMsgSent] = useState(false)
   const [msgSubmitting, setMsgSubmitting] = useState(false)
 
+  // Auth gate
+  const [consumerReady, setConsumerReady] = useState<boolean | null>(null)
+  const [showAuthGate, setShowAuthGate] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setConsumerReady(!!session)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setConsumerReady(!!session)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const requireAuth = (then: () => void) => {
+    if (consumerReady) { then(); return }
+    setShowAuthGate(true)
+  }
+
   // ─── Fetch menu ─────────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchMenu = (isInitial = false) => {
@@ -199,9 +219,15 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
     if (modoEntrega === 'delivery' && !direccion.trim()) return
     setSubmitting(true)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) { setShowAuthGate(true); setSubmitting(false); return }
+
       const res = await fetch(`/api/public/${slug}/order`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({
           items: cart.map(e => ({ itemId: e.item.id, cantidad: e.cantidad, extras: e.selectedExtras })),
           canal: modoEntrega,
@@ -1013,7 +1039,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       {cartCount > 0 && !cerrada && (
         <div className="fixed bottom-6 left-0 right-0 flex justify-center z-30 px-4">
           <button
-            onClick={() => setScreen('cart')}
+            onClick={() => requireAuth(() => setScreen('cart'))}
             className={`w-full max-w-sm flex items-center justify-between px-5 rounded-2xl shadow-2xl shadow-black/25 text-white transition-transform ${cartBump ? 'scale-105' : 'scale-100 hover:scale-[1.02] active:scale-[0.98]'}`}
             style={{ backgroundColor: '#000', height: '56px', transition: 'transform 0.2s cubic-bezier(0.34,1.56,0.64,1)' }}
           >
@@ -1023,6 +1049,45 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
             <span className="text-sm font-bold tracking-tight">Ver carrito</span>
             <span className="font-black text-sm" style={{ letterSpacing: '-0.02em' }}>{fmt(cartSubtotal)}</span>
           </button>
+        </div>
+      )}
+
+      {/* ── Auth gate modal ────────────────────────────────────────────────── */}
+      {showAuthGate && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          onClick={() => setShowAuthGate(false)}
+        >
+          <div
+            className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex flex-col items-center text-center mb-6">
+              <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mb-4">
+                <User className="h-6 w-6 text-white" />
+              </div>
+              <h2 className="font-black text-gray-900 text-lg" style={{ letterSpacing: '-0.02em' }}>
+                Iniciá sesión para pedir
+              </h2>
+              <p className="text-sm text-gray-500 mt-1.5">
+                Necesitás una cuenta de Waitless para realizar pedidos en cualquier restaurante.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <a
+                href={`/consumidor?next=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : `/menu/${slug}`)}`}
+                className="w-full h-12 rounded-xl bg-black text-white text-sm font-bold flex items-center justify-center hover:bg-gray-900 transition-colors"
+              >
+                Iniciar sesión / Registrarme
+              </a>
+              <button
+                onClick={() => setShowAuthGate(false)}
+                className="w-full h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Seguir explorando el menú
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

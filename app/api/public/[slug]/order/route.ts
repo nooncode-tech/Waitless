@@ -21,6 +21,16 @@ export async function POST(
 ) {
   const { slug } = await params
 
+  // Require a valid consumer session
+  const token = req.headers.get('authorization')?.replace('Bearer ', '').trim()
+  if (!token) {
+    return NextResponse.json({ error: 'Debés iniciar sesión para realizar pedidos' }, { status: 401 })
+  }
+  const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Sesión inválida. Iniciá sesión nuevamente.' }, { status: 401 })
+  }
+
   let body: {
     items: CartItem[]
     canal?: 'para_llevar' | 'delivery'

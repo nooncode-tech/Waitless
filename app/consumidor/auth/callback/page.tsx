@@ -66,7 +66,9 @@ function CallbackInner() {
         return
       }
 
-      router.replace('/consumidor/perfil')
+      const next = localStorage.getItem('waitless:next')
+      if (next) localStorage.removeItem('waitless:next')
+      router.replace(next ?? '/consumidor/explorar')
     }
 
     run()

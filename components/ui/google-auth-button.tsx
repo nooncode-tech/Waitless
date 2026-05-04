@@ -8,17 +8,20 @@ interface GoogleAuthButtonProps {
   label?: string
   className?: string
   redirectTo?: string
+  onBeforeRedirect?: () => void
 }
 
 export function GoogleAuthButton({
   label = 'Continuar con Google',
   className = '',
   redirectTo,
+  onBeforeRedirect,
 }: GoogleAuthButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleClick = async () => {
     setIsLoading(true)
+    onBeforeRedirect?.()
     try {
       await supabase.auth.signInWithOAuth({
         provider: 'google',

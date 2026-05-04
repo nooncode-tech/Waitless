@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, Mail, Lock, User, Phone, AlertCircle, ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -12,6 +12,8 @@ type Mode = 'login' | 'register'
 
 export function ConsumerAuth() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const next = searchParams.get('next') ?? '/consumidor/explorar'
   const [mode, setMode] = useState<Mode>('login')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -50,7 +52,7 @@ export function ConsumerAuth() {
       setIsLoading(false)
       return
     }
-    router.replace('/consumidor/perfil')
+    router.replace(next)
   }
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -79,7 +81,7 @@ export function ConsumerAuth() {
 
     // Auto-login after register
     await supabase.auth.signInWithPassword({ email: form.email.trim(), password: form.password })
-    router.replace('/consumidor/perfil')
+    router.replace(next)
   }
 
   return (
@@ -119,6 +121,11 @@ export function ConsumerAuth() {
           <GoogleAuthButton
             label="Continuar con Google"
             redirectTo={typeof window !== 'undefined' ? `${window.location.origin}/consumidor/auth/callback` : '/consumidor/auth/callback'}
+            onBeforeRedirect={() => {
+              if (next !== '/consumidor/explorar') {
+                localStorage.setItem('waitless:next', next)
+              }
+            }}
           />
           <div className="flex items-center gap-3 my-4">
             <div className="flex-1 h-px bg-gray-200" />
