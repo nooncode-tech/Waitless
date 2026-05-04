@@ -94,6 +94,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
   // Checkout state
   const [nombre, setNombre] = useState('')
   const [telefono, setTelefono] = useState('')
+  const [email, setEmail] = useState('')
   const [metodoPago, setMetodoPago] = useState<string>('')
   const [notas, setNotas] = useState('')
   const [incluirPropina, setIncluirPropina] = useState(true)
@@ -206,6 +207,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
           canal: modoEntrega,
           nombreCliente: nombre.trim() || undefined,
           telefono: telefono.trim() || undefined,
+          email: email.trim() || undefined,
           direccion: modoEntrega === 'delivery' ? direccion.trim() : undefined,
           zonaReparto: modoEntrega === 'delivery' && zonaReparto ? zonaReparto : undefined,
           metodoPago,
@@ -370,7 +372,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
             </a>
           )}
           <button
-            onClick={() => { setScreen('menu'); setNombre(''); setTelefono(''); setNotas(''); setDireccion(''); setZonaReparto(''); setModoEntrega('para_llevar') }}
+            onClick={() => { setScreen('menu'); setNombre(''); setTelefono(''); setEmail(''); setNotas(''); setDireccion(''); setZonaReparto(''); setModoEntrega('para_llevar') }}
             className="w-full h-12 rounded-xl border border-gray-200 text-sm font-semibold text-black hover:bg-gray-50 transition-colors"
           >
             Seguir explorando el menú
@@ -586,7 +588,9 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
             <div className="space-y-3">
               <input value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre"
                 className="w-full h-11 rounded-xl border border-gray-200 px-3 text-sm text-black placeholder:text-gray-300 focus:outline-none focus:border-gray-400" />
-              <input value={telefono} onChange={e => setTelefono(e.target.value)} placeholder="Teléfono"
+              <input value={telefono} onChange={e => setTelefono(e.target.value)} placeholder="Teléfono" type="tel"
+                className="w-full h-11 rounded-xl border border-gray-200 px-3 text-sm text-black placeholder:text-gray-300 focus:outline-none focus:border-gray-400" />
+              <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Correo electrónico" type="email"
                 className="w-full h-11 rounded-xl border border-gray-200 px-3 text-sm text-black placeholder:text-gray-300 focus:outline-none focus:border-gray-400" />
             </div>
           </div>

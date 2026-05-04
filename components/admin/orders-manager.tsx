@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Phone, MapPin, Clock, Package, Check, Truck, ShoppingBag, AlertCircle, X, Edit3, MoreVertical } from 'lucide-react'
+import { Plus, Phone, MapPin, Clock, Package, Check, Truck, ShoppingBag, AlertCircle, X, Edit3, MoreVertical, History } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { CancelOrderDialog } from '@/components/shared/cancel-order-dialog'
 import { EditOrderDialog } from '@/components/shared/edit-order-dialog'
+import { OrdersHistory } from './orders-history'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,8 +30,8 @@ export function OrdersManager() {
   const { orders, updateOrderStatus, tableSessions } = useApp()
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [createChannel, setCreateChannel] = useState<Channel>('para_llevar')
-  const [activeTab, setActiveTab] = useState<'table' | 'takeout' | 'delivery'>('table')
-  const handleSetTab = (tab: 'table' | 'takeout' | 'delivery') => { setActiveTab(tab); setPage(1) }
+  const [activeTab, setActiveTab] = useState<'table' | 'takeout' | 'delivery' | 'history'>('table')
+  const handleSetTab = (tab: 'table' | 'takeout' | 'delivery' | 'history') => { setActiveTab(tab); setPage(1) }
   
   // Categorize orders
   const tableOrders = orders.filter(o => o.canal === 'mesa' && o.mesa)
@@ -135,8 +136,8 @@ export function OrdersManager() {
           <Truck className="h-3 w-3" />
           Delivery
           {activeDelivery.length > 0 && (
-            <Badge 
-              variant="secondary" 
+            <Badge
+              variant="secondary"
               className={`text-[9px] h-3.5 px-1 ${
                 activeTab === 'delivery' ? 'bg-white/20 text-white' : 'bg-muted text-foreground'
               }`}
@@ -145,50 +146,66 @@ export function OrdersManager() {
             </Badge>
           )}
         </button>
+        <button
+          onClick={() => handleSetTab('history')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
+            activeTab === 'history'
+              ? 'bg-foreground text-background'
+              : 'bg-secondary text-foreground'
+          }`}
+        >
+          <History className="h-3 w-3" />
+          Historial
+        </button>
       </div>
       
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div>
-          <h2 className="text-xs font-semibold text-foreground">
-            {activeTab === 'table' ? 'Pedidos de mesas' : 
-             activeTab === 'takeout' ? 'Pedidos para llevar' : 'Pedidos delivery'}
-          </h2>
-          <p className="text-[10px] text-muted-foreground">
-            {activeCount} pedido{activeCount !== 1 ? 's' : ''} activo{activeCount !== 1 ? 's' : ''}
-          </p>
-        </div>
-        {activeTab !== 'table' && (
-          <Button 
-            size="xs"
-            onClick={() => handleCreateOrder(activeTab === 'takeout' ? 'para_llevar' : 'delivery')}
-          >
-            <Plus className="h-3 w-3 mr-1" />
-            Nuevo
-          </Button>
-        )}
-      </div>
-      
-      {activeTab === 'table' ? (
-        <TableOrdersList
-          orders={paginatedOrders}
-          getTableInfo={getTableInfo}
-          onUpdateStatus={updateOrderStatus}
-        />
+      {activeTab === 'history' ? (
+        <OrdersHistory />
       ) : (
-        <OrdersList
-          orders={paginatedOrders}
-          channel={activeTab === 'takeout' ? 'para_llevar' : 'delivery'}
-          onUpdateStatus={updateOrderStatus}
-        />
-      )}
+        <>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-xs font-semibold text-foreground">
+                {activeTab === 'table' ? 'Pedidos de mesas' :
+                 activeTab === 'takeout' ? 'Pedidos para llevar' : 'Pedidos delivery'}
+              </h2>
+              <p className="text-[10px] text-muted-foreground">
+                {activeCount} pedido{activeCount !== 1 ? 's' : ''} activo{activeCount !== 1 ? 's' : ''}
+              </p>
+            </div>
+            {activeTab !== 'table' && (
+              <Button
+                size="xs"
+                onClick={() => handleCreateOrder(activeTab === 'takeout' ? 'para_llevar' : 'delivery')}
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                Nuevo
+              </Button>
+            )}
+          </div>
 
-      {hasMore && (
-        <div className="flex justify-center mt-4">
-          <Button variant="outline" size="sm" className="text-xs bg-transparent" onClick={() => setPage(p => p + 1)}>
-            Cargar más ({currentOrders.length - page * PAGE_SIZE} restantes)
-          </Button>
-        </div>
+          {activeTab === 'table' ? (
+            <TableOrdersList
+              orders={paginatedOrders}
+              getTableInfo={getTableInfo}
+              onUpdateStatus={updateOrderStatus}
+            />
+          ) : (
+            <OrdersList
+              orders={paginatedOrders}
+              channel={activeTab === 'takeout' ? 'para_llevar' : 'delivery'}
+              onUpdateStatus={updateOrderStatus}
+            />
+          )}
+          {hasMore && (
+            <div className="flex justify-center mt-4">
+              <Button variant="outline" size="sm" className="text-xs bg-transparent" onClick={() => setPage(p => p + 1)}>
+                Cargar más ({currentOrders.length - page * PAGE_SIZE} restantes)
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       {showCreateDialog && (

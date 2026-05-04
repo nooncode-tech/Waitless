@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronLeft, Minus, Plus, Trash2, ShoppingBag, Phone, Gift, Armchair } from 'lucide-react'
+import { ChevronLeft, Minus, Plus, Trash2, ShoppingBag, Phone, Gift, Armchair, User, Mail, MessageSquare } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { Button } from '@/components/ui/button'
 import { formatPrice } from '@/lib/store'
@@ -19,6 +19,12 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
   const [phoneInput, setPhoneInput] = useState(loyaltyPhone)
   const [showPhoneInput, setShowPhoneInput] = useState(false)
   const [seatNumber, setSeatNumber] = useState<number | null>(null)
+
+  // Datos del cliente
+  const [nombre, setNombre] = useState('')
+  const [telefono, setTelefono] = useState('')
+  const [email, setEmail] = useState('')
+  const [notas, setNotas] = useState('')
 
   const customer = loyaltyPhone ? getLoyaltyCustomer(loyaltyPhone) : undefined
 
@@ -38,7 +44,13 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
   }
 
   const handleConfirm = () => {
-    createOrder('mesa', mesa, undefined, seatNumber ?? undefined)
+    const clienteInfo = {
+      nombre: nombre.trim() || undefined,
+      telefono: telefono.trim() || loyaltyPhone || undefined,
+      email: email.trim() || undefined,
+      notas: notas.trim() || undefined,
+    }
+    createOrder('mesa', mesa, clienteInfo, seatNumber ?? undefined)
     onOrderConfirmed(subtotal)
   }
   
@@ -249,6 +261,51 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
           <div className="flex justify-between text-base font-semibold text-foreground">
             <span>Total</span>
             <span>{formatPrice(subtotal)}</span>
+          </div>
+        </div>
+
+        {/* Datos del cliente */}
+        <div className="space-y-2">
+          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Tus datos <span className="normal-case font-normal opacity-60">(opcional)</span></p>
+          <div className="flex items-center border border-border rounded-xl px-3 gap-2 h-10">
+            <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <input
+              type="text"
+              value={nombre}
+              onChange={e => setNombre(e.target.value)}
+              placeholder="Nombre"
+              className="flex-1 text-xs bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+            />
+          </div>
+          <div className="flex items-center border border-border rounded-xl px-3 gap-2 h-10">
+            <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <input
+              type="tel"
+              value={telefono}
+              onChange={e => setTelefono(e.target.value)}
+              placeholder="Teléfono"
+              className="flex-1 text-xs bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+            />
+          </div>
+          <div className="flex items-center border border-border rounded-xl px-3 gap-2 h-10">
+            <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="Correo electrónico"
+              className="flex-1 text-xs bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+            />
+          </div>
+          <div className="flex items-center border border-border rounded-xl px-3 gap-2 h-10">
+            <MessageSquare className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <input
+              type="text"
+              value={notas}
+              onChange={e => setNotas(e.target.value)}
+              placeholder="Notas para el restaurante"
+              className="flex-1 text-xs bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+            />
           </div>
         </div>
 

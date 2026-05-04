@@ -112,9 +112,11 @@ export interface Order {
   // Para delivery/para llevar
   nombreCliente?: string
   telefono?: string
+  email?: string
   direccion?: string
   zonaReparto?: string
   repartidorId?: string
+  notas?: string
   // Tiempos
   tiempoInicioPreparacion?: Date
   tiempoFinPreparacion?: Date

@@ -48,6 +48,8 @@ export async function syncOrderToSupabase(order: Order, sessionId?: string) {
     cocina_a_status: order.cocinaStatus,
     nombre_cliente: order.nombreCliente ?? null,
     telefono: order.telefono ?? null,
+    email: order.email ?? null,
+    notas: order.notas ?? null,
     direccion: order.direccion ?? null,
     zona_reparto: order.zonaReparto ?? null,
     repartidor_id: order.repartidorId ?? null,

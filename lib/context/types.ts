@@ -84,7 +84,7 @@ export interface AppContextType extends AppState {
   createOrder: (
     canal: Channel,
     mesa?: number,
-    clienteInfo?: { nombre?: string; telefono?: string; direccion?: string; zonaReparto?: string; costoEnvio?: number },
+    clienteInfo?: { nombre?: string; telefono?: string; email?: string; notas?: string; direccion?: string; zonaReparto?: string; costoEnvio?: number },
     seatNumber?: number,
   ) => Promise<Order | null>
   updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>

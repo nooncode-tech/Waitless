@@ -118,6 +118,8 @@ export async function cargarOrdenes(setState: SetState, tenantId?: string) {
       updatedAt: new Date(row.updated_at),
       nombreCliente: row.nombre_cliente,
       telefono: row.telefono,
+      email: row.email ?? undefined,
+      notas: row.notas ?? undefined,
       direccion: row.direccion,
       zonaReparto: row.zona_reparto,
       repartidorId: row.repartidor_id,

@@ -33,7 +33,7 @@ export function useOrderActions(state: AppState, setState: SetState) {
   const createOrder = useCallback(async (
     canal: Channel,
     mesa?: number,
-    clienteInfo?: { nombre?: string; telefono?: string; direccion?: string; zonaReparto?: string; costoEnvio?: number },
+    clienteInfo?: { nombre?: string; telefono?: string; email?: string; notas?: string; direccion?: string; zonaReparto?: string; costoEnvio?: number },
     seatNumber?: number
   ): Promise<Order | null> => {
     if (state.cart.length === 0) return null
@@ -139,6 +139,8 @@ export function useOrderActions(state: AppState, setState: SetState) {
       updatedAt: new Date(),
       nombreCliente: clienteInfo?.nombre,
       telefono: clienteInfo?.telefono,
+      email: clienteInfo?.email,
+      notas: clienteInfo?.notas,
       direccion: clienteInfo?.direccion,
       zonaReparto: clienteInfo?.zonaReparto,
     }

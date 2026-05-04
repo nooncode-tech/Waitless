@@ -26,6 +26,7 @@ export async function POST(
     canal?: 'para_llevar' | 'delivery'
     nombreCliente?: string
     telefono?: string
+    email?: string
     direccion?: string
     zonaReparto?: string
     metodoPago?: string
@@ -160,6 +161,8 @@ export async function POST(
     cocina_a_status: 'en_cola',
     nombre_cliente: body.nombreCliente?.trim() || null,
     telefono: body.telefono?.trim() || null,
+    email: body.email?.trim() || null,
+    notas: body.notas?.trim() || null,
     direccion: body.direccion?.trim() || null,
     zona_reparto: body.zonaReparto?.trim() || null,
     cancelado: false,
