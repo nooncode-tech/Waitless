@@ -20,7 +20,7 @@ interface ExploreRestaurant {
 }
 
 interface LandingPageProps {
-  onLogin: () => void
+  onLogin?: () => void
 }
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -142,6 +142,10 @@ function useCounter(target: number, duration = 1100, start = false) {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function LandingPage({ onLogin }: LandingPageProps) {
+  const goRestaurantLogin = () => {
+    if (onLogin) { onLogin(); return }
+    window.location.href = '/restaurante'
+  }
   const [menuOpen, setMenuOpen] = useState(false)
   const [loginDropdown, setLoginDropdown] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -359,7 +363,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
                   {/* ── Restaurante — light card ── */}
                   <button
-                    onClick={() => { setLoginDropdown(false); onLogin() }}
+                    onClick={() => { setLoginDropdown(false); goRestaurantLogin() }}
                     className="flex-1 flex flex-col items-center gap-5 p-5 rounded-xl bg-zinc-50 hover:bg-zinc-100 transition-all group text-center cursor-pointer"
                   >
                     {/* Illustration */}
@@ -449,7 +453,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                   </div>
                 </a>
                 <button
-                  onClick={() => { setMenuOpen(false); onLogin() }}
+                  onClick={() => { setMenuOpen(false); goRestaurantLogin() }}
                   className="flex-1 flex flex-col items-center gap-3 p-4 rounded-xl bg-zinc-50 text-center cursor-pointer"
                 >
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#f4f4f5,#e4e4e7)' }}>
@@ -923,7 +927,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               Ver planes y precios
               <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
             </button>
-            <button onClick={onLogin}
+            <button onClick={goRestaurantLogin}
               className="inline-flex items-center justify-center gap-2 font-medium px-8 py-3 rounded-full text-sm text-white/40 hover:text-white border border-white/10 hover:border-white/20 transition-all cursor-pointer">
               Ya tengo cuenta
             </button>
@@ -988,7 +992,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                 className="text-white/20 text-xs hover:text-white/45 transition-colors flex items-center gap-1 cursor-pointer font-light">
                 Consumidores <ChevronRight className="h-3 w-3" />
               </a>
-              <button onClick={onLogin}
+              <button onClick={goRestaurantLogin}
                 className="text-white/20 text-xs hover:text-white/45 transition-colors flex items-center gap-1 cursor-pointer font-light">
                 Restaurantes <ChevronRight className="h-3 w-3" />
               </button>

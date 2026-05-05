@@ -22,11 +22,12 @@ type AppView = 'landing' | 'login' | 'profile-picker' | 'cliente-auth' | 'client
 
 interface AppContentProps {
   initialBranding: TenantBranding
+  startAtLogin?: boolean
 }
 
-function AppContent({ initialBranding }: AppContentProps) {
+function AppContent({ initialBranding, startAtLogin }: AppContentProps) {
   const { currentUser, deviceUser, setCurrentTable, logout, lockProfile, validateTableQR } = useApp()
-  const [view, setView] = useState<AppView>('landing')
+  const [view, setView] = useState<AppView>(startAtLogin ? 'login' : 'landing')
   const [clienteMesa, setClienteMesa] = useState<number | null>(null)
   const [clienteUser, setClienteUser] = useState<ClienteUser | null>(null)
   const [qrError, setQrError] = useState<string | null>(null)
@@ -139,13 +140,21 @@ function AppContent({ initialBranding }: AppContentProps) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: redirect to lock screen when device session exists but no active profile
       setView('profile-picker')
     } else if (currentUser && (view === 'login' || view === 'landing' || view === 'profile-picker')) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional reactive navigation on auth state change
-      setView(roleToView(currentUser.role))
+      if (startAtLogin) {
+        router.replace('/')
+      } else {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional reactive navigation on auth state change
+        setView(roleToView(currentUser.role))
+      }
     }
-  }, [currentUser, deviceUser, view])
+  }, [currentUser, deviceUser, view, startAtLogin, router])
 
   const handleLoginSuccess = (role: UserRole) => {
-    setView(roleToView(role))
+    if (startAtLogin) {
+      router.replace('/')
+    } else {
+      setView(roleToView(role))
+    }
   }
 
   const handleLogout = async () => {
@@ -206,7 +215,11 @@ function AppContent({ initialBranding }: AppContentProps) {
 
   // Pantalla de login — recibe branding server-side para renderizar sin flash
   if (view === 'login') {
-    return <LoginScreen onLoginSuccess={handleLoginSuccess} onBack={() => setView('landing')} initialBranding={initialBranding} />
+    return <LoginScreen
+      onLoginSuccess={handleLoginSuccess}
+      onBack={startAtLogin ? () => router.replace('/') : () => setView('landing')}
+      initialBranding={initialBranding}
+    />
   }
 
   // Pantalla de bloqueo: sesión de dispositivo activa pero sin perfil seleccionado
@@ -255,12 +268,13 @@ function AppContent({ initialBranding }: AppContentProps) {
 
 interface AppClientRootProps {
   initialBranding: TenantBranding
+  startAtLogin?: boolean
 }
 
-export function AppClientRoot({ initialBranding }: AppClientRootProps) {
+export function AppClientRoot({ initialBranding, startAtLogin }: AppClientRootProps) {
   return (
     <AppProvider>
-      <AppContent initialBranding={initialBranding} />
+      <AppContent initialBranding={initialBranding} startAtLogin={startAtLogin} />
       <Toaster position="top-center" richColors />
     </AppProvider>
   )
