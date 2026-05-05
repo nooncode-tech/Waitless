@@ -196,15 +196,6 @@ export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginSc
               </Link>
             </p>
 
-            <p className="text-center text-xs text-muted-foreground">
-              ¿Sos consumidor?{' '}
-              <Link
-                href="/consumidor"
-                className="text-foreground font-semibold underline underline-offset-2 hover:text-black transition-colors"
-              >
-                Accedé aquí
-              </Link>
-            </p>
           </div>
         </div>
 
