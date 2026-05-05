@@ -210,7 +210,7 @@ function AppContent({ initialBranding, startAtLogin }: AppContentProps) {
 
   // Landing pública
   if (view === 'landing') {
-    return <LandingPage onLogin={() => setView('login')} />
+    return <LandingPage />
   }
 
   // Pantalla de login — recibe branding server-side para renderizar sin flash
@@ -262,7 +262,7 @@ function AppContent({ initialBranding, startAtLogin }: AppContentProps) {
       return <KDSView onBack={handleLogout} onLockProfile={handleLockProfile} />
 
     default:
-    return <LandingPage onLogin={() => setView('login')} />
+    return <LandingPage />
   }
 }
 
