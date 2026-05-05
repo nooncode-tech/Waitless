@@ -616,6 +616,7 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
               {screen === 'billing' && <BillingManager />}
               {screen === 'payment-methods' && <PaymentMethodsManager />}
               {screen === 'payments-review' && <PaymentsReviewManager />}
+              {screen === 'sales-notes' && <SalesNotesManager />}
             </div>
           </main>
         </div>

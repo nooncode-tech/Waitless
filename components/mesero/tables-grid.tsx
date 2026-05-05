@@ -217,18 +217,20 @@ export function TablesGrid({ onSelectTable }: TablesGridProps) {
     <div className="p-3 md:p-5 bg-card min-h-full">
 
       {/* Stats Row */}
-      <div className="grid grid-cols-5 gap-2 mb-4">
+      <div className="grid grid-cols-5 gap-1.5 md:gap-2 mb-4">
         {[
-          { label: 'Libres', value: freeCount, color: 'text-muted-foreground', bg: 'bg-muted' },
-          { label: 'En cocina', value: preparingCount, color: 'text-warning', bg: 'bg-kds-preparing', icon: <ChefHat className="h-3.5 w-3.5" /> },
-          { label: 'Listos', value: readyCount, color: 'text-success', bg: 'bg-success/10', icon: <CircleCheck className="h-3.5 w-3.5" /> },
-          { label: 'Ocupadas', value: occupiedCount, color: 'text-foreground', bg: 'bg-muted' },
-          { label: 'Limpieza', value: cleaningCount, color: 'text-primary', bg: 'bg-primary/10', icon: <Sparkles className="h-3.5 w-3.5" /> },
+          { label: 'Libres',   shortLabel: 'Libres',  value: freeCount,     color: 'text-muted-foreground', bg: 'bg-muted' },
+          { label: 'En cocina', shortLabel: 'Cocina', value: preparingCount, color: 'text-warning',          bg: 'bg-kds-preparing', icon: <ChefHat className="h-3 w-3 md:h-3.5 md:w-3.5" /> },
+          { label: 'Listos',   shortLabel: 'Listos',  value: readyCount,    color: 'text-success',           bg: 'bg-success/10',    icon: <CircleCheck className="h-3 w-3 md:h-3.5 md:w-3.5" /> },
+          { label: 'Ocupadas', shortLabel: 'Ocup.',   value: occupiedCount,  color: 'text-foreground',        bg: 'bg-muted' },
+          { label: 'Limpieza', shortLabel: 'Limp.',   value: cleaningCount,  color: 'text-primary',           bg: 'bg-primary/10',    icon: <Sparkles className="h-3 w-3 md:h-3.5 md:w-3.5" /> },
         ].map(stat => (
-          <div key={stat.label} className={cn('rounded-lg p-2.5 md:p-3', stat.bg)}>
-            <p className={cn('text-xl md:text-2xl font-bold', stat.color)}>{stat.value}</p>
-            <p className={cn('text-xs font-medium flex items-center gap-1', stat.color)}>
-              {stat.icon}{stat.label}
+          <div key={stat.label} className={cn('rounded-lg p-2 md:p-3', stat.bg)}>
+            <p className={cn('text-lg md:text-2xl font-bold leading-none', stat.color)}>{stat.value}</p>
+            <p className={cn('text-[10px] md:text-xs font-medium flex items-center gap-0.5 md:gap-1 mt-0.5 leading-tight', stat.color)}>
+              {stat.icon}
+              <span className="md:hidden">{stat.shortLabel}</span>
+              <span className="hidden md:inline">{stat.label}</span>
             </p>
           </div>
         ))}

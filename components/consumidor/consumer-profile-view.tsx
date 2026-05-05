@@ -4,12 +4,13 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   User, MapPin, CreditCard, Star, Plus, Trash2, Home, Briefcase,
-  Check, X, LogOut, ChevronRight, AlertCircle, ArrowLeft, Lock, Save
+  Check, X, LogOut, ChevronRight, AlertCircle, ArrowLeft, Lock, Save, ShoppingBag
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ConsumerPaymentTab } from './consumer-payment-tab'
+import { ConsumerOrdersTab } from './consumer-orders-tab'
 
 interface ConsumerProfile {
   id: string
@@ -37,7 +38,7 @@ interface Review {
   tenant_id: string
 }
 
-type Tab = 'perfil' | 'direcciones' | 'tarjetas' | 'resenas'
+type Tab = 'perfil' | 'direcciones' | 'tarjetas' | 'resenas' | 'pedidos'
 
 export function ConsumerProfileView() {
   const router = useRouter()
@@ -158,10 +159,11 @@ export function ConsumerProfileView() {
   }
 
   const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'perfil', label: 'Perfil', icon: <User className="h-4 w-4" /> },
+    { id: 'perfil',      label: 'Perfil',      icon: <User className="h-4 w-4" /> },
+    { id: 'pedidos',     label: 'Pedidos',     icon: <ShoppingBag className="h-4 w-4" /> },
     { id: 'direcciones', label: 'Direcciones', icon: <MapPin className="h-4 w-4" /> },
-    { id: 'tarjetas', label: 'Pagos', icon: <CreditCard className="h-4 w-4" /> },
-    { id: 'resenas', label: 'Reseñas', icon: <Star className="h-4 w-4" /> },
+    { id: 'tarjetas',    label: 'Pagos',       icon: <CreditCard className="h-4 w-4" /> },
+    { id: 'resenas',     label: 'Reseñas',     icon: <Star className="h-4 w-4" /> },
   ]
 
   return (
@@ -366,6 +368,11 @@ export function ConsumerProfileView() {
               </button>
             )}
           </div>
+        )}
+
+        {/* ── Pedidos tab ── */}
+        {tab === 'pedidos' && token && (
+          <ConsumerOrdersTab token={token} />
         )}
 
         {/* ── Pagos tab ── */}

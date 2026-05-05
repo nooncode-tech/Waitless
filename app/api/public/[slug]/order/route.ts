@@ -185,6 +185,7 @@ export async function POST(
   }
 
   if (tenantId) orderPayload.tenant_id = tenantId
+  orderPayload.consumer_id = user.id
 
   const { error } = await supabaseAdmin.from('orders').insert(orderPayload)
   if (error) {
