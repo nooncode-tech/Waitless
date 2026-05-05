@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   User, MapPin, CreditCard, Star, Plus, Trash2, Home, Briefcase,
-  Edit3, Check, X, LogOut, ChevronRight, AlertCircle, ArrowLeft
+  Check, X, LogOut, ChevronRight, AlertCircle, ArrowLeft, Lock, Save
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -47,11 +47,16 @@ export function ConsumerProfileView() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  // Profile edit state
-  const [editing, setEditing] = useState(false)
+  // Profile edit state — always editable (no toggle needed)
   const [editForm, setEditForm] = useState({ nombre: '', apellido: '', telefono: '' })
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [saveSuccess, setSaveSuccess] = useState(false)
+  const isDirty = profile && (
+    editForm.nombre !== (profile.nombre ?? '') ||
+    editForm.apellido !== (profile.apellido ?? '') ||
+    editForm.telefono !== (profile.telefono ?? '')
+  )
 
   // Address form state
   const [showAddressForm, setShowAddressForm] = useState(false)
@@ -87,6 +92,7 @@ export function ConsumerProfileView() {
     if (!token) return
     setSaving(true)
     setSaveError('')
+    setSaveSuccess(false)
     const res = await fetch('/api/consumidor/profile', {
       method: 'PATCH',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -94,7 +100,8 @@ export function ConsumerProfileView() {
     })
     if (res.ok) {
       setProfile(p => p ? { ...p, ...editForm } : p)
-      setEditing(false)
+      setSaveSuccess(true)
+      setTimeout(() => setSaveSuccess(false), 3000)
     } else {
       setSaveError('No se pudo guardar')
     }
@@ -215,58 +222,77 @@ export function ConsumerProfileView() {
 
         {/* ── Perfil tab ── */}
         {tab === 'perfil' && (
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-gray-900">Información personal</h2>
-              {!editing && (
-                <button onClick={() => setEditing(true)}
-                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition-colors">
-                  <Edit3 className="h-3.5 w-3.5" />
-                  Editar
-                </button>
-              )}
+          <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
+            <h2 className="font-bold text-gray-900">Información personal</h2>
+
+            {/* Nombre + Apellido */}
+            <div className="flex gap-3">
+              <div className="flex-1 space-y-1">
+                <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Nombre *</label>
+                <Input
+                  value={editForm.nombre}
+                  onChange={e => setEditForm(f => ({ ...f, nombre: e.target.value }))}
+                  placeholder="Tu nombre"
+                  className="h-10"
+                />
+              </div>
+              <div className="flex-1 space-y-1">
+                <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Apellido</label>
+                <Input
+                  value={editForm.apellido}
+                  onChange={e => setEditForm(f => ({ ...f, apellido: e.target.value }))}
+                  placeholder="Tu apellido"
+                  className="h-10"
+                />
+              </div>
             </div>
 
-            {editing ? (
-              <div className="space-y-3">
-                <div className="flex gap-2">
-                  <Input placeholder="Nombre *" value={editForm.nombre}
-                    onChange={e => setEditForm(f => ({ ...f, nombre: e.target.value }))}
-                    className="h-10 flex-1" />
-                  <Input placeholder="Apellido" value={editForm.apellido}
-                    onChange={e => setEditForm(f => ({ ...f, apellido: e.target.value }))}
-                    className="h-10 flex-1" />
-                </div>
-                <Input placeholder="Teléfono" value={editForm.telefono}
-                  onChange={e => setEditForm(f => ({ ...f, telefono: e.target.value }))}
-                  className="h-10" />
-                {saveError && (
-                  <p className="text-xs text-red-500 flex items-center gap-1">
-                    <AlertCircle className="h-3.5 w-3.5" />{saveError}
-                  </p>
-                )}
-                <div className="flex gap-2">
-                  <Button onClick={handleSaveProfile} disabled={saving || !editForm.nombre.trim()} className="h-9 flex-1">
-                    {saving ? <span className="h-4 w-4 border-2 border-current/30 border-t-current rounded-full animate-spin" /> : <><Check className="h-4 w-4 mr-1" />Guardar</>}
-                  </Button>
-                  <Button variant="outline" onClick={() => setEditing(false)} className="h-9">
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
+            {/* Email — read only */}
+            <div className="space-y-1">
+              <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                <Lock className="h-3 w-3" /> Email
+              </label>
+              <div className="h-10 px-3 flex items-center rounded-md border border-gray-100 bg-gray-50 text-sm text-gray-400 select-none">
+                {profile?.email}
               </div>
-            ) : (
-              <div className="space-y-3">
-                {[
-                  { label: 'Nombre', value: [profile?.nombre, profile?.apellido].filter(Boolean).join(' ') },
-                  { label: 'Email', value: profile?.email },
-                  { label: 'Teléfono', value: profile?.telefono || '—' },
-                ].map(({ label, value }) => (
-                  <div key={label} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
-                    <span className="text-xs text-gray-500">{label}</span>
-                    <span className="text-sm font-medium text-gray-900">{value}</span>
-                  </div>
-                ))}
+            </div>
+
+            {/* Teléfono */}
+            <div className="space-y-1">
+              <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Teléfono</label>
+              <Input
+                type="tel"
+                value={editForm.telefono}
+                onChange={e => setEditForm(f => ({ ...f, telefono: e.target.value }))}
+                placeholder="+1 234 567 8900"
+                className="h-10"
+              />
+            </div>
+
+            {/* Feedback */}
+            {saveError && (
+              <div className="flex items-center gap-2 text-red-600 text-xs bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />{saveError}
               </div>
+            )}
+            {saveSuccess && (
+              <div className="flex items-center gap-2 text-emerald-700 text-xs bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
+                <Check className="h-3.5 w-3.5 shrink-0" />Cambios guardados correctamente
+              </div>
+            )}
+
+            {/* Save button — only visible when dirty */}
+            {isDirty && (
+              <Button
+                onClick={handleSaveProfile}
+                disabled={saving || !editForm.nombre.trim()}
+                className="w-full h-10"
+              >
+                {saving
+                  ? <span className="h-4 w-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                  : <><Save className="h-4 w-4 mr-2" />Guardar cambios</>
+                }
+              </Button>
             )}
           </div>
         )}
