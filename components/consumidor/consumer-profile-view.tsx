@@ -9,6 +9,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ConsumerPaymentTab } from './consumer-payment-tab'
 
 interface ConsumerProfile {
   id: string
@@ -159,7 +160,7 @@ export function ConsumerProfileView() {
   const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'perfil', label: 'Perfil', icon: <User className="h-4 w-4" /> },
     { id: 'direcciones', label: 'Direcciones', icon: <MapPin className="h-4 w-4" /> },
-    { id: 'tarjetas', label: 'Tarjetas', icon: <CreditCard className="h-4 w-4" /> },
+    { id: 'tarjetas', label: 'Pagos', icon: <CreditCard className="h-4 w-4" /> },
     { id: 'resenas', label: 'Reseñas', icon: <Star className="h-4 w-4" /> },
   ]
 
@@ -367,13 +368,9 @@ export function ConsumerProfileView() {
           </div>
         )}
 
-        {/* ── Tarjetas tab ── */}
-        {tab === 'tarjetas' && (
-          <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
-            <CreditCard className="h-10 w-10 text-gray-200 mx-auto mb-3" />
-            <p className="font-bold text-gray-700">Próximamente</p>
-            <p className="text-sm text-gray-400 mt-1">Podrás guardar tus tarjetas de forma segura para pagar más rápido.</p>
-          </div>
+        {/* ── Pagos tab ── */}
+        {tab === 'tarjetas' && token && (
+          <ConsumerPaymentTab token={token} />
         )}
 
         {/* ── Reseñas tab ── */}

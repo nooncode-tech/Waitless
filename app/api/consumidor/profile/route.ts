@@ -39,7 +39,7 @@ export async function PATCH(req: NextRequest) {
   if ('error' in auth) return auth.error
 
   const body = await req.json()
-  const allowed = ['nombre', 'apellido', 'telefono', 'avatar_url']
+  const allowed = ['nombre', 'apellido', 'telefono', 'avatar_url', 'paypal_email']
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   for (const key of allowed) {
     if (key in body) updates[key] = body[key]
