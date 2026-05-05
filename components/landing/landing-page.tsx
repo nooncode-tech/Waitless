@@ -319,46 +319,79 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               </button>
 
               {loginDropdown && (
-                <div className="absolute right-0 top-full mt-2 w-[360px] bg-white rounded-2xl shadow-2xl border border-zinc-100 p-3 z-50 flex gap-2">
-                  {/* Consumidor */}
+                <div className="absolute right-0 top-full mt-3 w-[400px] bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-zinc-100 p-2 z-50 flex gap-2"
+                  style={{ animation: 'fadeDropdown .18s cubic-bezier(0.22,1,0.36,1) both' }}>
+                  <style>{`@keyframes fadeDropdown{from{opacity:0;transform:translateY(-6px) scale(0.98)}to{opacity:1;transform:none}}`}</style>
+
+                  {/* ── Consumidor — dark card ── */}
                   <a
                     href="/consumidor"
                     onClick={() => setLoginDropdown(false)}
-                    className="flex-1 flex flex-col items-center gap-3 p-4 rounded-xl hover:bg-zinc-50 transition-colors group text-center"
+                    className="flex-1 flex flex-col items-center gap-5 p-5 rounded-xl bg-zinc-950 hover:bg-zinc-900 transition-all group text-center"
                   >
-                    <div className="w-16 h-16 rounded-2xl bg-zinc-100 flex items-center justify-center group-hover:bg-zinc-200 transition-colors">
-                      <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
-                        <circle cx="17" cy="12" r="6" stroke="#18181b" strokeWidth="2" fill="none"/>
-                        <path d="M5 28c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="#18181b" strokeWidth="2" fill="none" strokeLinecap="round"/>
-                        <circle cx="25" cy="20" r="5" fill="#18181b"/>
-                        <path d="M22.5 20h5M25 17.5v5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                    {/* Illustration */}
+                    <div className="w-20 h-20 rounded-2xl flex items-center justify-center relative overflow-hidden"
+                      style={{ background: 'linear-gradient(135deg,#27272a,#3f3f46)' }}>
+                      <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+                        {/* Shopping bag */}
+                        <rect x="10" y="20" width="32" height="24" rx="4" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"/>
+                        <path d="M18 20v-4a8 8 0 0116 0v4" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+                        {/* Fork */}
+                        <path d="M22 28v8M20 28v3a2 2 0 004 0v-3" stroke="white" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
+                        {/* Spoon */}
+                        <path d="M30 28v8" stroke="white" strokeWidth="1.4" strokeLinecap="round"/>
+                        <ellipse cx="30" cy="27" rx="2.5" ry="3" stroke="white" strokeWidth="1.4" fill="none"/>
+                        {/* Sparkle */}
+                        <path d="M38 12l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z" fill="rgba(255,255,255,0.35)"/>
                       </svg>
                     </div>
-                    <div>
-                      <p className="font-bold text-zinc-900 text-sm">Soy consumidor</p>
-                      <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">Pedí en tus restaurantes favoritos</p>
+
+                    <div className="space-y-1">
+                      <p className="font-black text-white text-[15px]" style={{ letterSpacing: '-0.02em' }}>Soy consumidor</p>
+                      <p className="text-xs text-white/40 leading-relaxed">Pedí en tus restaurantes<br/>favoritos de Waitless</p>
                     </div>
+
+                    <span className="mt-auto inline-flex items-center gap-1 text-[11px] font-semibold text-white/30 group-hover:text-white/60 transition-colors">
+                      Entrar
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5h6M5 2l3 3-3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </span>
                   </a>
 
-                  <div className="w-px bg-zinc-100 my-2" />
-
-                  {/* Restaurante */}
+                  {/* ── Restaurante — light card ── */}
                   <button
                     onClick={() => { setLoginDropdown(false); onLogin() }}
-                    className="flex-1 flex flex-col items-center gap-3 p-4 rounded-xl hover:bg-zinc-50 transition-colors group text-center cursor-pointer"
+                    className="flex-1 flex flex-col items-center gap-5 p-5 rounded-xl bg-zinc-50 hover:bg-zinc-100 transition-all group text-center cursor-pointer"
                   >
-                    <div className="w-16 h-16 rounded-2xl bg-zinc-100 flex items-center justify-center group-hover:bg-zinc-200 transition-colors">
-                      <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
-                        <rect x="6" y="18" width="22" height="12" rx="2" stroke="#18181b" strokeWidth="2" fill="none"/>
-                        <path d="M10 18v-4a7 7 0 0114 0v4" stroke="#18181b" strokeWidth="2" fill="none" strokeLinecap="round"/>
-                        <path d="M14 25h6" stroke="#18181b" strokeWidth="2" strokeLinecap="round"/>
-                        <circle cx="17" cy="14" r="2.5" fill="#18181b"/>
+                    {/* Illustration */}
+                    <div className="w-20 h-20 rounded-2xl flex items-center justify-center relative overflow-hidden"
+                      style={{ background: 'linear-gradient(135deg,#f4f4f5,#e4e4e7)' }}>
+                      <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+                        {/* Store building */}
+                        <rect x="10" y="26" width="32" height="18" rx="2" fill="rgba(0,0,0,0.06)" stroke="#27272a" strokeWidth="1.5"/>
+                        {/* Awning */}
+                        <path d="M8 26h36" stroke="#27272a" strokeWidth="1.5" strokeLinecap="round"/>
+                        <path d="M10 26l4-10h24l4 10" stroke="#27272a" strokeWidth="1.5" strokeLinejoin="round" fill="none"/>
+                        {/* Door */}
+                        <rect x="21" y="34" width="10" height="10" rx="1" stroke="#27272a" strokeWidth="1.5"/>
+                        {/* Windows */}
+                        <rect x="12" y="30" width="6" height="5" rx="1" stroke="#27272a" strokeWidth="1.3"/>
+                        <rect x="34" y="30" width="6" height="5" rx="1" stroke="#27272a" strokeWidth="1.3"/>
+                        {/* Sign dot */}
+                        <circle cx="26" cy="19" r="2.5" fill="#27272a"/>
+                        {/* Sparkle */}
+                        <path d="M40 10l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6z" fill="#a1a1aa"/>
                       </svg>
                     </div>
-                    <div>
-                      <p className="font-bold text-zinc-900 text-sm">Soy restaurante</p>
-                      <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">Gestioná tu operación completa</p>
+
+                    <div className="space-y-1">
+                      <p className="font-black text-zinc-900 text-[15px]" style={{ letterSpacing: '-0.02em' }}>Soy restaurante</p>
+                      <p className="text-xs text-zinc-400 leading-relaxed">Gestioná tu operación<br/>completa desde un panel</p>
                     </div>
+
+                    <span className="mt-auto inline-flex items-center gap-1 text-[11px] font-semibold text-zinc-400 group-hover:text-zinc-600 transition-colors">
+                      Entrar
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5h6M5 2l3 3-3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </span>
                   </button>
                 </div>
               )}
@@ -399,31 +432,40 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                 <a
                   href="/consumidor"
                   onClick={() => setMenuOpen(false)}
-                  className="flex-1 flex flex-col items-center gap-2 p-3 rounded-xl bg-zinc-50 hover:bg-zinc-100 transition-colors text-center"
+                  className="flex-1 flex flex-col items-center gap-3 p-4 rounded-xl bg-zinc-950 text-center"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
-                    <svg width="22" height="22" viewBox="0 0 34 34" fill="none">
-                      <circle cx="17" cy="12" r="6" stroke="#18181b" strokeWidth="2" fill="none"/>
-                      <path d="M5 28c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="#18181b" strokeWidth="2" fill="none" strokeLinecap="round"/>
-                      <circle cx="25" cy="20" r="5" fill="#18181b"/>
-                      <path d="M22.5 20h5M25 17.5v5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#27272a,#3f3f46)' }}>
+                    <svg width="28" height="28" viewBox="0 0 52 52" fill="none">
+                      <rect x="10" y="20" width="32" height="24" rx="4" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"/>
+                      <path d="M18 20v-4a8 8 0 0116 0v4" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+                      <path d="M22 28v8M20 28v3a2 2 0 004 0v-3" stroke="white" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
+                      <path d="M30 28v8" stroke="white" strokeWidth="1.4" strokeLinecap="round"/>
+                      <ellipse cx="30" cy="27" rx="2.5" ry="3" stroke="white" strokeWidth="1.4" fill="none"/>
                     </svg>
                   </div>
-                  <span className="text-xs font-semibold text-zinc-800">Consumidor</span>
+                  <div>
+                    <p className="text-xs font-black text-white" style={{ letterSpacing: '-0.01em' }}>Consumidor</p>
+                    <p className="text-[10px] text-white/40 mt-0.5">Pedí en restaurantes</p>
+                  </div>
                 </a>
                 <button
                   onClick={() => { setMenuOpen(false); onLogin() }}
-                  className="flex-1 flex flex-col items-center gap-2 p-3 rounded-xl bg-zinc-50 hover:bg-zinc-100 transition-colors text-center cursor-pointer"
+                  className="flex-1 flex flex-col items-center gap-3 p-4 rounded-xl bg-zinc-50 text-center cursor-pointer"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
-                    <svg width="22" height="22" viewBox="0 0 34 34" fill="none">
-                      <rect x="6" y="18" width="22" height="12" rx="2" stroke="#18181b" strokeWidth="2" fill="none"/>
-                      <path d="M10 18v-4a7 7 0 0114 0v4" stroke="#18181b" strokeWidth="2" fill="none" strokeLinecap="round"/>
-                      <path d="M14 25h6" stroke="#18181b" strokeWidth="2" strokeLinecap="round"/>
-                      <circle cx="17" cy="14" r="2.5" fill="#18181b"/>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg,#f4f4f5,#e4e4e7)' }}>
+                    <svg width="28" height="28" viewBox="0 0 52 52" fill="none">
+                      <rect x="10" y="26" width="32" height="18" rx="2" fill="rgba(0,0,0,0.06)" stroke="#27272a" strokeWidth="1.5"/>
+                      <path d="M8 26h36" stroke="#27272a" strokeWidth="1.5" strokeLinecap="round"/>
+                      <path d="M10 26l4-10h24l4 10" stroke="#27272a" strokeWidth="1.5" strokeLinejoin="round" fill="none"/>
+                      <rect x="21" y="34" width="10" height="10" rx="1" stroke="#27272a" strokeWidth="1.5"/>
+                      <rect x="12" y="30" width="6" height="5" rx="1" stroke="#27272a" strokeWidth="1.3"/>
+                      <rect x="34" y="30" width="6" height="5" rx="1" stroke="#27272a" strokeWidth="1.3"/>
                     </svg>
                   </div>
-                  <span className="text-xs font-semibold text-zinc-800">Restaurante</span>
+                  <div>
+                    <p className="text-xs font-black text-zinc-900" style={{ letterSpacing: '-0.01em' }}>Restaurante</p>
+                    <p className="text-[10px] text-zinc-400 mt-0.5">Gestioná tu local</p>
+                  </div>
                 </button>
               </div>
 
