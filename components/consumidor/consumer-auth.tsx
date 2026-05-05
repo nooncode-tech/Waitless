@@ -168,23 +168,6 @@ export function ConsumerAuth() {
             ))}
           </div>
 
-          {/* Google */}
-          <GoogleAuthButton
-            label="Continuar con Google"
-            redirectTo={typeof window !== 'undefined' ? `${window.location.origin}/consumidor/auth/callback` : '/consumidor/auth/callback'}
-            onBeforeRedirect={() => {
-              if (next !== '/consumidor/explorar') {
-                localStorage.setItem('waitless:next', next)
-              }
-            }}
-          />
-
-          <div className="flex items-center gap-3 my-5">
-            <div className="flex-1 h-px bg-zinc-100" />
-            <span className="text-xs text-zinc-400 font-medium">o</span>
-            <div className="flex-1 h-px bg-zinc-100" />
-          </div>
-
           {/* Form */}
           <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-3">
             {mode === 'register' && (
@@ -260,6 +243,22 @@ export function ConsumerAuth() {
               )}
             </Button>
           </form>
+
+          <div className="flex items-center gap-3 my-5">
+            <div className="flex-1 h-px bg-zinc-100" />
+            <span className="text-xs text-zinc-400 font-medium">o</span>
+            <div className="flex-1 h-px bg-zinc-100" />
+          </div>
+
+          <GoogleAuthButton
+            label="Continuar con Google"
+            redirectTo={typeof window !== 'undefined' ? `${window.location.origin}/consumidor/auth/callback` : '/consumidor/auth/callback'}
+            onBeforeRedirect={() => {
+              if (next !== '/consumidor/explorar') {
+                localStorage.setItem('waitless:next', next)
+              }
+            }}
+          />
 
           <p className="text-center text-xs text-zinc-400 mt-6">
             Al registrarte aceptás nuestros{' '}
