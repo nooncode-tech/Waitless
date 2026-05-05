@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Wifi, WifiOff, AlertTriangle } from 'lucide-react'
+import { Wifi, WifiOff, AlertTriangle, RefreshCw, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { offlineQueue, pendingCount, failedCount } from '@/lib/offline-queue'
 
@@ -10,6 +10,8 @@ export function OfflineIndicator() {
   const [showReconnected, setShowReconnected] = useState(false)
   const [pending, setPending] = useState(0)
   const [failed, setFailed] = useState(0)
+  const [retrying, setRetrying] = useState(false)
+  const [retrySuccess, setRetrySuccess] = useState(false)
 
   const refreshCounts = () => {
     setPending(pendingCount())
@@ -32,6 +34,12 @@ export function OfflineIndicator() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reading navigator.onLine (external API) on mount to initialize online state
     setIsOnline(navigator.onLine)
     refreshCounts()
+
+    // Auto-retry failed ops on mount if online
+    if (navigator.onLine && failedCount() > 0) {
+      offlineQueue.retryFailedOps().then(() => refreshCounts())
+    }
+
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
     return () => {
@@ -40,7 +48,23 @@ export function OfflineIndicator() {
     }
   }, [])
 
-  // Sprint 4: mostrar banner de operaciones fallidas incluso cuando está online
+  const handleRetry = async () => {
+    setRetrying(true)
+    await offlineQueue.retryFailedOps({
+      onFlushComplete: (count) => {
+        refreshCounts()
+        if (count > 0 && failedCount() === 0) {
+          setRetrySuccess(true)
+          setTimeout(() => setRetrySuccess(false), 3000)
+        }
+      },
+      onFlushError: () => refreshCounts(),
+    })
+    refreshCounts()
+    setRetrying(false)
+  }
+
+  // Mostrar banner de operaciones fallidas incluso cuando está online
   if (isOnline && !showReconnected && failed === 0) return null
 
   return (
@@ -72,17 +96,33 @@ export function OfflineIndicator() {
         </div>
       )}
 
-      {/* Sprint 4: banner de operaciones fallidas (requieren intervención) */}
+      {/* Banner de operaciones fallidas */}
       {failed > 0 && (
         <div className="flex items-center gap-2 px-4 py-2 rounded-full shadow-lg text-sm font-medium bg-amber-600 text-white">
-          <AlertTriangle className="h-4 w-4" />
+          <AlertTriangle className="h-4 w-4 shrink-0" />
           {failed} operación{failed !== 1 ? 'es' : ''} no sincronizada{failed !== 1 ? 's' : ''}
           <button
+            onClick={handleRetry}
+            disabled={retrying}
+            className="ml-1 flex items-center gap-1 bg-white/20 hover:bg-white/30 transition-colors rounded-full px-2.5 py-0.5 text-xs font-semibold disabled:opacity-60"
+          >
+            <RefreshCw className={cn('h-3 w-3', retrying && 'animate-spin')} />
+            {retrying ? 'Sincronizando...' : 'Reintentar'}
+          </button>
+          <button
             onClick={() => { offlineQueue.clearFailedOps(); setFailed(0) }}
-            className="ml-1 underline underline-offset-2 text-white/80 hover:text-white text-xs"
+            className="text-white/60 hover:text-white text-xs underline underline-offset-2 transition-colors"
           >
             Descartar
           </button>
+        </div>
+      )}
+
+      {/* Confirmación de sync exitoso */}
+      {retrySuccess && failed === 0 && (
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full shadow-lg text-sm font-medium bg-green-600 text-white">
+          <Check className="h-4 w-4" />
+          Operaciones sincronizadas correctamente
         </div>
       )}
     </div>

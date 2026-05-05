@@ -1,5 +1,19 @@
 import { supabase, getSessionClient } from './supabase'
 
+async function refreshSessionIfNeeded(): Promise<void> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    // Refresh if token expires within next 5 minutes
+    const expiresAt = session.expires_at ? session.expires_at * 1000 : 0
+    if (expiresAt - Date.now() < 5 * 60 * 1000) {
+      await supabase.auth.refreshSession()
+    }
+  } catch {
+    // Non-fatal — proceed with existing session
+  }
+}
+
 // ============================================================
 // POLÍTICA DE SYNC (Task 1.6 / Task 1.5)
 // Supabase es source of truth. Estado local es caché optimista.
@@ -75,6 +89,8 @@ function push(op: Omit<QueuedOp, 'id' | 'createdAt'>): void {
 }
 
 async function flush(callbacks?: FlushCallbacks): Promise<void> {
+  await refreshSessionIfNeeded()
+
   const queue = load()
   if (queue.length === 0) {
     callbacks?.onFlushComplete?.(0)
@@ -230,4 +246,27 @@ export function clearFailedOps(): void {
   saveFailed([])
 }
 
-export const offlineQueue = { push, flush, load, pendingCount, failedCount, getFailedOps, clearFailedOps }
+/**
+ * Mueve las operaciones fallidas de vuelta a la cola activa con retries reseteados
+ * y las intenta sincronizar inmediatamente.
+ */
+export async function retryFailedOps(callbacks?: FlushCallbacks): Promise<void> {
+  const failed = loadFailed()
+  if (failed.length === 0) return
+
+  // Reset retry counters and move back to active queue
+  const revived = failed.map(op => ({
+    ...op,
+    retries: 0,
+    nextRetryAt: undefined,
+    status: 'pending' as OpStatus,
+  }))
+
+  const currentQueue = load()
+  save([...currentQueue, ...revived])
+  saveFailed([])
+
+  await flush(callbacks)
+}
+
+export const offlineQueue = { push, flush, load, pendingCount, failedCount, getFailedOps, clearFailedOps, retryFailedOps }
