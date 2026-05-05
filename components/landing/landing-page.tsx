@@ -143,7 +143,9 @@ function useCounter(target: number, duration = 1100, start = false) {
 
 export function LandingPage({ onLogin }: LandingPageProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [loginDropdown, setLoginDropdown] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const loginRef = useRef<HTMLDivElement>(null)
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
   const [planEmail, setPlanEmail] = useState('')
   const [showEmailFor, setShowEmailFor] = useState<string | null>(null)
@@ -170,6 +172,16 @@ export function LandingPage({ onLogin }: LandingPageProps) {
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
   }, [])
+
+  useEffect(() => {
+    const fn = (e: MouseEvent) => {
+      if (loginRef.current && !loginRef.current.contains(e.target as Node)) {
+        setLoginDropdown(false)
+      }
+    }
+    if (loginDropdown) document.addEventListener('mousedown', fn)
+    return () => document.removeEventListener('mousedown', fn)
+  }, [loginDropdown])
 
   useEffect(() => {
     fetch('/api/public/explore')
@@ -293,10 +305,65 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               className={`text-sm font-medium transition-colors px-3 py-2 cursor-pointer ${navMuted}`}>
               Explorar restaurantes
             </a>
-            <button onClick={onLogin}
-              className={`text-sm font-medium transition-colors px-3 py-2 cursor-pointer ${navMuted}`}>
-              Iniciar sesión
-            </button>
+
+            {/* Login dropdown */}
+            <div ref={loginRef} className="relative">
+              <button
+                onClick={() => setLoginDropdown(v => !v)}
+                className={`text-sm font-medium transition-colors px-3 py-2 cursor-pointer flex items-center gap-1 ${navMuted}`}
+              >
+                Iniciar sesión
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" className={`transition-transform duration-200 ${loginDropdown ? 'rotate-180' : ''}`}>
+                  <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+
+              {loginDropdown && (
+                <div className="absolute right-0 top-full mt-2 w-[360px] bg-white rounded-2xl shadow-2xl border border-zinc-100 p-3 z-50 flex gap-2">
+                  {/* Consumidor */}
+                  <a
+                    href="/consumidor"
+                    onClick={() => setLoginDropdown(false)}
+                    className="flex-1 flex flex-col items-center gap-3 p-4 rounded-xl hover:bg-zinc-50 transition-colors group text-center"
+                  >
+                    <div className="w-16 h-16 rounded-2xl bg-zinc-100 flex items-center justify-center group-hover:bg-zinc-200 transition-colors">
+                      <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+                        <circle cx="17" cy="12" r="6" stroke="#18181b" strokeWidth="2" fill="none"/>
+                        <path d="M5 28c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="#18181b" strokeWidth="2" fill="none" strokeLinecap="round"/>
+                        <circle cx="25" cy="20" r="5" fill="#18181b"/>
+                        <path d="M22.5 20h5M25 17.5v5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-bold text-zinc-900 text-sm">Soy consumidor</p>
+                      <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">Pedí en tus restaurantes favoritos</p>
+                    </div>
+                  </a>
+
+                  <div className="w-px bg-zinc-100 my-2" />
+
+                  {/* Restaurante */}
+                  <button
+                    onClick={() => { setLoginDropdown(false); onLogin() }}
+                    className="flex-1 flex flex-col items-center gap-3 p-4 rounded-xl hover:bg-zinc-50 transition-colors group text-center cursor-pointer"
+                  >
+                    <div className="w-16 h-16 rounded-2xl bg-zinc-100 flex items-center justify-center group-hover:bg-zinc-200 transition-colors">
+                      <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+                        <rect x="6" y="18" width="22" height="12" rx="2" stroke="#18181b" strokeWidth="2" fill="none"/>
+                        <path d="M10 18v-4a7 7 0 0114 0v4" stroke="#18181b" strokeWidth="2" fill="none" strokeLinecap="round"/>
+                        <path d="M14 25h6" stroke="#18181b" strokeWidth="2" strokeLinecap="round"/>
+                        <circle cx="17" cy="14" r="2.5" fill="#18181b"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-bold text-zinc-900 text-sm">Soy restaurante</p>
+                      <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">Gestioná tu operación completa</p>
+                    </div>
+                  </button>
+                </div>
+              )}
+            </div>
+
             <button onClick={() => goTo('pricing')}
               className={`text-sm font-medium px-5 py-2 rounded-full transition-all hover:opacity-85 active:scale-[0.98] cursor-pointer ${navBtnBg}`}>
               Ver planes
@@ -325,10 +392,41 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                 Explorar restaurantes
                 <ChevronRight className="h-3.5 w-3.5" />
               </a>
-              <button onClick={() => { setMenuOpen(false); onLogin() }}
-                className="block w-full text-left text-zinc-500 text-sm py-2 cursor-pointer">
-                Iniciar sesión
-              </button>
+
+              {/* Mobile login options */}
+              <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider pt-1">Iniciar sesión como</p>
+              <div className="flex gap-2">
+                <a
+                  href="/consumidor"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex-1 flex flex-col items-center gap-2 p-3 rounded-xl bg-zinc-50 hover:bg-zinc-100 transition-colors text-center"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                    <svg width="22" height="22" viewBox="0 0 34 34" fill="none">
+                      <circle cx="17" cy="12" r="6" stroke="#18181b" strokeWidth="2" fill="none"/>
+                      <path d="M5 28c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="#18181b" strokeWidth="2" fill="none" strokeLinecap="round"/>
+                      <circle cx="25" cy="20" r="5" fill="#18181b"/>
+                      <path d="M22.5 20h5M25 17.5v5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <span className="text-xs font-semibold text-zinc-800">Consumidor</span>
+                </a>
+                <button
+                  onClick={() => { setMenuOpen(false); onLogin() }}
+                  className="flex-1 flex flex-col items-center gap-2 p-3 rounded-xl bg-zinc-50 hover:bg-zinc-100 transition-colors text-center cursor-pointer"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
+                    <svg width="22" height="22" viewBox="0 0 34 34" fill="none">
+                      <rect x="6" y="18" width="22" height="12" rx="2" stroke="#18181b" strokeWidth="2" fill="none"/>
+                      <path d="M10 18v-4a7 7 0 0114 0v4" stroke="#18181b" strokeWidth="2" fill="none" strokeLinecap="round"/>
+                      <path d="M14 25h6" stroke="#18181b" strokeWidth="2" strokeLinecap="round"/>
+                      <circle cx="17" cy="14" r="2.5" fill="#18181b"/>
+                    </svg>
+                  </div>
+                  <span className="text-xs font-semibold text-zinc-800">Restaurante</span>
+                </button>
+              </div>
+
               <button onClick={() => goTo('pricing')}
                 className="block w-full text-center text-sm font-medium px-5 py-3 rounded-full text-white bg-zinc-900 cursor-pointer hover:opacity-90">
                 Ver planes
@@ -843,10 +941,16 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
           <div className="border-t border-white/[0.05] pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
             <p className="text-white/15 text-xs font-light">© 2026 WAITLESS · Plataforma Operativa para Restaurantes</p>
-            <button onClick={onLogin}
-              className="text-white/20 text-xs hover:text-white/45 transition-colors flex items-center gap-1 cursor-pointer font-light">
-              Iniciar sesión <ChevronRight className="h-3 w-3" />
-            </button>
+            <div className="flex items-center gap-3">
+              <a href="/consumidor"
+                className="text-white/20 text-xs hover:text-white/45 transition-colors flex items-center gap-1 cursor-pointer font-light">
+                Consumidores <ChevronRight className="h-3 w-3" />
+              </a>
+              <button onClick={onLogin}
+                className="text-white/20 text-xs hover:text-white/45 transition-colors flex items-center gap-1 cursor-pointer font-light">
+                Restaurantes <ChevronRight className="h-3 w-3" />
+              </button>
+            </div>
           </div>
         </div>
       </footer>
