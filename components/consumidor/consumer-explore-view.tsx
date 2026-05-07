@@ -186,9 +186,9 @@ export function ConsumerExploreView() {
 
           {/* Logo + location button */}
           <div ref={addressRef} className="relative flex items-center gap-2.5 min-w-0 shrink-0">
-            <div className="w-8 h-8 bg-black rounded-xl flex items-center justify-center shrink-0">
+            <a href="/" className="w-8 h-8 bg-black rounded-xl flex items-center justify-center shrink-0 hover:bg-gray-800 transition-colors">
               <span className="text-white font-black text-[11px] tracking-tight">W</span>
-            </div>
+            </a>
 
             <button
               onClick={() => setShowAddrMenu(v => !v)}
