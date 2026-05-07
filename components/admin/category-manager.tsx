@@ -1,23 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Edit2, Trash2, GripVertical, Check, X, Tag } from 'lucide-react'
+import { Plus, Edit2, Trash2, GripVertical, Check, X, Tag, AlertTriangle } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 
 export function CategoryManager() {
   const { categories, menuItems, addCategory, updateCategory, deleteCategory, reorderCategories } = useApp()
@@ -206,7 +196,7 @@ export function CategoryManager() {
                           {category.activa ? 'Activa' : 'Inactiva'}
                         </span>
                       </div>
-                      
+
                       <Button
                         variant="ghost"
                         size="icon"
@@ -215,20 +205,47 @@ export function CategoryManager() {
                       >
                         <Edit2 className="h-3 w-3" />
                       </Button>
-                      
+
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => setDeleteConfirm(category.id)}
+                        onClick={() => setDeleteConfirm(deleteConfirm === category.id ? null : category.id)}
                         className="h-6 w-6 text-destructive hover:text-destructive"
-                        disabled={itemCount > 0}
-                        title={itemCount > 0 ? 'No se puede eliminar categoria con platillos' : ''}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
                   )}
                 </div>
+
+                {/* Inline delete confirmation */}
+                {deleteConfirm === category.id && (
+                  <div className="mt-2 pt-2 border-t border-destructive/20">
+                    <div className="flex items-start gap-2 mb-2">
+                      <AlertTriangle className="h-3.5 w-3.5 text-destructive shrink-0 mt-0.5" />
+                      <p className="text-[10px] text-muted-foreground leading-tight">
+                        {itemCount > 0
+                          ? `Esta categoría tiene ${itemCount} platillo${itemCount !== 1 ? 's' : ''}. Se elimina la categoría y los platillos quedan sin categoría.`
+                          : 'Esta acción no se puede deshacer.'}
+                      </p>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <Button
+                        variant="outline"
+                        className="flex-1 h-7 text-[10px] bg-transparent"
+                        onClick={() => setDeleteConfirm(null)}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        className="flex-1 h-7 text-[10px] bg-destructive hover:bg-destructive/90 text-white"
+                        onClick={() => handleDeleteCategory(category.id)}
+                      >
+                        Eliminar
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )
@@ -244,26 +261,6 @@ export function CategoryManager() {
         </Card>
       )}
       
-      {/* Delete confirmation dialog */}
-      <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Eliminar categoría</AlertDialogTitle>
-            <AlertDialogDescription>
-             La categoría será eliminada permanentemente.Los platillos que usaban esta categoría pasarán a &quot;Sin categoría&quot;.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteConfirm && handleDeleteCategory(deleteConfirm)}
-              className="bg-destructive hover:bg-destructive/90"
-            >
-              Desactivar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }
