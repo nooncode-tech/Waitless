@@ -135,11 +135,7 @@ function AppContent({ initialBranding, startAtLogin }: AppContentProps) {
   // - deviceUser sin currentUser → pantalla de bloqueo (perfil picker)
   // - currentUser activo → vista del rol correspondiente
   useEffect(() => {
-    const clientViews: AppView[] = ['cliente', 'cliente-auth']
-    if (deviceUser && !currentUser && !clientViews.includes(view)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: redirect to lock screen when device session exists but no active profile
-      setView('profile-picker')
-    } else if (currentUser && (view === 'login' || view === 'landing' || view === 'profile-picker')) {
+    if (currentUser && (view === 'login' || view === 'landing' || view === 'profile-picker')) {
       if (startAtLogin) {
         router.replace('/')
       } else {
@@ -147,7 +143,7 @@ function AppContent({ initialBranding, startAtLogin }: AppContentProps) {
         setView(roleToView(currentUser.role))
       }
     }
-  }, [currentUser, deviceUser, view, startAtLogin, router])
+  }, [currentUser, view, startAtLogin, router])
 
   const handleLoginSuccess = (role: UserRole) => {
     if (startAtLogin) {
@@ -166,7 +162,7 @@ function AppContent({ initialBranding, startAtLogin }: AppContentProps) {
 
   const handleLockProfile = () => {
     lockProfile()
-    // El useEffect detecta deviceUser && !currentUser y setea view a 'profile-picker'
+    setView('profile-picker')
   }
 
   const handleClienteAuthSuccess = (user: ClienteUser | null) => {

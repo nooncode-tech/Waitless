@@ -57,6 +57,54 @@ export async function POST(req: NextRequest) {
 
   // ── Handle events ─────────────────────────────────────────────────────────
   try {
+    // ── Recarga de monedero ───────────────────────────────────────────────────
+    if (event.type === 'payment_intent.succeeded') {
+      const intent = event.data.object as Stripe.PaymentIntent
+      if (intent.metadata?.type === 'wallet_recharge') {
+        const consumerId = intent.metadata.consumer_id
+        const amountCents = Number(intent.metadata.amount_cents)
+        const transactionId = intent.metadata.transaction_id
+
+        if (!consumerId || !amountCents) {
+          console.warn('[webhook] wallet_recharge sin consumer_id o amount_cents')
+          return NextResponse.json({ received: true })
+        }
+
+        // Upsert saldo
+        const { data: existing } = await supabaseAdmin
+          .from('consumer_wallet')
+          .select('balance_cents')
+          .eq('consumer_id', consumerId)
+          .maybeSingle()
+
+        const newBalance = (existing?.balance_cents ?? 0) + amountCents
+
+        await supabaseAdmin
+          .from('consumer_wallet')
+          .upsert({ consumer_id: consumerId, balance_cents: newBalance }, { onConflict: 'consumer_id' })
+
+        // Marcar transacción como completada
+        if (transactionId) {
+          await supabaseAdmin
+            .from('wallet_transactions')
+            .update({ status: 'completed', balance_after_cents: newBalance })
+            .eq('id', transactionId)
+            .eq('status', 'pending')
+        }
+
+        await supabaseAdmin.from('audit_logs').insert({
+          user_id: 'stripe-webhook',
+          accion: 'wallet_recarga_confirmada',
+          entidad: 'consumer_wallet',
+          entidad_id: consumerId,
+          detalles: `${event.id} | intent: ${intent.id} | monto: ${amountCents}¢ | nuevo saldo: ${newBalance}¢`,
+        })
+
+        console.log(`[webhook] Recarga monedero confirmada — consumer ${consumerId} +${amountCents}¢`)
+        return NextResponse.json({ received: true })
+      }
+    }
+
     if (event.type === 'checkout.session.completed') {
       const stripeSession = event.data.object as Stripe.Checkout.Session
       const sessionId = stripeSession.metadata?.sessionId

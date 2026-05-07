@@ -31,6 +31,7 @@ import { useApp } from '@/lib/context'
 import { formatPrice, calculateOrderTotal } from '@/lib/store'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { PaymentBreakdownWidget } from './payment-breakdown-widget'
 
 interface TrendRow {
   fecha: string
@@ -656,6 +657,9 @@ export function ReportsManager() {
           </div>
         </div>
       </div>
+
+      {/* Desglose por método de pago */}
+      <PaymentBreakdownWidget />
 
       {/* Top items */}
       <div className="border border-border rounded-xl bg-white overflow-hidden">
