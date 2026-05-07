@@ -130,35 +130,35 @@ export function MenuManager() {
     .sort((a, b) => a.orden - b.orden)
   
   return (
-    <div>
-      <div className="flex items-center justify-between mb-3">
+    <div className="space-y-4">
+
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xs font-semibold text-foreground">Gestion de menu</h2>
-          <p className="text-[10px] text-muted-foreground">
-            {menuItems.length} platillos en total
-          </p>
+          <h2 className="text-lg font-black text-foreground tracking-tight">Gestión de menú</h2>
+          <p className="text-sm text-muted-foreground">{menuItems.length} platillos en total</p>
         </div>
         {canEditMenu && (
-          <Button
-            size="xs"
+          <button
             onClick={handleAdd}
+            className="flex items-center gap-2 h-10 px-4 bg-black hover:bg-black/80 text-white text-sm font-semibold rounded-xl transition-colors"
           >
-            <Plus className="h-3 w-3 mr-1" />
-            Agregar
-          </Button>
+            <Plus className="h-4 w-4" />
+            Agregar platillo
+          </button>
         )}
       </div>
 
-      {/* Banner menú digital */}
-      <div className="mb-3 rounded-xl border border-border bg-white overflow-hidden">
-        <div className="px-3.5 pt-3 pb-2.5">
-          <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground mb-0.5">Menú digital público</p>
-          <p className="text-[10px] text-muted-foreground font-mono truncate">{menuUrl}</p>
+      {/* ── Banner menú digital ── */}
+      <div className="rounded-2xl border border-border bg-white overflow-hidden">
+        <div className="px-4 pt-4 pb-3">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Menú digital público</p>
+          <p className="text-xs text-muted-foreground font-mono truncate">{menuUrl}</p>
         </div>
         <div className="flex border-t border-border divide-x divide-border">
           <button
             onClick={handleCopyUrl}
-            className="flex-1 flex items-center justify-center gap-1.5 h-9 text-[11px] font-semibold text-foreground hover:bg-secondary/50 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 h-10 text-xs font-semibold text-foreground hover:bg-secondary/50 transition-colors"
           >
             {copied
               ? <><Check className="h-3.5 w-3.5 text-green-600" /><span className="text-green-600">Copiado</span></>
@@ -168,7 +168,7 @@ export function MenuManager() {
           {canEditConfig && (
             <button
               onClick={() => setShowCustomize(true)}
-              className="flex-1 flex items-center justify-center gap-1.5 h-9 text-[11px] font-semibold text-foreground hover:bg-secondary/50 transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 h-10 text-xs font-semibold text-foreground hover:bg-secondary/50 transition-colors"
             >
               <Settings2 className="h-3.5 w-3.5" />
               Personalizar
@@ -178,7 +178,7 @@ export function MenuManager() {
             href={menuUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-1.5 h-9 text-[11px] font-semibold text-white bg-black hover:bg-black/80 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 h-10 text-xs font-semibold text-white bg-black hover:bg-black/80 transition-colors"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             Ver menú
@@ -186,92 +186,112 @@ export function MenuManager() {
         </div>
       </div>
 
-      {/* Lista de platillos */}
-      <div className="rounded-lg border border-border overflow-hidden">
+      {/* ── Lista de platillos ── */}
+      <div className="space-y-3">
         {(() => {
           const renderItem = (item: MenuItem) => {
             const cost = calculateItemCost(item)
             const margin = cost > 0 ? Math.round(((item.precio - cost) / item.precio) * 100) : null
             const marginCls = margin !== null
-              ? margin >= 60 ? 'text-green-600' : margin >= 40 ? 'text-amber-600' : 'text-red-600'
+              ? margin >= 60 ? 'text-green-600 bg-green-50' : margin >= 40 ? 'text-amber-600 bg-amber-50' : 'text-red-600 bg-red-50'
               : ''
             return (
               <div
                 key={item.id}
-                className={`flex items-center gap-2 px-2.5 py-2 border-b border-border last:border-0 transition-opacity ${!item.disponible ? 'opacity-40' : ''}`}
+                className={`flex items-center gap-3 px-4 py-3 border-b border-border last:border-0 transition-opacity ${!item.disponible ? 'opacity-40' : ''}`}
               >
                 {/* Imagen */}
-                <div className="w-9 h-9 rounded-md bg-secondary flex-shrink-0 overflow-hidden flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-secondary flex-shrink-0 overflow-hidden flex items-center justify-center">
                   {item.imagen ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={item.imagen} alt={item.nombre} className="w-full h-full object-cover" />
                   ) : (
-                    <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                    <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
                   )}
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-foreground truncate leading-tight">{item.nombre}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {formatPrice(item.precio)}
+                  <p className="text-sm font-semibold text-foreground truncate">{item.nombre}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-sm font-bold text-foreground">{formatPrice(item.precio)}</span>
                     {margin !== null && (
-                      <span className={`ml-1.5 ${marginCls}`}>{margin}% margen</span>
+                      <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${marginCls}`}>
+                        {margin}% margen
+                      </span>
                     )}
-                  </p>
+                  </div>
                 </div>
 
-                {/* Switch disponible */}
-                <Switch
-                  checked={item.disponible}
-                  onCheckedChange={() => handleToggleAvailability(item)}
-                  className="scale-[0.65] shrink-0"
-                />
+                {/* Disponible toggle */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-muted-foreground hidden sm:block">
+                    {item.disponible ? 'Disponible' : 'Agotado'}
+                  </span>
+                  <Switch
+                    checked={item.disponible}
+                    onCheckedChange={() => handleToggleAvailability(item)}
+                    className="scale-[0.8] shrink-0"
+                  />
+                </div>
 
                 {/* Editar */}
-                <Button variant="ghost" size="icon" onClick={() => handleEdit(item)} className="h-6 w-6 shrink-0">
-                  <Edit2 className="h-3 w-3" />
-                </Button>
+                <button
+                  onClick={() => handleEdit(item)}
+                  className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors shrink-0"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </button>
               </div>
             )
           }
 
-          const rows: React.ReactNode[] = []
+          const sections: React.ReactNode[] = []
 
           sortedCategories.forEach(categoria => {
             const catItems = menuItems.filter(item => item.categoria === categoria.id)
             if (catItems.length === 0) return
-            rows.push(
-              <div key={`cat-${categoria.id}`} className="px-2.5 py-1.5 bg-secondary/40 border-b border-border">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-                  {categoria.nombre} <span className="font-normal normal-case">({catItems.length})</span>
-                </p>
+            sections.push(
+              <div key={`cat-${categoria.id}`} className="rounded-2xl border border-border bg-white overflow-hidden">
+                <div className="px-4 py-3 bg-secondary/30 border-b border-border flex items-center justify-between">
+                  <p className="text-sm font-bold text-foreground">{categoria.nombre}</p>
+                  <span className="text-xs text-muted-foreground bg-white border border-border rounded-full px-2 py-0.5">
+                    {catItems.length} {catItems.length === 1 ? 'platillo' : 'platillos'}
+                  </span>
+                </div>
+                {catItems.map(item => renderItem(item))}
               </div>
             )
-            catItems.forEach(item => rows.push(renderItem(item)))
           })
 
           const uncategorized = menuItems.filter(item => !sortedCategories.some(c => c.id === item.categoria))
           if (uncategorized.length > 0) {
-            rows.push(
-              <div key="cat-sin" className="px-2.5 py-1.5 bg-secondary/40 border-b border-border">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
-                  Sin categoría <span className="font-normal normal-case">({uncategorized.length})</span>
-                </p>
+            sections.push(
+              <div key="cat-sin" className="rounded-2xl border border-border bg-white overflow-hidden">
+                <div className="px-4 py-3 bg-secondary/30 border-b border-border flex items-center justify-between">
+                  <p className="text-sm font-bold text-foreground">Sin categoría</p>
+                  <span className="text-xs text-muted-foreground bg-white border border-border rounded-full px-2 py-0.5">
+                    {uncategorized.length} {uncategorized.length === 1 ? 'platillo' : 'platillos'}
+                  </span>
+                </div>
+                {uncategorized.map(item => renderItem(item))}
               </div>
             )
-            uncategorized.forEach(item => rows.push(renderItem(item)))
           }
 
-          if (rows.length === 0) {
+          if (sections.length === 0) {
             return (
-              <div className="py-8 text-center text-xs text-muted-foreground">
-                No hay platillos. Agregá uno con el botón de arriba.
+              <div className="rounded-2xl border border-border bg-white py-14 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-3">
+                  <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
+                </div>
+                <p className="text-sm font-semibold text-foreground">Sin platillos todavía</p>
+                <p className="text-xs text-muted-foreground mt-1">Agregá tu primer platillo con el botón de arriba.</p>
               </div>
             )
           }
 
-          return rows
+          return sections
         })()}
       </div>
       
