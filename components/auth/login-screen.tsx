@@ -200,7 +200,7 @@ export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginSc
         </div>
 
         <p className="mt-8 text-[10px] text-muted-foreground text-center">
-          {restaurantName ?? 'WAITLESS · Plataforma operativa para restaurantes'}
+          WAITLESS · Plataforma operativa para restaurantes
         </p>
       </div>
     </div>
