@@ -403,39 +403,40 @@ export function ReportsManager() {
     URL.revokeObjectURL(url)
   }
 
+  const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+    <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden ${className}`}>
+      {children}
+    </div>
+  )
+  const CardHead = ({ children }: { children: React.ReactNode }) => (
+    <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
+      {children}
+    </div>
+  )
+
   return (
-    <div className="space-y-5 w-full">
+    <div className="space-y-4 w-full" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="text-lg font-bold text-foreground tracking-tight">Dashboard</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {new Date().toLocaleDateString('es-MX', {
-              weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-            })}
+          <p className="text-xs text-gray-400 capitalize">
+            {new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-muted text-muted-foreground hover:bg-border transition-colors"
+            className="flex items-center gap-1.5 h-8 px-3 text-xs font-semibold rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
           >
-            <Download className="h-3.5 w-3.5" />
-            CSV
+            <Download className="h-3.5 w-3.5" />CSV
           </button>
-          <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
+          <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
             {(Object.keys(RANGE_LABELS) as DateRange[]).map(r => (
-              <button
-                key={r}
-                onClick={() => setDateRange(r)}
-                className={cn(
-                  'px-3 py-1.5 text-xs font-semibold rounded-md transition-all',
-                  dateRange === r
-                    ? 'bg-black text-white'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
+              <button key={r} onClick={() => setDateRange(r)}
+                className={cn('px-3 py-1 text-xs font-bold rounded-lg transition-all',
+                  dateRange === r ? 'bg-black text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'
+                )}>
                 {RANGE_LABELS[r]}
               </button>
             ))}
@@ -443,320 +444,239 @@ export function ReportsManager() {
         </div>
       </div>
 
-      {/* Alerta si hay llamadas pendientes */}
+      {/* Alerta llamadas pendientes */}
       {pendingCalls > 0 && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-xl">
-          <AlertTriangle className="h-4 w-4 text-red-500 shrink-0" />
-          <span className="text-xs font-semibold text-red-700">
-            {pendingCalls} llamada{pendingCalls !== 1 ? 's' : ''} de mesero pendiente{pendingCalls !== 1 ? 's' : ''}
+        <div className="flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-100 rounded-2xl">
+          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
+          <span className="text-sm font-semibold text-red-700">
+            {pendingCalls} llamada{pendingCalls !== 1 ? 's' : ''} de mesero sin atender
           </span>
         </div>
       )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
-        {kpis.map(kpi => (
-          <div key={kpi.label} className="border border-border rounded-xl p-4 bg-white min-w-0">
-            <div className="flex items-start justify-between gap-2 mb-3">
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground leading-tight">
-                {kpi.label}
-              </span>
-              <div className="p-1.5 rounded-lg bg-muted text-foreground shrink-0">
-                {kpi.icon}
+        {kpis.map((kpi, i) => {
+          const accent = i === 0 ? '#06C167' : i === 6 ? '#EF4444' : '#111'
+          return (
+            <div key={kpi.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 min-w-0">
+              <div className="flex items-center justify-between gap-1 mb-3">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 leading-tight line-clamp-2">
+                  {kpi.label}
+                </span>
+                <div className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: accent + '15', color: accent }}>
+                  {kpi.icon}
+                </div>
               </div>
-            </div>
-            <p className="text-xl font-bold text-foreground leading-none truncate">{kpi.value}</p>
-            {kpi.diff !== null && kpi.diff !== undefined ? (
-              <p className={cn(
-                'text-[10px] mt-1 font-semibold',
-                kpi.diff > 0 ? 'text-success' : kpi.diff < 0 ? 'text-destructive' : 'text-muted-foreground'
-              )}>
-                {kpi.diff > 0 ? '↑' : kpi.diff < 0 ? '↓' : '='} {Math.abs(kpi.diff)}% vs período anterior
+              <p className="text-2xl font-black text-gray-900 leading-none truncate" style={{ letterSpacing: '-0.03em' }}>
+                {kpi.value}
               </p>
-            ) : (
-              <p className="text-[10px] text-muted-foreground mt-1">{kpi.sub}</p>
-            )}
-          </div>
-        ))}
+              {kpi.diff !== null && kpi.diff !== undefined ? (
+                <p className={cn('text-[11px] mt-1.5 font-semibold flex items-center gap-0.5',
+                  kpi.diff > 0 ? 'text-[#06C167]' : kpi.diff < 0 ? 'text-red-500' : 'text-gray-400'
+                )}>
+                  {kpi.diff > 0 ? '↑' : kpi.diff < 0 ? '↓' : '='} {Math.abs(kpi.diff)}%
+                </p>
+              ) : (
+                <p className="text-[11px] text-gray-400 mt-1.5 leading-tight">{kpi.sub}</p>
+              )}
+            </div>
+          )
+        })}
       </div>
 
       {/* Gráfico ventas por hora */}
-      <div className="border border-border rounded-xl bg-white overflow-hidden">
-        <div className="px-4 py-3 border-b border-border">
-          <p className="text-xs font-bold text-foreground uppercase tracking-wide">Ventas por hora</p>
-        </div>
-        <div className="p-4">
+      <Card>
+        <CardHead>
+          <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Ventas por hora</p>
+        </CardHead>
+        <div className="p-5">
           {totalRevenue > 0 ? (
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={hourlyData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                <XAxis
-                  dataKey="hour"
-                  tick={{ fontSize: 10, fill: '#BEBEBE' }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 10, fill: '#BEBEBE' }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={v => v === 0 ? '' : `$${v}`}
-                />
+                <XAxis dataKey="hour" tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => v === 0 ? '' : `$${v}`} />
                 <Tooltip
                   formatter={(value: number) => [formatPrice(value), 'Ventas']}
-                  contentStyle={{
-                    border: '1px solid #E5E5E5',
-                    borderRadius: 8,
-                    fontSize: 12,
-                    color: '#000',
-                  }}
-                  cursor={{ fill: '#F2F2F2' }}
+                  contentStyle={{ border: '1px solid #F3F4F6', borderRadius: 12, fontSize: 12, color: '#111', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}
+                  cursor={{ fill: '#F9FAFB' }}
                 />
-                <Bar dataKey="revenue" radius={[4, 4, 0, 0]}>
+                <Bar dataKey="revenue" radius={[6, 6, 0, 0]}>
                   {hourlyData.map(entry => (
-                    <Cell
-                      key={entry.hour}
-                      fill={entry.revenue === maxHourRevenue && entry.revenue > 0 ? '#000000' : '#E5E5E5'}
-                    />
+                    <Cell key={entry.hour} fill={entry.revenue === maxHourRevenue && entry.revenue > 0 ? '#06C167' : '#E5E7EB'} />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           ) : (
             <div className="h-40 flex items-center justify-center">
-              <p className="text-xs text-muted-foreground">Sin ventas en el período seleccionado</p>
+              <p className="text-sm text-gray-400">Sin ventas en el período seleccionado</p>
             </div>
           )}
         </div>
-      </div>
+      </Card>
 
-      {/* Gráfico tendencia diaria — solo para 7d / 30d */}
+      {/* Gráfico tendencia diaria */}
       {dateRange !== 'hoy' && (
-        <div className="border border-border rounded-xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
-            <p className="text-xs font-bold text-foreground uppercase tracking-wide">
-              Tendencia de ventas — {RANGE_LABELS[dateRange]}
+        <Card>
+          <CardHead>
+            <p className="text-xs font-black text-gray-900 uppercase tracking-widest">
+              Tendencia — {RANGE_LABELS[dateRange]}
             </p>
-          </div>
-          <div className="p-4">
+          </CardHead>
+          <div className="p-5">
             {trendData.some(d => d.ventas > 0) ? (
               <ResponsiveContainer width="100%" height={160}>
                 <LineChart data={trendData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                  <CartesianGrid stroke="#F2F2F2" vertical={false} />
-                  <XAxis
-                    dataKey="label"
-                    tick={{ fontSize: 9, fill: '#BEBEBE' }}
-                    axisLine={false}
-                    tickLine={false}
-                    interval={dateRange === '30d' ? 4 : 0}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 10, fill: '#BEBEBE' }}
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={v => v === 0 ? '' : `$${(v / 1000).toFixed(0)}k`}
-                  />
+                  <CartesianGrid stroke="#F3F4F6" vertical={false} />
+                  <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#9CA3AF' }} axisLine={false} tickLine={false} interval={dateRange === '30d' ? 4 : 0} />
+                  <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => v === 0 ? '' : `$${(v / 1000).toFixed(0)}k`} />
                   <Tooltip
                     formatter={(value: number) => [formatPrice(value), 'Ventas']}
-                    contentStyle={{ border: '1px solid #E5E5E5', borderRadius: 8, fontSize: 12, color: '#000' }}
+                    contentStyle={{ border: '1px solid #F3F4F6', borderRadius: 12, fontSize: 12, color: '#111', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}
                   />
-                  <Line
-                    type="monotone"
-                    dataKey="ventas"
-                    stroke="#000000"
-                    strokeWidth={2}
-                    dot={{ r: 3, fill: '#000', strokeWidth: 0 }}
-                    activeDot={{ r: 5 }}
-                  />
+                  <Line type="monotone" dataKey="ventas" stroke="#06C167" strokeWidth={2.5} dot={{ r: 3, fill: '#06C167', strokeWidth: 0 }} activeDot={{ r: 5 }} />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
               <div className="h-40 flex items-center justify-center">
-                <p className="text-xs text-muted-foreground">Sin datos en el período seleccionado</p>
+                <p className="text-sm text-gray-400">Sin datos en el período</p>
               </div>
             )}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Canal + Eficiencia */}
       <div className="grid md:grid-cols-2 gap-3">
-
-        {/* Canal */}
-        <div className="border border-border rounded-xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
-            <p className="text-xs font-bold text-foreground uppercase tracking-wide">Pedidos por canal</p>
-          </div>
-          <div className="p-4 space-y-3">
+        <Card>
+          <CardHead>
+            <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Por canal</p>
+          </CardHead>
+          <div className="p-5 space-y-4">
             {byChannel.map(ch => (
               <div key={ch.label}>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">{ch.label}</span>
-                  <span className="font-semibold text-foreground">{ch.count} ({ch.pct}%)</span>
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-sm font-semibold text-gray-700">{ch.label}</span>
+                  <span className="text-sm font-black text-gray-900">{ch.count} <span className="text-xs font-normal text-gray-400">({ch.pct}%)</span></span>
                 </div>
-                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-black rounded-full transition-all"
-                    style={{ width: `${ch.pct}%` }}
-                  />
+                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-black rounded-full transition-all" style={{ width: `${ch.pct}%` }} />
                 </div>
               </div>
             ))}
-            {todayOrders.length === 0 && (
-              <p className="text-xs text-muted-foreground text-center py-2">Sin pedidos en el período seleccionado</p>
-            )}
+            {todayOrders.length === 0 && <p className="text-sm text-gray-400 text-center py-2">Sin pedidos</p>}
           </div>
-        </div>
+        </Card>
 
-        {/* SLA & Cancelaciones */}
-        <div className="border border-border rounded-xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
-            <p className="text-xs font-bold text-foreground uppercase tracking-wide">Eficiencia operativa</p>
-          </div>
-          <div className="p-4 space-y-4">
-            <div>
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-muted-foreground">Cumplimiento SLA (≤ 15 min)</span>
-                <span className={cn(
-                  'font-bold',
-                  slaCompliance >= 90 ? 'text-success'
-                    : slaCompliance >= 70 ? 'text-warning'
-                    : 'text-destructive'
-                )}>
-                  {slaCompliance}%
-                </span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div
-                  className={cn(
-                    'h-full rounded-full transition-all',
-                    slaCompliance >= 90 ? 'bg-success'
-                      : slaCompliance >= 70 ? 'bg-warning'
-                      : 'bg-destructive'
-                  )}
-                  style={{ width: `${slaCompliance}%` }}
-                />
-              </div>
+        <Card>
+          <CardHead>
+            <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Eficiencia</p>
+            <span className={cn('text-sm font-black', slaCompliance >= 90 ? 'text-[#06C167]' : slaCompliance >= 70 ? 'text-amber-500' : 'text-red-500')}>
+              SLA {slaCompliance}%
+            </span>
+          </CardHead>
+          <div className="p-5 space-y-4">
+            <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${slaCompliance}%`, backgroundColor: slaCompliance >= 90 ? '#06C167' : slaCompliance >= 70 ? '#F59E0B' : '#EF4444' }}
+              />
             </div>
-
-            <div className="grid grid-cols-3 gap-2 pt-1">
-              <div className="text-center">
-                <p className="text-lg font-bold text-foreground">{completedOrders.length}</p>
-                <p className="text-[10px] text-muted-foreground">Completados</p>
-              </div>
-              <div className="text-center border-x border-border">
-                <p className="text-lg font-bold text-warning">
-                  {todayOrders.filter(o => !['entregado', 'cancelado'].includes(o.status)).length}
-                </p>
-                <p className="text-[10px] text-muted-foreground">En proceso</p>
-              </div>
-              <div className="text-center">
-                <p className="text-lg font-bold text-destructive">{cancelledOrders.length}</p>
-                <p className="text-[10px] text-muted-foreground">Cancelados</p>
-              </div>
+            <div className="grid grid-cols-3 gap-3 pt-1">
+              {[
+                { label: 'Completados', value: completedOrders.length, color: '#06C167' },
+                { label: 'En proceso', value: todayOrders.filter(o => !['entregado', 'cancelado'].includes(o.status)).length, color: '#F59E0B' },
+                { label: 'Cancelados', value: cancelledOrders.length, color: '#EF4444' },
+              ].map(s => (
+                <div key={s.label} className="text-center">
+                  <p className="text-2xl font-black" style={{ color: s.color, letterSpacing: '-0.03em' }}>{s.value}</p>
+                  <p className="text-[11px] text-gray-400 mt-0.5">{s.label}</p>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Desglose por método de pago */}
       <PaymentBreakdownWidget />
 
       {/* Top items */}
-      <div className="border border-border rounded-xl bg-white overflow-hidden">
-        <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-          <ChefHat className="h-3.5 w-3.5 text-muted-foreground" />
-          <p className="text-xs font-bold text-foreground uppercase tracking-wide">Más vendidos ({RANGE_LABELS[dateRange]})</p>
-        </div>
-        <div className="p-4">
+      <Card>
+        <CardHead>
+          <div className="flex items-center gap-2">
+            <ChefHat className="h-4 w-4 text-gray-400" />
+            <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Más vendidos</p>
+          </div>
+          <span className="text-[11px] text-gray-400">{RANGE_LABELS[dateRange]}</span>
+        </CardHead>
+        <div className="p-5">
           {topItems.length > 0 ? (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {topItems.map((item, i) => (
-                <div key={item.name} className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className={cn(
-                      'w-5 h-5 rounded-full flex items-center justify-center shrink-0',
-                      i === 0 ? 'bg-black text-white' : 'bg-muted text-muted-foreground'
-                    )}>
-                      {i === 0
-                        ? <Star className="h-2.5 w-2.5" />
-                        : <span className="text-[10px] font-bold">{i + 1}</span>
-                      }
-                    </span>
-                    <span className="text-sm text-foreground truncate">{item.name}</span>
-                    <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full shrink-0">
-                      ×{item.qty}
-                    </span>
-                  </div>
-                  <span className="text-sm font-semibold text-foreground shrink-0">
+                <div key={item.name} className="flex items-center gap-3">
+                  <span className={cn(
+                    'w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black shrink-0',
+                    i === 0 ? 'bg-black text-white' : 'bg-gray-100 text-gray-500'
+                  )}>
+                    {i === 0 ? <Star className="h-3 w-3" /> : i + 1}
+                  </span>
+                  <span className="flex-1 text-sm font-semibold text-gray-900 truncate">{item.name}</span>
+                  <span className="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full shrink-0 font-semibold">×{item.qty}</span>
+                  <span className="text-sm font-black text-gray-900 shrink-0" style={{ letterSpacing: '-0.02em' }}>
                     {formatPrice(item.revenue)}
                   </span>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground text-center py-4">Sin ventas en el período seleccionado</p>
+            <p className="text-sm text-gray-400 text-center py-4">Sin ventas en el período</p>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Feedback summary */}
       {feedbackSummary && feedbackSummary.total > 0 && (
-        <div className="border border-border rounded-xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-            <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
-            <p className="text-xs font-bold text-foreground uppercase tracking-wide">
-              Satisfacción de clientes ({RANGE_LABELS[dateRange]})
-            </p>
-          </div>
-          <div className="p-4">
+        <Card>
+          <CardHead>
+            <div className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-gray-400" />
+              <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Satisfacción</p>
+            </div>
+            <span className="text-[11px] text-gray-400">{feedbackSummary.total} reseña{feedbackSummary.total !== 1 ? 's' : ''}</span>
+          </CardHead>
+          <div className="p-5">
             <div className="flex items-start gap-6">
-              {/* Average rating */}
               <div className="text-center shrink-0">
-                <p className="text-3xl font-bold text-foreground leading-none">
+                <p className="text-4xl font-black text-gray-900 leading-none" style={{ letterSpacing: '-0.04em' }}>
                   {feedbackSummary.avg_rating?.toFixed(1) ?? '—'}
                 </p>
-                <div className="flex gap-0.5 justify-center mt-1">
+                <div className="flex gap-0.5 justify-center mt-2">
                   {[1, 2, 3, 4, 5].map(s => (
-                    <Star
-                      key={s}
-                      className={cn(
-                        'h-3 w-3',
-                        s <= Math.round(feedbackSummary.avg_rating ?? 0)
-                          ? 'text-warning fill-[#D97706]'
-                          : 'text-border fill-border'
-                      )}
-                    />
+                    <Star key={s} className={cn('h-3.5 w-3.5', s <= Math.round(feedbackSummary.avg_rating ?? 0) ? 'fill-amber-400 text-amber-400' : 'text-gray-200 fill-gray-200')} />
                   ))}
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  {feedbackSummary.total} reseña{feedbackSummary.total !== 1 ? 's' : ''}
-                </p>
               </div>
-              {/* Distribution */}
-              <div className="flex-1 space-y-1.5">
+              <div className="flex-1 space-y-2">
                 {[5, 4, 3, 2, 1].map(star => {
                   const count = feedbackSummary.dist?.[String(star)] ?? 0
-                  const pct = feedbackSummary.total > 0
-                    ? Math.round((count / feedbackSummary.total) * 100)
-                    : 0
+                  const pct = feedbackSummary.total > 0 ? Math.round((count / feedbackSummary.total) * 100) : 0
                   return (
                     <div key={star} className="flex items-center gap-2">
-                      <span className="text-[10px] text-muted-foreground w-3 shrink-0">{star}</span>
-                      <Star className="h-2.5 w-2.5 text-warning fill-[#D97706] shrink-0" />
-                      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-warning rounded-full transition-all"
-                          style={{ width: `${pct}%` }}
-                        />
+                      <span className="text-[11px] text-gray-400 w-3 shrink-0 font-semibold">{star}</span>
+                      <Star className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0" />
+                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-amber-400 rounded-full" style={{ width: `${pct}%` }} />
                       </div>
-                      <span className="text-[10px] text-muted-foreground w-6 text-right shrink-0">{count}</span>
+                      <span className="text-[11px] text-gray-400 w-5 text-right shrink-0 font-semibold">{count}</span>
                     </div>
                   )
                 })}
               </div>
             </div>
           </div>
-        </div>
+        </Card>
       )}
     </div>
   )

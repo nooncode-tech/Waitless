@@ -3,8 +3,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useApp } from '@/lib/context'
 import { supabase } from '@/lib/supabase'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   DollarSign,
   ShoppingBag,
@@ -32,7 +30,6 @@ import {
   getChannelLabel,
   type Order
 } from '@/lib/store'
-import { cn } from '@/lib/utils'
 
 export function DailyClosing() {
   const { orders, refunds, getPaymentsForDate, tables, config } = useApp()
@@ -408,57 +405,47 @@ export function DailyClosing() {
     d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
 
   return (
-    <div className="space-y-5 max-w-3xl">
+    <div className="space-y-5 max-w-3xl" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
 
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold text-foreground tracking-tight">Turno & Caja</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Ledger operativo del turno</p>
+          <h2 className="text-lg font-black text-gray-900 tracking-tight">Turno & Caja</h2>
+          <p className="text-xs text-gray-400 mt-0.5">Ledger operativo del turno</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          <Input
+          <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
             max={new Date().toISOString().split('T')[0]}
-            className="h-8 text-xs w-auto"
+            className="h-8 text-xs px-2 border border-gray-200 rounded-xl bg-white text-gray-700 w-auto"
           />
-          <Button variant="outline" size="sm" onClick={exportCSV}
-            className="gap-1.5 h-8 text-xs border-border bg-transparent hover:bg-muted text-foreground">
-            <Download className="h-3 w-3" />
-            CSV
-          </Button>
-          <Button size="sm" onClick={handlePrint}
-            className="gap-1.5 h-8 text-xs bg-black hover:bg-black/90 text-white">
-            <Printer className="h-3 w-3" />
-            Imprimir
-          </Button>
+          <button onClick={exportCSV}
+            className="h-8 text-xs px-3 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 flex items-center gap-1.5 font-medium">
+            <Download className="h-3 w-3" />CSV
+          </button>
+          <button onClick={handlePrint}
+            className="h-8 text-xs px-3 rounded-xl bg-gray-900 hover:bg-black text-white flex items-center gap-1.5 font-semibold">
+            <Printer className="h-3 w-3" />Imprimir
+          </button>
         </div>
       </div>
 
       {/* Shift Control Panel */}
-      <div className={cn(
-        'border rounded-xl p-4',
-        shiftOpen
-          ? 'border-success bg-green-50'
-          : shiftEnd
-          ? 'border-border bg-muted'
-          : 'border-border bg-white'
-      )}>
+      <div className={`border rounded-2xl p-4 ${
+        shiftOpen ? 'border-[#06C167]/30 bg-emerald-50' : shiftEnd ? 'border-gray-100 bg-gray-50' : 'border-gray-100 bg-white'
+      }`}>
         <div className="flex items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <div className={cn(
-                'w-2 h-2 rounded-full',
-                shiftOpen ? 'bg-success animate-pulse' : 'bg-accent'
-              )} />
-              <span className="text-sm font-bold text-foreground">
+              <div className={`w-2 h-2 rounded-full ${shiftOpen ? 'bg-[#06C167] animate-pulse' : 'bg-gray-300'}`} />
+              <span className="text-sm font-bold text-gray-900">
                 {shiftOpen ? 'Turno activo' : shiftEnd ? 'Turno cerrado' : 'Sin turno abierto'}
               </span>
             </div>
             {shiftStart && (
-              <p className="text-xs text-muted-foreground mt-0.5 ml-4">
+              <p className="text-xs text-gray-500 mt-0.5 ml-4">
                 {shiftOpen
                   ? `Abierto a las ${formatShiftTime(shiftStart)}`
                   : `${formatShiftTime(shiftStart)} → ${shiftEnd ? formatShiftTime(shiftEnd) : '—'}`
@@ -471,40 +458,36 @@ export function DailyClosing() {
               <>
                 {showCloseConfirm ? (
                   <>
-                    <span className="text-xs text-muted-foreground">¿Confirmar cierre?</span>
-                    <Button size="sm" variant="outline"
-                      className="h-8 text-xs border-border"
+                    <span className="text-xs text-gray-500">¿Confirmar cierre?</span>
+                    <button
+                      className="h-8 text-xs px-3 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 font-medium"
                       onClick={() => setShowCloseConfirm(false)}>
                       Cancelar
-                    </Button>
-                    <Button size="sm"
-                      className="h-8 text-xs bg-black hover:bg-black/90 text-white gap-1.5"
+                    </button>
+                    <button
+                      className="h-8 text-xs px-3 rounded-xl bg-gray-900 hover:bg-black text-white flex items-center gap-1.5 font-semibold"
                       onClick={handleCloseShift}>
-                      <Square className="h-3 w-3" />
-                      Cerrar turno
-                    </Button>
+                      <Square className="h-3 w-3" />Cerrar turno
+                    </button>
                   </>
                 ) : (
-                  <Button size="sm"
-                    className="h-8 text-xs bg-black hover:bg-black/90 text-white gap-1.5"
+                  <button
+                    className="h-8 text-xs px-3 rounded-xl bg-gray-900 hover:bg-black text-white flex items-center gap-1.5 font-semibold"
                     onClick={() => setShowCloseConfirm(true)}>
-                    <Square className="h-3 w-3" />
-                    Cerrar turno
-                  </Button>
+                    <Square className="h-3 w-3" />Cerrar turno
+                  </button>
                 )}
               </>
             ) : (
-              <Button size="sm"
-                className="h-8 text-xs bg-black hover:bg-black/90 text-white gap-1.5"
+              <button
+                className="h-8 text-xs px-3 rounded-xl bg-[#06C167] hover:bg-[#05a856] text-white flex items-center gap-1.5 font-semibold"
                 onClick={handleOpenShift}>
-                <Play className="h-3 w-3" />
-                Abrir turno
-              </Button>
+                <Play className="h-3 w-3" />Abrir turno
+              </button>
             )}
           </div>
         </div>
 
-        {/* Shift note */}
         {(shiftOpen || shiftEnd) && (
           <div className="mt-3">
             <Textarea
@@ -519,7 +502,7 @@ export function DailyClosing() {
         )}
       </div>
 
-      {/* Fondo de caja / Conciliación de efectivo */}
+      {/* Conciliación de efectivo */}
       {(shiftOpen || shiftEnd) && (() => {
         const cashSales = stats.salesByPayment['efectivo'] || 0
         const fondoNum = parseFloat(fondoCajaApertura) || 0
@@ -529,23 +512,19 @@ export function DailyClosing() {
         const hasDif = efectivoContado !== '' && !isNaN(contadoNum)
 
         return (
-          <div className="border border-border rounded-xl bg-white overflow-hidden">
-            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Banknote className="h-3.5 w-3.5 text-muted-foreground" />
-                <p className="text-xs font-bold text-foreground uppercase tracking-wide">Conciliación de Efectivo</p>
-              </div>
+          <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+              <Banknote className="h-3.5 w-3.5 text-gray-400" />
+              <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Conciliación de Efectivo</p>
             </div>
             <div className="p-4 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide block mb-1">
+                  <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide block mb-1">
                     Fondo apertura ($)
                   </label>
                   <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
+                    type="number" min="0" step="0.01"
                     value={fondoCajaApertura}
                     onChange={e => setFondoCajaApertura(e.target.value)}
                     placeholder="0.00"
@@ -554,13 +533,11 @@ export function DailyClosing() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide block mb-1">
+                  <label className="text-[10px] font-medium text-gray-500 uppercase tracking-wide block mb-1">
                     Efectivo contado ($)
                   </label>
                   <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
+                    type="number" min="0" step="0.01"
                     value={efectivoContado}
                     onChange={e => setEfectivoContado(e.target.value)}
                     placeholder="0.00"
@@ -568,29 +545,27 @@ export function DailyClosing() {
                   />
                 </div>
               </div>
-
-              <div className="space-y-1.5 pt-2 border-t border-border">
+              <div className="space-y-1.5 pt-2 border-t border-gray-100">
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Fondo apertura</span>
-                  <span className="text-foreground">{fondoNum > 0 ? formatPrice(fondoNum) : '—'}</span>
+                  <span className="text-gray-500">Fondo apertura</span>
+                  <span className="text-gray-900">{fondoNum > 0 ? formatPrice(fondoNum) : '—'}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">+ Ventas en efectivo</span>
-                  <span className="text-foreground">{formatPrice(cashSales)}</span>
+                  <span className="text-gray-500">+ Ventas en efectivo</span>
+                  <span className="text-gray-900">{formatPrice(cashSales)}</span>
                 </div>
-                <div className="flex justify-between text-sm font-semibold border-t border-border pt-1.5">
-                  <span className="text-foreground">Efectivo esperado</span>
-                  <span className="text-foreground">{formatPrice(esperado)}</span>
+                <div className="flex justify-between text-sm font-semibold border-t border-gray-100 pt-1.5">
+                  <span className="text-gray-900">Efectivo esperado</span>
+                  <span className="text-gray-900">{formatPrice(esperado)}</span>
                 </div>
                 {hasDif && (
-                  <div className={cn(
-                    'flex justify-between text-sm font-bold pt-1 border-t-2',
-                    diferencia > 0 ? 'border-success' : diferencia < 0 ? 'border-destructive' : 'border-border'
-                  )}>
-                    <span className={diferencia === 0 ? 'text-muted-foreground' : diferencia > 0 ? 'text-success' : 'text-destructive'}>
+                  <div className={`flex justify-between text-sm font-bold pt-1 border-t-2 ${
+                    diferencia > 0 ? 'border-[#06C167]' : diferencia < 0 ? 'border-red-500' : 'border-gray-200'
+                  }`}>
+                    <span className={diferencia === 0 ? 'text-gray-400' : diferencia > 0 ? 'text-[#06C167]' : 'text-red-500'}>
                       {diferencia > 0 ? 'Sobrante' : diferencia < 0 ? 'Faltante' : 'Cuadrado'}
                     </span>
-                    <span className={diferencia === 0 ? 'text-muted-foreground' : diferencia > 0 ? 'text-success' : 'text-destructive'}>
+                    <span className={diferencia === 0 ? 'text-gray-400' : diferencia > 0 ? 'text-[#06C167]' : 'text-red-500'}>
                       {diferencia > 0 ? '+' : ''}{formatPrice(diferencia)}
                     </span>
                   </div>
@@ -601,60 +576,38 @@ export function DailyClosing() {
         )
       })()}
 
-      {/* KPI Cards — Task 2.9: datos reales desde Supabase RPC */}
+      {/* KPI Cards */}
       <div>
-        <div className="flex items-center gap-2 mb-2">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">KPIs del día</p>
-          {kpiLoading && <Spinner className="size-3 text-muted-foreground" />}
+        <div className="flex items-center gap-2 mb-3">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">KPIs del día</p>
+          {kpiLoading && <Spinner className="size-3 text-gray-400" />}
           {!kpiLoading && kpiFromDB && !kpiError && (
-            <span className="text-[9px] text-muted-foreground">calculado desde Supabase</span>
+            <span className="text-[9px] text-gray-400">calculado desde Supabase</span>
           )}
           {kpiError && (
-            <button
-              onClick={fetchKpis}
-              className="text-[10px] text-destructive underline"
-            >
+            <button onClick={fetchKpis} className="text-[10px] text-red-500 underline">
               Error al cargar — Reintentar
             </button>
           )}
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            {
-              label: 'Ticket Promedio',
-              value: kpiLoading ? '—' : formatPrice(kpiFromDB?.ticket_promedio ?? 0),
-              icon: <TrendingUp className="h-4 w-4" />,
-            },
-            {
-              label: 'Órdenes entregadas',
-              value: kpiLoading ? '—' : (kpiFromDB?.total_ordenes ?? 0).toString(),
-              icon: <ShoppingBag className="h-4 w-4" />,
-            },
-            {
-              label: 'Tiempo atención',
-              value: kpiLoading ? '—' : `${(kpiFromDB?.tiempo_atencion_min ?? 0).toFixed(1)} min`,
-              icon: <Clock className="h-4 w-4" />,
-            },
-            {
-              label: 'Ocupación (vueltas/mesa)',
-              value: kpiLoading ? '—' : (kpiFromDB?.ocupacion_rate ?? 0).toFixed(1),
-              icon: <Users className="h-4 w-4" />,
-            },
+            { label: 'Ticket Promedio', value: kpiLoading ? '—' : formatPrice(kpiFromDB?.ticket_promedio ?? 0), icon: <TrendingUp className="h-4 w-4" />, color: 'bg-emerald-50 text-[#06C167]' },
+            { label: 'Órdenes entregadas', value: kpiLoading ? '—' : (kpiFromDB?.total_ordenes ?? 0).toString(), icon: <ShoppingBag className="h-4 w-4" />, color: 'bg-blue-50 text-blue-500' },
+            { label: 'Tiempo atención', value: kpiLoading ? '—' : `${(kpiFromDB?.tiempo_atencion_min ?? 0).toFixed(1)} min`, icon: <Clock className="h-4 w-4" />, color: 'bg-amber-50 text-amber-500' },
+            { label: 'Ocupación (vueltas/mesa)', value: kpiLoading ? '—' : (kpiFromDB?.ocupacion_rate ?? 0).toFixed(1), icon: <Users className="h-4 w-4" />, color: 'bg-purple-50 text-purple-500' },
           ].map(kpi => (
-            <div key={kpi.label} className="border border-border rounded-xl p-3 bg-white">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="p-1 rounded bg-muted text-foreground">
-                  {kpi.icon}
-                </div>
+            <div key={kpi.label} className="border border-gray-100 rounded-2xl p-3 bg-white">
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`p-1.5 rounded-xl ${kpi.color}`}>{kpi.icon}</div>
               </div>
-              <p className="text-lg font-bold text-foreground leading-none">{kpi.value}</p>
-              <p className="text-[10px] text-muted-foreground mt-0.5">{kpi.label}</p>
+              <p className="text-xl font-black text-gray-900 leading-none">{kpi.value}</p>
+              <p className="text-[10px] text-gray-500 mt-1">{kpi.label}</p>
             </div>
           ))}
         </div>
-        {/* Tasa de cancelación */}
         {!kpiLoading && kpiFromDB && kpiFromDB.canceladas > 0 && (
-          <div className="mt-2 flex items-center gap-1.5 text-xs text-destructive">
+          <div className="mt-2 flex items-center gap-1.5 text-xs text-red-500">
             <AlertTriangle className="h-3.5 w-3.5" />
             <span>{kpiFromDB.canceladas} órdenes canceladas ({kpiFromDB.tasa_cancelacion}% del total)</span>
           </div>
@@ -662,39 +615,39 @@ export function DailyClosing() {
       </div>
 
       {/* Financial Ledger */}
-      <div className="border border-border rounded-xl bg-white overflow-hidden">
-        <div className="px-4 py-3 border-b border-border">
-          <p className="text-xs font-bold text-foreground uppercase tracking-wide">Resumen Financiero</p>
+      <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-100">
+          <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Resumen Financiero</p>
         </div>
         <div className="p-4 space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Ventas Brutas</span>
-            <span className="font-medium text-foreground">{formatPrice(stats.grossSales)}</span>
+            <span className="text-gray-500">Ventas Brutas</span>
+            <span className="font-medium text-gray-900">{formatPrice(stats.grossSales)}</span>
           </div>
           {stats.totalDiscounts > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-destructive">(−) Descuentos</span>
-              <span className="text-destructive">−{formatPrice(stats.totalDiscounts)}</span>
+              <span className="text-red-500">(−) Descuentos</span>
+              <span className="text-red-500">−{formatPrice(stats.totalDiscounts)}</span>
             </div>
           )}
           {stats.totalRefunds > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-destructive">(−) Reembolsos</span>
-              <span className="text-destructive">−{formatPrice(stats.totalRefunds)}</span>
+              <span className="text-red-500">(−) Reembolsos</span>
+              <span className="text-red-500">−{formatPrice(stats.totalRefunds)}</span>
             </div>
           )}
-          <div className="flex justify-between text-base font-bold text-foreground pt-2 border-t border-border">
+          <div className="flex justify-between text-base font-black text-gray-900 pt-2 border-t border-gray-100">
             <span>Ventas Netas</span>
             <span>{formatPrice(stats.netSales)}</span>
           </div>
-          <div className="flex justify-between text-xs text-muted-foreground pt-1">
+          <div className="flex justify-between text-xs text-gray-500 pt-1">
             <span>IVA (incluido en ventas)</span>
             <span>{formatPrice(stats.totalTax)}</span>
           </div>
           {stats.totalTips > 0 && (
-            <div className="flex justify-between text-sm text-success">
+            <div className="flex justify-between text-sm text-[#06C167]">
               <span>+ Propinas recibidas</span>
-              <span className="font-medium">{formatPrice(stats.totalTips)}</span>
+              <span className="font-semibold">{formatPrice(stats.totalTips)}</span>
             </div>
           )}
         </div>
@@ -702,105 +655,101 @@ export function DailyClosing() {
 
       {/* Payment & Channel breakdown */}
       <div className="grid md:grid-cols-2 gap-3">
-        {/* By Payment Method */}
-        <div className="border border-border rounded-xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
-            <p className="text-xs font-bold text-foreground uppercase tracking-wide">Método de Pago</p>
+        <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100">
+            <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Método de Pago</p>
           </div>
           <div className="p-4 space-y-2">
             {Object.entries(stats.salesByPayment).length > 0 ? (
               Object.entries(stats.salesByPayment).map(([method, amount]) => (
                 <div key={method} className="flex justify-between items-center text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="flex items-center gap-2 text-gray-500">
                     {paymentIcon(method)}
                     <span>{paymentLabel(method)}</span>
                   </div>
-                  <span className="font-semibold text-foreground">{formatPrice(amount)}</span>
+                  <span className="font-semibold text-gray-900">{formatPrice(amount)}</span>
                 </div>
               ))
             ) : (
-              <p className="text-xs text-muted-foreground text-center py-3">Sin pagos registrados</p>
+              <p className="text-xs text-gray-400 text-center py-3">Sin pagos registrados</p>
             )}
           </div>
         </div>
 
-        {/* By Channel */}
-        <div className="border border-border rounded-xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-border">
-            <p className="text-xs font-bold text-foreground uppercase tracking-wide">Canal de Venta</p>
+        <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100">
+            <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Canal de Venta</p>
           </div>
           <div className="p-4 space-y-2">
             {Object.entries(stats.salesByChannel).length > 0 ? (
               Object.entries(stats.salesByChannel).map(([channel, amount]) => (
                 <div key={channel} className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">{getChannelLabel(channel as Order['canal'])}</span>
-                  <span className="font-semibold text-foreground">{formatPrice(amount)}</span>
+                  <span className="text-gray-500">{getChannelLabel(channel as Order['canal'])}</span>
+                  <span className="font-semibold text-gray-900">{formatPrice(amount)}</span>
                 </div>
               ))
             ) : (
-              <p className="text-xs text-muted-foreground text-center py-3">Sin ventas</p>
+              <p className="text-xs text-gray-400 text-center py-3">Sin ventas</p>
             )}
           </div>
         </div>
       </div>
 
-      {/* Top Items — Task 2.9: desde Supabase RPC (JSONB de órdenes) */}
-      <div className="border border-border rounded-xl bg-white overflow-hidden">
-        <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-          <ChefHat className="h-3.5 w-3.5 text-muted-foreground" />
-          <p className="text-xs font-bold text-foreground uppercase tracking-wide">Más Vendidos</p>
-          {kpiLoading && <Spinner className="size-3 text-muted-foreground ml-auto" />}
+      {/* Top Items */}
+      <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+          <ChefHat className="h-3.5 w-3.5 text-gray-400" />
+          <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Más Vendidos</p>
+          {kpiLoading && <Spinner className="size-3 text-gray-400 ml-auto" />}
         </div>
         <div className="p-4">
           {kpiLoading ? (
-            <p className="text-xs text-muted-foreground text-center py-4">Calculando desde Supabase...</p>
+            <p className="text-xs text-gray-400 text-center py-4">Calculando desde Supabase...</p>
           ) : kpiError ? (
             <div className="text-center py-4">
-              <p className="text-xs text-destructive">No se pudo cargar</p>
-              <button onClick={fetchKpis} className="text-[10px] text-destructive underline mt-1">Reintentar</button>
+              <p className="text-xs text-red-500">No se pudo cargar</p>
+              <button onClick={fetchKpis} className="text-[10px] text-red-500 underline mt-1">Reintentar</button>
             </div>
           ) : (kpiFromDB?.top_items ?? []).length > 0 ? (
             <div className="space-y-2">
               {(kpiFromDB!.top_items).map((item, index) => (
                 <div key={item.menu_item_id} className="flex justify-between items-center text-sm">
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-xs w-4 text-right">{index + 1}</span>
-                    <span className="text-foreground">{item.nombre}</span>
-                    <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
-                      ×{item.total_cantidad}
-                    </span>
+                    <span className="text-gray-400 text-xs w-4 text-right">{index + 1}</span>
+                    <span className="text-gray-900">{item.nombre}</span>
+                    <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">×{item.total_cantidad}</span>
                   </div>
-                  <span className="font-semibold text-foreground">{formatPrice(item.total_revenue)}</span>
+                  <span className="font-semibold text-gray-900">{formatPrice(item.total_revenue)}</span>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground text-center py-4">Sin ventas en este día</p>
+            <p className="text-xs text-gray-400 text-center py-4">Sin ventas en este día</p>
           )}
         </div>
       </div>
 
-      {/* Cancelled / Refunds alerts */}
+      {/* Incidencias */}
       {(stats.cancelledOrders > 0 || stats.totalRefunds > 0) && (
-        <div className="border border-border rounded-xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-            <XCircle className="h-3.5 w-3.5 text-destructive" />
-            <p className="text-xs font-bold text-destructive uppercase tracking-wide">Incidencias</p>
+        <div className="border border-red-100 rounded-2xl bg-white overflow-hidden">
+          <div className="px-4 py-3 border-b border-red-100 flex items-center gap-2">
+            <XCircle className="h-3.5 w-3.5 text-red-500" />
+            <p className="text-xs font-black text-red-500 uppercase tracking-widest">Incidencias</p>
           </div>
           <div className="p-4 space-y-2">
             {stats.cancelledOrders > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Pedidos cancelados</span>
-                <span className="font-semibold text-destructive">{stats.cancelledOrders}</span>
+                <span className="text-gray-500">Pedidos cancelados</span>
+                <span className="font-semibold text-red-500">{stats.cancelledOrders}</span>
               </div>
             )}
             {stats.totalRefunds > 0 && (
               <div className="flex justify-between text-sm">
-                <div className="flex items-center gap-1.5 text-muted-foreground">
+                <div className="flex items-center gap-1.5 text-gray-500">
                   <RotateCcw className="h-3.5 w-3.5" />
                   <span>Total reembolsado</span>
                 </div>
-                <span className="font-semibold text-destructive">−{formatPrice(stats.totalRefunds)}</span>
+                <span className="font-semibold text-red-500">−{formatPrice(stats.totalRefunds)}</span>
               </div>
             )}
           </div>

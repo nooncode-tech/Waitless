@@ -6,16 +6,6 @@ import { useApp } from '@/lib/context'
 import { CancelOrderDialog } from '@/components/shared/cancel-order-dialog'
 import { EditOrderDialog } from '@/components/shared/edit-order-dialog'
 import { OrdersHistory } from './orders-history'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { 
   formatPrice, 
   formatTime, 
@@ -79,130 +69,64 @@ export function OrdersManager() {
     return session
   }
   
+  const tabs = [
+    { id: 'table' as const, label: 'Mesas', icon: <Package className="h-3.5 w-3.5" />, badge: activeTable.length },
+    { id: 'takeout' as const, label: 'Para llevar', icon: <ShoppingBag className="h-3.5 w-3.5" />, badge: activeTakeout.length },
+    { id: 'delivery' as const, label: 'Delivery', icon: <Truck className="h-3.5 w-3.5" />, badge: activeDelivery.length },
+    { id: 'history' as const, label: 'Historial', icon: <History className="h-3.5 w-3.5" />, badge: 0 },
+  ]
+
   return (
-    <div>
-      {/* Tabs - Only show tabs if there are orders in multiple channels */}
-      <div className="flex gap-1 mb-3 overflow-x-auto">
-        <button
-          onClick={() => handleSetTab('table')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
-            activeTab === 'table'
-              ? 'bg-foreground text-background'
-              : 'bg-secondary text-foreground'
-          }`}
-        >
-          <Package className="h-3 w-3" />
-          Mesas
-          {activeTable.length > 0 && (
-            <Badge 
-              variant="secondary" 
-              className={`text-[9px] h-3.5 px-1 ${
-                activeTab === 'table' ? 'bg-white/20 text-white' : 'bg-muted text-foreground'
-              }`}
-            >
-              {activeTable.length}
-            </Badge>
-          )}
-        </button>
-        <button
-          onClick={() => handleSetTab('takeout')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
-            activeTab === 'takeout'
-              ? 'bg-foreground text-background'
-              : 'bg-secondary text-foreground'
-          }`}
-        >
-          <ShoppingBag className="h-3 w-3" />
-          Para llevar
-          {activeTakeout.length > 0 && (
-            <Badge 
-              variant="secondary" 
-              className={`text-[9px] h-3.5 px-1 ${
-                activeTab === 'takeout' ? 'bg-white/20 text-white' : 'bg-muted text-foreground'
-              }`}
-            >
-              {activeTakeout.length}
-            </Badge>
-          )}
-        </button>
-        <button
-          onClick={() => handleSetTab('delivery')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
-            activeTab === 'delivery'
-              ? 'bg-foreground text-background'
-              : 'bg-secondary text-foreground'
-          }`}
-        >
-          <Truck className="h-3 w-3" />
-          Delivery
-          {activeDelivery.length > 0 && (
-            <Badge
-              variant="secondary"
-              className={`text-[9px] h-3.5 px-1 ${
-                activeTab === 'delivery' ? 'bg-white/20 text-white' : 'bg-muted text-foreground'
-              }`}
-            >
-              {activeDelivery.length}
-            </Badge>
-          )}
-        </button>
-        <button
-          onClick={() => handleSetTab('history')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
-            activeTab === 'history'
-              ? 'bg-foreground text-background'
-              : 'bg-secondary text-foreground'
-          }`}
-        >
-          <History className="h-3 w-3" />
-          Historial
-        </button>
+    <div style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+      {/* Tabs */}
+      <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+        {tabs.map(tab => (
+          <button key={tab.id} onClick={() => handleSetTab(tab.id)}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+              activeTab === tab.id ? 'bg-black text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:text-gray-900 hover:bg-gray-200'
+            }`}>
+            {tab.icon}
+            {tab.label}
+            {tab.badge > 0 && (
+              <span className={`min-w-[18px] px-1.5 rounded-full text-[10px] font-black flex items-center justify-center ${
+                activeTab === tab.id ? 'bg-white/25 text-white' : 'bg-gray-300 text-gray-600'
+              }`}>
+                {tab.badge}
+              </span>
+            )}
+          </button>
+        ))}
       </div>
-      
+
       {activeTab === 'history' ? (
         <OrdersHistory />
       ) : (
         <>
-          {/* Header */}
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-xs font-semibold text-foreground">
-                {activeTab === 'table' ? 'Pedidos de mesas' :
-                 activeTab === 'takeout' ? 'Pedidos para llevar' : 'Pedidos delivery'}
-              </h2>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-[11px] text-gray-400 font-semibold">
                 {activeCount} pedido{activeCount !== 1 ? 's' : ''} activo{activeCount !== 1 ? 's' : ''}
               </p>
             </div>
             {activeTab !== 'table' && (
-              <Button
-                size="xs"
-                onClick={() => handleCreateOrder(activeTab === 'takeout' ? 'para_llevar' : 'delivery')}
-              >
-                <Plus className="h-3 w-3 mr-1" />
-                Nuevo
-              </Button>
+              <button onClick={() => handleCreateOrder(activeTab === 'takeout' ? 'para_llevar' : 'delivery')}
+                className="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-black text-white text-xs font-bold hover:bg-gray-900 transition-colors">
+                <Plus className="h-3.5 w-3.5" />Nuevo
+              </button>
             )}
           </div>
 
           {activeTab === 'table' ? (
-            <TableOrdersList
-              orders={paginatedOrders}
-              getTableInfo={getTableInfo}
-              onUpdateStatus={updateOrderStatus}
-            />
+            <TableOrdersList orders={paginatedOrders} getTableInfo={getTableInfo} onUpdateStatus={updateOrderStatus} />
           ) : (
-            <OrdersList
-              orders={paginatedOrders}
-              channel={activeTab === 'takeout' ? 'para_llevar' : 'delivery'}
-              onUpdateStatus={updateOrderStatus}
-            />
+            <OrdersList orders={paginatedOrders} channel={activeTab === 'takeout' ? 'para_llevar' : 'delivery'} onUpdateStatus={updateOrderStatus} />
           )}
           {hasMore && (
             <div className="flex justify-center mt-4">
-              <Button variant="outline" size="sm" className="text-xs bg-transparent" onClick={() => setPage(p => p + 1)}>
+              <button onClick={() => setPage(p => p + 1)}
+                className="h-9 px-5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
                 Cargar más ({currentOrders.length - page * PAGE_SIZE} restantes)
-              </Button>
+              </button>
             </div>
           )}
         </>
@@ -228,89 +152,62 @@ interface TableOrdersListProps {
 function TableOrdersList({ orders, getTableInfo, onUpdateStatus }: TableOrdersListProps) {
   const activeOrders = orders.filter(o => o.status !== 'entregado' && o.status !== 'cancelado')
   const completedOrders = orders.filter(o => o.status === 'entregado')
-  
+
   if (orders.length === 0) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="py-8 text-center">
-          <Package className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
-          <p className="text-xs text-muted-foreground">No hay pedidos de mesas</p>
-          <p className="text-[10px] text-muted-foreground mt-1">
-            Los pedidos aparecen cuando los clientes ordenan desde sus mesas
-          </p>
-        </CardContent>
-      </Card>
+      <div className="rounded-2xl border border-dashed border-gray-200 py-12 text-center">
+        <Package className="h-8 w-8 mx-auto text-gray-200 mb-3" />
+        <p className="text-sm font-semibold text-gray-400">No hay pedidos de mesas</p>
+        <p className="text-xs text-gray-300 mt-1">Los pedidos aparecen cuando los clientes ordenan desde sus mesas</p>
+      </div>
     )
   }
-  
-  // Group orders by table
+
   const ordersByTable = activeOrders.reduce((acc, order) => {
     const mesa = order.mesa || 0
     if (!acc[mesa]) acc[mesa] = []
     acc[mesa].push(order)
     return acc
   }, {} as Record<number, typeof activeOrders>)
-  
+
   return (
     <div className="space-y-3">
       {Object.keys(ordersByTable).length > 0 && (
-        <div className="space-y-2">
-          {Object.entries(ordersByTable)
-            .sort(([a], [b]) => Number(a) - Number(b))
-            .map(([mesa, tableOrders]) => {
-              const session = getTableInfo(Number(mesa))
-              return (
-                <Card key={mesa} className="border">
-                  <CardHeader className="p-2 pb-1 border-b border-border">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-xs flex items-center gap-2">
-                        <span className="bg-primary text-primary-foreground px-2 py-0.5 rounded text-[10px] font-bold">
-                          Mesa {mesa}
-                        </span>
-                        <span className="text-muted-foreground font-normal">
-                          {tableOrders.length} pedido{tableOrders.length > 1 ? 's' : ''}
-                        </span>
-                      </CardTitle>
-                      {session && (
-                        <span className="text-[9px] text-muted-foreground">
-                          Total sesion: ${session.total.toFixed(2)}
-                        </span>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-2 space-y-1.5">
-                    {tableOrders.map((order) => (
-                      <TableOrderCard 
-                        key={order.id} 
-                        order={order}
-                        onUpdateStatus={onUpdateStatus}
-                      />
-                    ))}
-                  </CardContent>
-                </Card>
-              )
-            })}
+        <div className="space-y-3">
+          {Object.entries(ordersByTable).sort(([a], [b]) => Number(a) - Number(b)).map(([mesa, tableOrders]) => {
+            const session = getTableInfo(Number(mesa))
+            return (
+              <div key={mesa} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                  <div className="flex items-center gap-2.5">
+                    <span className="bg-black text-white px-2.5 py-1 rounded-lg text-xs font-black">Mesa {mesa}</span>
+                    <span className="text-xs text-gray-400 font-medium">{tableOrders.length} pedido{tableOrders.length > 1 ? 's' : ''}</span>
+                  </div>
+                  {session && (
+                    <span className="text-xs font-black text-gray-900" style={{ letterSpacing: '-0.02em' }}>${session.total.toFixed(2)}</span>
+                  )}
+                </div>
+                <div className="p-3 space-y-2">
+                  {tableOrders.map(order => <TableOrderCard key={order.id} order={order} onUpdateStatus={onUpdateStatus} />)}
+                </div>
+              </div>
+            )
+          })}
         </div>
       )}
-      
+
       {completedOrders.length > 0 && (
         <div>
-          <h3 className="font-medium text-[10px] text-muted-foreground mb-1.5">Completados hoy</h3>
-          <div className="grid gap-1.5">
-            {completedOrders.slice(0, 5).map((order) => (
-              <Card key={order.id} className="border opacity-60">
-                <CardContent className="p-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-medium">Mesa {order.mesa}</span>
-                      <span className="text-[9px] text-muted-foreground">#{order.numero}</span>
-                    </div>
-                    <Badge className="text-[9px] h-4 bg-muted text-muted-foreground">
-                      Entregado
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Completados hoy</p>
+          <div className="space-y-1.5">
+            {completedOrders.slice(0, 5).map(order => (
+              <div key={order.id} className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-gray-50 opacity-60">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-gray-700">Mesa {order.mesa}</span>
+                  <span className="text-[10px] text-gray-400">#{order.numero}</span>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E8F9F1] text-[#06C167]">Entregado</span>
+              </div>
             ))}
           </div>
         </div>
@@ -329,117 +226,75 @@ function TableOrderCard({ order, onUpdateStatus }: TableOrderCardProps) {
   const { canEditOrder, canCancelOrder } = useApp()
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
-  
+  const [showMenu, setShowMenu] = useState(false)
+
   const canEdit = canEditOrder(order.id)
   const canCancel = canCancelOrder(order.id)
-  
   const allKitchensReady = order.cocinaStatus === 'listo'
-  
+
+  const statusBg = order.status === 'listo' ? 'bg-emerald-50 border-[#06C167]/30' : order.status === 'preparando' ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'
+  const kitchenBadge = order.cocinaStatus === 'listo' ? 'bg-[#E8F9F1] text-[#06C167]' : order.cocinaStatus === 'preparando' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-400'
+  const kitchenLabel = order.cocinaStatus === 'listo' ? 'Cocina: Listo' : order.cocinaStatus === 'preparando' ? 'Cocina: Prep.' : 'Cocina: Cola'
+
   return (
     <>
-      <div className={`p-2 rounded-md border ${
-        order.status === 'listo' ? 'border-success bg-green-50' :
-        order.status === 'preparando' ? 'border-warning/50 bg-kds-preparing' :
-        'border-border bg-card'
-      }`}>
+      <div className={`p-3 rounded-xl border ${statusBg}`}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-medium text-foreground">Pedido #{order.numero}</span>
-              <span className="text-[9px] text-muted-foreground">
-                {formatTime(order.createdAt)} ({getTimeDiff(order.createdAt)})
-              </span>
+              <span className="text-xs font-black text-gray-900">#{order.numero}</span>
+              <span className="text-[10px] text-gray-400">{formatTime(order.createdAt)} · {getTimeDiff(order.createdAt)}</span>
             </div>
-            <div className="flex flex-wrap gap-1 text-[9px]">
-              {order.items.slice(0, 4).map((item, idx) => (
-                <span key={item.id} className="text-muted-foreground">
-                  {item.cantidad}x {item.menuItem.nombre}{idx < Math.min(order.items.length, 4) - 1 ? ',' : ''}
-                </span>
-              ))}
-              {order.items.length > 4 && (
-                <span className="text-muted-foreground">+{order.items.length - 4} mas</span>
-              )}
-            </div>
+            <p className="text-[11px] text-gray-600 leading-relaxed">
+              {order.items.slice(0, 4).map(i => `${i.cantidad}× ${i.menuItem.nombre}`).join(', ')}
+              {order.items.length > 4 && ` +${order.items.length - 4} más`}
+            </p>
           </div>
-          
-          <div className="flex items-center gap-1">
-            {/* Kitchen Status Badges */}
+          <div className="flex items-center gap-1.5 shrink-0">
             {order.status !== 'listo' && order.status !== 'entregado' && (
-              <span className={`text-[8px] px-1 py-0.5 rounded ${
-                order.cocinaStatus === 'listo' ? 'bg-green-50 text-success' :
-                order.cocinaStatus === 'preparando' ? 'bg-kds-preparing text-warning' :
-                'bg-muted text-muted-foreground'
-              }`}>
-                {order.cocinaStatus === 'listo' ? 'Listo' : order.cocinaStatus === 'preparando' ? 'Prep.' : 'Cola'}
-              </span>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${kitchenBadge}`}>{kitchenLabel}</span>
             )}
-            
-            <Badge className={`text-[9px] h-4 px-1.5 ${
-              order.status === 'listo' ? 'bg-success text-white' :
-              order.status === 'preparando' ? 'bg-kds-preparing text-warning' :
-              'bg-secondary text-secondary-foreground'
-            }`}>
-              {getStatusLabel(order.status)}
-            </Badge>
-            
             {(canEdit || canCancel) && order.status !== 'entregado' && order.status !== 'cancelado' && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-5 w-5">
-                    <MoreVertical className="h-3 w-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {canEdit && (
-                    <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
-                      <Edit3 className="h-3 w-3 mr-2" />
-                      Editar
-                    </DropdownMenuItem>
-                  )}
-                  {canCancel && (
-                    <>
-                      {canEdit && <DropdownMenuSeparator />}
-                      <DropdownMenuItem 
-                        onClick={() => setShowCancelDialog(true)}
-                        className="text-destructive focus:text-destructive"
+              <div className="relative">
+                <button
+                  onClick={() => setShowMenu(v => !v)}
+                  className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-black/10 text-gray-500"
+                >
+                  <MoreVertical className="h-3.5 w-3.5" />
+                </button>
+                {showMenu && (
+                  <div className="absolute right-0 top-7 z-10 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden min-w-[130px]">
+                    {canEdit && (
+                      <button
+                        onClick={() => { setShowEditDialog(true); setShowMenu(false) }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50"
                       >
-                        <X className="h-3 w-3 mr-2" />
-                        Cancelar
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                        <Edit3 className="h-3 w-3" />Editar
+                      </button>
+                    )}
+                    {canCancel && (
+                      <button
+                        onClick={() => { setShowCancelDialog(true); setShowMenu(false) }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:bg-red-50"
+                      >
+                        <X className="h-3 w-3" />Cancelar
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
-        
-        {/* Action button for ready orders */}
         {order.status === 'listo' && allKitchensReady && (
-          <div className="mt-2 pt-2 border-t border-border">
-            <Button
-              size="sm"
-              className="w-full h-6 text-[10px] bg-success hover:bg-success/90 text-white"
-              onClick={() => onUpdateStatus(order.id, 'entregado')}
-            >
-              <Check className="h-2.5 w-2.5 mr-1" />
-              Marcar entregado
-            </Button>
-          </div>
+          <button onClick={() => onUpdateStatus(order.id, 'entregado')}
+            className="mt-2.5 w-full h-8 rounded-xl bg-[#06C167] hover:bg-[#05a857] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors">
+            <Check className="h-3 w-3" />Marcar entregado
+          </button>
         )}
       </div>
-      
-      <CancelOrderDialog
-        order={order}
-        open={showCancelDialog}
-        onOpenChange={setShowCancelDialog}
-      />
-      
-      <EditOrderDialog
-        order={order}
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-      />
+      <CancelOrderDialog order={order} open={showCancelDialog} onOpenChange={setShowCancelDialog} />
+      <EditOrderDialog order={order} open={showEditDialog} onOpenChange={setShowEditDialog} />
     </>
   )
 }
@@ -453,48 +308,31 @@ interface OrdersListProps {
 function OrdersList({ orders, channel, onUpdateStatus }: OrdersListProps) {
   const activeOrders = orders.filter(o => o.status !== 'entregado')
   const completedOrders = orders.filter(o => o.status === 'entregado')
-  
+
   if (orders.length === 0) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="py-8 text-center">
-          <Package className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
-          <p className="text-xs text-muted-foreground">Sin pedidos</p>
-        </CardContent>
-      </Card>
+      <div className="rounded-2xl border border-dashed border-gray-200 py-12 text-center">
+        <Package className="h-8 w-8 mx-auto text-gray-200 mb-3" />
+        <p className="text-sm font-semibold text-gray-400">Sin pedidos</p>
+      </div>
     )
   }
-  
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {activeOrders.length > 0 && (
         <div>
-          <h3 className="font-medium text-[10px] text-foreground mb-1.5">Activos</h3>
-          <div className="grid gap-1.5">
-            {activeOrders.map((order) => (
-              <OrderCard 
-                key={order.id} 
-                order={order} 
-                channel={channel}
-                onUpdateStatus={onUpdateStatus}
-              />
-            ))}
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Activos</p>
+          <div className="space-y-2">
+            {activeOrders.map(order => <OrderCard key={order.id} order={order} channel={channel} onUpdateStatus={onUpdateStatus} />)}
           </div>
         </div>
       )}
-      
       {completedOrders.length > 0 && (
         <div>
-          <h3 className="font-medium text-[10px] text-muted-foreground mb-1.5">Completados</h3>
-          <div className="grid gap-1.5">
-            {completedOrders.slice(0, 4).map((order) => (
-              <OrderCard 
-                key={order.id} 
-                order={order}
-                channel={channel}
-                onUpdateStatus={onUpdateStatus}
-              />
-            ))}
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Completados</p>
+          <div className="space-y-2">
+            {completedOrders.slice(0, 4).map(order => <OrderCard key={order.id} order={order} channel={channel} onUpdateStatus={onUpdateStatus} />)}
           </div>
         </div>
       )}
@@ -512,6 +350,7 @@ function OrderCard({ order, channel, onUpdateStatus }: OrderCardProps) {
   const { canEditOrder, canCancelOrder } = useApp()
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
 
   const canEdit = canEditOrder(order.id)
   const canCancel = canCancelOrder(order.id)
@@ -522,7 +361,6 @@ function OrderCard({ order, channel, onUpdateStatus }: OrderCardProps) {
 
   const isFinished = order.status === 'entregado' || order.status === 'cancelado'
 
-  // Full phase chain per channel
   const phases: OrderStatus[] = channel === 'delivery'
     ? ['recibido', 'preparando', 'listo', 'en_camino', 'entregado']
     : ['recibido', 'preparando', 'listo', 'entregado']
@@ -537,171 +375,170 @@ function OrderCard({ order, channel, onUpdateStatus }: OrderCardProps) {
     ? phases[currentIdx + 1]
     : null
 
-  // Button appearance per next status
-  const nextBtnStyle: Record<string, string> = {
-    preparando: 'bg-orange-500 hover:bg-orange-600 text-white',
-    listo:      'bg-success hover:bg-success/90 text-white',
-    en_camino:  'bg-black hover:bg-black/90 text-white',
-    entregado:  'bg-success hover:bg-success/90 text-white',
+  const cardBg =
+    isFinished                            ? 'bg-gray-50 opacity-60 border-gray-100' :
+    order.status === 'listo'              ? 'bg-emerald-50 border-[#06C167]/30' :
+    order.status === 'preparando'         ? 'bg-amber-50 border-amber-200' :
+    order.status === 'en_camino'          ? 'bg-gray-50 border-gray-200' :
+    'bg-white border-gray-100'
+
+  const dotColor: Record<string, string> = {
+    recibido: 'bg-blue-400', preparando: 'bg-amber-400',
+    listo: 'bg-[#06C167]', en_camino: 'bg-gray-900', entregado: 'bg-gray-400',
   }
 
-  // Dot color per phase (current)
-  const dotColor: Record<string, string> = {
-    recibido: 'bg-blue-500', preparando: 'bg-orange-500',
-    listo: 'bg-green-500', en_camino: 'bg-gray-900', entregado: 'bg-gray-400',
+  const nextBtnStyle: Record<string, string> = {
+    preparando: 'bg-amber-500 hover:bg-amber-600 text-white',
+    listo:      'bg-[#06C167] hover:bg-[#05a856] text-white',
+    en_camino:  'bg-gray-900 hover:bg-black text-white',
+    entregado:  'bg-[#06C167] hover:bg-[#05a856] text-white',
   }
 
   return (
-    <div>
-      <Card className={`border transition-all ${
-        isFinished ? 'opacity-50' : ''
-      } ${order.status === 'listo' ? 'border-success/40 bg-green-50/50' : ''}
-      ${order.status === 'en_camino' ? 'border-gray-300 bg-gray-50' : ''}`}>
-        <CardContent className="p-3">
+    <div className="relative">
+      <div className={`rounded-2xl border p-3 transition-all ${cardBg}`}>
 
-          {/* Header */}
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-xs">#{order.numero}</CardTitle>
-              <p className="text-[9px] text-muted-foreground flex items-center gap-0.5">
-                <Clock className="h-2 w-2" />
-                {formatTime(order.createdAt)} ({getTimeDiff(order.createdAt)})
-              </p>
+        {/* Header */}
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div>
+            <span className="text-xs font-black text-gray-900">#{order.numero}</span>
+            <p className="text-[9px] text-gray-400 flex items-center gap-0.5 mt-0.5">
+              <Clock className="h-2 w-2" />
+              {formatTime(order.createdAt)} ({getTimeDiff(order.createdAt)})
+            </p>
+          </div>
+          {(canEdit || canCancel) && !isFinished && (
+            <div className="relative">
+              <button
+                onClick={() => setShowMenu(v => !v)}
+                className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-black/10 text-gray-500"
+              >
+                <MoreVertical className="h-3 w-3" />
+              </button>
+              {showMenu && (
+                <div className="absolute right-0 top-7 z-10 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden min-w-[140px]">
+                  {canEdit && (
+                    <button
+                      onClick={() => { setShowEditDialog(true); setShowMenu(false) }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50"
+                    >
+                      <Edit3 className="h-3 w-3" />Editar pedido
+                    </button>
+                  )}
+                  {canCancel && (
+                    <button
+                      onClick={() => { setShowCancelDialog(true); setShowMenu(false) }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-500 hover:bg-red-50"
+                    >
+                      <X className="h-3 w-3" />Cancelar pedido
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-1">
-              {(canEdit || canCancel) && !isFinished && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-5 w-5">
-                      <MoreVertical className="h-3 w-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {canEdit && (
-                      <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
-                        <Edit3 className="h-3 w-3 mr-2" />Editar pedido
-                      </DropdownMenuItem>
+          )}
+        </div>
+
+        {/* Phase stepper */}
+        {!isFinished && (
+          <div className="mb-3">
+            <div className="flex items-center">
+              {phases.map((phase, i) => {
+                const done    = i < currentIdx
+                const current = i === currentIdx
+                return (
+                  <div key={phase} className="flex items-center flex-1 last:flex-none">
+                    <div className={`w-2.5 h-2.5 rounded-full shrink-0 transition-all ${
+                      done    ? 'bg-gray-300' :
+                      current ? dotColor[phase] :
+                      'bg-gray-200'
+                    } ${current ? 'ring-2 ring-offset-1 ring-current/40' : ''}`} />
+                    {i < phases.length - 1 && (
+                      <div className={`flex-1 h-px mx-0.5 ${done ? 'bg-gray-300' : 'bg-gray-200'}`} />
                     )}
-                    {canCancel && (
-                      <>
-                        {canEdit && <DropdownMenuSeparator />}
-                        <DropdownMenuItem
-                          onClick={() => setShowCancelDialog(true)}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <X className="h-3 w-3 mr-2" />Cancelar pedido
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="flex justify-between mt-1 px-px">
+              {phases.map((phase, i) => (
+                <span key={phase} className={`text-[8px] leading-none ${
+                  i === currentIdx ? 'font-bold text-gray-900' : 'text-gray-400'
+                } ${i === phases.length - 1 ? 'text-right' : ''}`}>
+                  {PHASE_LABELS[phase]}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Customer info */}
+        {order.nombreCliente && (
+          <div className="mb-2 p-2 bg-white/70 rounded-xl text-[10px]">
+            <p className="font-bold text-gray-900">{order.nombreCliente}</p>
+            <div className="flex flex-wrap gap-x-2 gap-y-0.5 mt-0.5">
+              {order.telefono && (
+                <p className="text-gray-500 flex items-center gap-0.5">
+                  <Phone className="h-2 w-2" />{order.telefono}
+                </p>
+              )}
+              {order.direccion && (
+                <p className="text-gray-500 flex items-center gap-0.5">
+                  <MapPin className="h-2 w-2" />
+                  <span className="truncate max-w-[120px]">{order.direccion}</span>
+                </p>
+              )}
+              {order.zonaReparto && (
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[8px] font-medium bg-gray-100 text-gray-600">{order.zonaReparto}</span>
               )}
             </div>
           </div>
+        )}
 
-          {/* Phase stepper */}
-          {!isFinished && (
-            <div className="mb-3">
-              <div className="flex items-center">
-                {phases.map((phase, i) => {
-                  const done    = i < currentIdx
-                  const current = i === currentIdx
-                  return (
-                    <div key={phase} className="flex items-center flex-1 last:flex-none">
-                      <div className={`w-2.5 h-2.5 rounded-full shrink-0 transition-all ${
-                        done    ? 'bg-gray-400' :
-                        current ? dotColor[phase] :
-                        'bg-gray-200'
-                      } ${current ? 'ring-2 ring-offset-1 ring-current/40' : ''}`} />
-                      {i < phases.length - 1 && (
-                        <div className={`flex-1 h-px mx-0.5 ${done ? 'bg-gray-400' : 'bg-gray-200'}`} />
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-              <div className="flex justify-between mt-1 px-px">
-                {phases.map((phase, i) => (
-                  <span key={phase} className={`text-[8px] leading-none ${
-                    i === currentIdx ? 'font-bold text-foreground' : 'text-muted-foreground'
-                  } ${i === phases.length - 1 ? 'text-right' : ''}`}>
-                    {PHASE_LABELS[phase]}
-                  </span>
-                ))}
-              </div>
-            </div>
+        {/* Items */}
+        <ul className="space-y-0.5 mb-1.5">
+          {order.items.slice(0, 3).map((item) => (
+            <li key={item.id} className="text-[10px] flex justify-between text-gray-700">
+              <span className="truncate">{item.cantidad}x {item.menuItem.nombre}</span>
+            </li>
+          ))}
+          {order.items.length > 3 && (
+            <li className="text-[9px] text-gray-400">+{order.items.length - 3} más…</li>
           )}
+        </ul>
 
-          {/* Customer Info */}
-          {order.nombreCliente && (
-            <div className="mb-1.5 p-1.5 bg-secondary rounded text-[10px]">
-              <p className="font-medium text-foreground">{order.nombreCliente}</p>
-              <div className="flex flex-wrap gap-x-2 gap-y-0.5 mt-0.5">
-                {order.telefono && (
-                  <p className="text-muted-foreground flex items-center gap-0.5">
-                    <Phone className="h-2 w-2" />{order.telefono}
-                  </p>
-                )}
-                {order.direccion && (
-                  <p className="text-muted-foreground flex items-center gap-0.5">
-                    <MapPin className="h-2 w-2" />
-                    <span className="truncate max-w-[120px]">{order.direccion}</span>
-                  </p>
-                )}
-                {order.zonaReparto && (
-                  <Badge variant="outline" className="text-[8px] h-3.5">{order.zonaReparto}</Badge>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Items */}
-          <ul className="space-y-0.5 mb-1.5">
-            {order.items.slice(0, 3).map((item) => (
-              <li key={item.id} className="text-[10px] flex justify-between text-foreground">
-                <span className="truncate">{item.cantidad}x {item.menuItem.nombre}</span>
-              </li>
-            ))}
-            {order.items.length > 3 && (
-              <li className="text-[9px] text-muted-foreground">+{order.items.length - 3} más…</li>
-            )}
-          </ul>
-
-          {/* Kitchen status chip (informational only) */}
-          {!isFinished && order.status !== 'en_camino' && (
-            <div className="flex gap-1 text-[9px] mb-2">
-              <span className={`px-1.5 py-0.5 rounded ${
-                order.cocinaStatus === 'listo'      ? 'bg-green-50 text-success' :
-                order.cocinaStatus === 'preparando' ? 'bg-orange-50 text-orange-600' :
-                'bg-muted text-muted-foreground'
-              }`}>
-                Cocina: {order.cocinaStatus === 'listo' ? 'Listo' :
-                         order.cocinaStatus === 'preparando' ? 'Prep.' : 'En cola'}
-              </span>
-            </div>
-          )}
-
-          {/* Footer: total + advance button */}
-          <div className="flex justify-between items-center pt-2 border-t border-border">
-            <div>
-              <span className="text-[9px] text-muted-foreground">Total</span>
-              <span className="font-semibold text-xs text-foreground ml-1">{formatPrice(total)}</span>
-            </div>
-
-            {nextStatus && (
-              <Button
-                size="sm"
-                className={`h-7 text-[10px] px-3 ${nextBtnStyle[nextStatus] ?? 'bg-black text-white'}`}
-                onClick={() => onUpdateStatus(order.id, nextStatus)}
-              >
-                {nextStatus === 'en_camino' && <Truck className="h-2.5 w-2.5 mr-1" />}
-                {nextStatus === 'entregado' && <Check className="h-2.5 w-2.5 mr-1" />}
-                {PHASE_LABELS[nextStatus]}
-              </Button>
-            )}
+        {/* Kitchen status chip */}
+        {!isFinished && order.status !== 'en_camino' && (
+          <div className="flex gap-1 text-[9px] mb-2">
+            <span className={`px-1.5 py-0.5 rounded-lg ${
+              order.cocinaStatus === 'listo'      ? 'bg-emerald-50 text-[#06C167]' :
+              order.cocinaStatus === 'preparando' ? 'bg-amber-50 text-amber-600' :
+              'bg-gray-100 text-gray-500'
+            }`}>
+              Cocina: {order.cocinaStatus === 'listo' ? 'Listo' :
+                       order.cocinaStatus === 'preparando' ? 'Prep.' : 'En cola'}
+            </span>
           </div>
-        </CardContent>
-      </Card>
+        )}
+
+        {/* Footer */}
+        <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+          <div>
+            <span className="text-[9px] text-gray-400">Total</span>
+            <span className="font-black text-xs text-gray-900 ml-1">{formatPrice(total)}</span>
+          </div>
+          {nextStatus && (
+            <button
+              className={`h-7 text-[10px] px-3 rounded-xl font-semibold flex items-center gap-1 ${nextBtnStyle[nextStatus] ?? 'bg-gray-900 text-white'}`}
+              onClick={() => onUpdateStatus(order.id, nextStatus)}
+            >
+              {nextStatus === 'en_camino' && <Truck className="h-2.5 w-2.5" />}
+              {nextStatus === 'entregado' && <Check className="h-2.5 w-2.5" />}
+              {PHASE_LABELS[nextStatus]}
+            </button>
+          )}
+        </div>
+      </div>
 
       <CancelOrderDialog order={order} open={showCancelDialog} onOpenChange={setShowCancelDialog} />
       <EditOrderDialog   order={order} open={showEditDialog}   onOpenChange={setShowEditDialog} />

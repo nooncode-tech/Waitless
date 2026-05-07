@@ -118,12 +118,12 @@ export function TablesManager() {
   }
 
   const getStatusStyle = (status: string, hasCall: boolean, hasBillRequest: boolean) => {
-    if (status === 'libre') return { bg: 'bg-white', border: 'border-border', dot: 'bg-accent', text: 'text-muted-foreground' }
-    if (status === 'pagada') return { bg: 'bg-green-50', border: 'border-success', dot: 'bg-success', text: 'text-success' }
-    if (status === 'listo') return { bg: 'bg-green-50', border: 'border-success border-2', dot: 'bg-success animate-pulse', text: 'text-success' }
-    if (status === 'preparando') return { bg: 'bg-kds-preparing', border: 'border-warning', dot: 'bg-warning animate-pulse', text: 'text-warning' }
-    if (hasBillRequest) return { bg: 'bg-kds-preparing', border: 'border-warning border-2', dot: 'bg-warning animate-pulse', text: 'text-warning' }
-    return { bg: 'bg-muted', border: 'border-accent', dot: 'bg-black', text: 'text-foreground' }
+    if (status === 'libre') return { bg: 'bg-gray-50', border: 'border-gray-200', dot: 'bg-gray-300', text: 'text-gray-400' }
+    if (status === 'pagada') return { bg: 'bg-emerald-50', border: 'border-emerald-200', dot: 'bg-[#06C167]', text: 'text-[#06C167]' }
+    if (status === 'listo') return { bg: 'bg-emerald-50', border: 'border-[#06C167] border-2', dot: 'bg-[#06C167] animate-pulse', text: 'text-[#06C167]' }
+    if (status === 'preparando') return { bg: 'bg-amber-50', border: 'border-amber-300', dot: 'bg-amber-400 animate-pulse', text: 'text-amber-600' }
+    if (hasBillRequest) return { bg: 'bg-amber-50', border: 'border-amber-400 border-2', dot: 'bg-amber-400 animate-pulse', text: 'text-amber-600' }
+    return { bg: 'bg-white', border: 'border-gray-200', dot: 'bg-gray-900', text: 'text-gray-900' }
   }
 
   const freeTables = activeTables.filter(
@@ -144,21 +144,36 @@ export function TablesManager() {
   const preparingCount = tableInfos.filter(t => t.status === 'preparando').length
   const occupiedCount = tableInfos.filter(t => t.status === 'ocupada' || t.status === 'pagada').length
 
+  const statusOrderBadge = (status: string) => {
+    if (status === 'entregado') return 'bg-[#E8F9F1] text-[#06C167]'
+    if (status === 'listo') return 'bg-[#E8F9F1] text-[#06C167]'
+    if (status === 'cancelado') return 'bg-red-50 text-red-500'
+    if (status === 'preparando') return 'bg-amber-50 text-amber-600'
+    return 'bg-gray-100 text-gray-500'
+  }
+  const statusOrderLabel = (status: string) => {
+    if (status === 'entregado') return 'Entregado'
+    if (status === 'listo') return 'Listo'
+    if (status === 'cancelado') return 'Cancelado'
+    if (status === 'preparando') return 'Preparando'
+    return 'Cola'
+  }
+
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className="flex h-full overflow-hidden" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
       {/* Left — table grid */}
       <div className="flex-1 overflow-auto p-3">
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-2 mb-3">
+        <div className="grid grid-cols-4 gap-2 mb-4">
           {[
-            { label: 'Libres', value: freeCount, color: 'text-muted-foreground', bg: 'bg-muted' },
-            { label: 'En cocina', value: preparingCount, color: 'text-warning', bg: 'bg-kds-preparing' },
-            { label: 'Listos', value: readyCount, color: 'text-success', bg: 'bg-green-50' },
-            { label: 'Ocupadas', value: occupiedCount, color: 'text-foreground', bg: 'bg-muted' },
+            { label: 'Libres', value: freeCount, color: 'text-gray-400', bg: 'bg-gray-50', border: 'border-gray-200' },
+            { label: 'En cocina', value: preparingCount, color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
+            { label: 'Listos', value: readyCount, color: 'text-[#06C167]', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+            { label: 'Ocupadas', value: occupiedCount, color: 'text-gray-900', bg: 'bg-white', border: 'border-gray-200' },
           ].map(stat => (
-            <div key={stat.label} className={cn('rounded-lg p-2', stat.bg)}>
-              <p className={cn('text-xl font-bold', stat.color)}>{stat.value}</p>
-              <p className={cn('text-[10px] font-medium', stat.color)}>{stat.label}</p>
+            <div key={stat.label} className={cn('rounded-2xl p-3 border', stat.bg, stat.border)}>
+              <p className={cn('text-2xl font-black leading-none', stat.color)} style={{ letterSpacing: '-0.03em' }}>{stat.value}</p>
+              <p className={cn('text-[11px] font-semibold mt-1', stat.color)}>{stat.label}</p>
             </div>
           ))}
         </div>
@@ -167,27 +182,29 @@ export function TablesManager() {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3 flex-wrap">
             {[
-              { dot: 'bg-accent', label: 'Libre' },
-              { dot: 'bg-black', label: 'Ocupada' },
-              { dot: 'bg-warning', label: 'En cocina' },
-              { dot: 'bg-success', label: 'Listo' },
+              { color: 'bg-gray-300', label: 'Libre' },
+              { color: 'bg-gray-900', label: 'Ocupada' },
+              { color: 'bg-amber-400', label: 'En cocina' },
+              { color: 'bg-[#06C167]', label: 'Listo' },
             ].map(l => (
-              <div key={l.label} className="flex items-center gap-1">
-                <div className={cn('w-2 h-2 rounded-full', l.dot)} />
-                <span className="text-[10px] text-muted-foreground">{l.label}</span>
+              <div key={l.label} className="flex items-center gap-1.5">
+                <div className={cn('w-2 h-2 rounded-full', l.color)} />
+                <span className="text-[11px] text-gray-500 font-medium">{l.label}</span>
               </div>
             ))}
           </div>
-          <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-            <button onClick={() => setViewMode('grid')} className={cn('p-1 rounded', viewMode === 'grid' ? 'bg-white shadow-sm' : 'text-muted-foreground')} title="Vista grilla">
-              <LayoutGrid className="h-3.5 w-3.5" />
-            </button>
-            <button onClick={() => setViewMode('list')} className={cn('p-1 rounded', viewMode === 'list' ? 'bg-white shadow-sm' : 'text-muted-foreground')} title="Vista lista">
-              <List className="h-3.5 w-3.5" />
-            </button>
-            <button onClick={() => setViewMode('map')} className={cn('p-1 rounded', viewMode === 'map' ? 'bg-white shadow-sm' : 'text-muted-foreground')} title="Plano del salón">
-              <Map className="h-3.5 w-3.5" />
-            </button>
+          <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
+            {[
+              { mode: 'grid', icon: <LayoutGrid className="h-3.5 w-3.5" />, title: 'Grilla' },
+              { mode: 'list', icon: <List className="h-3.5 w-3.5" />, title: 'Lista' },
+              { mode: 'map', icon: <Map className="h-3.5 w-3.5" />, title: 'Plano' },
+            ].map(v => (
+              <button key={v.mode} onClick={() => setViewMode(v.mode as typeof viewMode)}
+                title={v.title}
+                className={cn('p-1.5 rounded-lg transition-all', viewMode === v.mode ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400 hover:text-gray-600')}>
+                {v.icon}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -204,22 +221,22 @@ export function TablesManager() {
                   key={info.id}
                   onClick={() => setSelectedMesa(isSelected ? null : info.numero)}
                   className={cn(
-                    'relative flex flex-col items-center justify-between rounded-xl border transition-all duration-150',
+                    'relative flex flex-col items-center justify-between rounded-2xl border transition-all duration-150',
                     'hover:shadow-md hover:-translate-y-0.5 active:scale-95 p-3 aspect-square',
                     style.bg, style.border,
-                    (info.hasCall || info.hasBillRequest) && 'ring-2 ring-red-500 ring-offset-1',
-                    isSelected && 'ring-2 ring-primary ring-offset-1'
+                    (info.hasCall || info.hasBillRequest) && 'ring-2 ring-red-400 ring-offset-1',
+                    isSelected && 'ring-2 ring-black ring-offset-1'
                   )}
                 >
                   {(info.hasCall || info.hasBillRequest) && (
                     <div className="absolute -top-1.5 -right-1.5 flex gap-0.5 z-10">
                       {info.hasCall && (
-                        <span className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow">
+                        <span className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-sm">
                           <Bell className="h-2.5 w-2.5 text-white" />
                         </span>
                       )}
                       {info.hasBillRequest && !info.hasCall && (
-                        <span className="w-5 h-5 bg-warning rounded-full flex items-center justify-center shadow">
+                        <span className="w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
                           <Receipt className="h-2.5 w-2.5 text-white" />
                         </span>
                       )}
@@ -229,15 +246,14 @@ export function TablesManager() {
                     <div className={cn('w-2 h-2 rounded-full', style.dot)} />
                   </div>
                   <div className="flex-1 flex items-center justify-center">
-                    <span className="text-lg font-bold text-foreground">{info.numero}</span>
+                    <span className="text-xl font-black text-gray-900" style={{ letterSpacing: '-0.03em' }}>{info.numero}</span>
                   </div>
                   <div className="w-full">
                     {info.status === 'libre' ? (
-                      <p className="text-[9px] text-muted-foreground text-center font-medium">Libre</p>
+                      <p className="text-[10px] text-gray-400 text-center font-semibold">Libre</p>
                     ) : info.elapsedMin > 0 ? (
-                      <p className={cn('text-[9px] font-semibold text-center flex items-center justify-center gap-0.5', style.text)}>
-                        <Clock className="h-2 w-2" />
-                        {formatElapsed(info.elapsedMin)}
+                      <p className={cn('text-[9px] font-bold text-center flex items-center justify-center gap-0.5', style.text)}>
+                        <Clock className="h-2 w-2" />{formatElapsed(info.elapsedMin)}
                       </p>
                     ) : null}
                   </div>
@@ -246,7 +262,7 @@ export function TablesManager() {
             })}
           </div>
         ) : (
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {tableInfos.map(info => {
               const style = getStatusStyle(info.status, info.hasCall, info.hasBillRequest)
               const isSelected = selectedMesa === info.numero
@@ -255,30 +271,29 @@ export function TablesManager() {
                   key={info.id}
                   onClick={() => setSelectedMesa(isSelected ? null : info.numero)}
                   className={cn(
-                    'w-full flex items-center gap-3 p-3 rounded-xl border transition-all',
+                    'w-full flex items-center gap-3 p-3.5 rounded-2xl border transition-all',
                     'hover:shadow-sm active:scale-[0.99] text-left',
                     style.bg, style.border,
                     (info.hasCall || info.hasBillRequest) && 'ring-1 ring-red-400',
-                    isSelected && 'ring-2 ring-primary'
+                    isSelected && 'ring-2 ring-black'
                   )}
                 >
-                  <div className={cn('w-2.5 h-2.5 rounded-full shrink-0', style.dot)} />
-                  <span className="text-sm font-bold text-foreground w-14 shrink-0">Mesa {info.numero}</span>
+                  <div className={cn('w-3 h-3 rounded-full shrink-0', style.dot)} />
+                  <span className="text-sm font-black text-gray-900 w-14 shrink-0">Mesa {info.numero}</span>
                   <div className="flex-1 min-w-0">
-                    <p className={cn('text-xs font-semibold', style.text)}>{info.label}</p>
+                    <p className={cn('text-xs font-bold', style.text)}>{info.label}</p>
                     {info.activeOrders.length > 0 && (
-                      <p className="text-[10px] text-muted-foreground">{info.activeOrders.length} pedido{info.activeOrders.length !== 1 ? 's' : ''}</p>
+                      <p className="text-[11px] text-gray-400">{info.activeOrders.length} pedido{info.activeOrders.length !== 1 ? 's' : ''}</p>
                     )}
                   </div>
                   {info.elapsedMin > 0 && (
-                    <div className={cn('flex items-center gap-1 text-xs font-medium shrink-0', style.text)}>
-                      <Clock className="h-3 w-3" />
-                      {formatElapsed(info.elapsedMin)}
+                    <div className={cn('flex items-center gap-1 text-xs font-semibold shrink-0', style.text)}>
+                      <Clock className="h-3.5 w-3.5" />{formatElapsed(info.elapsedMin)}
                     </div>
                   )}
                   <div className="flex items-center gap-1 shrink-0">
-                    {info.hasCall && <Bell className="h-3.5 w-3.5 text-red-500" />}
-                    {info.hasBillRequest && <Receipt className="h-3.5 w-3.5 text-warning" />}
+                    {info.hasCall && <Bell className="h-4 w-4 text-red-500" />}
+                    {info.hasBillRequest && <Receipt className="h-4 w-4 text-amber-500" />}
                   </div>
                 </button>
               )
@@ -289,49 +304,51 @@ export function TablesManager() {
 
       {/* Right — selected table detail panel */}
       {selectedMesa !== null && selectedInfo && (
-        <div className="w-72 shrink-0 border-l border-border bg-card overflow-y-auto flex flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-border">
+        <div className="w-72 shrink-0 border-l border-gray-100 bg-white overflow-y-auto flex flex-col">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <div>
-              <h2 className="text-base font-bold">Mesa {selectedMesa}</h2>
-              <p className={cn('text-xs font-medium', getStatusStyle(selectedInfo.status, selectedInfo.hasCall, selectedInfo.hasBillRequest).text)}>
+              <h2 className="text-base font-black text-gray-900" style={{ letterSpacing: '-0.02em' }}>Mesa {selectedMesa}</h2>
+              <p className={cn('text-xs font-bold mt-0.5', getStatusStyle(selectedInfo.status, selectedInfo.hasCall, selectedInfo.hasBillRequest).text)}>
                 {selectedInfo.label}
               </p>
             </div>
-            <button onClick={() => setSelectedMesa(null)} className="p-1 rounded hover:bg-muted">
-              <X className="h-4 w-4 text-muted-foreground" />
+            <button onClick={() => setSelectedMesa(null)} className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
+              <X className="h-4 w-4" />
             </button>
           </div>
 
           {selectedSession ? (
             <>
               {/* Session info */}
-              <div className="p-4 space-y-1 border-b border-border">
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Abierta</span>
-                  <span>{formatTime(selectedSession.createdAt)}</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Pedidos activos</span>
-                  <span>{selectedInfo.activeOrders.length}</span>
-                </div>
-                <div className="flex justify-between text-xs font-semibold">
-                  <span>Total</span>
-                  <span>{formatPrice(selectedInfo.total)}</span>
+              <div className="px-5 py-4 space-y-2 border-b border-gray-100">
+                {[
+                  { label: 'Abierta', value: formatTime(selectedSession.createdAt) },
+                  { label: 'Pedidos activos', value: String(selectedInfo.activeOrders.length) },
+                ].map(row => (
+                  <div key={row.label} className="flex justify-between items-center">
+                    <span className="text-xs text-gray-400 font-medium">{row.label}</span>
+                    <span className="text-xs font-semibold text-gray-900">{row.value}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between items-center pt-1 border-t border-gray-100 mt-1">
+                  <span className="text-sm font-bold text-gray-900">Total</span>
+                  <span className="text-sm font-black text-gray-900" style={{ letterSpacing: '-0.02em' }}>{formatPrice(selectedInfo.total)}</span>
                 </div>
               </div>
 
               {/* Orders summary */}
               {selectedInfo.tableOrders.length > 0 && (
-                <div className="p-4 border-b border-border">
-                  <p className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wide">Pedidos</p>
-                  <div className="space-y-1">
+                <div className="px-5 py-4 border-b border-gray-100">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Pedidos</p>
+                  <div className="space-y-2">
                     {selectedInfo.tableOrders.map(order => (
-                      <div key={order.id} className="flex items-center justify-between text-xs">
-                        <span>#{order.numero} — {order.items.map(i => `${i.cantidad}x ${i.menuItem.nombre}`).join(', ').slice(0, 30)}{order.items.map(i => i.menuItem.nombre).join('').length > 30 ? '…' : ''}</span>
-                        <Badge variant="outline" className={cn('text-[9px] h-4 ml-1 shrink-0', order.status === 'entregado' ? 'text-success' : order.status === 'listo' ? 'text-success' : order.status === 'cancelado' ? 'text-red-500' : 'text-warning')}>
-                          {order.status === 'entregado' ? 'Entregado' : order.status === 'listo' ? 'Listo' : order.status === 'cancelado' ? 'Cancelado' : order.status === 'preparando' ? 'Preparando' : 'Cola'}
-                        </Badge>
+                      <div key={order.id} className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-gray-700 truncate flex-1">
+                          #{order.numero} — {order.items.map(i => `${i.cantidad}x ${i.menuItem.nombre}`).join(', ').slice(0, 25)}{order.items.map(i => i.menuItem.nombre).join('').length > 25 ? '…' : ''}
+                        </span>
+                        <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0', statusOrderBadge(order.status))}>
+                          {statusOrderLabel(order.status)}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -339,66 +356,38 @@ export function TablesManager() {
               )}
 
               {/* Actions */}
-              <div className="p-4 space-y-2 flex-1">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Acciones</p>
-
-                {/* Move */}
+              <div className="px-5 py-4 space-y-2 flex-1">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Acciones</p>
                 {!isPaid && (
-                  <Button
-                    variant="outline"
-                    className="w-full h-9 text-xs justify-start gap-2 bg-transparent"
-                    onClick={() => setShowMoveDialog(true)}
-                  >
-                    <ArrowLeftRight className="h-4 w-4" />
-                    Mover mesa a...
-                  </Button>
+                  <button onClick={() => setShowMoveDialog(true)}
+                    className="w-full h-10 flex items-center gap-2.5 px-3.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                    <ArrowLeftRight className="h-4 w-4 text-gray-400 shrink-0" />Mover mesa a...
+                  </button>
                 )}
-
-                {/* Merge */}
                 {!isPaid && (
-                  <Button
-                    variant="outline"
-                    className="w-full h-9 text-xs justify-start gap-2 bg-transparent"
-                    onClick={() => setShowMergeDialog(true)}
+                  <button onClick={() => setShowMergeDialog(true)}
                     disabled={otherActiveSessions.length === 0}
-                    title={otherActiveSessions.length === 0 ? 'No hay otras mesas activas' : undefined}
-                  >
-                    <Merge className="h-4 w-4" />
-                    Unir con mesa...
-                  </Button>
+                    className="w-full h-10 flex items-center gap-2.5 px-3.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                    <Merge className="h-4 w-4 text-gray-400 shrink-0" />Unir con mesa...
+                  </button>
                 )}
-
-                {/* Split */}
                 {!isPaid && selectedInfo.activeOrders.length > 1 && (
-                  <Button
-                    variant="outline"
-                    className="w-full h-9 text-xs justify-start gap-2 bg-transparent"
-                    onClick={() => { setSplitSelectedOrders([]); setSplitTargetMesa(null); setShowSplitDialog(true) }}
-                  >
-                    <Scissors className="h-4 w-4" />
-                    Separar pedidos...
-                  </Button>
+                  <button onClick={() => { setSplitSelectedOrders([]); setSplitTargetMesa(null); setShowSplitDialog(true) }}
+                    className="w-full h-10 flex items-center gap-2.5 px-3.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                    <Scissors className="h-4 w-4 text-gray-400 shrink-0" />Separar pedidos...
+                  </button>
                 )}
-
-                {/* Close */}
                 {canClose && (
-                  <>
-                    <Separator />
-                    <Button
-                      variant="outline"
-                      className="w-full h-9 text-xs justify-start gap-2 border-red-300 text-red-600 hover:bg-red-50 bg-transparent"
-                      onClick={() => setShowCloseConfirm(true)}
-                    >
-                      <DoorOpen className="h-4 w-4" />
-                      Cerrar mesa
-                    </Button>
-                  </>
+                  <button onClick={() => setShowCloseConfirm(true)}
+                    className="w-full h-10 flex items-center gap-2.5 px-3.5 rounded-xl border border-red-200 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors mt-2">
+                    <DoorOpen className="h-4 w-4 shrink-0" />Cerrar mesa
+                  </button>
                 )}
               </div>
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center p-6 text-center">
-              <p className="text-sm text-muted-foreground">Mesa libre — sin sesión activa</p>
+              <p className="text-sm text-gray-400">Mesa libre — sin sesión activa</p>
             </div>
           )}
         </div>
@@ -408,29 +397,18 @@ export function TablesManager() {
       {showMoveDialog && selectedMesa !== null && selectedSession && (
         <Dialog open={showMoveDialog} onOpenChange={setShowMoveDialog}>
           <DialogContent className="max-w-xs">
-            <DialogHeader>
-              <DialogTitle>Mover Mesa {selectedMesa}</DialogTitle>
-            </DialogHeader>
-            <p className="text-sm text-muted-foreground mb-3">Selecciona la mesa destino (solo mesas libres)</p>
+            <DialogHeader><DialogTitle>Mover Mesa {selectedMesa}</DialogTitle></DialogHeader>
+            <p className="text-sm text-gray-500 mb-3">Selecciona la mesa destino (solo libres)</p>
             <div className="grid grid-cols-4 gap-2">
               {freeTables.map(t => (
-                <Button
-                  key={t.numero}
-                  variant="outline"
-                  className="h-10 font-semibold"
-                  onClick={() => {
-                    moveTableSession(selectedSession.id, t.numero)
-                    setShowMoveDialog(false)
-                    setSelectedMesa(t.numero)
-                  }}
-                >
+                <button key={t.numero}
+                  className="h-11 rounded-xl border border-gray-200 text-sm font-black text-gray-900 hover:bg-gray-50 transition-colors"
+                  onClick={() => { moveTableSession(selectedSession.id, t.numero); setShowMoveDialog(false); setSelectedMesa(t.numero) }}>
                   {t.numero}
-                </Button>
+                </button>
               ))}
             </div>
-            {freeTables.length === 0 && (
-              <p className="text-sm text-center text-muted-foreground py-4">No hay mesas libres disponibles</p>
-            )}
+            {freeTables.length === 0 && <p className="text-sm text-center text-gray-400 py-4">No hay mesas libres</p>}
           </DialogContent>
         </Dialog>
       )}
@@ -439,30 +417,18 @@ export function TablesManager() {
       {showMergeDialog && selectedMesa !== null && selectedSession && (
         <Dialog open={showMergeDialog} onOpenChange={setShowMergeDialog}>
           <DialogContent className="max-w-xs">
-            <DialogHeader>
-              <DialogTitle>Unir con Mesa {selectedMesa}</DialogTitle>
-            </DialogHeader>
-            <p className="text-sm text-muted-foreground mb-3">
-              Los pedidos de la mesa seleccionada se traen a Mesa {selectedMesa}.
-            </p>
+            <DialogHeader><DialogTitle>Unir con Mesa {selectedMesa}</DialogTitle></DialogHeader>
+            <p className="text-sm text-gray-500 mb-3">Los pedidos se traen a Mesa {selectedMesa}.</p>
             <div className="grid grid-cols-4 gap-2">
               {otherActiveSessions.map(s => (
-                <Button
-                  key={s.id}
-                  variant="outline"
-                  className="h-10 font-semibold"
-                  onClick={() => {
-                    mergeTableSessions(selectedSession.id, s.id)
-                    setShowMergeDialog(false)
-                  }}
-                >
+                <button key={s.id}
+                  className="h-11 rounded-xl border border-gray-200 text-sm font-black text-gray-900 hover:bg-gray-50 transition-colors"
+                  onClick={() => { mergeTableSessions(selectedSession.id, s.id); setShowMergeDialog(false) }}>
                   {s.mesa}
-                </Button>
+                </button>
               ))}
             </div>
-            {otherActiveSessions.length === 0 && (
-              <p className="text-sm text-center text-muted-foreground py-4">No hay otras mesas activas</p>
-            )}
+            {otherActiveSessions.length === 0 && <p className="text-sm text-center text-gray-400 py-4">No hay otras mesas activas</p>}
           </DialogContent>
         </Dialog>
       )}
@@ -471,68 +437,39 @@ export function TablesManager() {
       {showSplitDialog && selectedMesa !== null && selectedSession && selectedInfo && (
         <Dialog open={showSplitDialog} onOpenChange={setShowSplitDialog}>
           <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Separar pedidos — Mesa {selectedMesa}</DialogTitle>
-            </DialogHeader>
-            <p className="text-sm text-muted-foreground mb-3">
-              Selecciona los pedidos a mover y la mesa destino (debe estar libre).
-            </p>
-            {/* Order checkboxes */}
+            <DialogHeader><DialogTitle>Separar pedidos — Mesa {selectedMesa}</DialogTitle></DialogHeader>
+            <p className="text-sm text-gray-500 mb-3">Selecciona pedidos a mover y la mesa destino (libre).</p>
             <div className="space-y-2 mb-4 max-h-52 overflow-y-auto">
               {selectedInfo.activeOrders.map(order => (
-                <label key={order.id} className="flex items-start gap-2 cursor-pointer">
-                  <Checkbox
-                    checked={splitSelectedOrders.includes(order.id)}
-                    onCheckedChange={(checked) => {
-                      setSplitSelectedOrders(prev =>
-                        checked ? [...prev, order.id] : prev.filter(id => id !== order.id)
-                      )
-                    }}
-                    className="mt-0.5"
-                  />
+                <label key={order.id} className="flex items-start gap-2.5 cursor-pointer p-2 rounded-xl hover:bg-gray-50">
+                  <Checkbox checked={splitSelectedOrders.includes(order.id)} onCheckedChange={(checked) => {
+                    setSplitSelectedOrders(prev => checked ? [...prev, order.id] : prev.filter(id => id !== order.id))
+                  }} className="mt-0.5" />
                   <div className="text-xs">
-                    <p className="font-medium">Pedido #{order.numero}</p>
-                    <p className="text-muted-foreground">
-                      {order.items.map(i => `${i.cantidad}x ${i.menuItem.nombre}`).join(', ')}
-                    </p>
+                    <p className="font-bold text-gray-900">Pedido #{order.numero}</p>
+                    <p className="text-gray-400 mt-0.5">{order.items.map(i => `${i.cantidad}x ${i.menuItem.nombre}`).join(', ')}</p>
                   </div>
                 </label>
               ))}
             </div>
-            {/* Free table selector */}
-            <p className="text-xs font-medium mb-2">Mesa destino:</p>
+            <p className="text-xs font-bold text-gray-500 mb-2">Mesa destino:</p>
             <div className="grid grid-cols-5 gap-1.5 mb-4">
               {freeTables.map(t => (
-                <Button
-                  key={t.numero}
-                  variant={splitTargetMesa === t.numero ? 'default' : 'outline'}
-                  className="h-9 text-xs font-semibold"
-                  onClick={() => setSplitTargetMesa(t.numero)}
-                >
+                <button key={t.numero} onClick={() => setSplitTargetMesa(t.numero)}
+                  className={cn('h-10 rounded-xl text-sm font-black transition-all', splitTargetMesa === t.numero ? 'bg-black text-white' : 'border border-gray-200 text-gray-900 hover:bg-gray-50')}>
                   {t.numero}
-                </Button>
+                </button>
               ))}
-              {freeTables.length === 0 && (
-                <p className="col-span-5 text-xs text-center text-muted-foreground py-2">No hay mesas libres</p>
-              )}
+              {freeTables.length === 0 && <p className="col-span-5 text-xs text-center text-gray-400 py-2">No hay mesas libres</p>}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setShowSplitDialog(false)}>
-                Cancelar
-              </Button>
-              <Button
-                className="flex-1 bg-primary"
+              <button onClick={() => setShowSplitDialog(false)} className="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">Cancelar</button>
+              <button
                 disabled={splitSelectedOrders.length === 0 || splitTargetMesa === null}
-                onClick={() => {
-                  if (splitTargetMesa !== null) {
-                    splitTableSession(selectedSession.id, splitSelectedOrders, splitTargetMesa)
-                    setShowSplitDialog(false)
-                    setSplitSelectedOrders([])
-                  }
-                }}
-              >
+                onClick={() => { if (splitTargetMesa !== null) { splitTableSession(selectedSession.id, splitSelectedOrders, splitTargetMesa); setShowSplitDialog(false); setSplitSelectedOrders([]) } }}
+                className="flex-1 h-11 rounded-xl bg-black text-white text-sm font-bold disabled:opacity-40 transition-colors hover:bg-gray-900">
                 Separar
-              </Button>
+              </button>
             </div>
           </DialogContent>
         </Dialog>
@@ -540,31 +477,21 @@ export function TablesManager() {
 
       {/* ── Close Confirm ─────────────────────────────── */}
       {showCloseConfirm && selectedMesa !== null && selectedSession && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <Card className="w-full max-w-sm">
-            <CardContent className="p-4 text-center">
-              <AlertTriangle className="h-12 w-12 mx-auto text-amber-500 mb-3" />
-              <h3 className="text-lg font-bold mb-1">Cerrar Mesa {selectedMesa}</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Esta acción cierra la sesión activa. El siguiente cliente podrá iniciar una nueva sesión.
-              </p>
-              <div className="flex gap-2">
-                <Button variant="outline" className="flex-1 bg-transparent" onClick={() => setShowCloseConfirm(false)}>
-                  Cancelar
-                </Button>
-                <Button
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-                  onClick={() => {
-                    closeTableSession(selectedSession.id)
-                    setShowCloseConfirm(false)
-                    setSelectedMesa(null)
-                  }}
-                >
-                  Cerrar mesa
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center">
+            <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="h-7 w-7 text-red-500" />
+            </div>
+            <h3 className="text-lg font-black text-gray-900 mb-1" style={{ letterSpacing: '-0.02em' }}>Cerrar Mesa {selectedMesa}</h3>
+            <p className="text-sm text-gray-500 mb-5">Esta acción cierra la sesión activa. El siguiente cliente podrá iniciar una nueva sesión.</p>
+            <div className="flex gap-2">
+              <button onClick={() => setShowCloseConfirm(false)} className="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">Cancelar</button>
+              <button onClick={() => { closeTableSession(selectedSession.id); setShowCloseConfirm(false); setSelectedMesa(null) }}
+                className="flex-1 h-11 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition-colors">
+                Cerrar mesa
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
