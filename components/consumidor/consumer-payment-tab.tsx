@@ -12,8 +12,6 @@ import {
   CreditCard, Trash2, Star, Plus, Check, AlertCircle, X,
   Loader2, Landmark, Banknote, ChevronRight,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 
 const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
@@ -37,23 +35,25 @@ const BRAND_LABELS: Record<string, string> = {
   unionpay: 'UnionPay',
 }
 
-const BRAND_BG: Record<string, string> = {
-  visa: 'bg-blue-900',
-  mastercard: 'bg-red-700',
-  amex: 'bg-sky-700',
-  discover: 'bg-orange-600',
+const BRAND_COLORS: Record<string, string> = {
+  visa: '#1A1F71',
+  mastercard: '#EB001B',
+  amex: '#007BC1',
+  discover: '#FF6600',
 }
 
 function CardBadge({ brand }: { brand: string }) {
-  const bg = BRAND_BG[brand] ?? 'bg-zinc-700'
+  const bg = BRAND_COLORS[brand] ?? '#374151'
   return (
-    <div className={`w-10 h-7 rounded-md ${bg} flex items-center justify-center shrink-0`}>
+    <div
+      className="w-10 h-7 rounded-md flex items-center justify-center shrink-0"
+      style={{ backgroundColor: bg }}
+    >
       <span className="text-white font-black text-[9px] tracking-tight uppercase">{brand.slice(0, 4)}</span>
     </div>
   )
 }
 
-// ── Setup form inside <Elements> ──────────────────────────────────────────────
 function CardSetupForm({
   token,
   onSuccess,
@@ -107,40 +107,38 @@ function CardSetupForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement
-        options={{
-          layout: 'tabs',
-          terms: { card: 'never' },
-        }}
-      />
+      <PaymentElement options={{ layout: 'tabs', terms: { card: 'never' } }} />
 
       {error && (
-        <div className="flex items-center gap-2 text-red-600 text-xs bg-red-50 border border-red-100 rounded-lg px-3 py-2.5">
+        <div className="flex items-center gap-2 text-red-600 text-xs bg-red-50 rounded-xl px-3 py-2.5">
           <AlertCircle className="h-3.5 w-3.5 shrink-0" />
           {error}
         </div>
       )}
 
       <div className="flex gap-2">
-        <Button
+        <button
           type="submit"
           disabled={!stripe || saving}
-          className="flex-1 h-10 bg-zinc-900 hover:bg-zinc-800 text-white"
+          className="flex-1 h-12 bg-black hover:bg-gray-900 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold text-sm rounded-xl transition-colors flex items-center justify-center gap-2"
         >
           {saving
             ? <Loader2 className="h-4 w-4 animate-spin" />
-            : <><CreditCard className="h-4 w-4 mr-2" />Guardar tarjeta</>
+            : <><CreditCard className="h-4 w-4" />Guardar tarjeta</>
           }
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel} className="h-10 px-4">
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="h-12 w-12 border border-gray-200 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors"
+        >
           <X className="h-4 w-4" />
-        </Button>
+        </button>
       </div>
     </form>
   )
 }
 
-// ── Main tab ──────────────────────────────────────────────────────────────────
 export function ConsumerPaymentTab({ token }: { token: string }) {
   const [cards, setCards] = useState<SavedCard[]>([])
   const [loading, setLoading] = useState(true)
@@ -221,71 +219,69 @@ export function ConsumerPaymentTab({ token }: { token: string }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-zinc-300" />
+        <Loader2 className="h-6 w-6 animate-spin text-gray-300" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
 
-      {/* ── Tarjetas de débito/crédito ── */}
-      <section className="bg-white rounded-2xl p-5 shadow-sm">
-        <div className="flex items-center gap-2 mb-4">
-          <CreditCard className="h-4 w-4 text-zinc-500" />
-          <h3 className="font-bold text-zinc-900 text-sm">Tarjetas de débito / crédito</h3>
+      {/* ── Tarjetas ── */}
+      <section className="bg-white rounded-2xl overflow-hidden">
+        <div className="px-5 pt-5 pb-3">
+          <div className="flex items-center gap-2 mb-0.5">
+            <CreditCard className="h-4 w-4 text-gray-500" />
+            <h3 className="font-bold text-gray-900 text-sm">Tarjetas</h3>
+          </div>
+          <p className="text-xs text-gray-400">Débito y crédito guardadas para tus pedidos</p>
         </div>
 
-        {cards.length === 0 && !showAddCard && (
-          <p className="text-sm text-zinc-400 mb-4">Aún no tenés tarjetas guardadas.</p>
+        {cards.length > 0 && (
+          <div className="border-t border-gray-50">
+            {cards.map(card => (
+              <div
+                key={card.id}
+                className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0"
+              >
+                <CardBadge brand={card.brand} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900">
+                    {BRAND_LABELS[card.brand] ?? card.brand} •••• {card.last4}
+                  </p>
+                  <p className="text-[11px] text-gray-400">
+                    {String(card.exp_month).padStart(2, '0')}/{card.exp_year}
+                    {card.is_default && (
+                      <span className="ml-2 text-[#06C167] font-semibold">Principal</span>
+                    )}
+                  </p>
+                </div>
+                <div className="flex items-center gap-0.5">
+                  {!card.is_default && (
+                    <button
+                      onClick={() => handleSetDefault(card.id)}
+                      title="Marcar como principal"
+                      className="p-2 rounded-xl text-gray-400 hover:text-[#06C167] hover:bg-green-50 transition-colors"
+                    >
+                      <Star className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDeleteCard(card.id)}
+                    title="Eliminar"
+                    className="p-2 rounded-xl text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
 
-        <div className="space-y-2 mb-3">
-          {cards.map(card => (
-            <div
-              key={card.id}
-              className="flex items-center gap-3 p-3 rounded-xl border border-zinc-100 bg-zinc-50"
-            >
-              <CardBadge brand={card.brand} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-zinc-900">
-                  {BRAND_LABELS[card.brand] ?? card.brand} •••• {card.last4}
-                </p>
-                <p className="text-[11px] text-zinc-400">
-                  Vence {String(card.exp_month).padStart(2, '0')}/{card.exp_year}
-                  {card.is_default && (
-                    <span className="ml-2 text-emerald-600 font-bold">Principal</span>
-                  )}
-                </p>
-              </div>
-              <div className="flex items-center gap-1">
-                {!card.is_default && (
-                  <button
-                    onClick={() => handleSetDefault(card.id)}
-                    title="Marcar como principal"
-                    className="p-1.5 rounded-lg text-zinc-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
-                  >
-                    <Star className="h-3.5 w-3.5" />
-                  </button>
-                )}
-                <button
-                  onClick={() => handleDeleteCard(card.id)}
-                  title="Eliminar tarjeta"
-                  className="p-1.5 rounded-lg text-zinc-300 hover:text-red-400 hover:bg-red-50 transition-colors"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Add card form */}
         {showAddCard && stripePromise && clientSecret ? (
-          <div className="border border-zinc-200 rounded-xl p-4 mt-3">
-            <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-4">
-              Nueva tarjeta
-            </p>
+          <div className="px-5 pb-5 pt-4 border-t border-gray-50">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Nueva tarjeta</p>
             <Elements
               stripe={stripePromise}
               options={{
@@ -293,8 +289,8 @@ export function ConsumerPaymentTab({ token }: { token: string }) {
                 appearance: {
                   theme: 'stripe',
                   variables: {
-                    colorPrimary: '#18181b',
-                    borderRadius: '8px',
+                    colorPrimary: '#000000',
+                    borderRadius: '12px',
                     fontFamily: "'Sora', system-ui, sans-serif",
                   },
                 },
@@ -307,96 +303,105 @@ export function ConsumerPaymentTab({ token }: { token: string }) {
               />
             </Elements>
           </div>
-        ) : !showAddCard ? (
-          !stripePromise ? (
-            <div className="flex items-center gap-2 text-amber-600 text-xs bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5">
-              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-              Stripe no está configurado. Agregá NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY y STRIPE_SECRET_KEY.
-            </div>
-          ) : (
-            <button
-              onClick={openAddCard}
-              disabled={setupLoading}
-              className="w-full flex items-center justify-between rounded-xl border border-dashed border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-600 hover:border-zinc-400 hover:text-zinc-900 transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                {setupLoading
-                  ? <Loader2 className="h-4 w-4 animate-spin" />
-                  : <Plus className="h-4 w-4" />}
-                Agregar tarjeta
-              </span>
-              <ChevronRight className="h-4 w-4 text-zinc-400" />
-            </button>
-          )
-        ) : null}
+        ) : !showAddCard && (
+          <div className="px-5 pb-5 pt-2">
+            {!stripePromise ? (
+              <div className="flex items-center gap-2 text-amber-700 text-xs bg-amber-50 rounded-xl px-3 py-2.5">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                Stripe no configurado — agregá las claves en .env.local
+              </div>
+            ) : (
+              <button
+                onClick={openAddCard}
+                disabled={setupLoading}
+                className="w-full flex items-center justify-between h-12 bg-gray-100 hover:bg-gray-200 rounded-xl px-4 text-sm font-semibold text-gray-700 transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  {setupLoading
+                    ? <Loader2 className="h-4 w-4 animate-spin" />
+                    : <Plus className="h-4 w-4" />}
+                  Agregar tarjeta
+                </span>
+                <ChevronRight className="h-4 w-4 text-gray-400" />
+              </button>
+            )}
+          </div>
+        )}
       </section>
 
       {/* ── PayPal ── */}
-      <section className="bg-white rounded-2xl p-5 shadow-sm">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-4 h-4 flex items-center justify-center">
-            <span className="font-black text-[13px] text-blue-700 leading-none">P</span>
+      <section className="bg-white rounded-2xl p-5">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 rounded-xl bg-[#003087] flex items-center justify-center shrink-0">
+            <span className="font-black text-[11px] text-white tracking-tight">PP</span>
           </div>
-          <h3 className="font-bold text-zinc-900 text-sm">PayPal</h3>
+          <div>
+            <h3 className="font-bold text-gray-900 text-sm leading-tight">PayPal</h3>
+            <p className="text-[11px] text-gray-400">Vinculá tu cuenta de PayPal</p>
+          </div>
         </div>
 
         <div className="space-y-3">
-          <div className="space-y-1">
-            <label className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
-              Email de PayPal
-            </label>
-            <Input
-              type="email"
-              placeholder="tu@email.com"
-              value={paypalDraft}
-              onChange={e => setPaypalDraft(e.target.value)}
-              className="h-10"
-            />
-          </div>
+          <input
+            type="email"
+            placeholder="tu@email.com"
+            value={paypalDraft}
+            onChange={e => setPaypalDraft(e.target.value)}
+            className="w-full h-12 px-4 bg-gray-100 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10"
+          />
 
           {paypalSuccess && (
-            <div className="flex items-center gap-2 text-emerald-700 text-xs bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
-              <Check className="h-3.5 w-3.5 shrink-0" />Email de PayPal guardado
+            <div className="flex items-center gap-2 text-emerald-700 text-xs bg-emerald-50 rounded-xl px-3 py-2.5">
+              <Check className="h-3.5 w-3.5 shrink-0" />
+              Email de PayPal guardado
             </div>
           )}
 
           {paypalDraft !== paypalEmail && (
-            <Button
+            <button
               onClick={handleSavePaypal}
               disabled={paypalSaving || !paypalDraft.includes('@')}
-              className="h-9 w-full bg-[#003087] hover:bg-[#001f6b] text-white"
+              className="w-full h-12 bg-[#003087] hover:bg-[#001f6b] disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold text-sm rounded-xl transition-colors flex items-center justify-center"
             >
               {paypalSaving
                 ? <Loader2 className="h-4 w-4 animate-spin" />
                 : 'Guardar email de PayPal'
               }
-            </Button>
+            </button>
           )}
         </div>
       </section>
 
       {/* ── Transferencia bancaria ── */}
-      <section className="bg-white rounded-2xl p-5 shadow-sm">
-        <div className="flex items-center gap-2 mb-2">
-          <Landmark className="h-4 w-4 text-zinc-500" />
-          <h3 className="font-bold text-zinc-900 text-sm">Transferencia bancaria</h3>
+      <section className="bg-white rounded-2xl p-5">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+            <Landmark className="h-4 w-4 text-gray-600" />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-900 text-sm">Transferencia bancaria</h3>
+            <p className="text-[12px] text-gray-400 mt-0.5 leading-relaxed">
+              El restaurante te mostrará sus datos al seleccionar este método.
+            </p>
+          </div>
         </div>
-        <p className="text-sm text-zinc-400 leading-relaxed">
-          Cuando el restaurante acepte transferencias, te mostrará sus datos bancarios.
-          Subís el comprobante y ellos validan el pago antes de servir.
-        </p>
       </section>
 
       {/* ── Efectivo ── */}
-      <section className="bg-white rounded-2xl p-5 shadow-sm">
-        <div className="flex items-center gap-2 mb-2">
-          <Banknote className="h-4 w-4 text-zinc-500" />
-          <h3 className="font-bold text-zinc-900 text-sm">Efectivo</h3>
+      <section className="bg-white rounded-2xl p-5">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+            <Banknote className="h-4 w-4 text-gray-600" />
+          </div>
+          <div>
+            <h3 className="font-bold text-gray-900 text-sm">Efectivo</h3>
+            <p className="text-[12px] text-gray-400 mt-0.5 leading-relaxed">
+              Avisale al mesero que pagás en efectivo. Él te indica el total y el vuelto.
+            </p>
+          </div>
         </div>
-        <p className="text-sm text-zinc-400 leading-relaxed">
-          Avisale al mesero que vas a pagar en efectivo. Él te indicará el total y el vuelto.
-        </p>
       </section>
+
     </div>
   )
 }

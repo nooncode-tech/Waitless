@@ -877,54 +877,48 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
   const cerrada = data.tiendaAbierta === false
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+    <div className="min-h-screen bg-[#F6F6F6] flex flex-col" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
 
-      {/* ── Cover + Perfil ────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-gray-100">
+      {/* ── Cover photo ───────────────────────────────────────────────────── */}
+      <div className="relative w-full overflow-hidden" style={{ height: 220 }}>
+        {data.coverUrl ? (
+          <img
+            src={data.coverUrl} alt=""
+            className={`w-full h-full object-cover object-center ${cerrada ? 'grayscale' : ''}`}
+          />
+        ) : (
+          <div className="w-full h-full" style={{ backgroundColor: primary, opacity: cerrada ? 0.6 : 1 }} />
+        )}
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/50" />
 
-        {/* Hero — primary color block with logo centered */}
-        <div
-          className="relative w-full flex flex-col items-center justify-center gap-3"
-          style={{ height: 192, background: primary }}
+        {/* Back button */}
+        <button
+          onClick={() => history.back()}
+          className="absolute top-4 left-4 w-9 h-9 flex items-center justify-center rounded-full bg-black/30 backdrop-blur-sm text-white"
         >
-          {/* Cover image as subtle texture (low opacity) */}
-          {data.coverUrl && (
-            <img
-              src={data.coverUrl} alt=""
-              className={`absolute inset-0 w-full h-full object-cover object-center ${cerrada ? 'grayscale' : ''}`}
-              style={{ opacity: 0.12 }}
-            />
-          )}
-          {/* Gradient overlay for depth */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-black/40" />
+          <ChevronLeft className="w-5 h-5" />
+        </button>
 
-          {/* Back button */}
-          <button
-            onClick={() => history.back()}
-            className="absolute top-3 left-3 w-9 h-9 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-sm text-white"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
+        {/* Closed badge */}
+        {cerrada && (
+          <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full flex items-center gap-1.5">
+            <Clock className="w-3 h-3" />
+            Cerrada
+          </div>
+        )}
+      </div>
 
-          {/* Closed badge */}
-          {cerrada && (
-            <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full flex items-center gap-1.5">
-              <Clock className="w-3 h-3" />
-              Cerrada
-            </div>
-          )}
-
-          {/* Logo centered */}
+      {/* ── Restaurant info panel ─────────────────────────────────────────── */}
+      <div className="bg-white border-b border-gray-100 relative">
+        {/* Logo — overlaps the cover */}
+        <div className="absolute -top-8 left-5">
           <div
-            className="relative w-20 h-20 rounded-2xl overflow-hidden"
-            style={{
-              backgroundColor: primary,
-              border: '3px solid rgba(255,255,255,0.9)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
-            }}
+            className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg"
+            style={{ border: '3px solid #fff', backgroundColor: primary }}
           >
             {data.logoUrl
-              ? <img src={data.logoUrl} alt={data.restaurantName} className="w-full h-full object-cover object-center" />
+              ? <img src={data.logoUrl} alt={data.restaurantName} className="w-full h-full object-cover" />
               : <div className="w-full h-full flex items-center justify-center">
                   <span className="text-white font-black text-2xl" style={{ letterSpacing: '-0.03em' }}>
                     {data.restaurantName.charAt(0).toUpperCase()}
@@ -932,29 +926,36 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
                 </div>
             }
           </div>
-
-          {/* Restaurant name inside cover */}
-          <h1
-            className="relative font-black text-white text-lg text-center leading-tight px-10 drop-shadow"
-            style={{ letterSpacing: '-0.02em', textShadow: '0 1px 6px rgba(0,0,0,0.4)' }}
-          >
-            {data.restaurantName}
-          </h1>
         </div>
 
-        {/* Info row below hero */}
-        <div className="px-5 py-4">
+        <div className="pt-12 px-5 pb-4">
           <div className="flex items-start justify-between gap-3">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
+              <h1 className="font-black text-gray-900 text-xl leading-tight" style={{ letterSpacing: '-0.02em' }}>
+                {data.restaurantName}
+              </h1>
               {data.descripcion && (
-                <p className="text-sm text-gray-500 leading-relaxed">{data.descripcion}</p>
+                <p className="text-sm text-gray-500 leading-relaxed mt-1">{data.descripcion}</p>
               )}
+              {/* Meta chips */}
+              <div className="flex flex-wrap items-center gap-2 mt-2.5">
+                {data.deliveryHabilitado && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full">
+                    <Truck className="h-3 w-3" />
+                    Delivery
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full">
+                  <ShoppingBag className="h-3 w-3" />
+                  Para llevar
+                </span>
+              </div>
             </div>
             {data.whatsappNumero && (
               <a
                 href={`https://wa.me/${data.whatsappNumero.replace(/\D/g, '')}`}
                 target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white shadow-md transition-opacity hover:opacity-90 shrink-0"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[11px] font-bold text-white shadow transition-opacity hover:opacity-90 shrink-0 mt-1"
                 style={{ backgroundColor: '#25D366' }}
               >
                 <Phone className="h-3.5 w-3.5" />
@@ -965,7 +966,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
 
           {cerrada && (
             <div className="mt-3 flex items-center gap-2 bg-red-50 rounded-xl px-3 py-2.5 border border-red-100">
-              <div className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
               <p className="text-xs font-semibold text-red-600">Tienda cerrada — no aceptamos pedidos ahora</p>
             </div>
           )}

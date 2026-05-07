@@ -12,13 +12,12 @@ import {
   Wallet, Plus, ArrowDownLeft, ArrowUpRight, RotateCcw,
   Loader2, AlertCircle, X, Check,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 
 const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
   : null
 
-const AMOUNTS = [500, 1000, 2000, 5000] // centavos → $5, $10, $20, $50
+const AMOUNTS = [500, 1000, 2000, 5000] // cents → $5, $10, $20, $50
 
 interface WalletTransaction {
   id: string
@@ -30,7 +29,6 @@ interface WalletTransaction {
   created_at: string
 }
 
-// ── Formulario de pago dentro de <Elements> ───────────────────────────────────
 function RechargeForm({
   token,
   amountCents,
@@ -74,32 +72,35 @@ function RechargeForm({
       <PaymentElement options={{ layout: 'tabs', terms: { card: 'never' } }} />
 
       {error && (
-        <div className="flex items-center gap-2 text-red-600 text-xs bg-red-50 border border-red-100 rounded-lg px-3 py-2.5">
+        <div className="flex items-center gap-2 text-red-600 text-xs bg-red-50 rounded-xl px-3 py-2.5">
           <AlertCircle className="h-3.5 w-3.5 shrink-0" />
           {error}
         </div>
       )}
 
       <div className="flex gap-2">
-        <Button
+        <button
           type="submit"
           disabled={!stripe || loading}
-          className="flex-1 h-10 bg-zinc-900 hover:bg-zinc-800 text-white"
+          className="flex-1 h-12 bg-black hover:bg-gray-900 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold text-sm rounded-xl transition-colors flex items-center justify-center gap-2"
         >
           {loading
             ? <Loader2 className="h-4 w-4 animate-spin" />
-            : <><Wallet className="h-4 w-4 mr-2" />Recargar ${(amountCents / 100).toFixed(2)}</>
+            : <><Wallet className="h-4 w-4" />Recargar ${(amountCents / 100).toFixed(2)}</>
           }
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel} className="h-10 px-4">
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="h-12 w-12 border border-gray-200 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors"
+        >
           <X className="h-4 w-4" />
-        </Button>
+        </button>
       </div>
     </form>
   )
 }
 
-// ── Componente principal ──────────────────────────────────────────────────────
 export function ConsumerWalletTab({ token }: { token: string }) {
   const [balanceCents, setBalanceCents] = useState(0)
   const [transactions, setTransactions] = useState<WalletTransaction[]>([])
@@ -157,44 +158,48 @@ export function ConsumerWalletTab({ token }: { token: string }) {
     }, 2500)
   }
 
-  const formatCurrency = (cents: number) =>
-    `$${Math.abs(cents / 100).toFixed(2)}`
-
-  const txIcon = (type: WalletTransaction['type']) => {
-    if (type === 'recharge') return <ArrowDownLeft className="h-4 w-4 text-emerald-600" />
-    if (type === 'refund')   return <RotateCcw className="h-4 w-4 text-blue-500" />
-    return <ArrowUpRight className="h-4 w-4 text-zinc-400" />
-  }
-
-  const txColor = (type: WalletTransaction['type']) =>
-    type === 'recharge' ? 'text-emerald-600' : type === 'refund' ? 'text-blue-600' : 'text-zinc-700'
+  const formatCurrency = (cents: number) => `$${Math.abs(cents / 100).toFixed(2)}`
 
   const txSign = (type: WalletTransaction['type'], cents: number) =>
     type === 'recharge' || type === 'refund' ? `+${formatCurrency(cents)}` : `-${formatCurrency(cents)}`
 
+  const txColor = (type: WalletTransaction['type']) =>
+    type === 'recharge' ? 'text-[#06C167]' : type === 'refund' ? 'text-blue-600' : 'text-gray-800'
+
+  const txIcon = (type: WalletTransaction['type']) => {
+    if (type === 'recharge') return <ArrowDownLeft className="h-4 w-4 text-[#06C167]" />
+    if (type === 'refund')   return <RotateCcw className="h-4 w-4 text-blue-500" />
+    return <ArrowUpRight className="h-4 w-4 text-gray-400" />
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-zinc-300" />
+        <Loader2 className="h-6 w-6 animate-spin text-gray-300" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
 
-      {/* ── Saldo actual ── */}
-      <section className="bg-zinc-900 rounded-2xl p-6 text-white shadow-sm">
-        <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1">
+      {/* ── Balance card ── */}
+      <section
+        className="rounded-2xl p-6 text-white overflow-hidden relative"
+        style={{ background: 'linear-gradient(135deg, #111 0%, #333 100%)' }}
+      >
+        <div className="absolute inset-0 opacity-5"
+          style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #fff 0%, transparent 60%)' }} />
+        <p className="text-xs font-bold text-white/50 uppercase tracking-widest mb-1 relative">
           Waitless Créditos
         </p>
-        <p className="text-4xl font-black tracking-tight">
+        <p className="text-5xl font-black relative" style={{ letterSpacing: '-0.04em' }}>
           {formatCurrency(balanceCents)}
         </p>
-        <p className="text-xs text-zinc-500 mt-1">Saldo disponible</p>
+        <p className="text-xs text-white/40 mt-1.5 relative">Saldo disponible</p>
 
         {rechargeSuccess && (
-          <div className="flex items-center gap-2 mt-3 text-emerald-400 text-sm font-medium">
+          <div className="flex items-center gap-2 mt-4 text-[#06C167] text-sm font-semibold relative">
             <Check className="h-4 w-4" />
             Recarga exitosa — saldo actualizado
           </div>
@@ -202,10 +207,10 @@ export function ConsumerWalletTab({ token }: { token: string }) {
       </section>
 
       {/* ── Recargar ── */}
-      <section className="bg-white rounded-2xl p-5 shadow-sm">
+      <section className="bg-white rounded-2xl p-5">
         <div className="flex items-center gap-2 mb-4">
-          <Plus className="h-4 w-4 text-zinc-500" />
-          <h3 className="font-bold text-zinc-900 text-sm">Recargar créditos</h3>
+          <Plus className="h-4 w-4 text-gray-500" />
+          <h3 className="font-bold text-gray-900 text-sm">Recargar créditos</h3>
         </div>
 
         {!showRecharge ? (
@@ -215,10 +220,10 @@ export function ConsumerWalletTab({ token }: { token: string }) {
                 <button
                   key={amt}
                   onClick={() => { setSelectedAmount(amt); setCustomAmount('') }}
-                  className={`rounded-xl border py-2.5 text-sm font-bold transition-colors ${
+                  className={`rounded-xl py-3 text-sm font-bold transition-colors ${
                     selectedAmount === amt && !customAmount
-                      ? 'border-zinc-900 bg-zinc-900 text-white'
-                      : 'border-zinc-200 text-zinc-700 hover:border-zinc-400'
+                      ? 'bg-black text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
                   ${amt / 100}
@@ -227,7 +232,7 @@ export function ConsumerWalletTab({ token }: { token: string }) {
             </div>
 
             <div className="relative mb-3">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm">$</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">$</span>
               <input
                 type="number"
                 min="1"
@@ -235,27 +240,27 @@ export function ConsumerWalletTab({ token }: { token: string }) {
                 placeholder="Otro monto"
                 value={customAmount}
                 onChange={e => { setCustomAmount(e.target.value); setSelectedAmount(null) }}
-                className="w-full pl-7 pr-3 py-2.5 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:border-zinc-400"
+                className="w-full pl-8 pr-4 h-12 bg-gray-100 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10"
               />
             </div>
 
             {!stripePromise && (
-              <div className="flex items-center gap-2 text-amber-600 text-xs bg-amber-50 border border-amber-100 rounded-lg px-3 py-2.5 mb-3">
+              <div className="flex items-center gap-2 text-amber-700 text-xs bg-amber-50 rounded-xl px-3 py-2.5 mb-3">
                 <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                Stripe no configurado. Agregá NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.
+                Stripe no configurado — agregá NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
               </div>
             )}
 
-            <Button
+            <button
               onClick={handleStartRecharge}
               disabled={rechargeLoading || !stripePromise || getAmountCents() < 100}
-              className="w-full h-10 bg-zinc-900 hover:bg-zinc-800 text-white"
+              className="w-full h-12 bg-black hover:bg-gray-900 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold text-sm rounded-xl transition-colors flex items-center justify-center"
             >
               {rechargeLoading
                 ? <Loader2 className="h-4 w-4 animate-spin" />
-                : `Continuar — ${getAmountCents() >= 100 ? `$${(getAmountCents() / 100).toFixed(2)}` : 'elige un monto'}`
+                : `Continuar${getAmountCents() >= 100 ? ` — $${(getAmountCents() / 100).toFixed(2)}` : ''}`
               }
-            </Button>
+            </button>
           </>
         ) : (
           stripePromise && clientSecret && (
@@ -266,8 +271,8 @@ export function ConsumerWalletTab({ token }: { token: string }) {
                 appearance: {
                   theme: 'stripe',
                   variables: {
-                    colorPrimary: '#18181b',
-                    borderRadius: '8px',
+                    colorPrimary: '#000000',
+                    borderRadius: '12px',
                     fontFamily: "'Sora', system-ui, sans-serif",
                   },
                 },
@@ -285,26 +290,26 @@ export function ConsumerWalletTab({ token }: { token: string }) {
       </section>
 
       {/* ── Historial ── */}
-      <section className="bg-white rounded-2xl p-5 shadow-sm">
+      <section className="bg-white rounded-2xl p-5">
         <div className="flex items-center gap-2 mb-4">
-          <Wallet className="h-4 w-4 text-zinc-500" />
-          <h3 className="font-bold text-zinc-900 text-sm">Movimientos</h3>
+          <Wallet className="h-4 w-4 text-gray-500" />
+          <h3 className="font-bold text-gray-900 text-sm">Movimientos</h3>
         </div>
 
         {transactions.length === 0 ? (
-          <p className="text-sm text-zinc-400">Aún no hay movimientos.</p>
+          <p className="text-sm text-gray-400 py-2">Aún no hay movimientos.</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-0.5">
             {transactions.map(tx => (
-              <div key={tx.id} className="flex items-center gap-3 py-2.5 border-b border-zinc-50 last:border-0">
-                <div className="w-8 h-8 rounded-full bg-zinc-50 flex items-center justify-center shrink-0">
+              <div key={tx.id} className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0">
+                <div className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center shrink-0">
                   {txIcon(tx.type)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-zinc-900 truncate">
+                  <p className="text-sm font-medium text-gray-900 truncate">
                     {tx.description ?? (tx.type === 'recharge' ? 'Recarga' : tx.type === 'refund' ? 'Reembolso' : 'Pago')}
                   </p>
-                  <p className="text-[11px] text-zinc-400">
+                  <p className="text-[11px] text-gray-400">
                     {new Date(tx.created_at).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </p>
                 </div>
@@ -316,6 +321,7 @@ export function ConsumerWalletTab({ token }: { token: string }) {
           </div>
         )}
       </section>
+
     </div>
   )
 }
