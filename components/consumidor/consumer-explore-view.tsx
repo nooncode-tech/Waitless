@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Search, User, Home, ShoppingBag, Star,
-  Clock, ChevronRight, Wallet,
+  Clock, ChevronRight, Wallet, MapPin, ChevronDown, X, Navigation,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -47,9 +47,14 @@ function getDeliveryInfo(slug: string) {
   }
 }
 
+const LS_ADDRESS  = 'waitless:address'
+const LS_RECENTS  = 'waitless:addresses'
+const MAX_RECENTS = 5
+
 export function ConsumerExploreView() {
   const router  = useRouter()
   const catRef  = useRef<HTMLDivElement>(null)
+  const addressRef = useRef<HTMLDivElement>(null)
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [filtered,    setFiltered]    = useState<Restaurant[]>([])
@@ -59,6 +64,73 @@ export function ConsumerExploreView() {
   const [userName,    setUserName]    = useState<string | null>(null)
   const [showSearch,  setShowSearch]  = useState(false)
 
+  // ── Address state ────────────────────────────────────────────────────────────
+  const [address,         setAddress]         = useState('')
+  const [recentAddresses, setRecentAddresses] = useState<string[]>([])
+  const [showAddrMenu,    setShowAddrMenu]    = useState(false)
+  const [addrInput,       setAddrInput]       = useState('')
+  const addrInputRef = useRef<HTMLInputElement>(null)
+
+  // Load address from localStorage (client only)
+  useEffect(() => {
+    const saved   = localStorage.getItem(LS_ADDRESS)
+    const recents = localStorage.getItem(LS_RECENTS)
+    if (saved) setAddress(saved)
+    if (recents) {
+      try { setRecentAddresses(JSON.parse(recents)) } catch { /* ignore */ }
+    }
+  }, [])
+
+  // Close address menu on outside click
+  useEffect(() => {
+    if (!showAddrMenu) return
+    const handler = (e: MouseEvent) => {
+      if (addressRef.current && !addressRef.current.contains(e.target as Node)) {
+        setShowAddrMenu(false)
+      }
+    }
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowAddrMenu(false)
+    }
+    document.addEventListener('mousedown', handler)
+    document.addEventListener('keydown', keyHandler)
+    return () => {
+      document.removeEventListener('mousedown', handler)
+      document.removeEventListener('keydown', keyHandler)
+    }
+  }, [showAddrMenu])
+
+  // Focus input when menu opens
+  useEffect(() => {
+    if (showAddrMenu) setTimeout(() => addrInputRef.current?.focus(), 50)
+  }, [showAddrMenu])
+
+  const saveAddress = (addr: string) => {
+    const trimmed = addr.trim()
+    if (!trimmed) return
+    setAddress(trimmed)
+    localStorage.setItem(LS_ADDRESS, trimmed)
+    const newRecents = [trimmed, ...recentAddresses.filter(a => a !== trimmed)].slice(0, MAX_RECENTS)
+    setRecentAddresses(newRecents)
+    localStorage.setItem(LS_RECENTS, JSON.stringify(newRecents))
+    setShowAddrMenu(false)
+    setAddrInput('')
+  }
+
+  const handleAddrSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (addrInput.trim()) saveAddress(addrInput)
+  }
+
+  const handleGeolocate = () => {
+    if (!navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      () => saveAddress('Ubicación actual'),
+      () => { /* ignore error */ }
+    )
+  }
+
+  // ── Data fetching ────────────────────────────────────────────────────────────
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { router.replace('/consumidor'); return }
@@ -102,6 +174,9 @@ export function ConsumerExploreView() {
   const featured  = filtered.slice(0, 3)
   const rest      = filtered.slice(3)
 
+  const displayAddress = address || 'Tu ubicación'
+  const isDefaultAddr  = !address
+
   return (
     <div className="min-h-screen bg-[#F6F6F6]" style={{ fontFamily: "'Sora', system-ui, sans-serif", paddingBottom: 72 }}>
 
@@ -109,15 +184,116 @@ export function ConsumerExploreView() {
       <header className="bg-white sticky top-0 z-30 border-b border-gray-100">
         <div className="max-w-screen-xl mx-auto px-4 md:px-8 h-14 flex items-center justify-between gap-4">
 
-          {/* Logo + location */}
-          <div className="flex items-center gap-2.5 min-w-0 shrink-0">
+          {/* Logo + location button */}
+          <div ref={addressRef} className="relative flex items-center gap-2.5 min-w-0 shrink-0">
             <div className="w-8 h-8 bg-black rounded-xl flex items-center justify-center shrink-0">
               <span className="text-white font-black text-[11px] tracking-tight">W</span>
             </div>
-            <div className="min-w-0 hidden sm:block">
+
+            <button
+              onClick={() => setShowAddrMenu(v => !v)}
+              className="flex flex-col items-start min-w-0 group"
+            >
               <p className="text-[10px] text-gray-400 font-medium leading-none mb-0.5">Entrega a</p>
-              <p className="text-sm font-bold text-gray-900 leading-none truncate">Tu ubicación</p>
-            </div>
+              <div className="flex items-center gap-1">
+                <MapPin className="h-3 w-3 text-gray-700 shrink-0" />
+                <p className={`text-sm font-bold leading-none truncate max-w-[110px] sm:max-w-[180px] ${isDefaultAddr ? 'text-gray-400' : 'text-gray-900'}`}>
+                  {displayAddress}
+                </p>
+                <ChevronDown className={`h-3.5 w-3.5 text-gray-400 transition-transform duration-200 shrink-0 ${showAddrMenu ? 'rotate-180' : ''}`} />
+              </div>
+            </button>
+
+            {/* ── Address dropdown ── */}
+            {showAddrMenu && (
+              <div className="absolute left-0 top-full mt-2 w-[min(21rem,calc(100vw-2rem))] bg-white rounded-2xl shadow-2xl border border-gray-100 z-[60] overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 pt-4 pb-2">
+                  <p className="text-sm font-black text-gray-900" style={{ letterSpacing: '-0.02em' }}>
+                    ¿A dónde entregamos?
+                  </p>
+                  <button
+                    onClick={() => setShowAddrMenu(false)}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Search input */}
+                <form onSubmit={handleAddrSubmit} className="px-4 pb-3">
+                  <div className="flex items-center gap-2 h-11 bg-gray-100 rounded-xl px-3">
+                    <MapPin className="h-4 w-4 text-gray-400 shrink-0" />
+                    <input
+                      ref={addrInputRef}
+                      type="text"
+                      value={addrInput}
+                      onChange={e => setAddrInput(e.target.value)}
+                      placeholder="Ingresá tu dirección..."
+                      className="flex-1 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 outline-none"
+                    />
+                    {addrInput && (
+                      <button type="button" onClick={() => setAddrInput('')} className="text-gray-400 hover:text-gray-600">
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                  {addrInput.trim() && (
+                    <button
+                      type="submit"
+                      className="w-full mt-2 h-10 bg-black text-white text-sm font-bold rounded-xl hover:bg-gray-900 transition-colors"
+                    >
+                      Confirmar dirección
+                    </button>
+                  )}
+                </form>
+
+                {/* Use current location */}
+                <button
+                  onClick={handleGeolocate}
+                  className="w-full flex items-center gap-3 px-4 py-3 border-t border-gray-50 hover:bg-gray-50 transition-colors text-left"
+                >
+                  <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                    <Navigation className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-blue-600">Usar mi ubicación actual</p>
+                    <p className="text-[11px] text-gray-400">Detectar automáticamente</p>
+                  </div>
+                </button>
+
+                {/* Recent addresses */}
+                {recentAddresses.length > 0 && (
+                  <>
+                    <div className="border-t border-gray-50 px-4 pt-3 pb-1">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Recientes</p>
+                    </div>
+                    <div className="pb-2">
+                      {recentAddresses.map((addr, i) => (
+                        <button
+                          key={i}
+                          onClick={() => saveAddress(addr)}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors text-left"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+                            <Clock className="h-3.5 w-3.5 text-gray-500" />
+                          </div>
+                          <p className="text-sm text-gray-800 truncate font-medium">{addr}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {recentAddresses.length === 0 && !addrInput && (
+                  <div className="px-4 pb-4 text-center">
+                    <p className="text-xs text-gray-400 leading-relaxed">
+                      Ingresá tu dirección para ver restaurantes cerca de vos.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Search bar — inline en desktop */}
@@ -308,7 +484,6 @@ function FeaturedCard({ restaurant: r, onClick, desktop }: { restaurant: Restaur
             <span className="text-[10px] font-bold text-gray-900">{r.rating.toFixed(1)}</span>
           </div>
         )}
-        {/* Promo badge */}
         <div className="absolute top-2 left-2 bg-[#06C167] text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wide">
           Destacado
         </div>
