@@ -77,6 +77,7 @@ interface NavGroup {
 
 export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
   const [screen, setScreen] = useState<AdminScreen>('reports')
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const { orders, refunds, waitlist, currentUser, config, hasPlanFeature } = useApp()
@@ -168,58 +169,66 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
   // ─── Sidebar nav item ─────────────────────────────────────────────────────────
   const SidebarItem = ({ item }: { item: NavItem }) => {
     const active = screen === item.id
-    return (
+    const btn = (
       <button
         onClick={() => navigate(item.id)}
+        title={sidebarCollapsed ? item.label : undefined}
         className={cn(
-          'group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative',
-          active
-            ? 'bg-white text-black shadow-sm'
-            : 'text-white/60 hover:text-white hover:bg-white/10'
+          'group w-full flex items-center rounded-xl text-sm font-medium transition-all relative',
+          sidebarCollapsed ? 'justify-center px-0 py-2.5' : 'gap-3 px-3 py-2.5',
+          active ? 'bg-white text-black shadow-sm' : 'text-white/60 hover:text-white hover:bg-white/10'
         )}
       >
         <span className={cn('shrink-0 transition-colors', active ? 'text-black' : 'text-white/50 group-hover:text-white')}>
           {item.icon}
         </span>
-        <span className="flex-1 text-left truncate">{item.label}</span>
-        {item.badge !== undefined && (
-          <span className={cn(
-            'shrink-0 min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-bold flex items-center justify-center',
-            active ? 'bg-black text-white' : 'bg-white/20 text-white'
-          )}>
+        {!sidebarCollapsed && <span className="flex-1 text-left truncate">{item.label}</span>}
+        {!sidebarCollapsed && item.badge !== undefined && (
+          <span className={cn('shrink-0 min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-bold flex items-center justify-center', active ? 'bg-black text-white' : 'bg-white/20 text-white')}>
+            {item.badge}
+          </span>
+        )}
+        {sidebarCollapsed && item.badge !== undefined && (
+          <span className="absolute top-0.5 right-0.5 min-w-[14px] h-3.5 px-0.5 bg-[#06C167] text-white text-[9px] font-black rounded-full flex items-center justify-center">
             {item.badge}
           </span>
         )}
       </button>
     )
+    return btn
   }
 
   // ─── Sidebar content ──────────────────────────────────────────────────────────
   const SidebarContent = ({ inDrawer = false }: { inDrawer?: boolean }) => (
     <div className={cn('flex flex-col h-full', inDrawer ? 'bg-[#111]' : '')}>
       {/* Brand */}
-      <div className="px-4 py-5 shrink-0">
+      <div className={cn('shrink-0 border-b border-white/10', sidebarCollapsed && !inDrawer ? 'px-2 py-4 flex justify-center' : 'px-4 py-5')}>
         <button
           onClick={() => navigate('reports')}
-          className="flex items-center gap-3 hover:opacity-80 transition-opacity w-full"
+          className={cn('flex items-center hover:opacity-80 transition-opacity', sidebarCollapsed && !inDrawer ? '' : 'gap-3 w-full')}
         >
-          <WaitlessLogo size={32} color="light" imageUrl={config.logoUrl} imageAlt="Logo" />
-          <div className="text-left min-w-0">
-            <p className="text-white text-sm font-bold leading-tight truncate">
-              {config.restaurantName ?? 'WAITLESS'}
-            </p>
-            <p className="text-white/40 text-[11px]">Panel Admin</p>
-          </div>
+          <WaitlessLogo size={28} color="light" imageUrl={config.logoUrl} imageAlt="Logo" />
+          {(!sidebarCollapsed || inDrawer) && (
+            <div className="text-left min-w-0">
+              <p className="text-white text-sm font-bold leading-tight truncate">
+                {config.restaurantName ?? 'WAITLESS'}
+              </p>
+              <p className="text-white/40 text-[11px]">Panel Admin</p>
+            </div>
+          )}
         </button>
       </div>
 
       {/* Nav groups */}
-      <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-5 [&::-webkit-scrollbar]:w-0">
+      <div className={cn('flex-1 overflow-y-auto pb-4 space-y-5 [&::-webkit-scrollbar]:w-0', sidebarCollapsed && !inDrawer ? 'px-2 pt-3' : 'px-3 pt-4')}>
         {navGroups.map(group => (
           <div key={group.title}>
-            <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-white/25">
-              {group.title}
-            </p>
+            {(!sidebarCollapsed || inDrawer) && (
+              <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-white/25">
+                {group.title}
+              </p>
+            )}
+            {sidebarCollapsed && !inDrawer && <div className="border-t border-white/10 mb-2" />}
             <div className="space-y-0.5">
               {group.items.map(item => <SidebarItem key={item.id} item={item} />)}
             </div>
@@ -229,9 +238,12 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
         {/* Admin items */}
         {(canDo(role, 'gestionar_usuarios') || canDo(role, 'editar_config')) && (
           <div>
-            <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-white/25">
-              Administración
-            </p>
+            {(!sidebarCollapsed || inDrawer) && (
+              <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-white/25">
+                Administración
+              </p>
+            )}
+            {sidebarCollapsed && !inDrawer && <div className="border-t border-white/10 mb-2" />}
             <div className="space-y-0.5">
               {canDo(role, 'gestionar_usuarios') && (
                 <>
@@ -245,38 +257,49 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
         )}
       </div>
 
-      {/* Footer */}
-      <div className="shrink-0 px-3 pb-4 pt-3 border-t border-white/10 space-y-1">
-        <PushSubscribeButton collapsed={false} />
-        {canDo(role, 'editar_config') && (
+      {/* Footer — collapse toggle (solo desktop, no drawer) */}
+      {!inDrawer && (
+        <div className="shrink-0 px-3 pb-4 pt-3 border-t border-white/10">
+          <PushSubscribeButton collapsed={sidebarCollapsed} />
           <button
-            onClick={() => navigate('config')}
+            onClick={() => setSidebarCollapsed(v => !v)}
+            title={sidebarCollapsed ? 'Expandir menú' : 'Contraer menú'}
             className={cn(
-              'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all',
-              screen === 'config' ? 'bg-white text-black' : 'text-white/60 hover:text-white hover:bg-white/10'
+              'mt-1 w-full flex items-center rounded-xl text-sm font-medium text-white/50 hover:text-white hover:bg-white/10 transition-all py-2.5',
+              sidebarCollapsed ? 'justify-center px-0' : 'gap-3 px-3'
             )}
           >
-            <Cog className="h-[18px] w-[18px] shrink-0" />
-            Configuración
+            <ChevronRight className={cn('h-[18px] w-[18px] shrink-0 transition-transform', !sidebarCollapsed && 'rotate-180')} />
+            {!sidebarCollapsed && <span>Contraer menú</span>}
           </button>
-        )}
-        {onLockProfile && (
-          <button
-            onClick={onLockProfile}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 transition-all"
-          >
-            <Lock className="h-[18px] w-[18px] shrink-0" />
-            Cerrar perfil
+        </div>
+      )}
+
+      {/* Footer — drawer tiene logout/lock */}
+      {inDrawer && (
+        <div className="shrink-0 px-3 pb-4 pt-3 border-t border-white/10 space-y-1">
+          <PushSubscribeButton collapsed={false} />
+          {canDo(role, 'editar_config') && (
+            <button onClick={() => navigate('config')}
+              className={cn('w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all', screen === 'config' ? 'bg-white text-black' : 'text-white/60 hover:text-white hover:bg-white/10')}>
+              <Cog className="h-[18px] w-[18px] shrink-0" />
+              Configuración
+            </button>
+          )}
+          {onLockProfile && (
+            <button onClick={onLockProfile}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 transition-all">
+              <Lock className="h-[18px] w-[18px] shrink-0" />
+              Cerrar perfil
+            </button>
+          )}
+          <button onClick={onBack}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/80 hover:text-red-400 hover:bg-red-500/10 transition-all">
+            <LogOut className="h-[18px] w-[18px] shrink-0" />
+            Cerrar sesión
           </button>
-        )}
-        <button
-          onClick={onBack}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/80 hover:text-red-400 hover:bg-red-500/10 transition-all"
-        >
-          <LogOut className="h-[18px] w-[18px] shrink-0" />
-          Cerrar sesión
-        </button>
-      </div>
+        </div>
+      )}
     </div>
   )
 
@@ -287,7 +310,10 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
       <div className="hidden md:flex h-screen w-full overflow-hidden bg-[#F6F6F6]">
 
         {/* Sidebar */}
-        <aside className="w-60 shrink-0 h-full bg-[#111] flex flex-col">
+        <aside
+          className={cn('shrink-0 h-full flex flex-col transition-all duration-300', sidebarCollapsed ? 'w-16' : 'w-60')}
+          style={{ backgroundColor: config.primaryColor || '#111' }}
+        >
           <SidebarContent />
         </aside>
 
@@ -373,7 +399,7 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
       <div className="min-h-screen bg-[#F6F6F6] flex flex-col md:hidden">
 
         {/* Mobile Header */}
-        <header className="sticky top-0 z-50 bg-[#111] px-4 h-14 flex items-center justify-between">
+        <header className="sticky top-0 z-50 px-4 h-14 flex items-center justify-between" style={{ backgroundColor: config.primaryColor || '#111' }}>
           <button
             onClick={() => navigate('reports')}
             className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
@@ -455,7 +481,7 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
         {mobileDrawerOpen && (
           <div className="fixed inset-0 z-50 md:hidden">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileDrawerOpen(false)} />
-            <div className="absolute right-0 top-0 bottom-0 w-72 max-w-[calc(100vw-3rem)] bg-[#111] flex flex-col shadow-2xl">
+            <div className="absolute right-0 top-0 bottom-0 w-72 max-w-[calc(100vw-3rem)] flex flex-col shadow-2xl" style={{ backgroundColor: config.primaryColor || '#111' }}>
               <div className="flex items-center justify-between px-4 h-14 border-b border-white/10 shrink-0">
                 <div className="flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-white text-xs font-black">
