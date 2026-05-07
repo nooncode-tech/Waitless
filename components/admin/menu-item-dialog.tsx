@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+
 import { Switch } from '@/components/ui/switch'
 import { type MenuItem, type Extra, type RecipeIngredient } from '@/lib/store'
 import { CategoryManager } from './category-manager'
@@ -352,28 +352,30 @@ export function MenuItemDialog({ item, onClose }: MenuItemDialogProps) {
               </Button>
             </div>
 
-            <Dialog open={showCategoryManager} onOpenChange={setShowCategoryManager}>
-              <DialogContent className="max-w-md max-h-[80vh] overflow-hidden flex flex-col">
-                <DialogHeader className="shrink-0">
-                  <DialogTitle className="text-sm flex items-center gap-2">
-                    <FolderOpen className="h-4 w-4" />
-                    Administrar Categorías
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="flex-1 min-h-0 overflow-y-auto -mx-6 px-6 py-2">
-                  <CategoryManager />
+            {showCategoryManager && mounted && createPortal(
+              <div className="fixed inset-0 z-[10000] bg-black/50 flex items-center justify-center p-4">
+                <div className="bg-background rounded-xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col shadow-xl">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
+                    <span className="text-sm font-bold flex items-center gap-2">
+                      <FolderOpen className="h-4 w-4" />
+                      Administrar Categorías
+                    </span>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowCategoryManager(false)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
+                    <CategoryManager />
+                  </div>
+                  <div className="shrink-0 px-4 py-3 border-t border-border">
+                    <Button variant="outline" className="w-full h-8 text-xs" onClick={() => setShowCategoryManager(false)}>
+                      Cerrar
+                    </Button>
+                  </div>
                 </div>
-                <div className="shrink-0 pt-3 border-t border-border">
-                  <Button
-                    variant="outline"
-                    className="w-full h-8 text-xs"
-                    onClick={() => setShowCategoryManager(false)}
-                  >
-                    Cerrar
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+              </div>,
+              document.body
+            )}
           </div>
 
           {/* ── STOCK DIRECTO ─────────────────────────────────── */}
