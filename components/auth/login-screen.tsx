@@ -69,7 +69,7 @@ export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginSc
 
       {/* Left panel — brand */}
       <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12" style={{ backgroundColor: primaryColor }}>
-        <WaitlessLogo size={56} variant="mark" color="light" imageUrl={logoUrl} imageAlt={restaurantName ?? 'Logo'} />
+        <WaitlessLogo size={56} variant="mark" color="light" imageUrl={logoUrl} imageAlt="Logo" />
         <p
           className="mt-6 text-white/50 text-sm text-center max-w-xs leading-relaxed"
           style={{ fontFamily }}
@@ -94,7 +94,7 @@ export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginSc
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         {/* Mobile logo */}
         <div className="lg:hidden mb-10">
-          <WaitlessLogo size={48} variant="full" color="dark" imageUrl={logoUrl} imageAlt={restaurantName ?? 'Logo'} />
+          <WaitlessLogo size={48} variant="full" color="dark" imageUrl={logoUrl} imageAlt="Logo" />
         </div>
 
         <div className="w-full max-w-sm">
