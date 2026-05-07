@@ -133,7 +133,7 @@ export function ConsumerExploreView() {
   // ── Data fetching ────────────────────────────────────────────────────────────
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) { router.replace('/consumidor'); return }
+      if (!session) return
       fetch('/api/consumidor/profile', {
         headers: { Authorization: `Bearer ${session.access_token}` },
       }).then(r => r.json()).then(d => {
