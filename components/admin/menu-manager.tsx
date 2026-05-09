@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Plus, Edit2, ImageIcon, ExternalLink, Copy, Check, Settings2, X, Save, Upload } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { canDo } from '@/lib/permissions'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
@@ -135,8 +134,8 @@ export function MenuManager() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-black text-foreground tracking-tight">Gestión de menú</h2>
-          <p className="text-sm text-muted-foreground">{menuItems.length} platillos en total</p>
+          <h2 className="text-lg font-black text-gray-900 tracking-tight">Gestión de menú</h2>
+          <p className="text-sm text-gray-500">{menuItems.length} platillos en total</p>
         </div>
         {canEditMenu && (
           <button
@@ -150,15 +149,15 @@ export function MenuManager() {
       </div>
 
       {/* ── Banner menú digital ── */}
-      <div className="rounded-2xl border border-border bg-white overflow-hidden">
+      <div className="rounded-2xl border border-gray-100 bg-white overflow-hidden">
         <div className="px-4 pt-4 pb-3">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Menú digital público</p>
-          <p className="text-xs text-muted-foreground font-mono truncate">{menuUrl}</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Menú digital público</p>
+          <p className="text-xs text-gray-500 font-mono truncate">{menuUrl}</p>
         </div>
-        <div className="flex border-t border-border divide-x divide-border">
+        <div className="flex border-t border-gray-100 divide-x divide-gray-100">
           <button
             onClick={handleCopyUrl}
-            className="flex-1 flex items-center justify-center gap-1.5 h-10 text-xs font-semibold text-foreground hover:bg-secondary/50 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 h-10 text-xs font-semibold text-gray-900 hover:bg-gray-50 transition-colors"
           >
             {copied
               ? <><Check className="h-3.5 w-3.5 text-green-600" /><span className="text-green-600">Copiado</span></>
@@ -168,7 +167,7 @@ export function MenuManager() {
           {canEditConfig && (
             <button
               onClick={() => setShowCustomize(true)}
-              className="flex-1 flex items-center justify-center gap-1.5 h-10 text-xs font-semibold text-foreground hover:bg-secondary/50 transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 h-10 text-xs font-semibold text-gray-900 hover:bg-gray-50 transition-colors"
             >
               <Settings2 className="h-3.5 w-3.5" />
               Personalizar
@@ -198,23 +197,23 @@ export function MenuManager() {
             return (
               <div
                 key={item.id}
-                className={`flex items-center gap-3 px-4 py-3 border-b border-border last:border-0 transition-opacity ${!item.disponible ? 'opacity-40' : ''}`}
+                className={`flex items-center gap-3 px-4 py-3 border-b border-gray-100 last:border-0 transition-opacity ${!item.disponible ? 'opacity-40' : ''}`}
               >
                 {/* Imagen */}
-                <div className="w-12 h-12 rounded-xl bg-secondary flex-shrink-0 overflow-hidden flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
                   {item.imagen ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={item.imagen} alt={item.nombre} className="w-full h-full object-cover" />
                   ) : (
-                    <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
+                    <ImageIcon className="h-5 w-5 text-gray-500/40" />
                   )}
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{item.nombre}</p>
+                  <p className="text-sm font-semibold text-gray-900 truncate">{item.nombre}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-sm font-bold text-foreground">{formatPrice(item.precio)}</span>
+                    <span className="text-sm font-bold text-gray-900">{formatPrice(item.precio)}</span>
                     {margin !== null && (
                       <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${marginCls}`}>
                         {margin}% margen
@@ -225,7 +224,7 @@ export function MenuManager() {
 
                 {/* Disponible toggle */}
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs text-muted-foreground hidden sm:block">
+                  <span className="text-xs text-gray-500 hidden sm:block">
                     {item.disponible ? 'Disponible' : 'Agotado'}
                   </span>
                   <Switch
@@ -238,7 +237,7 @@ export function MenuManager() {
                 {/* Editar */}
                 <button
                   onClick={() => handleEdit(item)}
-                  className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors shrink-0"
+                  className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors shrink-0"
                 >
                   <Edit2 className="h-4 w-4" />
                 </button>
@@ -252,10 +251,10 @@ export function MenuManager() {
             const catItems = menuItems.filter(item => item.categoria === categoria.id)
             if (catItems.length === 0) return
             sections.push(
-              <div key={`cat-${categoria.id}`} className="rounded-2xl border border-border bg-white overflow-hidden">
-                <div className="px-4 py-3 bg-secondary/30 border-b border-border flex items-center justify-between">
-                  <p className="text-sm font-bold text-foreground">{categoria.nombre}</p>
-                  <span className="text-xs text-muted-foreground bg-white border border-border rounded-full px-2 py-0.5">
+              <div key={`cat-${categoria.id}`} className="rounded-2xl border border-gray-100 bg-white overflow-hidden">
+                <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                  <p className="text-sm font-bold text-gray-900">{categoria.nombre}</p>
+                  <span className="text-xs text-gray-500 bg-white border border-gray-100 rounded-full px-2 py-0.5">
                     {catItems.length} {catItems.length === 1 ? 'platillo' : 'platillos'}
                   </span>
                 </div>
@@ -267,10 +266,10 @@ export function MenuManager() {
           const uncategorized = menuItems.filter(item => !sortedCategories.some(c => c.id === item.categoria))
           if (uncategorized.length > 0) {
             sections.push(
-              <div key="cat-sin" className="rounded-2xl border border-border bg-white overflow-hidden">
-                <div className="px-4 py-3 bg-secondary/30 border-b border-border flex items-center justify-between">
-                  <p className="text-sm font-bold text-foreground">Sin categoría</p>
-                  <span className="text-xs text-muted-foreground bg-white border border-border rounded-full px-2 py-0.5">
+              <div key="cat-sin" className="rounded-2xl border border-gray-100 bg-white overflow-hidden">
+                <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                  <p className="text-sm font-bold text-gray-900">Sin categoría</p>
+                  <span className="text-xs text-gray-500 bg-white border border-gray-100 rounded-full px-2 py-0.5">
                     {uncategorized.length} {uncategorized.length === 1 ? 'platillo' : 'platillos'}
                   </span>
                 </div>
@@ -281,12 +280,12 @@ export function MenuManager() {
 
           if (sections.length === 0) {
             return (
-              <div className="rounded-2xl border border-border bg-white py-14 text-center">
-                <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center mx-auto mb-3">
-                  <ImageIcon className="h-6 w-6 text-muted-foreground/40" />
+              <div className="rounded-2xl border border-gray-100 bg-white py-14 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
+                  <ImageIcon className="h-6 w-6 text-gray-500/40" />
                 </div>
-                <p className="text-sm font-semibold text-foreground">Sin platillos todavía</p>
-                <p className="text-xs text-muted-foreground mt-1">Agregá tu primer platillo con el botón de arriba.</p>
+                <p className="text-sm font-semibold text-gray-900">Sin platillos todavía</p>
+                <p className="text-xs text-gray-500 mt-1">Agregá tu primer platillo con el botón de arriba.</p>
               </div>
             )
           }
@@ -316,16 +315,16 @@ export function MenuManager() {
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-black/8">
               <div>
-                <p className="font-black text-foreground text-sm tracking-tight">
+                <p className="font-black text-gray-900 text-sm tracking-tight">
                   Personalizar menú
                 </p>
-                <p className="text-[10px] text-foreground/40 mt-0.5">Apariencia de la página pública</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">Apariencia de la página pública</p>
               </div>
               <button
                 onClick={() => setShowCustomize(false)}
                 className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-black/6 transition-colors"
               >
-                <X className="h-4 w-4 text-foreground/50" />
+                <X className="h-4 w-4 text-gray-500" />
               </button>
             </div>
 
@@ -334,10 +333,10 @@ export function MenuManager() {
 
               {/* Identidad */}
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-foreground/30 mb-2.5">Identidad</p>
+                <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-2.5">Identidad</p>
                 <div className="space-y-2.5">
                   <div>
-                    <label className="text-[10px] font-semibold text-foreground/50 block mb-1">Nombre del restaurante</label>
+                    <label className="text-[10px] font-semibold text-gray-500 block mb-1">Nombre del restaurante</label>
                     <Input
                       value={localBranding.restaurantName}
                       onChange={e => setLocalBranding(p => ({ ...p, restaurantName: e.target.value }))}
@@ -346,7 +345,7 @@ export function MenuManager() {
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-semibold text-foreground/50 block mb-1">Descripción</label>
+                    <label className="text-[10px] font-semibold text-gray-500 block mb-1">Descripción</label>
                     <Textarea
                       value={localBranding.descripcion}
                       onChange={e => setLocalBranding(p => ({ ...p, descripcion: e.target.value }))}
@@ -355,18 +354,18 @@ export function MenuManager() {
                       maxLength={200}
                       className="text-xs"
                     />
-                    <p className="text-[9px] text-foreground/25 text-right">{localBranding.descripcion.length}/200</p>
+                    <p className="text-[9px] text-gray-300 text-right">{localBranding.descripcion.length}/200</p>
                   </div>
                 </div>
               </div>
 
               {/* Imágenes */}
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-foreground/30 mb-2.5">Imágenes</p>
+                <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-2.5">Imágenes</p>
                 <div className="space-y-3">
                   {/* Logo */}
                   <div>
-                    <label className="text-[10px] font-semibold text-foreground/50 block mb-1.5">Logo</label>
+                    <label className="text-[10px] font-semibold text-gray-500 block mb-1.5">Logo</label>
                     <div className="flex items-center gap-2">
                       {localBranding.logoUrl && (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -376,7 +375,7 @@ export function MenuManager() {
                         type="button"
                         onClick={() => logoInputRef.current?.click()}
                         disabled={uploadingLogo}
-                        className="flex-1 h-10 rounded-lg border border-dashed border-black/20 flex items-center justify-center gap-2 text-xs text-foreground/50 hover:border-black/40 hover:text-foreground/70 transition-colors disabled:opacity-50"
+                        className="flex-1 h-10 rounded-lg border border-dashed border-black/20 flex items-center justify-center gap-2 text-xs text-gray-500 hover:border-black/40 hover:text-gray-700 transition-colors disabled:opacity-50"
                       >
                         <Upload className="h-3.5 w-3.5" />
                         {uploadingLogo ? 'Subiendo...' : localBranding.logoUrl ? 'Cambiar logo' : 'Subir logo'}
@@ -398,7 +397,7 @@ export function MenuManager() {
 
                   {/* Portada */}
                   <div>
-                    <label className="text-[10px] font-semibold text-foreground/50 block mb-1.5">Imagen de portada</label>
+                    <label className="text-[10px] font-semibold text-gray-500 block mb-1.5">Imagen de portada</label>
                     <button
                       type="button"
                       onClick={() => coverInputRef.current?.click()}
@@ -415,7 +414,7 @@ export function MenuManager() {
                           </div>
                         </div>
                       ) : (
-                        <div className="h-20 flex items-center justify-center gap-2 text-xs text-foreground/50">
+                        <div className="h-20 flex items-center justify-center gap-2 text-xs text-gray-500">
                           <Upload className="h-3.5 w-3.5" />
                           {uploadingCover ? 'Subiendo...' : 'Subir imagen de portada'}
                         </div>
@@ -439,25 +438,25 @@ export function MenuManager() {
 
               {/* Contacto */}
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-foreground/30 mb-2.5">Contacto</p>
+                <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-2.5">Contacto</p>
                 <div>
-                  <label className="text-[10px] font-semibold text-foreground/50 block mb-1">Número de WhatsApp</label>
+                  <label className="text-[10px] font-semibold text-gray-500 block mb-1">Número de WhatsApp</label>
                   <Input
                     value={localBranding.whatsappNumero}
                     onChange={e => setLocalBranding(p => ({ ...p, whatsappNumero: e.target.value }))}
                     placeholder="+52 55 1234 5678"
                     className="h-9 text-xs"
                   />
-                  <p className="text-[9px] text-foreground/30 mt-0.5">Aparece como botón de contacto en el menú</p>
+                  <p className="text-[9px] text-gray-400 mt-0.5">Aparece como botón de contacto en el menú</p>
                 </div>
               </div>
 
               {/* Colores */}
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-foreground/30 mb-2.5">Colores</p>
+                <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-2.5">Colores</p>
                 <div className="grid grid-cols-2 gap-2.5">
                   <div>
-                    <label className="text-[10px] font-semibold text-foreground/50 block mb-1">Color primario</label>
+                    <label className="text-[10px] font-semibold text-gray-500 block mb-1">Color primario</label>
                     <div className="flex items-center gap-2 h-9 rounded-lg border border-black/10 px-2 bg-white">
                       <input
                         type="color"
@@ -465,11 +464,11 @@ export function MenuManager() {
                         onChange={e => setLocalBranding(p => ({ ...p, primaryColor: e.target.value }))}
                         className="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent"
                       />
-                      <span className="text-xs font-mono text-foreground/60">{localBranding.primaryColor}</span>
+                      <span className="text-xs font-mono text-gray-600">{localBranding.primaryColor}</span>
                     </div>
                   </div>
                   <div>
-                    <label className="text-[10px] font-semibold text-foreground/50 block mb-1">Color acento</label>
+                    <label className="text-[10px] font-semibold text-gray-500 block mb-1">Color acento</label>
                     <div className="flex items-center gap-2 h-9 rounded-lg border border-black/10 px-2 bg-white">
                       <input
                         type="color"
@@ -477,7 +476,7 @@ export function MenuManager() {
                         onChange={e => setLocalBranding(p => ({ ...p, accentColor: e.target.value }))}
                         className="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent"
                       />
-                      <span className="text-xs font-mono text-foreground/60">{localBranding.accentColor}</span>
+                      <span className="text-xs font-mono text-gray-600">{localBranding.accentColor}</span>
                     </div>
                   </div>
                 </div>
@@ -485,11 +484,11 @@ export function MenuManager() {
 
               {/* Opciones */}
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-foreground/30 mb-2.5">Opciones</p>
+                <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-2.5">Opciones</p>
                 <div className="flex items-center justify-between h-10 px-3 rounded-lg border border-black/10 bg-white">
                   <div>
-                    <p className="text-xs font-semibold text-foreground">Powered by WAITLESS</p>
-                    <p className="text-[9px] text-foreground/35">Muestra el badge al pie del menú</p>
+                    <p className="text-xs font-semibold text-gray-900">Powered by WAITLESS</p>
+                    <p className="text-[9px] text-gray-400">Muestra el badge al pie del menú</p>
                   </div>
                   <Switch
                     checked={localBranding.poweredByWaitless}

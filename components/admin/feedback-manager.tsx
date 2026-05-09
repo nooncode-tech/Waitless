@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { Star, MessageSquare, TrendingUp } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
 import { supabase } from '@/lib/supabase'
-import { cn } from '@/lib/utils'
 import type { Feedback } from '@/lib/store'
 
 export function FeedbackManager() {
@@ -50,35 +49,35 @@ export function FeedbackManager() {
     : 0
 
   return (
-    <div className="p-4 space-y-5 max-w-3xl">
+    <div className="space-y-5 max-w-3xl" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
       <div>
-        <h2 className="text-lg font-bold text-foreground">Feedback de clientes</h2>
-        <p className="text-xs text-muted-foreground mt-0.5">{feedbackList.length} respuestas recibidas</p>
+        <h2 className="text-lg font-black text-gray-900">Feedback de clientes</h2>
+        <p className="text-xs text-gray-500 mt-0.5">{feedbackList.length} respuestas recibidas</p>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="border border-border rounded-xl p-4 bg-white text-center">
+        <div className="border border-gray-100 rounded-2xl p-4 bg-white text-center">
           <Star className="h-5 w-5 mx-auto mb-1 text-yellow-500 fill-yellow-500" />
-          <p className="text-2xl font-bold text-foreground">{avgRating}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Promedio</p>
+          <p className="text-2xl font-black text-gray-900">{avgRating}</p>
+          <p className="text-[10px] text-gray-400 uppercase tracking-wide">Promedio</p>
         </div>
-        <div className="border border-border rounded-xl p-4 bg-white text-center">
-          <TrendingUp className="h-5 w-5 mx-auto mb-1 text-success" />
-          <p className="text-2xl font-bold text-foreground">{nps}%</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Satisfechos (≥4★)</p>
+        <div className="border border-gray-100 rounded-2xl p-4 bg-white text-center">
+          <TrendingUp className="h-5 w-5 mx-auto mb-1 text-[#06C167]" />
+          <p className="text-2xl font-black text-gray-900">{nps}%</p>
+          <p className="text-[10px] text-gray-400 uppercase tracking-wide">Satisfechos (≥4★)</p>
         </div>
-        <div className="border border-border rounded-xl p-4 bg-white text-center">
-          <MessageSquare className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
-          <p className="text-2xl font-bold text-foreground">{feedbackList.filter(f => f.comentario).length}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Con comentario</p>
+        <div className="border border-gray-100 rounded-2xl p-4 bg-white text-center">
+          <MessageSquare className="h-5 w-5 mx-auto mb-1 text-gray-400" />
+          <p className="text-2xl font-black text-gray-900">{feedbackList.filter(f => f.comentario).length}</p>
+          <p className="text-[10px] text-gray-400 uppercase tracking-wide">Con comentario</p>
         </div>
       </div>
 
       {/* Distribution */}
-      <div className="border border-border rounded-xl bg-white overflow-hidden">
-        <div className="px-4 py-3 border-b border-border">
-          <p className="text-xs font-bold text-foreground uppercase tracking-wide">Distribución</p>
+      <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-100">
+          <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Distribución</p>
         </div>
         <div className="p-4 space-y-2">
           {distribution.map(d => (
@@ -88,28 +87,28 @@ export function FeedbackManager() {
                   <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                 ))}
               </div>
-              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                <div className="h-full bg-black rounded-full" style={{ width: `${d.pct}%` }} />
+              <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full bg-gray-900 rounded-full" style={{ width: `${d.pct}%` }} />
               </div>
-              <span className="text-xs text-muted-foreground w-8 text-right">{d.count}</span>
+              <span className="text-xs text-gray-500 w-8 text-right">{d.count}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Comments */}
-      <div className="border border-border rounded-xl bg-white overflow-hidden">
-        <div className="px-4 py-3 border-b border-border">
-          <p className="text-xs font-bold text-foreground uppercase tracking-wide">Últimos comentarios</p>
+      <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
+        <div className="px-4 py-3 border-b border-gray-100">
+          <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Últimos comentarios</p>
         </div>
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-gray-100">
           {loading ? (
             <div className="flex items-center justify-center gap-2 py-8">
-              <Spinner className="size-3.5 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Cargando...</p>
+              <Spinner className="size-3.5 text-gray-400" />
+              <p className="text-xs text-gray-400">Cargando...</p>
             </div>
           ) : feedbackList.filter(f => f.comentario).length === 0 ? (
-            <p className="text-xs text-muted-foreground text-center py-8">Sin comentarios aún</p>
+            <p className="text-xs text-gray-400 text-center py-8">Sin comentarios aún</p>
           ) : (
             feedbackList.filter(f => f.comentario).slice(0, 20).map(f => (
               <div key={f.id} className="px-4 py-3">
@@ -118,18 +117,15 @@ export function FeedbackManager() {
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star
                         key={i}
-                        className={cn(
-                          'h-3 w-3',
-                          i < f.rating ? 'fill-yellow-400 text-yellow-400' : 'text-border'
-                        )}
+                        className={`h-3 w-3 ${i < f.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`}
                       />
                     ))}
                   </div>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[10px] text-gray-400">
                     Mesa {f.mesa} · {new Date(f.createdAt).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
                   </span>
                 </div>
-                <p className="text-xs text-foreground">{f.comentario}</p>
+                <p className="text-xs text-gray-900">{f.comentario}</p>
               </div>
             ))
           )}
