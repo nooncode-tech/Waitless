@@ -2,42 +2,19 @@
 
 import { useState } from 'react'
 import { useApp } from '@/lib/context'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   QrCode, RefreshCw, Copy, Check, Clock, X, Download,
-  Plus, Trash2, Edit2, Table2, Settings2, AlertCircle
+  Plus, Trash2, Edit2, Table2, Settings2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDateTime } from '@/lib/store'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 
 export function QRManager() {
-  const { 
+  const {
     qrTokens, generateTableQR, invalidateTableQR, getActiveQRForTable, config,
     tables, addTable, updateTable, deleteTable, getActiveTables
   } = useApp()
@@ -45,112 +22,96 @@ export function QRManager() {
   const [copiedToken, setCopiedToken] = useState<string | null>(null)
   const [generatingMesa, setGeneratingMesa] = useState<number | null>(null)
   const [activeTab, setActiveTab] = useState<'qr' | 'mesas'>('qr')
-  
-  // Table management state
+
   const [showAddTable, setShowAddTable] = useState(false)
   const [editingTable, setEditingTable] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [newTableNumber, setNewTableNumber] = useState('')
   const [newTableCapacity, setNewTableCapacity] = useState('4')
   const [newTableUbicacion, setNewTableUbicacion] = useState('')
-  
+
   const activeTables = getActiveTables()
-  
+
   const handleGenerateQR = async (mesa: number) => {
     setGeneratingMesa(mesa)
     try {
       await generateTableQR(mesa)
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error al generar QR'
-      toast.error(msg)
+      toast.error(err instanceof Error ? err.message : 'Error al generar QR')
     } finally {
       setGeneratingMesa(null)
     }
   }
-  
+
   const handleCopyUrl = (mesa: number, token: string) => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    const url = `${baseUrl}?mesa=${mesa}&token=${token}`
-    navigator.clipboard.writeText(url)
+    navigator.clipboard.writeText(`${baseUrl}?mesa=${mesa}&token=${token}`)
     setCopiedToken(token)
     setTimeout(() => setCopiedToken(null), 2000)
   }
-  
+
   const handleDownloadQR = (mesa: number, token: string) => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
     const url = `${baseUrl}?mesa=${mesa}&token=${token}`
-    const qrDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`
-    
     const link = document.createElement('a')
-    link.href = qrDataUrl
+    link.href = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`
     link.download = `mesa-${mesa}-qr.png`
     link.target = '_blank'
     link.click()
   }
-  
+
   const handleAddTable = () => {
     const numero = parseInt(newTableNumber)
     if (!numero || tables.some(t => t.numero === numero)) return
-    
     addTable(numero, parseInt(newTableCapacity) || 4, newTableUbicacion || undefined)
-    setNewTableNumber('')
-    setNewTableCapacity('4')
-    setNewTableUbicacion('')
+    setNewTableNumber(''); setNewTableCapacity('4'); setNewTableUbicacion('')
     setShowAddTable(false)
   }
-  
+
   const handleDeleteTable = (tableId: string) => {
     deleteTable(tableId)
     setDeleteConfirm(null)
   }
-  
-  const handleToggleTableActive = (tableId: string, currentActive: boolean) => {
-    updateTable(tableId, { activa: !currentActive })
-  }
-  
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-foreground">Gestion de Mesas y QR</h2>
-          <p className="text-sm text-muted-foreground">
-            Administra mesas y genera codigos QR seguros
-          </p>
+          <h2 className="text-sm font-black text-gray-900">Gestión de Mesas y QR</h2>
+          <p className="text-[10px] text-gray-400">Administra mesas y genera códigos QR seguros</p>
         </div>
-        <Badge variant="outline" className="gap-1">
-          <Table2 className="h-3 w-3" />
-          {activeTables.length} mesas activas
-        </Badge>
+        <span className="text-xs font-semibold px-2.5 py-1 rounded-full border border-gray-200 text-gray-600 flex items-center gap-1">
+          <Table2 className="h-3 w-3" />{activeTables.length} mesas activas
+        </span>
       </div>
-      
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'qr' | 'mesas')}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="qr" className="gap-1">
-            <QrCode className="h-3.5 w-3.5" />
-            Codigos QR
-          </TabsTrigger>
-          <TabsTrigger value="mesas" className="gap-1">
-            <Settings2 className="h-3.5 w-3.5" />
-            Configurar Mesas
-          </TabsTrigger>
-        </TabsList>
-        
-        {/* QR Tab */}
-        <TabsContent value="qr" className="space-y-4">
-          {/* Generate QR for specific table */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Generar QR Nuevo</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-end gap-4">
+
+      {/* Tab bar */}
+      <div className="flex rounded-xl border border-gray-200 overflow-hidden text-xs">
+        {([['qr', QrCode, 'Códigos QR'], ['mesas', Settings2, 'Configurar Mesas']] as const).map(([tab, Icon, label]) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 font-semibold transition-colors ${activeTab === tab ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
+          >
+            <Icon className="h-3.5 w-3.5" />{label}
+          </button>
+        ))}
+      </div>
+
+      {/* QR Tab */}
+      {activeTab === 'qr' && (
+        <div className="space-y-4">
+          {/* Generate form */}
+          <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-100">
+              <p className="text-xs font-black text-gray-900">Generar QR Nuevo</p>
+            </div>
+            <div className="px-4 py-3">
+              <div className="flex items-end gap-3">
                 <div className="flex-1">
-                  <Label htmlFor="mesa-select">Numero de Mesa</Label>
-                  <Select
-                    value={String(selectedMesa)}
-                    onValueChange={(v) => setSelectedMesa(Number(v))}
-                  >
-                    <SelectTrigger id="mesa-select" className="mt-1.5 h-10">
+                  <Label htmlFor="mesa-select" className="text-xs text-gray-500">Número de Mesa</Label>
+                  <Select value={String(selectedMesa)} onValueChange={(v) => setSelectedMesa(Number(v))}>
+                    <SelectTrigger id="mesa-select" className="mt-1 h-9 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -162,331 +123,218 @@ export function QRManager() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={() => handleGenerateQR(selectedMesa)} className="gap-2">
-                  <QrCode className="h-4 w-4" />
-                  Generar QR
-                </Button>
+                <button
+                  onClick={() => handleGenerateQR(selectedMesa)}
+                  className="h-9 px-3 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1.5"
+                >
+                  <QrCode className="h-3.5 w-3.5" />Generar QR
+                </button>
               </div>
-            </CardContent>
-          </Card>
-          
+            </div>
+          </div>
+
           {/* Active tokens grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {activeTables.map(table => {
               const activeToken = getActiveQRForTable(table.numero)
-              const isExpiringSoon = activeToken && 
-                (new Date(activeToken.expiresAt).getTime() - Date.now()) < 30 * 60 * 1000
-              
+              const isExpiringSoon = activeToken && (new Date(activeToken.expiresAt).getTime() - Date.now()) < 30 * 60 * 1000
+
               return (
-                <Card key={table.id} className={`${!activeToken ? 'opacity-60' : ''}`}>
-                  <CardContent className="pt-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="font-semibold">Mesa {table.numero}</h3>
-                        {table.ubicacion && (
-                          <span className="text-xs text-muted-foreground">{table.ubicacion}</span>
-                        )}
-                        {activeToken ? (
-                          <Badge 
-                            variant={isExpiringSoon ? 'destructive' : 'default'}
-                            className="mt-1 text-xs block w-fit"
-                          >
-                            {isExpiringSoon ? 'Expira pronto' : 'Activo'}
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="mt-1 text-xs block w-fit">
-                            Sin QR activo
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      {activeToken && (
-                        <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
-                          <QrCode className="h-10 w-10 text-muted-foreground" />
-                        </div>
+                <div key={table.id} className={`border border-gray-100 rounded-2xl bg-white p-3 ${!activeToken ? 'opacity-60' : ''}`}>
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="font-semibold text-sm text-gray-900">Mesa {table.numero}</h3>
+                      {table.ubicacion && <span className="text-xs text-gray-400">{table.ubicacion}</span>}
+                      {activeToken ? (
+                        <span className={`mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full block w-fit ${isExpiringSoon ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-[#06C167]'}`}>
+                          {isExpiringSoon ? 'Expira pronto' : 'Activo'}
+                        </span>
+                      ) : (
+                        <span className="mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 block w-fit">Sin QR activo</span>
                       )}
                     </div>
-                    
-                    {activeToken ? (
-                      <div className="space-y-2">
-                        <div className="text-xs text-muted-foreground">
-                          <div>Creado: {formatDateTime(activeToken.createdAt)}</div>
-                          <div>Expira: {formatDateTime(activeToken.expiresAt)}</div>
-                        </div>
-                        
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1 gap-1 bg-transparent"
-                            onClick={() => handleCopyUrl(table.numero, activeToken.token)}
-                          >
-                            {copiedToken === activeToken.token ? (
-                              <Check className="h-3 w-3" />
-                            ) : (
-                              <Copy className="h-3 w-3" />
-                            )}
-                            {copiedToken === activeToken.token ? 'Copiado' : 'Copiar'}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDownloadQR(table.numero, activeToken.token)}
-                          >
-                            <Download className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleGenerateQR(table.numero)}
-                            title="Regenerar"
-                          >
-                            <RefreshCw className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => invalidateTableQR(activeToken.id)}
-                            className="text-destructive hover:text-destructive"
-                            title="Invalidar"
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
+                    {activeToken && (
+                      <div className="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center">
+                        <QrCode className="h-9 w-9 text-gray-400" />
                       </div>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full gap-1 bg-transparent"
-                        onClick={() => handleGenerateQR(table.numero)}
-                        disabled={generatingMesa === table.numero}
-                      >
-                        <QrCode className="h-3 w-3" />
-                        Generar QR
-                      </Button>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+
+                  {activeToken ? (
+                    <div className="space-y-2">
+                      <div className="text-xs text-gray-400">
+                        <div>Creado: {formatDateTime(activeToken.createdAt)}</div>
+                        <div>Expira: {formatDateTime(activeToken.expiresAt)}</div>
+                      </div>
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={() => handleCopyUrl(table.numero, activeToken.token)}
+                          className="flex-1 h-8 rounded-xl border border-gray-200 text-xs text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-1"
+                        >
+                          {copiedToken === activeToken.token ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                          {copiedToken === activeToken.token ? 'Copiado' : 'Copiar'}
+                        </button>
+                        <button onClick={() => handleDownloadQR(table.numero, activeToken.token)} className="h-8 w-8 rounded-xl border border-gray-200 hover:bg-gray-50 flex items-center justify-center text-gray-500"><Download className="h-3 w-3" /></button>
+                        <button onClick={() => handleGenerateQR(table.numero)} title="Regenerar" className="h-8 w-8 rounded-xl border border-gray-200 hover:bg-gray-50 flex items-center justify-center text-gray-500"><RefreshCw className="h-3 w-3" /></button>
+                        <button onClick={() => invalidateTableQR(activeToken.id)} title="Invalidar" className="h-8 w-8 rounded-xl hover:bg-red-50 flex items-center justify-center text-red-400"><X className="h-3 w-3" /></button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleGenerateQR(table.numero)}
+                      disabled={generatingMesa === table.numero}
+                      className="w-full h-8 rounded-xl border border-gray-200 text-xs text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-1 disabled:opacity-40"
+                    >
+                      <QrCode className="h-3 w-3" />Generar QR
+                    </button>
+                  )}
+                </div>
               )
             })}
           </div>
-          
-          {/* Token validation info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Seguridad de QR</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground space-y-2">
-              <p>Los codigos QR generados incluyen:</p>
-              <ul className="list-disc list-inside space-y-1 ml-2">
-                <li>Token unico de 32 caracteres aleatorios</li>
-                <li>Expiracion automatica despues de {config.tiempoExpiracionSesionMinutos} min</li>
-                <li>Vinculacion a una mesa especifica</li>
-                <li>Invalidacion al cerrar la cuenta de la mesa</li>
+
+          {/* Security info */}
+          <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-100">
+              <p className="text-xs font-black text-gray-900">Seguridad de QR</p>
+            </div>
+            <div className="px-4 py-3">
+              <p className="text-xs text-gray-500 mb-2">Los códigos QR generados incluyen:</p>
+              <ul className="text-xs text-gray-400 space-y-1 list-disc list-inside ml-2">
+                <li>Token único de 32 caracteres aleatorios</li>
+                <li>Expiración automática después de {config.tiempoExpiracionSesionMinutos} min</li>
+                <li>Vinculación a una mesa específica</li>
+                <li>Invalidación al cerrar la cuenta de la mesa</li>
               </ul>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        {/* Mesas Tab */}
-        <TabsContent value="mesas" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-muted-foreground">
-              Configura las mesas de tu restaurante
-            </p>
-            <Button onClick={() => setShowAddTable(true)} className="gap-1">
-              <Plus className="h-4 w-4" />
-              Agregar Mesa
-            </Button>
+            </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        </div>
+      )}
+
+      {/* Mesas Tab */}
+      {activeTab === 'mesas' && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <p className="text-xs text-gray-400">Configura las mesas de tu restaurante</p>
+            <button onClick={() => setShowAddTable(true)} className="h-8 px-3 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1.5">
+              <Plus className="h-3.5 w-3.5" />Agregar Mesa
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {[...tables].sort((a, b) => a.numero - b.numero).map(table => (
-              <Card 
-                key={table.id} 
-                className={`border transition-opacity ${!table.activa ? 'opacity-60' : ''}`}
-              >
-                <CardContent className="pt-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="font-semibold flex items-center gap-2">
-                        <Table2 className="h-4 w-4" />
-                        Mesa {table.numero}
-                      </h3>
-                      {table.ubicacion && (
-                        <span className="text-xs text-muted-foreground">{table.ubicacion}</span>
-                      )}
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">
-                          {table.capacidad} personas
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-1">
-                      <Switch
-                        checked={table.activa}
-                        onCheckedChange={() => handleToggleTableActive(table.id, table.activa)}
-                      />
-                    </div>
+              <div key={table.id} className={`border border-gray-100 rounded-2xl bg-white p-3 transition-opacity ${!table.activa ? 'opacity-60' : ''}`}>
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h3 className="font-semibold text-sm text-gray-900 flex items-center gap-1.5">
+                      <Table2 className="h-3.5 w-3.5 text-gray-400" />Mesa {table.numero}
+                    </h3>
+                    {table.ubicacion && <span className="text-xs text-gray-400">{table.ubicacion}</span>}
+                    <span className="mt-1 text-[10px] px-2 py-0.5 rounded-full border border-gray-200 text-gray-500 inline-block">{table.capacidad} personas</span>
                   </div>
-                  
-                  <div className="flex items-center justify-between pt-2 border-t border-border">
-                    <span className={`text-xs ${table.activa ? 'text-success' : 'text-muted-foreground'}`}>
-                      {table.activa ? 'Activa' : 'Desactivada'}
-                    </span>
-                    
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setEditingTable(table.id)}
-                        className="h-7 w-7"
-                      >
-                        <Edit2 className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeleteConfirm(table.id)}
-                        className="h-7 w-7 text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
+                  <Switch checked={table.activa} onCheckedChange={() => updateTable(table.id, { activa: !table.activa })} className="scale-75" />
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                  <span className={`text-xs ${table.activa ? 'text-[#06C167]' : 'text-gray-400'}`}>{table.activa ? 'Activa' : 'Desactivada'}</span>
+                  <div className="flex gap-1">
+                    <button onClick={() => setEditingTable(table.id)} className="h-7 w-7 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900"><Edit2 className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => setDeleteConfirm(table.id)} className="h-7 w-7 rounded-lg hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500"><Trash2 className="h-3.5 w-3.5" /></button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
-          
+
           {tables.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <Table2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No hay mesas configuradas</p>
-              <Button onClick={() => setShowAddTable(true)} className="mt-4">
-                Agregar primera mesa
-              </Button>
+            <div className="text-center py-12 text-gray-400">
+              <Table2 className="h-12 w-12 mx-auto mb-4 opacity-30" />
+              <p className="text-sm">No hay mesas configuradas</p>
+              <button onClick={() => setShowAddTable(true)} className="mt-4 h-8 px-4 rounded-xl bg-gray-900 text-white text-xs font-semibold">Agregar primera mesa</button>
             </div>
           )}
-        </TabsContent>
-      </Tabs>
-      
-      {/* Add Table Dialog */}
-      <Dialog open={showAddTable} onOpenChange={setShowAddTable}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Agregar Nueva Mesa</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label>Numero de Mesa *</Label>
-              <Input
-                type="number"
-                value={newTableNumber}
-                onChange={(e) => setNewTableNumber(e.target.value)}
-                placeholder="Ej: 13"
-                min="1"
-              />
-              {tables.some(t => t.numero === parseInt(newTableNumber)) && (
-                <p className="text-xs text-destructive mt-1">Este numero ya existe</p>
-              )}
+        </div>
+      )}
+
+      {/* Add Table Modal */}
+      {showAddTable && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm bg-white rounded-2xl overflow-hidden shadow-xl">
+            <div className="px-5 py-4 border-b border-gray-100">
+              <h3 className="text-sm font-black text-gray-900">Agregar Nueva Mesa</h3>
             </div>
-            <div>
-              <Label>Capacidad (personas)</Label>
-              <Input
-                type="number"
-                value={newTableCapacity}
-                onChange={(e) => setNewTableCapacity(e.target.value)}
-                placeholder="4"
-                min="1"
-              />
+            <div className="px-5 py-4 space-y-3">
+              <div>
+                <Label className="text-xs text-gray-500">Número de Mesa *</Label>
+                <Input type="number" value={newTableNumber} onChange={(e) => setNewTableNumber(e.target.value)} placeholder="Ej: 13" min="1" className="mt-1 h-9 text-sm" />
+                {tables.some(t => t.numero === parseInt(newTableNumber)) && (
+                  <p className="text-xs text-red-500 mt-1">Este número ya existe</p>
+                )}
+              </div>
+              <div>
+                <Label className="text-xs text-gray-500">Capacidad (personas)</Label>
+                <Input type="number" value={newTableCapacity} onChange={(e) => setNewTableCapacity(e.target.value)} placeholder="4" min="1" className="mt-1 h-9 text-sm" />
+              </div>
+              <div>
+                <Label className="text-xs text-gray-500">Ubicación (opcional)</Label>
+                <Input value={newTableUbicacion} onChange={(e) => setNewTableUbicacion(e.target.value)} placeholder="Ej: Terraza, Interior, Ventana" className="mt-1 h-9 text-sm" />
+              </div>
             </div>
-            <div>
-              <Label>Ubicacion (opcional)</Label>
-              <Input
-                value={newTableUbicacion}
-                onChange={(e) => setNewTableUbicacion(e.target.value)}
-                placeholder="Ej: Terraza, Interior, Ventana"
-              />
+            <div className="px-5 py-4 border-t border-gray-100 flex gap-2">
+              <button onClick={() => setShowAddTable(false)} className="flex-1 h-9 rounded-xl border border-gray-200 text-gray-700 text-xs font-medium hover:bg-gray-50">Cancelar</button>
+              <button onClick={handleAddTable} disabled={!newTableNumber || tables.some(t => t.numero === parseInt(newTableNumber))} className="flex-1 h-9 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold disabled:opacity-40">Agregar Mesa</button>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddTable(false)}>
-              Cancelar
-            </Button>
-            <Button 
-              onClick={handleAddTable}
-              disabled={!newTableNumber || tables.some(t => t.numero === parseInt(newTableNumber))}
-            >
-              Agregar Mesa
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Edit Table Dialog */}
+        </div>
+      )}
+
+      {/* Edit Table Modal */}
       {editingTable && (() => {
         const table = tables.find(t => t.id === editingTable)
         if (!table) return null
-        
         return (
-          <Dialog open={!!editingTable} onOpenChange={() => setEditingTable(null)}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Editar Mesa {table.numero}</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-sm bg-white rounded-2xl overflow-hidden shadow-xl">
+              <div className="px-5 py-4 border-b border-gray-100">
+                <h3 className="text-sm font-black text-gray-900">Editar Mesa {table.numero}</h3>
+              </div>
+              <div className="px-5 py-4 space-y-3">
                 <div>
-                  <Label>Capacidad (personas)</Label>
-                  <Input
-                    type="number"
-                    defaultValue={table.capacidad}
-                    min="1"
-                    onChange={(e) => updateTable(table.id, { capacidad: parseInt(e.target.value) || 4 })}
-                  />
+                  <Label className="text-xs text-gray-500">Capacidad (personas)</Label>
+                  <Input type="number" defaultValue={table.capacidad} min="1" onChange={(e) => updateTable(table.id, { capacidad: parseInt(e.target.value) || 4 })} className="mt-1 h-9 text-sm" />
                 </div>
                 <div>
-                  <Label>Ubicacion (opcional)</Label>
-                  <Input
-                    defaultValue={table.ubicacion || ''}
-                    placeholder="Ej: Terraza, Interior, Ventana"
-                    onChange={(e) => updateTable(table.id, { ubicacion: e.target.value || undefined })}
-                  />
+                  <Label className="text-xs text-gray-500">Ubicación (opcional)</Label>
+                  <Input defaultValue={table.ubicacion || ''} placeholder="Ej: Terraza, Interior, Ventana" onChange={(e) => updateTable(table.id, { ubicacion: e.target.value || undefined })} className="mt-1 h-9 text-sm" />
                 </div>
               </div>
-              <DialogFooter>
-                <Button onClick={() => setEditingTable(null)}>
-                  Cerrar
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              <div className="px-5 py-4 border-t border-gray-100 flex justify-end">
+                <button onClick={() => setEditingTable(null)} className="h-9 px-4 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold">Cerrar</button>
+              </div>
+            </div>
+          </div>
         )
       })()}
-      
-      {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Eliminar Mesa</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta accion eliminara la mesa permanentemente. Los datos historicos se conservaran.
-              Considera desactivar la mesa en lugar de eliminarla.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteConfirm && handleDeleteTable(deleteConfirm)}
-              className="bg-destructive hover:bg-destructive/90"
-            >
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+
+      {/* Delete Confirm Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-sm bg-white rounded-2xl overflow-hidden shadow-xl">
+            <div className="px-5 py-4 border-b border-gray-100">
+              <h3 className="text-sm font-black text-gray-900">Eliminar Mesa</h3>
+            </div>
+            <div className="px-5 py-4">
+              <p className="text-xs text-gray-500">
+                Esta acción eliminará la mesa permanentemente. Los datos históricos se conservarán.
+                Considerá desactivar la mesa en lugar de eliminarla.
+              </p>
+            </div>
+            <div className="px-5 py-4 border-t border-gray-100 flex gap-2">
+              <button onClick={() => setDeleteConfirm(null)} className="flex-1 h-9 rounded-xl border border-gray-200 text-gray-700 text-xs font-medium hover:bg-gray-50">Cancelar</button>
+              <button onClick={() => handleDeleteTable(deleteConfirm)} className="flex-1 h-9 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-semibold">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -3,18 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useApp } from '@/lib/context'
 import { formatPrice, formatTime, getTimeDiffMinutes } from '@/lib/store'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Separator } from '@/components/ui/separator'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { cn } from '@/lib/utils'
 import {
   ArrowLeftRight,
   Merge,
@@ -23,14 +11,11 @@ import {
   Clock,
   Receipt,
   Bell,
-  ChefHat,
-  CircleCheck,
   LayoutGrid,
   List,
   Map,
   X,
   AlertTriangle,
-  Users,
 } from 'lucide-react'
 import { FloorMap } from './floor-map'
 
@@ -49,7 +34,6 @@ export function TablesManager() {
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('grid')
   const [selectedMesa, setSelectedMesa] = useState<number | null>(null)
 
-  // Merge / split / move / close dialogs
   const [showMoveDialog, setShowMoveDialog] = useState(false)
   const [showMergeDialog, setShowMergeDialog] = useState(false)
   const [showSplitDialog, setShowSplitDialog] = useState(false)
@@ -61,6 +45,8 @@ export function TablesManager() {
     const interval = setInterval(() => setNow(new Date()), 30000)
     return () => clearInterval(interval)
   }, [])
+
+  void now
 
   const pendingCalls = getPendingCalls()
   const activeTables = getActiveTables()
@@ -83,22 +69,12 @@ export function TablesManager() {
     const hasReady = activeOrders.some(o => o.status === 'listo')
     const hasPreparing = activeOrders.some(o => o.status === 'preparando')
 
-    const status = isPaid
-      ? 'pagada' as const
-      : hasReady
-      ? 'listo' as const
-      : hasPreparing
-      ? 'preparando' as const
-      : 'ocupada' as const
+    const status = isPaid ? 'pagada' as const : hasReady ? 'listo' as const : hasPreparing ? 'preparando' as const : 'ocupada' as const
 
-    const label = isPaid
-      ? 'Pagada'
-      : paymentRequested
-      ? 'Solicita cuenta'
-      : hasReady
-      ? 'Listo — Entregar'
-      : hasPreparing
-      ? 'En cocina'
+    const label = isPaid ? 'Pagada'
+      : paymentRequested ? 'Solicita cuenta'
+      : hasReady ? 'Listo — Entregar'
+      : hasPreparing ? 'En cocina'
       : 'Ocupada'
 
     return { status, label, session, activeOrders, tableOrders, elapsedMin, hasCall: hasAttentionCall, hasBillRequest: paymentRequested, hasReady, hasPreparing, total }
@@ -129,9 +105,7 @@ export function TablesManager() {
   const freeTables = activeTables.filter(
     t => t.numero !== selectedMesa && !tableSessions.some(s => s.mesa === t.numero && s.activa)
   )
-  const otherActiveSessions = tableSessions.filter(
-    s => s.activa && s.mesa !== selectedMesa
-  )
+  const otherActiveSessions = tableSessions.filter(s => s.activa && s.mesa !== selectedMesa)
 
   const isPaid = selectedSession?.billStatus === 'pagada'
   const canClose =
@@ -145,8 +119,7 @@ export function TablesManager() {
   const occupiedCount = tableInfos.filter(t => t.status === 'ocupada' || t.status === 'pagada').length
 
   const statusOrderBadge = (status: string) => {
-    if (status === 'entregado') return 'bg-[#E8F9F1] text-[#06C167]'
-    if (status === 'listo') return 'bg-[#E8F9F1] text-[#06C167]'
+    if (status === 'entregado' || status === 'listo') return 'bg-emerald-50 text-[#06C167]'
     if (status === 'cancelado') return 'bg-red-50 text-red-500'
     if (status === 'preparando') return 'bg-amber-50 text-amber-600'
     return 'bg-gray-100 text-gray-500'
@@ -171,9 +144,9 @@ export function TablesManager() {
             { label: 'Listos', value: readyCount, color: 'text-[#06C167]', bg: 'bg-emerald-50', border: 'border-emerald-200' },
             { label: 'Ocupadas', value: occupiedCount, color: 'text-gray-900', bg: 'bg-white', border: 'border-gray-200' },
           ].map(stat => (
-            <div key={stat.label} className={cn('rounded-2xl p-3 border', stat.bg, stat.border)}>
-              <p className={cn('text-2xl font-black leading-none', stat.color)} style={{ letterSpacing: '-0.03em' }}>{stat.value}</p>
-              <p className={cn('text-[11px] font-semibold mt-1', stat.color)}>{stat.label}</p>
+            <div key={stat.label} className={`rounded-2xl p-3 border ${stat.bg} ${stat.border}`}>
+              <p className={`text-2xl font-black leading-none ${stat.color}`} style={{ letterSpacing: '-0.03em' }}>{stat.value}</p>
+              <p className={`text-[11px] font-semibold mt-1 ${stat.color}`}>{stat.label}</p>
             </div>
           ))}
         </div>
@@ -188,7 +161,7 @@ export function TablesManager() {
               { color: 'bg-[#06C167]', label: 'Listo' },
             ].map(l => (
               <div key={l.label} className="flex items-center gap-1.5">
-                <div className={cn('w-2 h-2 rounded-full', l.color)} />
+                <div className={`w-2 h-2 rounded-full ${l.color}`} />
                 <span className="text-[11px] text-gray-500 font-medium">{l.label}</span>
               </div>
             ))}
@@ -199,16 +172,14 @@ export function TablesManager() {
               { mode: 'list', icon: <List className="h-3.5 w-3.5" />, title: 'Lista' },
               { mode: 'map', icon: <Map className="h-3.5 w-3.5" />, title: 'Plano' },
             ].map(v => (
-              <button key={v.mode} onClick={() => setViewMode(v.mode as typeof viewMode)}
-                title={v.title}
-                className={cn('p-1.5 rounded-lg transition-all', viewMode === v.mode ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400 hover:text-gray-600')}>
+              <button key={v.mode} onClick={() => setViewMode(v.mode as typeof viewMode)} title={v.title}
+                className={`p-1.5 rounded-lg transition-all ${viewMode === v.mode ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}>
                 {v.icon}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Grid / List / Map */}
         {viewMode === 'map' ? (
           <FloorMap />
         ) : viewMode === 'grid' ? (
@@ -220,13 +191,7 @@ export function TablesManager() {
                 <button
                   key={info.id}
                   onClick={() => setSelectedMesa(isSelected ? null : info.numero)}
-                  className={cn(
-                    'relative flex flex-col items-center justify-between rounded-2xl border transition-all duration-150',
-                    'hover:shadow-md hover:-translate-y-0.5 active:scale-95 p-3 aspect-square',
-                    style.bg, style.border,
-                    (info.hasCall || info.hasBillRequest) && 'ring-2 ring-red-400 ring-offset-1',
-                    isSelected && 'ring-2 ring-black ring-offset-1'
-                  )}
+                  className={`relative flex flex-col items-center justify-between rounded-2xl border transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 active:scale-95 p-3 aspect-square ${style.bg} ${style.border} ${(info.hasCall || info.hasBillRequest) ? 'ring-2 ring-red-400 ring-offset-1' : ''} ${isSelected ? 'ring-2 ring-black ring-offset-1' : ''}`}
                 >
                   {(info.hasCall || info.hasBillRequest) && (
                     <div className="absolute -top-1.5 -right-1.5 flex gap-0.5 z-10">
@@ -243,7 +208,7 @@ export function TablesManager() {
                     </div>
                   )}
                   <div className="w-full flex justify-end">
-                    <div className={cn('w-2 h-2 rounded-full', style.dot)} />
+                    <div className={`w-2 h-2 rounded-full ${style.dot}`} />
                   </div>
                   <div className="flex-1 flex items-center justify-center">
                     <span className="text-xl font-black text-gray-900" style={{ letterSpacing: '-0.03em' }}>{info.numero}</span>
@@ -252,7 +217,7 @@ export function TablesManager() {
                     {info.status === 'libre' ? (
                       <p className="text-[10px] text-gray-400 text-center font-semibold">Libre</p>
                     ) : info.elapsedMin > 0 ? (
-                      <p className={cn('text-[9px] font-bold text-center flex items-center justify-center gap-0.5', style.text)}>
+                      <p className={`text-[9px] font-bold text-center flex items-center justify-center gap-0.5 ${style.text}`}>
                         <Clock className="h-2 w-2" />{formatElapsed(info.elapsedMin)}
                       </p>
                     ) : null}
@@ -270,24 +235,18 @@ export function TablesManager() {
                 <button
                   key={info.id}
                   onClick={() => setSelectedMesa(isSelected ? null : info.numero)}
-                  className={cn(
-                    'w-full flex items-center gap-3 p-3.5 rounded-2xl border transition-all',
-                    'hover:shadow-sm active:scale-[0.99] text-left',
-                    style.bg, style.border,
-                    (info.hasCall || info.hasBillRequest) && 'ring-1 ring-red-400',
-                    isSelected && 'ring-2 ring-black'
-                  )}
+                  className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border transition-all hover:shadow-sm active:scale-[0.99] text-left ${style.bg} ${style.border} ${(info.hasCall || info.hasBillRequest) ? 'ring-1 ring-red-400' : ''} ${isSelected ? 'ring-2 ring-black' : ''}`}
                 >
-                  <div className={cn('w-3 h-3 rounded-full shrink-0', style.dot)} />
+                  <div className={`w-3 h-3 rounded-full shrink-0 ${style.dot}`} />
                   <span className="text-sm font-black text-gray-900 w-14 shrink-0">Mesa {info.numero}</span>
                   <div className="flex-1 min-w-0">
-                    <p className={cn('text-xs font-bold', style.text)}>{info.label}</p>
+                    <p className={`text-xs font-bold ${style.text}`}>{info.label}</p>
                     {info.activeOrders.length > 0 && (
                       <p className="text-[11px] text-gray-400">{info.activeOrders.length} pedido{info.activeOrders.length !== 1 ? 's' : ''}</p>
                     )}
                   </div>
                   {info.elapsedMin > 0 && (
-                    <div className={cn('flex items-center gap-1 text-xs font-semibold shrink-0', style.text)}>
+                    <div className={`flex items-center gap-1 text-xs font-semibold shrink-0 ${style.text}`}>
                       <Clock className="h-3.5 w-3.5" />{formatElapsed(info.elapsedMin)}
                     </div>
                   )}
@@ -308,7 +267,7 @@ export function TablesManager() {
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <div>
               <h2 className="text-base font-black text-gray-900" style={{ letterSpacing: '-0.02em' }}>Mesa {selectedMesa}</h2>
-              <p className={cn('text-xs font-bold mt-0.5', getStatusStyle(selectedInfo.status, selectedInfo.hasCall, selectedInfo.hasBillRequest).text)}>
+              <p className={`text-xs font-bold mt-0.5 ${getStatusStyle(selectedInfo.status, selectedInfo.hasCall, selectedInfo.hasBillRequest).text}`}>
                 {selectedInfo.label}
               </p>
             </div>
@@ -319,7 +278,6 @@ export function TablesManager() {
 
           {selectedSession ? (
             <>
-              {/* Session info */}
               <div className="px-5 py-4 space-y-2 border-b border-gray-100">
                 {[
                   { label: 'Abierta', value: formatTime(selectedSession.createdAt) },
@@ -336,7 +294,6 @@ export function TablesManager() {
                 </div>
               </div>
 
-              {/* Orders summary */}
               {selectedInfo.tableOrders.length > 0 && (
                 <div className="px-5 py-4 border-b border-gray-100">
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Pedidos</p>
@@ -346,7 +303,7 @@ export function TablesManager() {
                         <span className="text-xs text-gray-700 truncate flex-1">
                           #{order.numero} — {order.items.map(i => `${i.cantidad}x ${i.menuItem.nombre}`).join(', ').slice(0, 25)}{order.items.map(i => i.menuItem.nombre).join('').length > 25 ? '…' : ''}
                         </span>
-                        <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0', statusOrderBadge(order.status))}>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${statusOrderBadge(order.status)}`}>
                           {statusOrderLabel(order.status)}
                         </span>
                       </div>
@@ -355,7 +312,6 @@ export function TablesManager() {
                 </div>
               )}
 
-              {/* Actions */}
               <div className="px-5 py-4 space-y-2 flex-1">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Acciones</p>
                 {!isPaid && (
@@ -393,12 +349,17 @@ export function TablesManager() {
         </div>
       )}
 
-      {/* ── Move Dialog ─────────────────────────────── */}
+      {/* Move Modal */}
       {showMoveDialog && selectedMesa !== null && selectedSession && (
-        <Dialog open={showMoveDialog} onOpenChange={setShowMoveDialog}>
-          <DialogContent className="max-w-xs">
-            <DialogHeader><DialogTitle>Mover Mesa {selectedMesa}</DialogTitle></DialogHeader>
-            <p className="text-sm text-gray-500 mb-3">Selecciona la mesa destino (solo libres)</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl p-5 w-full max-w-xs shadow-xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black text-gray-900">Mover Mesa {selectedMesa}</h3>
+              <button onClick={() => setShowMoveDialog(false)} className="w-7 h-7 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <p className="text-xs text-gray-500">Selecciona la mesa destino (solo libres)</p>
             <div className="grid grid-cols-4 gap-2">
               {freeTables.map(t => (
                 <button key={t.numero}
@@ -408,17 +369,22 @@ export function TablesManager() {
                 </button>
               ))}
             </div>
-            {freeTables.length === 0 && <p className="text-sm text-center text-gray-400 py-4">No hay mesas libres</p>}
-          </DialogContent>
-        </Dialog>
+            {freeTables.length === 0 && <p className="text-sm text-center text-gray-400 py-2">No hay mesas libres</p>}
+          </div>
+        </div>
       )}
 
-      {/* ── Merge Dialog ─────────────────────────────── */}
+      {/* Merge Modal */}
       {showMergeDialog && selectedMesa !== null && selectedSession && (
-        <Dialog open={showMergeDialog} onOpenChange={setShowMergeDialog}>
-          <DialogContent className="max-w-xs">
-            <DialogHeader><DialogTitle>Unir con Mesa {selectedMesa}</DialogTitle></DialogHeader>
-            <p className="text-sm text-gray-500 mb-3">Los pedidos se traen a Mesa {selectedMesa}.</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl p-5 w-full max-w-xs shadow-xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black text-gray-900">Unir con Mesa {selectedMesa}</h3>
+              <button onClick={() => setShowMergeDialog(false)} className="w-7 h-7 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <p className="text-xs text-gray-500">Los pedidos se traen a Mesa {selectedMesa}.</p>
             <div className="grid grid-cols-4 gap-2">
               {otherActiveSessions.map(s => (
                 <button key={s.id}
@@ -428,23 +394,33 @@ export function TablesManager() {
                 </button>
               ))}
             </div>
-            {otherActiveSessions.length === 0 && <p className="text-sm text-center text-gray-400 py-4">No hay otras mesas activas</p>}
-          </DialogContent>
-        </Dialog>
+            {otherActiveSessions.length === 0 && <p className="text-sm text-center text-gray-400 py-2">No hay otras mesas activas</p>}
+          </div>
+        </div>
       )}
 
-      {/* ── Split Dialog ─────────────────────────────── */}
+      {/* Split Modal */}
       {showSplitDialog && selectedMesa !== null && selectedSession && selectedInfo && (
-        <Dialog open={showSplitDialog} onOpenChange={setShowSplitDialog}>
-          <DialogContent className="max-w-sm">
-            <DialogHeader><DialogTitle>Separar pedidos — Mesa {selectedMesa}</DialogTitle></DialogHeader>
-            <p className="text-sm text-gray-500 mb-3">Selecciona pedidos a mover y la mesa destino (libre).</p>
-            <div className="space-y-2 mb-4 max-h-52 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl p-5 w-full max-w-sm shadow-xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black text-gray-900">Separar pedidos — Mesa {selectedMesa}</h3>
+              <button onClick={() => setShowSplitDialog(false)} className="w-7 h-7 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <p className="text-xs text-gray-500">Selecciona pedidos a mover y la mesa destino (libre).</p>
+            <div className="space-y-2 max-h-52 overflow-y-auto">
               {selectedInfo.activeOrders.map(order => (
                 <label key={order.id} className="flex items-start gap-2.5 cursor-pointer p-2 rounded-xl hover:bg-gray-50">
-                  <Checkbox checked={splitSelectedOrders.includes(order.id)} onCheckedChange={(checked) => {
-                    setSplitSelectedOrders(prev => checked ? [...prev, order.id] : prev.filter(id => id !== order.id))
-                  }} className="mt-0.5" />
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 h-4 w-4 rounded accent-gray-900"
+                    checked={splitSelectedOrders.includes(order.id)}
+                    onChange={(e) => {
+                      setSplitSelectedOrders(prev => e.target.checked ? [...prev, order.id] : prev.filter(id => id !== order.id))
+                    }}
+                  />
                   <div className="text-xs">
                     <p className="font-bold text-gray-900">Pedido #{order.numero}</p>
                     <p className="text-gray-400 mt-0.5">{order.items.map(i => `${i.cantidad}x ${i.menuItem.nombre}`).join(', ')}</p>
@@ -452,30 +428,32 @@ export function TablesManager() {
                 </label>
               ))}
             </div>
-            <p className="text-xs font-bold text-gray-500 mb-2">Mesa destino:</p>
-            <div className="grid grid-cols-5 gap-1.5 mb-4">
-              {freeTables.map(t => (
-                <button key={t.numero} onClick={() => setSplitTargetMesa(t.numero)}
-                  className={cn('h-10 rounded-xl text-sm font-black transition-all', splitTargetMesa === t.numero ? 'bg-black text-white' : 'border border-gray-200 text-gray-900 hover:bg-gray-50')}>
-                  {t.numero}
-                </button>
-              ))}
-              {freeTables.length === 0 && <p className="col-span-5 text-xs text-center text-gray-400 py-2">No hay mesas libres</p>}
+            <div>
+              <p className="text-xs font-bold text-gray-500 mb-2">Mesa destino:</p>
+              <div className="grid grid-cols-5 gap-1.5">
+                {freeTables.map(t => (
+                  <button key={t.numero} onClick={() => setSplitTargetMesa(t.numero)}
+                    className={`h-10 rounded-xl text-sm font-black transition-all ${splitTargetMesa === t.numero ? 'bg-gray-900 text-white' : 'border border-gray-200 text-gray-900 hover:bg-gray-50'}`}>
+                    {t.numero}
+                  </button>
+                ))}
+                {freeTables.length === 0 && <p className="col-span-5 text-xs text-center text-gray-400 py-2">No hay mesas libres</p>}
+              </div>
             </div>
             <div className="flex gap-2">
               <button onClick={() => setShowSplitDialog(false)} className="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">Cancelar</button>
               <button
                 disabled={splitSelectedOrders.length === 0 || splitTargetMesa === null}
                 onClick={() => { if (splitTargetMesa !== null) { splitTableSession(selectedSession.id, splitSelectedOrders, splitTargetMesa); setShowSplitDialog(false); setSplitSelectedOrders([]) } }}
-                className="flex-1 h-11 rounded-xl bg-black text-white text-sm font-bold disabled:opacity-40 transition-colors hover:bg-gray-900">
+                className="flex-1 h-11 rounded-xl bg-gray-900 hover:bg-black text-white text-sm font-bold disabled:opacity-40 transition-colors">
                 Separar
               </button>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </div>
       )}
 
-      {/* ── Close Confirm ─────────────────────────────── */}
+      {/* Close Confirm */}
       {showCloseConfirm && selectedMesa !== null && selectedSession && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center">

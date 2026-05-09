@@ -3,20 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Plus, Edit2, Trash2, Check, X, Package, Tag } from 'lucide-react'
 import { useApp } from '@/lib/context'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { DEFAULT_INGREDIENT_CATEGORIES } from '@/lib/store'
 
 export function IngredientCategoryManager() {
@@ -26,236 +13,188 @@ export function IngredientCategoryManager() {
   const [editingName, setEditingName] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [localCategories, setLocalCategories] = useState<string[]>([])
-  
-  // Derive all unique categories from ingredients + defaults + locally added
+
   const allCategories = useMemo(() => {
     const fromIngredients = ingredients.filter(i => i.activo !== false).map(i => i.categoria)
     const combined = [...new Set([...DEFAULT_INGREDIENT_CATEGORIES, ...fromIngredients, ...localCategories])]
     return combined.sort()
   }, [ingredients, localCategories])
-  
-  const getCategoryIngredientCount = (categoryName: string) => {
-    return ingredients.filter(i => i.categoria === categoryName && i.activo !== false).length
-  }
-  
+
+  const getCategoryIngredientCount = (categoryName: string) =>
+    ingredients.filter(i => i.categoria === categoryName && i.activo !== false).length
+
   const handleAddCategory = () => {
     if (!newCategoryName.trim()) return
     if (allCategories.includes(newCategoryName.trim())) return
     setLocalCategories(prev => [...prev, newCategoryName.trim()])
     setNewCategoryName('')
   }
-  
+
   const handleStartEdit = (category: string) => {
     setEditingCategory(category)
     setEditingName(category)
   }
-  
+
   const handleSaveEdit = () => {
-    if (!editingCategory || !editingName.trim()) {
-      handleCancelEdit()
-      return
-    }
-    
+    if (!editingCategory || !editingName.trim()) { handleCancelEdit(); return }
     const oldName = editingCategory
     const newName = editingName.trim()
-    
     if (oldName !== newName) {
-      // Update all ingredients with this category to the new name
       ingredients.forEach(ing => {
-        if (ing.categoria === oldName) {
-          updateIngredient(ing.id, { categoria: newName })
-        }
+        if (ing.categoria === oldName) updateIngredient(ing.id, { categoria: newName })
       })
-      
-      // If it was a locally added category, update local state
       setLocalCategories(prev => prev.map(c => c === oldName ? newName : c))
     }
-    
     handleCancelEdit()
   }
-  
+
   const handleCancelEdit = () => {
     setEditingCategory(null)
     setEditingName('')
   }
-  
+
   const handleDeleteCategory = (category: string) => {
     const count = getCategoryIngredientCount(category)
-    
     if (count > 0) {
-      // Move ingredients to "Otros" instead of deleting
       ingredients.forEach(ing => {
         if (ing.categoria === category && ing.activo !== false) {
           updateIngredient(ing.id, { categoria: 'Otros' })
         }
       })
     }
-    
-    // Remove from local categories if present
     setLocalCategories(prev => prev.filter(c => c !== category))
     setDeleteConfirm(null)
   }
-  
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-semibold text-foreground">Categorias de Ingredientes</h3>
-          <p className="text-xs text-muted-foreground">
-            Organiza y administra las categorias de tus ingredientes
-          </p>
-        </div>
+    <div className="space-y-4" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+      <div>
+        <h3 className="text-sm font-black text-gray-900">Categorías de Ingredientes</h3>
+        <p className="text-xs text-gray-400">Organiza y administra las categorías de tus ingredientes</p>
       </div>
-      
-      {/* Add new category */}
+
       <div className="flex gap-2">
         <Input
           value={newCategoryName}
           onChange={(e) => setNewCategoryName(e.target.value)}
-          placeholder="Nueva categoria..."
-          className="h-8 text-sm"
+          placeholder="Nueva categoría..."
+          className="h-8 text-xs"
           onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
         />
-        <Button 
+        <button
           onClick={handleAddCategory}
           disabled={!newCategoryName.trim() || allCategories.includes(newCategoryName.trim())}
-          className="h-8 px-3 text-xs"
+          className="h-8 px-3 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          <Plus className="h-3 w-3 mr-1" />
+          <Plus className="h-3 w-3" />
           Agregar
-        </Button>
+        </button>
       </div>
-      
-      {/* Categories list */}
-      <div className="space-y-2">
-        {allCategories.map((category) => {
-          const ingredientCount = getCategoryIngredientCount(category)
-          const isEditing = editingCategory === category
-          const isDefault = DEFAULT_INGREDIENT_CATEGORIES.includes(category)
-          
-          return (
-            <Card 
-              key={category} 
-              className="border transition-all"
-            >
-              <CardContent className="p-2">
+
+      {allCategories.length === 0 ? (
+        <div className="border border-dashed border-gray-200 rounded-2xl py-8 text-center">
+          <Tag className="h-6 w-6 mx-auto text-gray-300 mb-2" />
+          <p className="text-xs text-gray-400">No hay categorías. Agregá una para comenzar.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {allCategories.map((category) => {
+            const ingredientCount = getCategoryIngredientCount(category)
+            const isEditing = editingCategory === category
+            const isDefault = DEFAULT_INGREDIENT_CATEGORIES.includes(category)
+
+            return (
+              <div key={category} className="border border-gray-100 rounded-2xl bg-white p-2.5">
                 <div className="flex items-center gap-2">
-                  <Package className="h-4 w-4 text-muted-foreground shrink-0" />
-                  
-                  {/* Category name */}
+                  <Package className="h-4 w-4 text-gray-400 shrink-0" />
+
                   <div className="flex-1 min-w-0">
                     {isEditing ? (
                       <div className="flex items-center gap-1">
                         <Input
                           value={editingName}
                           onChange={(e) => setEditingName(e.target.value)}
-                          className="h-7 text-sm"
+                          className="h-7 text-xs"
                           autoFocus
                           onKeyDown={(e) => {
                             if (e.key === 'Enter') handleSaveEdit()
                             if (e.key === 'Escape') handleCancelEdit()
                           }}
                         />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={handleSaveEdit}
-                          className="h-6 w-6 text-success"
-                        >
+                        <button onClick={handleSaveEdit} className="h-6 w-6 flex items-center justify-center rounded-lg hover:bg-gray-100 text-[#06C167]">
                           <Check className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={handleCancelEdit}
-                          className="h-6 w-6"
-                        >
+                        </button>
+                        <button onClick={handleCancelEdit} className="h-6 w-6 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400">
                           <X className="h-3 w-3" />
-                        </Button>
+                        </button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-foreground truncate">
-                          {category}
-                        </span>
-                        <Badge variant="outline" className="text-[9px] h-4 px-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-gray-900 truncate">{category}</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-full border border-gray-200 text-gray-500">
                           {ingredientCount} ingrediente{ingredientCount !== 1 ? 's' : ''}
-                        </Badge>
+                        </span>
                         {isDefault && (
-                          <Badge variant="secondary" className="text-[8px] h-3.5 px-1">
+                          <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400">
                             predeterminado
-                          </Badge>
+                          </span>
                         )}
                       </div>
                     )}
                   </div>
-                  
-                  {/* Actions */}
+
                   {!isEditing && (
                     <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
+                      <button
                         onClick={() => handleStartEdit(category)}
-                        className="h-6 w-6"
+                        className="h-6 w-6 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400"
                       >
                         <Edit2 className="h-3 w-3" />
-                      </Button>
-                      
-                      <Button
-                        variant="ghost"
-                        size="icon"
+                      </button>
+                      <button
                         onClick={() => setDeleteConfirm(category)}
-                        className="h-6 w-6 text-destructive hover:text-destructive"
-                        title={ingredientCount > 0 ? 'Los ingredientes se moveran a "Otros"' : 'Eliminar categoria'}
+                        className="h-6 w-6 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"
+                        title={ingredientCount > 0 ? 'Los ingredientes se moverán a "Otros"' : 'Eliminar categoría'}
                       >
                         <Trash2 className="h-3 w-3" />
-                      </Button>
+                      </button>
                     </div>
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-      
-      {allCategories.length === 0 && (
-        <Card className="border-dashed">
-          <CardContent className="py-8 text-center">
-            <Tag className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
-            <p className="text-xs text-muted-foreground">No hay categorías. Agregá una para comenzar.</p>
-          </CardContent>
-        </Card>
+              </div>
+            )
+          })}
+        </div>
       )}
-      
-      {/* Delete confirmation dialog */}
-      <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Eliminar Categoria</AlertDialogTitle>
-            <AlertDialogDescription>
-              {deleteConfirm && getCategoryIngredientCount(deleteConfirm) > 0 ? (
-                <>
-                  Esta categoria tiene <strong>{getCategoryIngredientCount(deleteConfirm)}</strong> ingrediente(s).
-                  Los ingredientes seran movidos a la categoria &quot;Otros&quot;.
-                </>
+
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl p-5 w-full max-w-sm space-y-3 shadow-xl">
+            <h3 className="text-sm font-black text-gray-900">Eliminar Categoría</h3>
+            <p className="text-xs text-gray-500">
+              {getCategoryIngredientCount(deleteConfirm) > 0 ? (
+                <>Esta categoría tiene <strong>{getCategoryIngredientCount(deleteConfirm)}</strong> ingrediente(s). Los ingredientes serán movidos a la categoría &quot;Otros&quot;.</>
               ) : (
-                'Esta accion eliminara la categoria. Esta seguro?'
+                'Esta acción eliminará la categoría. ¿Estás seguro?'
               )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteConfirm && handleDeleteCategory(deleteConfirm)}
-              className="bg-destructive hover:bg-destructive/90"
-            >
-              {deleteConfirm && getCategoryIngredientCount(deleteConfirm) > 0 ? 'Mover y Eliminar' : 'Eliminar'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </p>
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 h-9 rounded-xl border border-gray-200 text-gray-700 text-xs font-semibold hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => handleDeleteCategory(deleteConfirm)}
+                className="flex-1 h-9 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-semibold transition-colors"
+              >
+                {getCategoryIngredientCount(deleteConfirm) > 0 ? 'Mover y Eliminar' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

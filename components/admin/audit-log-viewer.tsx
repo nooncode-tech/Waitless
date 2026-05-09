@@ -3,10 +3,7 @@
 import { useState, useMemo } from 'react'
 import { Search, ClipboardList, ChevronDown, ChevronRight } from 'lucide-react'
 import { useApp } from '@/lib/context'
-import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 const ACTION_LABELS: Record<string, string> = {
@@ -31,19 +28,19 @@ const ACTION_LABELS: Record<string, string> = {
 }
 
 const ACTION_COLORS: Record<string, string> = {
-  crear_pedido: 'bg-green-100 text-green-800',
-  cancelar_pedido: 'bg-red-100 text-red-800',
-  cancelar_orden: 'bg-red-100 text-red-800',
-  confirmar_pago: 'bg-blue-100 text-blue-800',
-  cerrar_sesion: 'bg-gray-100 text-gray-800',
-  aplicar_descuento: 'bg-yellow-100 text-yellow-800',
-  reembolso: 'bg-gray-100 text-gray-800',
-  eliminar_platillo: 'bg-red-100 text-red-800',
-  eliminar_categoria: 'bg-red-100 text-red-800',
-  eliminar_mesa: 'bg-red-100 text-red-800',
-  ajuste_inventario: 'bg-purple-100 text-purple-800',
-  imprimir_cuenta: 'bg-slate-100 text-slate-800',
-  imprimir_cierre: 'bg-slate-100 text-slate-800',
+  crear_pedido: 'bg-emerald-100 text-[#06C167]',
+  cancelar_pedido: 'bg-red-100 text-red-700',
+  cancelar_orden: 'bg-red-100 text-red-700',
+  confirmar_pago: 'bg-blue-100 text-blue-700',
+  cerrar_sesion: 'bg-gray-100 text-gray-700',
+  aplicar_descuento: 'bg-amber-100 text-amber-700',
+  reembolso: 'bg-gray-100 text-gray-700',
+  eliminar_platillo: 'bg-red-100 text-red-700',
+  eliminar_categoria: 'bg-red-100 text-red-700',
+  eliminar_mesa: 'bg-red-100 text-red-700',
+  ajuste_inventario: 'bg-purple-100 text-purple-700',
+  imprimir_cuenta: 'bg-slate-100 text-slate-700',
+  imprimir_cierre: 'bg-slate-100 text-slate-700',
 }
 
 export function AuditLogViewer() {
@@ -97,23 +94,18 @@ export function AuditLogViewer() {
   }
 
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="space-y-4" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
       <div className="flex items-center gap-3">
-        <ClipboardList className="h-5 w-5 text-muted-foreground" />
-        <h2 className="text-lg font-bold">Bitácora de Actividad</h2>
-        <Badge variant="secondary">{auditLogs.length} registros</Badge>
+        <ClipboardList className="h-5 w-5 text-gray-500" />
+        <h2 className="text-sm font-black text-gray-900">Bitácora de Actividad</h2>
+        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{auditLogs.length} registros</span>
       </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Buscar por detalle, acción o usuario..."
-            className="pl-8 h-9 text-sm"
-          />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por detalle, acción o usuario..." className="pl-8 h-9 text-sm" />
         </div>
         <Select value={filterAccion} onValueChange={setFilterAccion}>
           <SelectTrigger className="h-9 w-full sm:w-52 text-sm">
@@ -128,78 +120,73 @@ export function AuditLogViewer() {
         </Select>
       </div>
 
-      {/* Log table */}
+      {/* Log list */}
       {filtered.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="py-8 text-center">
-            <ClipboardList className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-            <p className="text-xs text-muted-foreground">
-              {auditLogs.length === 0 ? 'No hay registros aún' : 'No se encontraron resultados'}
-            </p>
-          </CardContent>
-        </Card>
+        <div className="border border-dashed border-gray-200 rounded-2xl py-10 text-center">
+          <ClipboardList className="h-8 w-8 mx-auto text-gray-300 mb-2" />
+          <p className="text-xs text-gray-400">
+            {auditLogs.length === 0 ? 'No hay registros aún' : 'No se encontraron resultados'}
+          </p>
+        </div>
       ) : (
-        <ScrollArea className="h-[calc(100vh-240px)]">
-          <div className="space-y-1.5">
-            {filtered.map(log => {
-              const color = ACTION_COLORS[log.accion] || 'bg-secondary text-foreground'
-              const hasDetail = !!(log.razon || log.antes || log.despues)
-              const isExpanded = expanded.has(log.id)
-              return (
-                <div key={log.id} className="rounded-lg bg-card border border-border hover:bg-secondary/30 transition-colors">
-                  <div
-                    className={`flex flex-col sm:flex-row sm:items-center gap-2 p-3 ${hasDetail ? 'cursor-pointer' : ''}`}
-                    onClick={() => hasDetail && toggleExpand(log.id)}
-                  >
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      {hasDetail && (
-                        isExpanded
-                          ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                          : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                      )}
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0 ${color}`}>
-                        {ACTION_LABELS[log.accion] || log.accion}
-                      </span>
-                      <span className="text-sm text-foreground truncate">{log.detalles}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground flex-shrink-0">
-                      <span className="font-medium text-foreground">{getUserName(log.userId)}</span>
-                      <span>{formatTime(log.createdAt)}</span>
-                    </div>
+        <div className="overflow-y-auto max-h-[calc(100vh-240px)] space-y-1.5">
+          {filtered.map(log => {
+            const color = ACTION_COLORS[log.accion] || 'bg-gray-100 text-gray-700'
+            const hasDetail = !!(log.razon || log.antes || log.despues)
+            const isExpanded = expanded.has(log.id)
+            return (
+              <div key={log.id} className="rounded-xl bg-white border border-gray-100 hover:bg-gray-50 transition-colors">
+                <div
+                  className={`flex flex-col sm:flex-row sm:items-center gap-2 p-3 ${hasDetail ? 'cursor-pointer' : ''}`}
+                  onClick={() => hasDetail && toggleExpand(log.id)}
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    {hasDetail && (
+                      isExpanded
+                        ? <ChevronDown className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                        : <ChevronRight className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                    )}
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0 ${color}`}>
+                      {ACTION_LABELS[log.accion] || log.accion}
+                    </span>
+                    <span className="text-sm text-gray-900 truncate">{log.detalles}</span>
                   </div>
-
-                  {/* Expandable antes/despues panel */}
-                  {hasDetail && isExpanded && (
-                    <div className="px-3 pb-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs border-t border-border pt-2">
-                      {log.razon && (
-                        <div className="space-y-0.5">
-                          <p className="font-semibold text-muted-foreground uppercase tracking-wide text-[10px]">Razón</p>
-                          <p className="text-foreground bg-muted/50 rounded px-2 py-1">{log.razon}</p>
-                        </div>
-                      )}
-                      {log.antes && (
-                        <div className="space-y-0.5">
-                          <p className="font-semibold text-muted-foreground uppercase tracking-wide text-[10px]">Antes</p>
-                          <pre className="text-foreground bg-muted/50 rounded px-2 py-1 overflow-x-auto whitespace-pre-wrap">
-                            {JSON.stringify(log.antes, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-                      {log.despues && (
-                        <div className="space-y-0.5">
-                          <p className="font-semibold text-muted-foreground uppercase tracking-wide text-[10px]">Después</p>
-                          <pre className="text-foreground bg-muted/50 rounded px-2 py-1 overflow-x-auto whitespace-pre-wrap">
-                            {JSON.stringify(log.despues, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  <div className="flex items-center gap-3 text-xs text-gray-400 flex-shrink-0">
+                    <span className="font-medium text-gray-900">{getUserName(log.userId)}</span>
+                    <span>{formatTime(log.createdAt)}</span>
+                  </div>
                 </div>
-              )
-            })}
-          </div>
-        </ScrollArea>
+
+                {hasDetail && isExpanded && (
+                  <div className="px-3 pb-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs border-t border-gray-100 pt-2">
+                    {log.razon && (
+                      <div className="space-y-0.5">
+                        <p className="font-semibold text-gray-400 uppercase tracking-wide text-[10px]">Razón</p>
+                        <p className="text-gray-900 bg-gray-50 rounded-lg px-2 py-1">{log.razon}</p>
+                      </div>
+                    )}
+                    {log.antes && (
+                      <div className="space-y-0.5">
+                        <p className="font-semibold text-gray-400 uppercase tracking-wide text-[10px]">Antes</p>
+                        <pre className="text-gray-900 bg-gray-50 rounded-lg px-2 py-1 overflow-x-auto whitespace-pre-wrap">
+                          {JSON.stringify(log.antes, null, 2)}
+                        </pre>
+                      </div>
+                    )}
+                    {log.despues && (
+                      <div className="space-y-0.5">
+                        <p className="font-semibold text-gray-400 uppercase tracking-wide text-[10px]">Después</p>
+                        <pre className="text-gray-900 bg-gray-50 rounded-lg px-2 py-1 overflow-x-auto whitespace-pre-wrap">
+                          {JSON.stringify(log.despues, null, 2)}
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
       )}
     </div>
   )

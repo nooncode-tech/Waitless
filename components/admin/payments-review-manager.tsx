@@ -4,8 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { useApp } from '@/lib/context'
 import { canDo } from '@/lib/permissions'
 import { supabase } from '@/lib/supabase'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -13,8 +11,6 @@ import {
   CheckCircle2, XCircle, AlertCircle, ExternalLink,
   ChevronDown, ChevronUp, Clock, RefreshCw,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
-
 import type { PaymentStatus2 } from '@/lib/store'
 
 async function getToken(): Promise<string | null> {
@@ -23,25 +19,16 @@ async function getToken(): Promise<string | null> {
 }
 
 interface Receipt {
-  id: string
-  file_url: string | null
-  file_type: string | null
-  referencia: string | null
-  monto_declarado: number | null
-  review_status: string
-  created_at: string
+  id: string; file_url: string | null; file_type: string | null
+  referencia: string | null; monto_declarado: number | null
+  review_status: string; created_at: string
 }
 
 interface PaymentRow {
-  id: string
-  status: PaymentStatus2
-  monto_requerido: number
-  monto_declarado: number | null
-  moneda: string
-  motivo_rechazo: string | null
-  notas_internas: string | null
-  created_at: string
-  updated_at: string
+  id: string; status: PaymentStatus2; monto_requerido: number
+  monto_declarado: number | null; moneda: string
+  motivo_rechazo: string | null; notas_internas: string | null
+  created_at: string; updated_at: string
   payment_methods: { id: string; nombre: string; tipo: string } | null
   table_sessions: { id: string; mesa: number } | null
   payment_receipts: Receipt[]
@@ -58,15 +45,15 @@ const STATUS_LABELS: Record<PaymentStatus2, string> = {
   ANULADO: 'Anulado',
 }
 
-const STATUS_VARIANT: Record<PaymentStatus2, string> = {
-  PENDIENTE_DE_PAGO: 'bg-muted text-muted-foreground',
-  COMPROBANTE_CARGADO: 'bg-warning/15 text-warning border-warning/30',
-  EN_REVISION: 'bg-primary/10 text-primary border-primary/30',
-  PAGO_VALIDADO: 'bg-success/10 text-success border-success/30',
-  PAGO_RECHAZADO: 'bg-destructive/10 text-destructive border-destructive/30',
-  PAGO_PARCIAL: 'bg-warning/10 text-warning border-warning/30',
-  CORRECCION_SOLICITADA: 'bg-secondary text-secondary-foreground',
-  ANULADO: 'bg-muted text-muted-foreground',
+const STATUS_STYLE: Record<PaymentStatus2, string> = {
+  PENDIENTE_DE_PAGO: 'bg-gray-100 text-gray-600',
+  COMPROBANTE_CARGADO: 'bg-amber-100 text-amber-700 border border-amber-200',
+  EN_REVISION: 'bg-blue-100 text-blue-700 border border-blue-200',
+  PAGO_VALIDADO: 'bg-emerald-100 text-[#06C167] border border-emerald-200',
+  PAGO_RECHAZADO: 'bg-red-100 text-red-600 border border-red-200',
+  PAGO_PARCIAL: 'bg-amber-100 text-amber-700 border border-amber-200',
+  CORRECCION_SOLICITADA: 'bg-gray-100 text-gray-700',
+  ANULADO: 'bg-gray-100 text-gray-500',
 }
 
 export function PaymentsReviewManager() {
@@ -116,10 +103,7 @@ export function PaymentsReviewManager() {
         body: body ? JSON.stringify(body) : undefined,
       })
       const json = await res.json()
-      if (!res.ok) {
-        alert(json.error ?? 'Error al procesar la acción')
-        return null
-      }
+      if (!res.ok) { alert(json.error ?? 'Error al procesar la acción'); return null }
       return json
     } finally {
       setActionLoading(null)
@@ -129,10 +113,7 @@ export function PaymentsReviewManager() {
   const handleApprove = async (paymentId: string) => {
     if (!confirm('¿Aprobar este pago y generar nota interna?')) return
     const result = await callAction(paymentId, 'approve')
-    if (result) {
-      setApprovedNote({ numero: result.numeroInterno })
-      fetchPayments()
-    }
+    if (result) { setApprovedNote({ numero: result.numeroInterno }); fetchPayments() }
   }
 
   const handleReject = async () => {
@@ -148,55 +129,47 @@ export function PaymentsReviewManager() {
     if (result) { setCorrectionModal(null); setCorrectionNotas(''); fetchPayments() }
   }
 
-  const pendingCount = payments.filter(
-    p => p.status === 'COMPROBANTE_CARGADO' || p.status === 'EN_REVISION'
-  ).length
+  const pendingCount = payments.filter(p => p.status === 'COMPROBANTE_CARGADO' || p.status === 'EN_REVISION').length
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="space-y-4" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+          <h2 className="text-sm font-black text-gray-900 flex items-center gap-2">
             Revisión de pagos
             {pendingCount > 0 && (
-              <span className="flex items-center justify-center h-5 min-w-[20px] px-1.5 text-[10px] font-bold bg-destructive text-background rounded-full">
+              <span className="flex items-center justify-center h-5 min-w-[20px] px-1.5 text-[10px] font-bold bg-red-500 text-white rounded-full">
                 {pendingCount}
               </span>
             )}
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Valida comprobantes de transferencias y pagos digitales</p>
+          <p className="text-[10px] text-gray-400 mt-0.5">Valida comprobantes de transferencias y pagos digitales</p>
         </div>
-        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={fetchPayments}>
+        <button onClick={fetchPayments} className="h-9 w-9 rounded-xl hover:bg-gray-100 flex items-center justify-center text-gray-500">
           <RefreshCw className="h-4 w-4" />
-        </Button>
+        </button>
       </div>
 
-      {/* Confirmación nota generada */}
       {approvedNote && (
-        <div className="flex items-center justify-between p-3 bg-success/10 border border-success/30 rounded-xl">
+        <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-[#06C167] shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-success">Pago aprobado</p>
-              <p className="text-xs text-success/80 font-mono">{approvedNote.numero}</p>
+              <p className="text-sm font-semibold text-[#06C167]">Pago aprobado</p>
+              <p className="text-xs text-[#06C167]/80 font-mono">{approvedNote.numero}</p>
             </div>
           </div>
-          <button onClick={() => setApprovedNote(null)} className="text-xs text-success/60 hover:text-success">✕</button>
+          <button onClick={() => setApprovedNote(null)} className="text-xs text-[#06C167]/60 hover:text-[#06C167]">✕</button>
         </div>
       )}
 
-      {/* Filtro de status */}
+      {/* Filter pills */}
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 no-scrollbar">
         {(['COMPROBANTE_CARGADO', 'EN_REVISION', 'PAGO_VALIDADO', 'PAGO_RECHAZADO', 'CORRECCION_SOLICITADA', ''] as const).map(s => (
           <button
             key={s}
             onClick={() => setFilterStatus(s)}
-            className={cn(
-              'shrink-0 text-xs px-3 py-1.5 rounded-full border transition-colors',
-              filterStatus === s
-                ? 'bg-foreground text-background border-foreground'
-                : 'bg-background text-muted-foreground border-border hover:border-foreground/30'
-            )}
+            className={`shrink-0 text-xs px-3 py-1.5 rounded-full border transition-colors ${filterStatus === s ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'}`}
           >
             {s ? STATUS_LABELS[s as PaymentStatus2] : 'Todos'}
           </button>
@@ -204,11 +177,11 @@ export function PaymentsReviewManager() {
       </div>
 
       {loading ? (
-        <div className="text-sm text-muted-foreground text-center py-10">Cargando…</div>
+        <div className="text-sm text-gray-400 text-center py-10">Cargando…</div>
       ) : payments.length === 0 ? (
-        <div className="text-center py-12 border border-dashed border-border rounded-xl">
-          <Clock className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">No hay pagos en este estado</p>
+        <div className="text-center py-12 border border-dashed border-gray-200 rounded-2xl">
+          <Clock className="h-8 w-8 text-gray-200 mx-auto mb-2" />
+          <p className="text-sm text-gray-400">No hay pagos en este estado</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -219,125 +192,92 @@ export function PaymentsReviewManager() {
             const isPending = ['COMPROBANTE_CARGADO', 'EN_REVISION'].includes(p.status)
 
             return (
-              <div key={p.id} className="border border-border rounded-xl overflow-hidden">
+              <div key={p.id} className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
                 <button
-                  className="w-full flex items-start gap-3 p-3 text-left hover:bg-muted/30 transition-colors"
+                  className="w-full flex items-start gap-3 p-3 text-left hover:bg-gray-50 transition-colors"
                   onClick={() => setExpandedId(isExpanded ? null : p.id)}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-semibold text-foreground">
-                        Mesa {p.table_sessions?.mesa ?? '—'}
-                      </span>
-                      <span
-                        className={cn(
-                          'text-[10px] font-medium px-2 py-0.5 rounded-full border',
-                          STATUS_VARIANT[p.status]
-                        )}
-                      >
+                      <span className="text-sm font-semibold text-gray-900">Mesa {p.table_sessions?.mesa ?? '—'}</span>
+                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${STATUS_STYLE[p.status]}`}>
                         {STATUS_LABELS[p.status]}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
                       <span>{p.payment_methods?.nombre ?? 'Sin método'}</span>
                       <span>·</span>
-                      <span className="font-medium text-foreground">
-                        ${p.monto_declarado ?? p.monto_requerido} {p.moneda}
-                      </span>
+                      <span className="font-medium text-gray-900">${p.monto_declarado ?? p.monto_requerido} {p.moneda}</span>
                       {p.monto_declarado && p.monto_declarado !== p.monto_requerido && (
-                        <span className="text-warning">(req. ${p.monto_requerido})</span>
+                        <span className="text-amber-600">(req. ${p.monto_requerido})</span>
                       )}
                     </div>
                   </div>
-                  {isExpanded ? (
-                    <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                  ) : (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                  )}
+                  {isExpanded
+                    ? <ChevronUp className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />
+                    : <ChevronDown className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />}
                 </button>
 
                 {isExpanded && (
-                  <div className="px-3 pb-3 space-y-3 border-t border-border">
-                    {/* Comprobante */}
+                  <div className="px-3 pb-3 space-y-3 border-t border-gray-100">
                     {latestReceipt && (
-                      <div className="mt-3 p-3 bg-muted/30 rounded-lg space-y-2">
-                        <p className="text-xs font-semibold text-foreground">Comprobante</p>
+                      <div className="mt-3 p-3 bg-gray-50 rounded-xl space-y-2">
+                        <p className="text-xs font-semibold text-gray-900">Comprobante</p>
                         {latestReceipt.referencia && (
-                          <p className="text-sm text-foreground">Ref: <span className="font-mono">{latestReceipt.referencia}</span></p>
+                          <p className="text-sm text-gray-900">Ref: <span className="font-mono">{latestReceipt.referencia}</span></p>
                         )}
                         {latestReceipt.file_url && (
-                          <a
-                            href={latestReceipt.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 text-xs text-primary underline"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            Ver imagen / PDF
+                          <a href={latestReceipt.file_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-blue-600 underline">
+                            <ExternalLink className="h-3 w-3" />Ver imagen / PDF
                           </a>
                         )}
                         {latestReceipt.monto_declarado && (
-                          <p className="text-xs text-muted-foreground">
-                            Monto declarado: <span className="font-medium text-foreground">${latestReceipt.monto_declarado}</span>
-                          </p>
+                          <p className="text-xs text-gray-500">Monto declarado: <span className="font-medium text-gray-900">${latestReceipt.monto_declarado}</span></p>
                         )}
                       </div>
                     )}
 
-                    {/* Notas de rechazo */}
                     {p.motivo_rechazo && (
-                      <div className="p-2 bg-destructive/5 border border-destructive/20 rounded-lg">
-                        <p className="text-xs text-destructive font-medium">Motivo de rechazo:</p>
-                        <p className="text-xs text-destructive/80 mt-0.5">{p.motivo_rechazo}</p>
+                      <div className="p-2 bg-red-50 border border-red-200 rounded-xl">
+                        <p className="text-xs text-red-600 font-medium">Motivo de rechazo:</p>
+                        <p className="text-xs text-red-500/80 mt-0.5">{p.motivo_rechazo}</p>
                       </div>
                     )}
 
                     {p.notas_internas && (
-                      <div className="p-2 bg-muted/50 rounded-lg">
-                        <p className="text-xs text-muted-foreground font-medium">Notas internas:</p>
-                        <p className="text-xs text-foreground mt-0.5">{p.notas_internas}</p>
+                      <div className="p-2 bg-gray-50 rounded-xl">
+                        <p className="text-xs text-gray-500 font-medium">Notas internas:</p>
+                        <p className="text-xs text-gray-900 mt-0.5">{p.notas_internas}</p>
                       </div>
                     )}
 
-                    {/* Historial de comprobantes */}
                     {p.payment_receipts.length > 1 && (
-                      <p className="text-xs text-muted-foreground">
-                        {p.payment_receipts.length} comprobantes cargados en total
-                      </p>
+                      <p className="text-xs text-gray-400">{p.payment_receipts.length} comprobantes cargados en total</p>
                     )}
 
-                    {/* Acciones */}
                     {canValidate && isPending && (
                       <div className="flex gap-2 pt-1">
-                        <Button
-                          size="sm"
-                          className="flex-1 h-9 gap-1.5 bg-success hover:bg-success/90 text-background"
+                        <button
                           onClick={() => handleApprove(p.id)}
                           disabled={isLoading}
+                          className="flex-1 h-9 rounded-xl bg-[#06C167] hover:bg-[#05a857] text-white text-xs font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50"
                         >
-                          <CheckCircle2 className="h-4 w-4" />
-                          Aprobar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 h-9 gap-1.5 border-warning text-warning hover:bg-warning/10"
+                          <CheckCircle2 className="h-3.5 w-3.5" />Aprobar
+                        </button>
+                        <button
                           onClick={() => { setCorrectionModal({ id: p.id }); setCorrectionNotas('') }}
                           disabled={isLoading}
+                          className="flex-1 h-9 rounded-xl border border-amber-300 text-amber-700 hover:bg-amber-50 text-xs font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50"
                         >
-                          <AlertCircle className="h-4 w-4" />
-                          Corrección
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 h-9 gap-1.5 border-destructive text-destructive hover:bg-destructive/10"
+                          <AlertCircle className="h-3.5 w-3.5" />Corrección
+                        </button>
+                        <button
                           onClick={() => { setRejectModal({ id: p.id }); setRejectMotivo('') }}
                           disabled={isLoading}
+                          className="flex-1 h-9 rounded-xl border border-red-300 text-red-600 hover:bg-red-50 text-xs font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50"
                         >
-                          <XCircle className="h-4 w-4" />
-                          Rechazar
-                        </Button>
+                          <XCircle className="h-3.5 w-3.5" />Rechazar
+                        </button>
                       </div>
                     )}
                   </div>
@@ -348,67 +288,35 @@ export function PaymentsReviewManager() {
         </div>
       )}
 
-      {/* Modal rechazo */}
+      {/* Reject Modal */}
       {rejectModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50" onClick={() => setRejectModal(null)}>
-          <div
-            className="bg-background rounded-t-2xl sm:rounded-xl w-full sm:max-w-md p-4 space-y-4"
-            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <h3 className="text-base font-bold text-foreground">Rechazar pago</h3>
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-5 space-y-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} onClick={e => e.stopPropagation()}>
+            <h3 className="text-sm font-black text-gray-900">Rechazar pago</h3>
             <div>
-              <Label className="text-xs">Motivo (obligatorio)</Label>
-              <Textarea
-                value={rejectMotivo}
-                onChange={e => setRejectMotivo(e.target.value)}
-                placeholder="ej. El monto no coincide con el total de la cuenta."
-                rows={3}
-                className="mt-1 text-sm"
-              />
+              <Label className="text-xs text-gray-500">Motivo (obligatorio)</Label>
+              <Textarea value={rejectMotivo} onChange={e => setRejectMotivo(e.target.value)} placeholder="ej. El monto no coincide con el total de la cuenta." rows={3} className="mt-1 text-sm" />
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1 h-10" onClick={() => setRejectModal(null)}>Cancelar</Button>
-              <Button
-                className="flex-1 h-10 bg-destructive hover:bg-destructive/90 text-background"
-                onClick={handleReject}
-                disabled={!!actionLoading}
-              >
-                Rechazar
-              </Button>
+              <button onClick={() => setRejectModal(null)} className="flex-1 h-9 rounded-xl border border-gray-200 text-gray-700 text-xs font-medium hover:bg-gray-50">Cancelar</button>
+              <button onClick={handleReject} disabled={!!actionLoading} className="flex-1 h-9 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-semibold disabled:opacity-50">Rechazar</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal corrección */}
+      {/* Correction Modal */}
       {correctionModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50" onClick={() => setCorrectionModal(null)}>
-          <div
-            className="bg-background rounded-t-2xl sm:rounded-xl w-full sm:max-w-md p-4 space-y-4"
-            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <h3 className="text-base font-bold text-foreground">Solicitar corrección</h3>
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-5 space-y-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} onClick={e => e.stopPropagation()}>
+            <h3 className="text-sm font-black text-gray-900">Solicitar corrección</h3>
             <div>
-              <Label className="text-xs">Instrucciones para el cliente (opcional)</Label>
-              <Textarea
-                value={correctionNotas}
-                onChange={e => setCorrectionNotas(e.target.value)}
-                placeholder="ej. Por favor incluye el número de referencia de la operación."
-                rows={3}
-                className="mt-1 text-sm"
-              />
+              <Label className="text-xs text-gray-500">Instrucciones para el cliente (opcional)</Label>
+              <Textarea value={correctionNotas} onChange={e => setCorrectionNotas(e.target.value)} placeholder="ej. Por favor incluye el número de referencia de la operación." rows={3} className="mt-1 text-sm" />
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1 h-10" onClick={() => setCorrectionModal(null)}>Cancelar</Button>
-              <Button
-                className="flex-1 h-10"
-                onClick={handleCorrection}
-                disabled={!!actionLoading}
-              >
-                Enviar
-              </Button>
+              <button onClick={() => setCorrectionModal(null)} className="flex-1 h-9 rounded-xl border border-gray-200 text-gray-700 text-xs font-medium hover:bg-gray-50">Cancelar</button>
+              <button onClick={handleCorrection} disabled={!!actionLoading} className="flex-1 h-9 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold disabled:opacity-50">Enviar</button>
             </div>
           </div>
         </div>
