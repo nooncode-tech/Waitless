@@ -31,8 +31,8 @@ export type Action =
  *   - Admin puede todo
  */
 const PERMISSIONS: Record<Action, UserRole[]> = {
-  crear_pedido:      ['mesero', 'manager', 'admin'],
-  cancelar_pedido:   ['mesero', 'manager', 'admin'],
+  crear_pedido:      ['mesero', 'manager', 'admin', 'repartidor'],
+  cancelar_pedido:   ['mesero', 'manager', 'admin', 'repartidor'],
   aplicar_descuento: ['manager', 'admin'],
   hacer_refund:      ['admin'],
   cerrar_mesa:       ['mesero', 'manager', 'admin'],

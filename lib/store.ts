@@ -8,7 +8,7 @@ export type KitchenStatus = 'en_cola' | 'preparando' | 'listo'
 export type PaymentMethod = 'tarjeta' | 'efectivo' | 'transferencia' | 'apple_pay'
 export type PaymentStatus = 'pendiente' | 'parcial' | 'pagado' | 'reembolsado'
 export type BillStatus = 'abierta' | 'en_pago' | 'pagada' | 'cerrada' | 'liberada'
-export type UserRole = 'admin' | 'manager' | 'mesero' | 'cocina'
+export type UserRole = 'admin' | 'manager' | 'mesero' | 'cocina' | 'repartidor'
 export type TableState = 'disponible' | 'ocupada' | 'cuenta_pedida' | 'limpieza' | 'hold'
 export type IngredientUnit = 'kg' | 'g' | 'l' | 'ml' | 'unidad' | 'porcion'
 
@@ -766,6 +766,7 @@ export function getRoleLabel(role: UserRole): string {
     manager: 'Manager / Encargado',
     mesero: 'Sala / Waiter',
     cocina: 'Cocina',
+    repartidor: 'Repartidor',
   }
   return labels[role]
 }

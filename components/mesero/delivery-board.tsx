@@ -1,12 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Clock, Package, MapPin, Phone, Truck, ShoppingBag, AlertCircle, User, Copy } from 'lucide-react'
+import { Check, Clock, Package, MapPin, Phone, Truck, ShoppingBag, AlertCircle, User, Copy, ChevronDown } from 'lucide-react'
 import { useApp } from '@/lib/context'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { formatPrice, getChannelLabel, getStatusLabel, getTimeDiff, type OrderStatus } from '@/lib/store'
+import { formatPrice, getChannelLabel, getStatusLabel, getTimeDiff } from '@/lib/store'
+import { notifyConsumerDelivery } from '@/lib/push-triggers'
 
 export function DeliveryBoard() {
   const { orders, users, updateOrderStatus, assignRepartidor } = useApp()
@@ -21,7 +19,9 @@ export function DeliveryBoard() {
     setTimeout(() => setCopiedId(null), 2000)
   }
 
-  const deliveryStaff = users.filter(u => u.activo && (u.role === 'mesero' || u.role === 'manager'))
+  const deliveryStaff = users.filter(u =>
+    u.activo && (u.role === 'repartidor' || u.role === 'mesero' || u.role === 'manager')
+  )
 
   const pendingOrders = orders.filter(o =>
     o.status !== 'entregado' &&
@@ -34,8 +34,14 @@ export function DeliveryBoard() {
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   })
 
-  const handleMarkDelivered = (orderId: string) => updateOrderStatus(orderId, 'entregado')
-  const handleMarkEnCamino = (orderId: string) => updateOrderStatus(orderId, 'en_camino')
+  const handleMarkDelivered = (orderId: string) => {
+    updateOrderStatus(orderId, 'entregado')
+    notifyConsumerDelivery(orderId, 'entregado')
+  }
+  const handleMarkEnCamino = (orderId: string) => {
+    updateOrderStatus(orderId, 'en_camino')
+    notifyConsumerDelivery(orderId, 'en_camino')
+  }
 
   const handleConfirmRepartidor = (orderId: string) => {
     if (!selectedRepartidor) return
@@ -53,32 +59,32 @@ export function DeliveryBoard() {
     <div className="p-4">
       {/* Stats */}
       <div className="grid grid-cols-4 gap-2 mb-4">
-        <div className="border border-success/20 bg-green-50 rounded-xl p-2 text-center">
-          <p className="text-xl font-bold text-success">{readyCount}</p>
-          <p className="text-[9px] text-success">Listos</p>
+        <div className="border border-emerald-200 bg-emerald-50 rounded-2xl p-2 text-center">
+          <p className="text-xl font-bold text-[#06C167]">{readyCount}</p>
+          <p className="text-[9px] text-[#06C167] font-medium">Listos</p>
         </div>
-        <div className="border border-border bg-muted rounded-xl p-2 text-center">
-          <p className="text-xl font-bold text-foreground">{enCaminoCount}</p>
-          <p className="text-[9px] text-muted-foreground">En camino</p>
+        <div className="border border-gray-200 bg-gray-50 rounded-2xl p-2 text-center">
+          <p className="text-xl font-bold text-gray-900">{enCaminoCount}</p>
+          <p className="text-[9px] text-gray-500 font-medium">En camino</p>
         </div>
-        <div className="border border-warning/20 bg-kds-preparing rounded-xl p-2 text-center">
-          <p className="text-xl font-bold text-warning">{preparingCount}</p>
-          <p className="text-[9px] text-warning">Preparando</p>
+        <div className="border border-amber-200 bg-amber-50 rounded-2xl p-2 text-center">
+          <p className="text-xl font-bold text-amber-600">{preparingCount}</p>
+          <p className="text-[9px] text-amber-600 font-medium">Preparando</p>
         </div>
-        <div className="border border-border bg-card rounded-xl p-2 text-center">
-          <p className="text-xl font-bold text-foreground">{pendingOrders.length}</p>
-          <p className="text-[9px] text-muted-foreground">Total</p>
+        <div className="border border-gray-200 bg-white rounded-2xl p-2 text-center">
+          <p className="text-xl font-bold text-gray-900">{pendingOrders.length}</p>
+          <p className="text-[9px] text-gray-500 font-medium">Total</p>
         </div>
       </div>
 
       {/* Orders List */}
       <div className="space-y-3">
-        <h3 className="font-semibold text-sm text-foreground">Tablero de entregas</h3>
+        <h3 className="font-semibold text-sm text-gray-900">Tablero de entregas</h3>
 
         {pendingOrders.length === 0 ? (
-          <div className="border border-dashed border-border rounded-xl py-10 text-center">
-            <Package className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">Sin órdenes pendientes</p>
+          <div className="border border-dashed border-gray-200 rounded-2xl py-10 text-center">
+            <Package className="h-8 w-8 mx-auto text-gray-300 mb-2" />
+            <p className="text-sm text-gray-400">Sin órdenes pendientes</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
@@ -100,41 +106,41 @@ export function DeliveryBoard() {
               return (
                 <div
                   key={order.id}
-                  className={`border rounded-xl transition-all ${
-                    isReady    ? 'border-success bg-green-50/50' :
-                    isEnCamino ? 'border-accent bg-muted/50' :
-                    'border-border bg-card'
+                  className={`border rounded-2xl transition-all ${
+                    isReady    ? 'border-emerald-200 bg-emerald-50/50' :
+                    isEnCamino ? 'border-gray-300 bg-gray-50' :
+                    'border-gray-200 bg-white'
                   }`}
                 >
                   <div className="p-3 pb-2">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="text-sm font-bold text-foreground">#{order.numero}</p>
+                        <p className="text-sm font-bold text-gray-900">#{order.numero}</p>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <Badge variant="outline" className={`text-[10px] h-4 px-1 ${
-                            order.canal === 'delivery'    ? 'border-muted-foreground text-muted-foreground' :
-                            order.canal === 'para_llevar' ? 'border-warning text-warning' :
-                            ''
+                          <span className={`inline-flex items-center text-[10px] h-4 px-1.5 rounded-full border font-medium ${
+                            order.canal === 'delivery'    ? 'border-gray-300 text-gray-500' :
+                            order.canal === 'para_llevar' ? 'border-amber-300 text-amber-600' :
+                            'border-gray-200 text-gray-400'
                           }`}>
                             {order.canal === 'delivery'    && <Truck       className="h-2.5 w-2.5 mr-0.5" />}
                             {order.canal === 'para_llevar' && <ShoppingBag className="h-2.5 w-2.5 mr-0.5" />}
                             {getChannelLabel(order.canal)}
-                          </Badge>
+                          </span>
                           {order.mesa && (
-                            <span className="text-[10px] text-muted-foreground">Mesa {order.mesa}</span>
+                            <span className="text-[10px] text-gray-400">Mesa {order.mesa}</span>
                           )}
                         </div>
                       </div>
                       <div className="text-right">
-                        <Badge className={`text-[10px] h-4 ${
-                          isReady    ? 'bg-success text-white' :
-                          isEnCamino ? 'bg-foreground text-background' :
-                          order.status === 'preparando' ? 'bg-muted text-foreground' :
-                          'bg-muted text-muted-foreground'
+                        <span className={`inline-flex items-center text-[10px] h-5 px-1.5 rounded-full font-semibold ${
+                          isReady    ? 'bg-[#06C167] text-white' :
+                          isEnCamino ? 'bg-gray-900 text-white' :
+                          order.status === 'preparando' ? 'bg-amber-100 text-amber-700' :
+                          'bg-gray-100 text-gray-500'
                         }`}>
                           {isEnCamino ? 'En camino' : getStatusLabel(order.status)}
-                        </Badge>
-                        <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center justify-end gap-0.5">
+                        </span>
+                        <p className="text-[10px] text-gray-400 mt-0.5 flex items-center justify-end gap-0.5">
                           <Clock className="h-2.5 w-2.5" />
                           {getTimeDiff(order.createdAt)}
                         </p>
@@ -145,20 +151,20 @@ export function DeliveryBoard() {
                   <div className="px-3 pb-3">
                     {/* Customer Info */}
                     {(isDelivery || order.canal === 'para_llevar') && order.nombreCliente && (
-                      <div className="mb-2 p-2 bg-muted rounded-lg text-xs">
-                        <p className="font-semibold text-foreground">{order.nombreCliente}</p>
+                      <div className="mb-2 p-2 bg-gray-50 rounded-xl text-xs">
+                        <p className="font-semibold text-gray-900">{order.nombreCliente}</p>
                         {order.telefono && (
-                          <p className="text-muted-foreground flex items-center gap-1">
+                          <p className="text-gray-500 flex items-center gap-1 mt-0.5">
                             <Phone className="h-2.5 w-2.5" />{order.telefono}
                           </p>
                         )}
                         {order.direccion && (
-                          <p className="text-muted-foreground flex items-center gap-1">
+                          <p className="text-gray-500 flex items-center gap-1 mt-0.5">
                             <MapPin className="h-2.5 w-2.5" />{order.direccion}
                           </p>
                         )}
                         {order.zonaReparto && (
-                          <span className="mt-1 inline-block text-[9px] bg-border text-muted-foreground px-1.5 py-0.5 rounded-full">
+                          <span className="mt-1 inline-block text-[9px] bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full">
                             {order.zonaReparto}
                           </span>
                         )}
@@ -167,7 +173,7 @@ export function DeliveryBoard() {
 
                     {/* Repartidor asignado */}
                     {isEnCamino && repartidorUser && (
-                      <div className="mb-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                      <div className="mb-2 flex items-center gap-1.5 text-[10px] text-gray-500">
                         <User className="h-3 w-3 shrink-0" />
                         <span>{repartidorUser.nombre}</span>
                       </div>
@@ -176,31 +182,31 @@ export function DeliveryBoard() {
                     {/* Items */}
                     <ul className="space-y-0.5 mb-2">
                       {order.items.map(item => (
-                        <li key={item.id} className="text-xs text-foreground">
+                        <li key={item.id} className="text-xs text-gray-700">
                           {item.cantidad}x {item.menuItem.nombre}
                         </li>
                       ))}
                     </ul>
 
                     {/* Total */}
-                    <div className="flex justify-between text-xs mb-2 pt-1 border-t border-border">
-                      <span className="text-muted-foreground">Total</span>
-                      <span className="font-semibold text-foreground">{formatPrice(total)}</span>
+                    <div className="flex justify-between text-xs mb-2 pt-1 border-t border-gray-100">
+                      <span className="text-gray-400">Total</span>
+                      <span className="font-semibold text-gray-900">{formatPrice(total)}</span>
                     </div>
 
                     {/* Kitchen Status */}
                     {!isEnCamino && (
                       <div className="flex gap-1 text-[10px] mb-2">
-                        <span className={`px-1.5 py-0.5 rounded ${
-                          order.cocinaStatus === 'listo'      ? 'bg-green-50 text-success' :
-                          order.cocinaStatus === 'preparando' ? 'bg-kds-preparing text-warning' :
-                          'bg-muted text-muted-foreground'
+                        <span className={`px-1.5 py-0.5 rounded-lg ${
+                          order.cocinaStatus === 'listo'      ? 'bg-emerald-50 text-[#06C167]' :
+                          order.cocinaStatus === 'preparando' ? 'bg-amber-50 text-amber-600' :
+                          'bg-gray-100 text-gray-500'
                         }`}>
                           Cocina: {order.cocinaStatus === 'listo' ? 'Listo' :
                                    order.cocinaStatus === 'preparando' ? 'Prep.' : 'Cola'}
                         </span>
                         {!allKitchensReady && (
-                          <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
+                          <span className="text-[9px] text-gray-400 flex items-center gap-0.5">
                             <AlertCircle className="h-2.5 w-2.5" />Esperando
                           </span>
                         )}
@@ -211,20 +217,20 @@ export function DeliveryBoard() {
                     {allKitchensReady && isReady && !isAssigning && (
                       <div className="flex gap-1">
                         {isDelivery ? (
-                          <Button
-                            className="flex-1 h-7 text-xs"
+                          <button
+                            className="flex-1 h-8 text-xs rounded-xl bg-gray-900 text-white font-semibold flex items-center justify-center gap-1 active:opacity-80"
                             onClick={() => { setAssigningId(order.id); setSelectedRepartidor('') }}
                           >
-                            <Truck className="h-3 w-3 mr-1" />En camino
-                          </Button>
+                            <Truck className="h-3 w-3" />En camino
+                          </button>
                         ) : (
-                          <Button
-                            className="w-full bg-success hover:bg-success/90 text-white h-7 text-xs"
+                          <button
+                            className="w-full h-8 text-xs rounded-xl bg-[#06C167] text-white font-semibold flex items-center justify-center gap-1 active:opacity-80"
                             onClick={() => handleMarkDelivered(order.id)}
                           >
-                            <Check className="h-3 w-3 mr-1" />
+                            <Check className="h-3 w-3" />
                             {order.canal === 'para_llevar' ? 'Entregar' : 'Entregado'}
-                          </Button>
+                          </button>
                         )}
                       </div>
                     )}
@@ -232,36 +238,36 @@ export function DeliveryBoard() {
                     {/* Assign repartidor panel */}
                     {isAssigning && (
                       <div className="space-y-2">
-                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
                           Asignar repartidor
                         </p>
-                        <Select value={selectedRepartidor} onValueChange={setSelectedRepartidor}>
-                          <SelectTrigger className="h-8 text-xs">
-                            <SelectValue placeholder="Seleccioná quién lleva" />
-                          </SelectTrigger>
-                          <SelectContent>
+                        <div className="relative">
+                          <select
+                            className="w-full h-8 text-xs rounded-xl border border-gray-200 bg-white px-2 pr-7 appearance-none text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                            value={selectedRepartidor}
+                            onChange={e => setSelectedRepartidor(e.target.value)}
+                          >
+                            <option value="">Seleccioná quién lleva</option>
                             {deliveryStaff.map(u => (
-                              <SelectItem key={u.id} value={u.id}>
-                                {u.nombre}
-                              </SelectItem>
+                              <option key={u.id} value={u.id}>{u.nombre}</option>
                             ))}
-                          </SelectContent>
-                        </Select>
+                          </select>
+                          <ChevronDown className="absolute right-2 top-2 h-4 w-4 text-gray-400 pointer-events-none" />
+                        </div>
                         <div className="flex gap-1">
-                          <Button
-                            variant="outline"
-                            className="flex-1 h-7 text-xs"
+                          <button
+                            className="flex-1 h-8 text-xs rounded-xl border border-gray-200 text-gray-700 font-medium active:bg-gray-50"
                             onClick={() => { setAssigningId(null); setSelectedRepartidor('') }}
                           >
                             Cancelar
-                          </Button>
-                          <Button
-                            className="flex-1 h-7 text-xs"
+                          </button>
+                          <button
+                            className="flex-1 h-8 text-xs rounded-xl bg-gray-900 text-white font-semibold flex items-center justify-center gap-1 disabled:opacity-40 active:opacity-80"
                             disabled={!selectedRepartidor}
                             onClick={() => handleConfirmRepartidor(order.id)}
                           >
-                            <Truck className="h-3 w-3 mr-1" />Salir
-                          </Button>
+                            <Truck className="h-3 w-3" />Salir
+                          </button>
                         </div>
                       </div>
                     )}
@@ -271,20 +277,20 @@ export function DeliveryBoard() {
                         {isDelivery && (
                           <button
                             onClick={() => copyTrackingLink(order.id)}
-                            className="w-full flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground border border-dashed border-border rounded-lg py-1.5 transition-colors"
+                            className="w-full flex items-center justify-center gap-1.5 text-[10px] text-gray-400 hover:text-gray-700 border border-dashed border-gray-200 rounded-xl py-1.5 transition-colors"
                           >
                             {copiedId === order.id
-                              ? <><Check className="h-3 w-3 text-success" /><span className="text-success">Link copiado</span></>
+                              ? <><Check className="h-3 w-3 text-[#06C167]" /><span className="text-[#06C167]">Link copiado</span></>
                               : <><Copy className="h-3 w-3" />Copiar link de tracking</>
                             }
                           </button>
                         )}
-                        <Button
-                          className="w-full bg-success hover:bg-success/90 text-white h-7 text-xs"
+                        <button
+                          className="w-full h-8 text-xs rounded-xl bg-[#06C167] text-white font-semibold flex items-center justify-center gap-1 active:opacity-80"
                           onClick={() => handleMarkDelivered(order.id)}
                         >
-                          <Check className="h-3 w-3 mr-1" />Entregado
-                        </Button>
+                          <Check className="h-3 w-3" />Entregado
+                        </button>
                       </div>
                     )}
                   </div>

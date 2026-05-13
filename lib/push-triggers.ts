@@ -32,3 +32,17 @@ export const pushTriggers = {
   newQrOrder: (mesa: number) =>
     triggerPush('new_qr_order', { mesa }),
 }
+
+/** Notify the consumer when their delivery order status changes (fire-and-forget). */
+export async function notifyConsumerDelivery(
+  orderId: string,
+  event: 'en_camino' | 'entregado',
+): Promise<void> {
+  const token = await getToken()
+  if (!token) return
+  fetch('/api/consumidor/push/trigger', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ orderId, event }),
+  }).catch(() => {})
+}

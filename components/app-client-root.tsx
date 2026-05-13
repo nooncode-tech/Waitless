@@ -14,11 +14,12 @@ import { ClienteAuthScreen } from '@/components/cliente/cliente-auth-screen'
 import { MeseroView } from '@/components/mesero/mesero-view'
 import { KDSView } from '@/components/kds/kds-view'
 import { AdminView } from '@/components/admin/admin-view'
+import { RepartidorView } from '@/components/repartidor/repartidor-view'
 import type { UserRole } from '@/lib/store'
 import type { TenantBranding } from '@/lib/tenant-server'
 import type { ClienteUser } from '@/lib/cliente-auth'
 
-type AppView = 'landing' | 'login' | 'profile-picker' | 'cliente-auth' | 'cliente' | 'admin' | 'mesero' | 'cocina'
+type AppView = 'landing' | 'login' | 'profile-picker' | 'cliente-auth' | 'cliente' | 'admin' | 'mesero' | 'cocina' | 'repartidor'
 
 interface AppContentProps {
   initialBranding: TenantBranding
@@ -256,6 +257,13 @@ function AppContent({ initialBranding, startAtLogin }: AppContentProps) {
         return null
       }
       return <KDSView onBack={handleLogout} onLockProfile={handleLockProfile} />
+
+    case 'repartidor':
+      if (currentUser.role !== 'repartidor') {
+        setView('profile-picker')
+        return null
+      }
+      return <RepartidorView onBack={handleLogout} />
 
     default:
     return <LandingPage />
