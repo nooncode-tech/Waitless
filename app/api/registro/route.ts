@@ -15,12 +15,18 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const SLUG_RE = /^[a-z0-9-]{3,40}$/
 const HEX_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/
 
 export async function POST(req: NextRequest) {
+  const { allowed } = rateLimit(`registro:${getClientIp(req)}`, 5, 60_000)
+  if (!allowed) {
+    return NextResponse.json({ error: 'Demasiados intentos. Esperá un momento.' }, { status: 429 })
+  }
+
   let formData: FormData
   try {
     formData = await req.formData()

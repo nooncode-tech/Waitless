@@ -103,8 +103,8 @@ export async function DELETE(req: NextRequest) {
     // Marcar tenant como inactivo primero (protege contra re-acceso)
     await supabaseAdmin.from('tenants').update({ activo: false }).eq('id', tenantId)
 
-    // Eliminar datos relacionados
-    await Promise.allSettled([
+    // Eliminar datos relacionados — verificar errores individuales antes de continuar
+    const deleteResults = await Promise.allSettled([
       supabaseAdmin.from('app_config').delete().eq('tenant_id', tenantId),
       supabaseAdmin.from('menu_items').delete().eq('tenant_id', tenantId),
       supabaseAdmin.from('categories').delete().eq('tenant_id', tenantId),
@@ -116,6 +116,18 @@ export async function DELETE(req: NextRequest) {
       supabaseAdmin.from('audit_logs').delete().eq('tenant_id', tenantId),
       supabaseAdmin.from('profiles').delete().eq('tenant_id', tenantId),
     ])
+
+    const failed = deleteResults.filter(
+      r => r.status === 'rejected' ||
+        (r.status === 'fulfilled' && (r.value as { error?: { message: string } }).error)
+    )
+    if (failed.length > 0) {
+      console.error('[delete-account] Errores en limpieza de datos:', failed.length, 'tablas fallidas')
+      return NextResponse.json(
+        { error: 'Error eliminando datos del restaurante. Intentá nuevamente o contactá soporte.' },
+        { status: 500 }
+      )
+    }
 
     // Eliminar el tenant
     await supabaseAdmin.from('tenants').delete().eq('id', tenantId)

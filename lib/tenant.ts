@@ -50,7 +50,7 @@ export async function getTenantById(id: string): Promise<Tenant | null> {
 
 /** List all tenants (admin only) */
 export async function listTenants(): Promise<Tenant[]> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('tenants')
     .select('*')
     .order('created_at', { ascending: true })

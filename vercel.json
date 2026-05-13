@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/crons/cleanup-stripe-events",
+      "schedule": "0 3 * * *"
+    }
+  ]
+}
