@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import {
   User, MapPin, CreditCard, Star, Plus, Trash2, Home, Briefcase,
   Check, X, LogOut, ChevronRight, AlertCircle, ArrowLeft, Lock,
-  ShoppingBag, Wallet, Settings,
+  ShoppingBag, Wallet, Bell, BellOff,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { ConsumerPaymentTab } from './consumer-payment-tab'
@@ -39,6 +39,14 @@ interface Review {
 }
 
 type Tab = 'perfil' | 'pedidos' | 'monedero' | 'direcciones' | 'tarjetas' | 'resenas'
+type PushStatus = 'unsupported' | 'denied' | 'subscribed' | 'unsubscribed'
+
+function urlBase64ToUint8Array(base64: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64.length % 4)) % 4)
+  const b64 = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/')
+  const raw = atob(b64)
+  return Uint8Array.from(raw, c => c.charCodeAt(0))
+}
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'perfil',      label: 'Perfil',      icon: <User className="h-4 w-4" /> },
@@ -95,6 +103,9 @@ export function ConsumerProfileView() {
     editForm.telefono !== (profile.telefono ?? '')
   )
 
+  const [pushStatus, setPushStatus] = useState<PushStatus>('unsubscribed')
+  const [pushLoading, setPushLoading] = useState(false)
+
   const [showAddressForm, setShowAddressForm] = useState(false)
   const [addrForm, setAddrForm] = useState({ alias: 'Casa', direccion: '', ciudad: '', notas: '' })
   const [addrSaving, setAddrSaving] = useState(false)
@@ -123,6 +134,58 @@ export function ConsumerProfileView() {
       fetchProfile(session.access_token)
     })
   }, [fetchProfile, router])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+      setPushStatus('unsupported'); return
+    }
+    if (Notification.permission === 'denied') {
+      setPushStatus('denied'); return
+    }
+    navigator.serviceWorker.ready.then(reg =>
+      reg.pushManager.getSubscription().then(sub => {
+        setPushStatus(sub ? 'subscribed' : 'unsubscribed')
+      })
+    ).catch(() => {})
+  }, [])
+
+  const handleSubscribePush = async () => {
+    if (!token || pushLoading) return
+    setPushLoading(true)
+    try {
+      const permission = await Notification.requestPermission()
+      if (permission !== 'granted') { setPushStatus('denied'); return }
+      const reg = await navigator.serviceWorker.ready
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
+      })
+      const { endpoint, keys } = sub.toJSON() as { endpoint: string; keys: { p256dh: string; auth: string } }
+      await fetch('/api/consumidor/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ endpoint, keys }),
+      })
+      setPushStatus('subscribed')
+    } catch { /* permission denied or unsupported */ }
+    finally { setPushLoading(false) }
+  }
+
+  const handleUnsubscribePush = async () => {
+    if (!token || pushLoading) return
+    setPushLoading(true)
+    try {
+      const reg = await navigator.serviceWorker.ready
+      const sub = await reg.pushManager.getSubscription()
+      await sub?.unsubscribe()
+      await fetch('/api/consumidor/push/subscribe', {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      setPushStatus('unsubscribed')
+    } finally { setPushLoading(false) }
+  }
 
   const handleSaveProfile = async () => {
     if (!token) return
@@ -289,6 +352,68 @@ export function ConsumerProfileView() {
                       ? <span className="flex items-center justify-center gap-2"><span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Guardando...</span>
                       : 'Guardar cambios'}
                   </button>
+                )}
+              </div>
+            )}
+
+            {/* Notificaciones push — sección separada dentro del tab perfil */}
+            {tab === 'perfil' && pushStatus !== 'unsupported' && (
+              <div className="bg-white rounded-2xl shadow-sm p-6 space-y-3 mt-4">
+                <h2 className="font-black text-gray-900 text-base" style={{ letterSpacing: '-0.01em' }}>
+                  Notificaciones
+                </h2>
+
+                {pushStatus === 'denied' ? (
+                  <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl">
+                    <BellOff className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-amber-700">Notificaciones bloqueadas</p>
+                      <p className="text-xs text-amber-600 mt-0.5">
+                        Activalas desde la configuración de tu navegador para recibir actualizaciones de tus pedidos.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        pushStatus === 'subscribed' ? 'bg-emerald-50' : 'bg-gray-100'
+                      }`}>
+                        {pushStatus === 'subscribed'
+                          ? <Bell className="h-5 w-5 text-[#06C167]" />
+                          : <BellOff className="h-5 w-5 text-gray-400" />
+                        }
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {pushStatus === 'subscribed' ? 'Notificaciones activas' : 'Notificaciones desactivadas'}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {pushStatus === 'subscribed'
+                            ? 'Recibirás avisos cuando tu pedido salga y sea entregado.'
+                            : 'Activalas para seguir el estado de tus pedidos.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {pushStatus === 'subscribed' ? (
+                      <button
+                        onClick={handleUnsubscribePush}
+                        disabled={pushLoading}
+                        className="shrink-0 h-9 px-4 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                      >
+                        {pushLoading ? <span className="h-3.5 w-3.5 border-2 border-gray-300 border-t-gray-700 rounded-full animate-spin block" /> : 'Desactivar'}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleSubscribePush}
+                        disabled={pushLoading}
+                        className="shrink-0 h-9 px-4 rounded-xl bg-black text-white text-xs font-semibold disabled:opacity-50 transition-colors"
+                      >
+                        {pushLoading ? <span className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin block" /> : 'Activar'}
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             )}
