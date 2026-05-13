@@ -42,12 +42,15 @@ export async function POST(req: NextRequest, { params }: Params) {
   const tenantPrefix = (auth.tenantId ?? 'NOTNT').slice(0, 6).toUpperCase()
   const year = new Date().getFullYear()
 
-  const { count } = await supabaseAdmin
-    .from('internal_sales_notes')
-    .select('id', { count: 'exact', head: true })
-    .eq('tenant_id', auth.tenantId ?? '')
+  const { data: seqData, error: seqError } = await supabaseAdmin
+    .rpc('next_sales_note_seq', { p_tenant_id: auth.tenantId })
 
-  const seq = String((count ?? 0) + 1).padStart(6, '0')
+  if (seqError || seqData == null) {
+    console.error('[approve] next_sales_note_seq:', seqError?.message)
+    return NextResponse.json({ error: 'No se pudo generar el número de nota interna' }, { status: 500 })
+  }
+
+  const seq = String(seqData as number).padStart(6, '0')
   const numeroInterno = `WLS-${tenantPrefix}-MAIN-${year}-${seq}`
 
   // Calcular totales desde snapshot de la sesión
