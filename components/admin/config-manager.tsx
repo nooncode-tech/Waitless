@@ -317,12 +317,12 @@ export function ConfigManager() {
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <input
                       type="color"
-                      value={(localConfig as Record<string, string>)[key] || def}
+                      value={(localConfig as unknown as Record<string, string>)[key] || def}
                       onChange={(e) => setLocalConfig(prev => ({ ...prev, [key]: e.target.value }))}
                       className="h-8 w-8 rounded border cursor-pointer p-0.5"
                     />
                     <Input
-                      value={(localConfig as Record<string, string>)[key] || def}
+                      value={(localConfig as unknown as Record<string, string>)[key] || def}
                       onChange={(e) => setLocalConfig(prev => ({ ...prev, [key]: e.target.value }))}
                       className="h-8 text-xs font-mono"
                       maxLength={7}

@@ -3,7 +3,7 @@ import { requireRole } from '@/lib/api-auth'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export async function POST(req: NextRequest) {
-  const auth = await requireRole(req, ['admin', 'manager', 'staff'])
+  const auth = await requireRole(req, ['admin', 'manager', 'mesero'])
   if ('error' in auth) return auth.error
 
   let body: Record<string, unknown>
