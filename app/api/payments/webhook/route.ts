@@ -42,17 +42,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: msg }, { status: 400 })
   }
 
-  // ── Idempotencia: verificar si este evento ya fue procesado ─────────────────
-  const { data: alreadyProcessed } = await supabaseAdmin
-    .from('audit_logs')
-    .select('id')
-    .like('detalles', `%${event.id}%`)
-    .limit(1)
-    .maybeSingle()
+  // ── Idempotencia: INSERT ... ON CONFLICT garantiza exactamente una vez ───────
+  const { error: idempotencyError } = await supabaseAdmin
+    .from('processed_stripe_events')
+    .insert({ event_id: event.id, event_type: event.type })
 
-  if (alreadyProcessed) {
-    console.log(`[webhook] Evento ${event.id} ya procesado — skipping`)
-    return NextResponse.json({ received: true, skipped: 'already_processed' })
+  if (idempotencyError) {
+    if (idempotencyError.code === '23505') {
+      console.log(`[webhook] Evento ${event.id} ya procesado — skipping`)
+      return NextResponse.json({ received: true, skipped: 'already_processed' })
+    }
+    console.error('[webhook] idempotency insert:', idempotencyError.message)
   }
 
   // ── Handle events ─────────────────────────────────────────────────────────

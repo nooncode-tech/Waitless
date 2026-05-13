@@ -51,9 +51,9 @@ export async function POST(req: NextRequest) {
 
   let query = supabaseAdmin
     .from('qr_tokens')
-    .select('id, mesa, token, usado, expires_at, tenant_id')
+    .select('id, mesa, token, activo, expires_at, tenant_id')
     .eq('token', token)
-    .eq('usado', false)
+    .eq('activo', true)
     .gt('expires_at', new Date().toISOString())
 
   // Scoping por tenant: solo validar si el token pertenece al tenant correcto.
