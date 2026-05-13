@@ -200,6 +200,38 @@ export async function POST(req: NextRequest) {
       console.log(`[webhook] Pago confirmado para sesión ${sessionId}`)
     }
 
+    // ── Stripe Connect: account activated / requirements changed ─────────────────
+    if (event.type === 'account.updated') {
+      const account = event.data.object as Stripe.Account
+      const tenantId = account.metadata?.tenant_id
+
+      if (tenantId) {
+        const charges_enabled = account.charges_enabled ?? false
+        const payouts_enabled = account.payouts_enabled ?? false
+        let status: string
+        if (charges_enabled && payouts_enabled) {
+          status = 'active'
+        } else if (account.requirements?.disabled_reason) {
+          status = 'disabled'
+        } else if ((account.requirements?.currently_due ?? []).length > 0) {
+          status = 'incomplete'
+        } else {
+          status = 'pending'
+        }
+
+        await supabaseAdmin
+          .from('tenants')
+          .update({
+            stripe_connect_status: status,
+            stripe_connect_charges_enabled: charges_enabled,
+            stripe_connect_payouts_enabled: payouts_enabled,
+          })
+          .eq('id', tenantId)
+
+        console.log(`[webhook] Connect account ${account.id} → ${status} (tenant ${tenantId})`)
+      }
+    }
+
     if (event.type === 'payment_intent.payment_failed') {
       const intent = event.data.object as Stripe.PaymentIntent
       const sessionId = intent.metadata?.sessionId

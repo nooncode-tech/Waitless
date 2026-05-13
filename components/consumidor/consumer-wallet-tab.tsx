@@ -152,10 +152,24 @@ export function ConsumerWalletTab({ token }: { token: string }) {
     setSelectedAmount(null)
     setCustomAmount('')
     setRechargeSuccess(true)
-    setTimeout(() => {
-      setRechargeSuccess(false)
-      fetchBalance()
-    }, 2500)
+    // Poll until balance increases (webhook fires async) — give up after 8s
+    const previousBalance = balanceCents
+    let attempts = 0
+    const poll = async () => {
+      attempts++
+      const res = await fetch('/api/consumidor/wallet/balance', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if ((data.balance_cents ?? 0) > previousBalance || attempts >= 8) {
+        setBalanceCents(data.balance_cents ?? 0)
+        setTransactions(data.transactions ?? [])
+        setRechargeSuccess(false)
+      } else {
+        setTimeout(poll, 1000)
+      }
+    }
+    setTimeout(poll, 1000)
   }
 
   const formatCurrency = (cents: number) => `$${Math.abs(cents / 100).toFixed(2)}`
