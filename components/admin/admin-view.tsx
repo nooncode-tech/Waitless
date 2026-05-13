@@ -56,9 +56,11 @@ import { PaymentsReviewManager } from './payments-review-manager'
 import { SalesNotesManager } from './sales-notes-manager'
 import { ConnectSettings } from './connect-settings'
 import { LiquidacionView } from './liquidacion-view'
-import { CreditCard, Banknote, FileText, Link2, ArrowDownCircle } from 'lucide-react'
+import { DisputesManager } from './disputes-manager'
+import { CalendarEmbed } from './calendar-embed'
+import { CreditCard, Banknote, FileText, Link2, ArrowDownCircle, AlertTriangle, CalendarDays } from 'lucide-react'
 
-type AdminScreen = 'reports' | 'menu' | 'orders' | 'inventory' | 'users' | 'config' | 'qr' | 'refunds' | 'closing' | 'history' | 'expo' | 'tables' | 'audit' | 'feedback' | 'health' | 'waitlist' | 'backup' | 'analytics' | 'billing' | 'payment-methods' | 'payments-review' | 'sales-notes' | 'connect' | 'liquidacion'
+type AdminScreen = 'reports' | 'menu' | 'orders' | 'inventory' | 'users' | 'config' | 'qr' | 'refunds' | 'closing' | 'history' | 'expo' | 'tables' | 'audit' | 'feedback' | 'health' | 'waitlist' | 'backup' | 'analytics' | 'billing' | 'payment-methods' | 'payments-review' | 'sales-notes' | 'connect' | 'liquidacion' | 'disputes' | 'calendar'
 
 interface AdminViewProps {
   onBack: () => void
@@ -126,6 +128,8 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
           { id: 'billing' as AdminScreen, label: 'Plan & Facturación', icon: <CreditCard className="h-[18px] w-[18px]" /> },
           { id: 'connect' as AdminScreen, label: 'Stripe Connect', icon: <Link2 className="h-[18px] w-[18px]" /> },
           { id: 'liquidacion' as AdminScreen, label: 'Liquidaciones', icon: <ArrowDownCircle className="h-[18px] w-[18px]" /> },
+          { id: 'disputes' as AdminScreen, label: 'Reclamos', icon: <AlertTriangle className="h-[18px] w-[18px]" /> },
+          { id: 'calendar' as AdminScreen, label: 'Calendario', icon: <CalendarDays className="h-[18px] w-[18px]" /> },
         ] : []),
       ]
     },
@@ -169,6 +173,8 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
       {screen === 'sales-notes' && <SalesNotesManager />}
       {screen === 'connect' && <ConnectSettings />}
       {screen === 'liquidacion' && <LiquidacionView />}
+      {screen === 'disputes' && <DisputesManager />}
+      {screen === 'calendar' && <CalendarEmbed />}
     </>
   )
 

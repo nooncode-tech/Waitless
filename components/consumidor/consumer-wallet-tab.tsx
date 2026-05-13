@@ -10,7 +10,7 @@ import {
 } from '@stripe/react-stripe-js'
 import {
   Wallet, Plus, ArrowDownLeft, ArrowUpRight, RotateCcw,
-  Loader2, AlertCircle, X, Check,
+  Loader2, AlertCircle, X, Check, Gift,
 } from 'lucide-react'
 
 const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
@@ -27,6 +27,7 @@ interface WalletTransaction {
   description: string | null
   status: string
   created_at: string
+  balance_type?: string | null
 }
 
 function RechargeForm({
@@ -102,7 +103,8 @@ function RechargeForm({
 }
 
 export function ConsumerWalletTab({ token }: { token: string }) {
-  const [balanceCents, setBalanceCents] = useState(0)
+  const [balanceCashCents, setBalanceCashCents] = useState(0)
+  const [balanceRewardsCents, setBalanceRewardsCents] = useState(0)
   const [transactions, setTransactions] = useState<WalletTransaction[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null)
@@ -117,7 +119,8 @@ export function ConsumerWalletTab({ token }: { token: string }) {
       headers: { Authorization: `Bearer ${token}` },
     })
     const data = await res.json()
-    setBalanceCents(data.balance_cents ?? 0)
+    setBalanceCashCents(data.balance_cash_cents ?? 0)
+    setBalanceRewardsCents(data.balance_rewards_cents ?? 0)
     setTransactions(data.transactions ?? [])
     setLoading(false)
   }, [token])
@@ -152,8 +155,8 @@ export function ConsumerWalletTab({ token }: { token: string }) {
     setSelectedAmount(null)
     setCustomAmount('')
     setRechargeSuccess(true)
-    // Poll until balance increases (webhook fires async) — give up after 8s
-    const previousBalance = balanceCents
+    // Poll until cash balance increases (webhook fires async) — give up after 8s
+    const previousCash = balanceCashCents
     let attempts = 0
     const poll = async () => {
       attempts++
@@ -161,8 +164,9 @@ export function ConsumerWalletTab({ token }: { token: string }) {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
-      if ((data.balance_cents ?? 0) > previousBalance || attempts >= 8) {
-        setBalanceCents(data.balance_cents ?? 0)
+      if ((data.balance_cash_cents ?? 0) > previousCash || attempts >= 8) {
+        setBalanceCashCents(data.balance_cash_cents ?? 0)
+        setBalanceRewardsCents(data.balance_rewards_cents ?? 0)
         setTransactions(data.transactions ?? [])
         setRechargeSuccess(false)
       } else {
@@ -173,6 +177,7 @@ export function ConsumerWalletTab({ token }: { token: string }) {
   }
 
   const formatCurrency = (cents: number) => `$${Math.abs(cents / 100).toFixed(2)}`
+  const totalBalance = balanceCashCents + balanceRewardsCents
 
   const txSign = (type: WalletTransaction['type'], cents: number) =>
     type === 'recharge' || type === 'refund' ? `+${formatCurrency(cents)}` : `-${formatCurrency(cents)}`
@@ -208,9 +213,24 @@ export function ConsumerWalletTab({ token }: { token: string }) {
           Waitless Créditos
         </p>
         <p className="text-5xl font-black relative" style={{ letterSpacing: '-0.04em' }}>
-          {formatCurrency(balanceCents)}
+          {formatCurrency(totalBalance)}
         </p>
-        <p className="text-xs text-white/40 mt-1.5 relative">Saldo disponible</p>
+        <p className="text-xs text-white/40 mt-1.5 relative">Saldo total disponible</p>
+
+        {balanceRewardsCents > 0 && (
+          <div className="flex items-center gap-3 mt-4 relative">
+            <div className="flex items-center gap-1.5 bg-white/10 rounded-xl px-3 py-1.5">
+              <Wallet className="h-3.5 w-3.5 text-white/60" />
+              <span className="text-xs text-white/70">Efectivo</span>
+              <span className="text-xs font-bold text-white">{formatCurrency(balanceCashCents)}</span>
+            </div>
+            <div className="flex items-center gap-1.5 bg-[#06C167]/20 rounded-xl px-3 py-1.5">
+              <Gift className="h-3.5 w-3.5 text-[#06C167]" />
+              <span className="text-xs text-[#06C167]/80">Rewards</span>
+              <span className="text-xs font-bold text-[#06C167]">{formatCurrency(balanceRewardsCents)}</span>
+            </div>
+          </div>
+        )}
 
         {rechargeSuccess && (
           <div className="flex items-center gap-2 mt-4 text-[#06C167] text-sm font-semibold relative">

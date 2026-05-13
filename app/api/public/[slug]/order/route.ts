@@ -166,6 +166,7 @@ export async function POST(
     numero,
     canal,
     mesa: null,
+    origin: 'marketplace',
     items: orderItems,
     status: 'recibido',
     cocina_a_status: 'en_cola',

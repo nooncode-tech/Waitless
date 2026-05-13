@@ -5,6 +5,10 @@
       "schedule": "0 3 * * *"
     },
     {
+      "path": "/api/crons/expire-wallet-rewards",
+      "schedule": "0 4 * * *"
+    },
+    {
       "path": "/api/crons/weekly-liquidacion",
       "schedule": "0 3 * * 1"
     }

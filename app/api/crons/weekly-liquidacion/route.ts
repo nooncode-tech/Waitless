@@ -82,19 +82,33 @@ export async function POST(req: NextRequest) {
     }
 
     // Sum completed wallet payments for this tenant in the period
+    // Commission (5%) applies only to marketplace-origin orders
     const { data: txns } = await supabaseAdmin
       .from('wallet_transactions')
-      .select('amount_cents')
+      .select('amount_cents, order_id')
       .eq('tenant_id', tenantId)
       .eq('type', 'payment')
       .eq('status', 'completed')
       .gte('created_at', `${periodStart}T00:00:00Z`)
       .lte('created_at', `${periodEnd}T23:59:59Z`)
 
-    const bruto_cents    = (txns ?? []).reduce((s, t) => s + Math.abs(Number(t.amount_cents)), 0)
-    const comision_cents = Math.round(bruto_cents * COMMISSION_PERCENT / 100)
+    const txnList = txns ?? []
+    const bruto_cents    = txnList.reduce((s, t) => s + Math.abs(Number(t.amount_cents)), 0)
+    const transaction_count = txnList.length
+
+    const orderIds = txnList.map(t => t.order_id).filter(Boolean) as string[]
+    let marketplace_cents = 0
+    if (orderIds.length > 0) {
+      const { data: mktOrders } = await supabaseAdmin
+        .from('orders').select('id').in('id', orderIds).eq('origin', 'marketplace')
+      const mktIds = new Set((mktOrders ?? []).map(o => o.id))
+      marketplace_cents = txnList
+        .filter(t => t.order_id && mktIds.has(t.order_id))
+        .reduce((s, t) => s + Math.abs(Number(t.amount_cents)), 0)
+    }
+
+    const comision_cents = Math.round(marketplace_cents * COMMISSION_PERCENT / 100)
     const neto_cents     = bruto_cents - comision_cents
-    const transaction_count = (txns ?? []).length
 
     let stripe_transfer_id: string | null = null
     let status = neto_cents === 0 ? 'procesada' : 'pendiente'

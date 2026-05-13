@@ -55,19 +55,37 @@ export async function POST(req: NextRequest) {
   }
 
   // Sum all completed consumer wallet payments for this tenant in the period
+  // Commission (5%) only applies to marketplace-origin orders
   const { data: txns } = await supabaseAdmin
     .from('wallet_transactions')
-    .select('amount_cents')
+    .select('amount_cents, order_id')
     .eq('tenant_id', auth.tenantId)
     .eq('type', 'payment')
     .eq('status', 'completed')
     .gte('created_at', `${periodStart}T00:00:00Z`)
     .lte('created_at', `${periodEnd}T23:59:59Z`)
 
-  const bruto_cents = (txns ?? []).reduce((sum, t) => sum + Math.abs(Number(t.amount_cents)), 0)
-  const comision_cents = Math.round(bruto_cents * COMMISSION_PERCENT / 100)
+  const txnList = txns ?? []
+  const bruto_cents = txnList.reduce((sum, t) => sum + Math.abs(Number(t.amount_cents)), 0)
+  const transaction_count = txnList.length
+
+  // Determine which transactions are marketplace orders
+  const orderIds = txnList.map(t => t.order_id).filter(Boolean) as string[]
+  let marketplace_cents = 0
+  if (orderIds.length > 0) {
+    const { data: marketplaceOrders } = await supabaseAdmin
+      .from('orders')
+      .select('id')
+      .in('id', orderIds)
+      .eq('origin', 'marketplace')
+    const marketplaceIds = new Set((marketplaceOrders ?? []).map(o => o.id))
+    marketplace_cents = txnList
+      .filter(t => t.order_id && marketplaceIds.has(t.order_id))
+      .reduce((sum, t) => sum + Math.abs(Number(t.amount_cents)), 0)
+  }
+
+  const comision_cents = Math.round(marketplace_cents * COMMISSION_PERCENT / 100)
   const neto_cents = bruto_cents - comision_cents
-  const transaction_count = (txns ?? []).length
 
   // Get tenant Connect info
   const { data: tenant } = await supabaseAdmin

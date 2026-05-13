@@ -70,24 +70,29 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ received: true })
         }
 
-        // Upsert saldo
+        // Upsert saldo cash
         const { data: existing } = await supabaseAdmin
           .from('consumer_wallet')
-          .select('balance_cents')
+          .select('balance_cash_cents, balance_rewards_cents')
           .eq('consumer_id', consumerId)
           .maybeSingle()
 
-        const newBalance = (existing?.balance_cents ?? 0) + amountCents
+        const newCash    = (existing?.balance_cash_cents    ?? 0) + amountCents
+        const newRewards = existing?.balance_rewards_cents  ?? 0
+        const newBalance = newCash + newRewards
 
         await supabaseAdmin
           .from('consumer_wallet')
-          .upsert({ consumer_id: consumerId, balance_cents: newBalance }, { onConflict: 'consumer_id' })
+          .upsert(
+            { consumer_id: consumerId, balance_cash_cents: newCash, balance_rewards_cents: newRewards },
+            { onConflict: 'consumer_id' },
+          )
 
         // Marcar transacción como completada
         if (transactionId) {
           await supabaseAdmin
             .from('wallet_transactions')
-            .update({ status: 'completed', balance_after_cents: newBalance })
+            .update({ status: 'completed', balance_after_cents: newBalance, balance_type: 'cash' })
             .eq('id', transactionId)
             .eq('status', 'pending')
         }
@@ -97,7 +102,7 @@ export async function POST(req: NextRequest) {
           accion: 'wallet_recarga_confirmada',
           entidad: 'consumer_wallet',
           entidad_id: consumerId,
-          detalles: `${event.id} | intent: ${intent.id} | monto: ${amountCents}¢ | nuevo saldo: ${newBalance}¢`,
+          detalles: `${event.id} | intent: ${intent.id} | monto: ${amountCents}¢ | nuevo saldo cash: ${newCash}¢`,
         })
 
         console.log(`[webhook] Recarga monedero confirmada — consumer ${consumerId} +${amountCents}¢`)
