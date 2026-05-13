@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import webpush from 'web-push'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireRole } from '@/lib/api-auth'
+import { sendDeliveryStatus } from '@/lib/email'
 
 type DeliveryEvent = 'en_camino' | 'entregado'
 
@@ -68,6 +69,17 @@ export async function POST(req: NextRequest) {
 
   if (!order || order.canal !== 'delivery') {
     return NextResponse.json({ skipped: 'not_a_delivery_order' })
+  }
+
+  // Email fallback (fire-and-forget) — always send regardless of push subscription
+  if (order.email) {
+    sendDeliveryStatus({
+      to:            order.email as string,
+      nombreCliente: 'Cliente',
+      numeroPedido:  order.numero as number,
+      restaurante:   String(auth.tenantId ?? 'Waitless'),
+      event:         event as 'en_camino' | 'entregado',
+    }).catch(() => {})
   }
 
   if (!order.email) {

@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireRole } from '@/lib/api-auth'
 import { pushToConsumer } from '@/lib/push-server'
+import { sendDisputeResolution } from '@/lib/email'
 
 export async function POST(
   req: NextRequest,
@@ -167,6 +168,22 @@ export async function POST(
       body: notifBody,
       url: '/consumidor/pedidos',
     }).catch(() => {})
+
+    // Email de resolución al consumidor (fire-and-forget)
+    const { data: consumerProfile } = await supabaseAdmin
+      .from('consumer_profiles')
+      .select('email, nombre')
+      .eq('id', dispute.consumer_id)
+      .single()
+    if (consumerProfile?.email) {
+      sendDisputeResolution({
+        to:            consumerProfile.email as string,
+        nombreCliente: (consumerProfile.nombre as string | null) ?? 'Cliente',
+        motivo:        dispute.motivo as unknown as string ?? '',
+        resolucion:    resolucion as 'favor_cliente' | 'favor_restaurante',
+        refundCents:   refund_cents,
+      }).catch(() => {})
+    }
 
     return NextResponse.json({ dispute: updated })
   }

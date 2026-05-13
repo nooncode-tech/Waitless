@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { computeStoreOpen } from '@/lib/store-hours'
+import { sendOrderConfirmation } from '@/lib/email'
 
 interface CartItem {
   itemId: string
@@ -192,6 +193,19 @@ export async function POST(
   if (error) {
     console.error('[public/order] Error creando pedido:', error.message)
     return NextResponse.json({ error: 'Error al crear el pedido' }, { status: 500 })
+  }
+
+  // Email de confirmación al consumidor (fire-and-forget)
+  if (body.email?.trim()) {
+    sendOrderConfirmation({
+      to:            body.email.trim(),
+      nombreCliente: body.nombreCliente?.trim() || 'Cliente',
+      numeroPedido:  numero,
+      restaurante:   tenant ? (await supabaseAdmin.from('tenants').select('nombre').eq('id', tenantId!).single().then(r => r.data?.nombre ?? slug)) : slug,
+      items:         orderItems.map(i => ({ nombre: i!.menuItem.nombre, cantidad: i!.cantidad, precio: i!.menuItem.precio })),
+      total,
+      canal,
+    }).catch(() => {})
   }
 
   // Si hay nota/mensaje, guardarlo en feedback (mesa: 0 = menú digital)

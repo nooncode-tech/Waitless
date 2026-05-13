@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { sendLiquidacionReport } from '@/lib/email'
 
 const COMMISSION_PERCENT = Number(process.env.WAITLESS_COMMISSION_PERCENT ?? '5')
 
@@ -148,6 +149,35 @@ export async function POST(req: NextRequest) {
       error_message,
       processed_at: status === 'procesada' ? new Date().toISOString() : null,
     })
+
+    // Email de reporte al admin del restaurante (fire-and-forget)
+    if (status === 'procesada') {
+      const { data: adminProfile } = await supabaseAdmin
+        .from('profiles')
+        .select('email:id, nombre')
+        .eq('tenant_id', tenantId)
+        .eq('role', 'admin')
+        .eq('activo', true)
+        .limit(1)
+        .maybeSingle()
+
+      if (adminProfile) {
+        const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(adminProfile.email as string)
+        if (authUser.user?.email) {
+          sendLiquidacionReport({
+            to:               authUser.user.email,
+            nombreRestaurante: tenant.nombre as string,
+            periodStart,
+            periodEnd,
+            brutoCents:       bruto_cents,
+            comisionCents:    comision_cents,
+            netoCents:        neto_cents,
+            transactionCount: transaction_count,
+            stripeTransferId: stripe_transfer_id,
+          }).catch(() => {})
+        }
+      }
+    }
   }
 
   console.log(`[weekly-liquidacion] Done — processed: ${processed}, skipped: ${skipped}, failed: ${failed}`)
