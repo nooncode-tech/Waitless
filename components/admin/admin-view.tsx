@@ -485,7 +485,7 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
       </div>
 
       {/* ── MOBILE layout ──────────────────────────────────────────────────── */}
-      <div className="md:hidden" style={{ minHeight: '100vh', background: '#F7F7F5', display: 'flex', flexDirection: 'column', width: '100%' }}>
+      <div className="md:hidden" style={{ minHeight: '100vh', background: '#F7F7F5', flexDirection: 'column', width: '100%' }}>
 
         {/* Mobile Header */}
         <header style={{ position: 'sticky', top: 0, zIndex: 50, padding: '0 16px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#000', flexShrink: 0 }}>

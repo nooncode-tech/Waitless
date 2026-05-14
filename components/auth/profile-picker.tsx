@@ -1,26 +1,21 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Eye, EyeOff, Lock, LogOut, AlertCircle, Mail, CheckCircle, ChevronLeft } from 'lucide-react'
 import { useApp } from '@/lib/context'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { WaitlessLogo } from '@/components/ui/waitless-logo'
 import { supabase } from '@/lib/supabase'
 import type { User } from '@/lib/store'
+
+const FONT = "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif"
+const MONO = "ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace"
+const MINT = '#BEEBBE'
+const MINT_DEEP = '#0a3a0a'
 
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Administrador',
   manager: 'Manager',
   mesero: 'Mesero',
   cocina: 'Cocina',
-}
-
-const ROLE_COLORS: Record<string, string> = {
-  admin:   'bg-violet-600',
-  manager: 'bg-blue-600',
-  mesero:  'bg-emerald-600',
-  cocina:  'bg-orange-500',
+  repartidor: 'Repartidor',
 }
 
 interface ProfilePickerProps {
@@ -44,7 +39,8 @@ export function ProfilePicker({ onLogout }: ProfilePickerProps) {
 
   const activeUsers = users.filter(u => u.activo)
 
-  const primaryColor = config.primaryColor ?? '#000000'
+  const logoUrl = config.logoUrl
+  const restaurantName = config.restaurantName ?? 'WAITLESS'
 
   const handleSelectUser = (user: User) => {
     setSelectedUser(user)
@@ -94,146 +90,204 @@ export function ProfilePicker({ onLogout }: ProfilePickerProps) {
   }
 
   return (
-    <div className="min-h-screen bg-white flex">
+    <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', fontFamily: FONT }}>
 
-      {/* ── Left panel ── */}
-      <div
-        className="hidden lg:flex lg:w-5/12 flex-col items-center justify-between p-12"
-        style={{ backgroundColor: primaryColor }}
-      >
-        <div className="w-full">
-          <WaitlessLogo size={44} variant="mark" color="light" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
-        </div>
+      {/* Left panel */}
+      <div style={{
+        width: 420,
+        flexShrink: 0,
+        background: '#000',
+        color: '#fff',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '40px 36px',
+        position: 'relative',
+        overflow: 'hidden',
+      }} className="pp-left-panel">
+        <span style={{
+          position: 'absolute', bottom: -48, right: -32,
+          fontFamily: FONT, fontWeight: 700, fontSize: 280,
+          color: 'rgba(255,255,255,0.04)', lineHeight: 1,
+          pointerEvents: 'none', userSelect: 'none',
+        }}>W</span>
 
-        <div className="text-center">
-          {config.restaurantName && (
-            <p className="text-white text-2xl font-bold tracking-tight mb-2">{config.restaurantName}</p>
+        <div style={{ position: 'relative' }}>
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt={restaurantName} style={{ width: 48, height: 48, borderRadius: 12, objectFit: 'cover', marginBottom: 16 }} />
+          ) : (
+            <div style={{
+              width: 44, height: 44, background: MINT, borderRadius: 10,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 700, fontSize: 20, letterSpacing: '-0.04em', color: MINT_DEEP,
+              marginBottom: 16,
+            }}>
+              {restaurantName.charAt(0).toUpperCase()}
+            </div>
           )}
-          <p className="text-white/40 text-sm">Panel de operación</p>
+          <div style={{ fontWeight: 700, fontSize: 22, letterSpacing: '-0.045em', lineHeight: 1 }}>{restaurantName}</div>
+          <div style={{ fontFamily: MONO, fontSize: 10.5, color: 'rgba(255,255,255,0.45)', marginTop: 4, letterSpacing: '0.04em' }}>Panel admin · WAITLESS</div>
         </div>
 
-        <p className="text-white/20 text-[10px] tracking-widest uppercase">Waitless · Plataforma operativa</p>
+        <div style={{ marginTop: 'auto', position: 'relative' }}>
+          {['Mesa → Pedido → Cocina → Cobro', 'Sin fricciones. Sin errores.', 'Operación impecable primero.'].map((line, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.25)', display: 'inline-block', flexShrink: 0 }} />
+              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', letterSpacing: '-0.01em' }}>{line}</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: 32, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.1)', fontFamily: MONO, fontSize: 10, color: 'rgba(255,255,255,0.3)', position: 'relative' }}>
+          WAITLESS v10.2 · Plataforma operativa
+        </div>
       </div>
 
-      {/* ── Right panel ── */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 relative">
+      {/* Right panel */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 32px', position: 'relative' }}>
 
-        {/* Mobile logo */}
-        <div className="lg:hidden mb-10 text-center">
-          <WaitlessLogo size={44} variant="mark" color="dark" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
-          {config.restaurantName && (
-            <p className="mt-2 text-sm font-bold text-foreground">{config.restaurantName}</p>
-          )}
-        </div>
-
-        {/* ── Profile grid ── */}
+        {/* Profile grid */}
         {screen === 'picker' && (
-          <div className="w-full max-w-md">
-            <div className="mb-8">
-              <h1 className="text-2xl font-bold text-black" style={{ letterSpacing: '-0.02em' }}>
+          <div style={{ width: '100%', maxWidth: 420 }}>
+            <div style={{ marginBottom: 32 }}>
+              <h1 style={{ fontFamily: FONT, fontWeight: 700, fontSize: 34, letterSpacing: '-0.045em', lineHeight: 0.95, marginBottom: 8 }}>
                 ¿Quién sos?
               </h1>
-              <p className="text-sm text-muted-foreground mt-1">Seleccioná tu perfil para continuar</p>
+              <p style={{ fontSize: 13.5, color: 'rgba(0,0,0,0.55)' }}>
+                Seleccioná tu perfil para continuar
+              </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {activeUsers.map(user => {
-                const avatarBg = ROLE_COLORS[user.role] ?? 'bg-foreground'
-                return (
-                  <button
-                    key={user.id}
-                    onClick={() => handleSelectUser(user)}
-                    className="group flex flex-col items-center gap-3 p-5 rounded-2xl border border-border bg-white hover:border-black hover:shadow-md transition-all duration-150 text-center"
-                  >
-                    <div className={`w-14 h-14 rounded-2xl ${avatarBg} text-white flex items-center justify-center text-xl font-bold shrink-0 group-hover:scale-105 transition-transform duration-150`}>
-                      {user.nombre.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-foreground leading-tight truncate max-w-[90px]">{user.nombre}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{ROLE_LABELS[user.role] ?? user.role}</p>
-                    </div>
-                  </button>
-                )
-              })}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+              {activeUsers.map(user => (
+                <button
+                  key={user.id}
+                  onClick={() => handleSelectUser(user)}
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+                    padding: '20px 12px', borderRadius: 16, border: '1px solid rgba(0,0,0,0.12)',
+                    background: '#fff', cursor: 'pointer', textAlign: 'center',
+                    transition: 'border-color 0.15s, box-shadow 0.15s',
+                    fontFamily: FONT,
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#000'; (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,0,0,0.12)'; (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}
+                >
+                  <div style={{
+                    width: 52, height: 52, borderRadius: 14,
+                    background: '#000', color: '#fff',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 20, fontWeight: 700, flexShrink: 0,
+                  }}>
+                    {user.nombre.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: '#000', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 90 }}>{user.nombre}</p>
+                    <p style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.45)', marginTop: 3 }}>{ROLE_LABELS[user.role] ?? user.role}</p>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         )}
 
-        {/* ── Password form ── */}
+        {/* Password form */}
         {screen === 'password' && selectedUser && (
-          <div className="w-full max-w-sm">
+          <div style={{ width: '100%', maxWidth: 360 }}>
             <button
               onClick={handleBack}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-8 transition-colors"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6, marginBottom: 32,
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontFamily: FONT, fontSize: 12.5, color: 'rgba(0,0,0,0.45)', fontWeight: 500,
+              }}
             >
-              <ChevronLeft className="h-3.5 w-3.5" />
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M9 11L5 7L9 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
               Volver
             </button>
 
-            <div className="flex items-center gap-4 mb-8 p-4 rounded-2xl bg-muted/50 border border-border">
-              <div className={`w-12 h-12 rounded-xl ${ROLE_COLORS[selectedUser.role] ?? 'bg-foreground'} text-white flex items-center justify-center text-lg font-bold shrink-0`}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 14, border: '1px solid rgba(0,0,0,0.1)', marginBottom: 28, background: '#FAFAFA' }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: '#000', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, flexShrink: 0 }}>
                 {selectedUser.nombre.charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="text-sm font-bold text-foreground">{selectedUser.nombre}</p>
-                <p className="text-xs text-muted-foreground">{ROLE_LABELS[selectedUser.role] ?? selectedUser.role}</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#000' }}>{selectedUser.nombre}</p>
+                <p style={{ fontFamily: MONO, fontSize: 10.5, color: 'rgba(0,0,0,0.45)', marginTop: 2 }}>{ROLE_LABELS[selectedUser.role] ?? selectedUser.role}</p>
               </div>
             </div>
 
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold text-black" style={{ letterSpacing: '-0.02em' }}>
+            <div style={{ marginBottom: 28 }}>
+              <h1 style={{ fontFamily: FONT, fontWeight: 700, fontSize: 34, letterSpacing: '-0.045em', lineHeight: 0.95, marginBottom: 8 }}>
                 Ingresá tu clave
               </h1>
-              <p className="text-sm text-muted-foreground mt-1">Verificá tu identidad para continuar</p>
+              <p style={{ fontSize: 13.5, color: 'rgba(0,0,0,0.55)' }}>Verificá tu identidad para continuar</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="relative">
-                <Input
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ position: 'relative' }}>
+                <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Contraseña"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="h-12 pr-10 text-sm"
+                  onChange={e => setPassword(e.target.value)}
                   autoFocus
                   disabled={isLoading}
+                  required
+                  style={{
+                    height: 46, padding: '0 42px 0 14px',
+                    border: '1px solid rgba(0,0,0,0.15)', borderRadius: 10,
+                    fontSize: 14.5, fontFamily: FONT, outline: 'none',
+                    background: '#FAFAFA', color: '#000',
+                    width: '100%', boxSizing: 'border-box',
+                  }}
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   tabIndex={-1}
+                  onClick={() => setShowPassword(v => !v)}
+                  style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center' }}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    {showPassword
+                      ? <><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z" stroke="currentColor" strokeWidth="1.3"/><circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3"/><path d="M2 2l12 12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></>
+                      : <><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z" stroke="currentColor" strokeWidth="1.3"/><circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3"/></>
+                    }
+                  </svg>
                 </button>
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 text-destructive text-xs bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2.5">
-                  <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: '#c0392b', background: 'rgba(192,57,43,0.07)', border: '1px solid rgba(192,57,43,0.2)', borderRadius: 10, padding: '10px 14px' }}>
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" strokeWidth="1.3"/><path d="M6.5 3.5v3.5M6.5 8.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                   {error}
                 </div>
               )}
 
-              <Button
+              <button
                 type="submit"
-                className="w-full h-12 text-sm font-semibold"
                 disabled={isLoading || !password.trim()}
+                style={{
+                  height: 46, width: '100%',
+                  background: isLoading || !password.trim() ? 'rgba(0,0,0,0.35)' : '#000',
+                  color: '#fff', border: 'none', borderRadius: 999,
+                  fontSize: 14, fontWeight: 700, fontFamily: FONT,
+                  cursor: isLoading || !password.trim() ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  transition: 'background 0.15s',
+                }}
               >
-                {isLoading ? (
-                  <span className="h-4 w-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <Lock className="h-4 w-4 mr-2" />
-                    Ingresar
-                  </>
-                )}
-              </Button>
+                {isLoading
+                  ? <span style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'pp-spin 0.7s linear infinite' }} />
+                  : 'Ingresar →'
+                }
+              </button>
 
               <button
                 type="button"
                 onClick={() => { setScreen('recovery'); setRecoveryEmail(''); setRecoverySent(false); setRecoveryError('') }}
-                className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors pt-1"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 12.5, color: 'rgba(0,0,0,0.45)', textAlign: 'center', paddingTop: 4 }}
               >
                 ¿Olvidaste tu contraseña?
               </button>
@@ -241,81 +295,92 @@ export function ProfilePicker({ onLogout }: ProfilePickerProps) {
           </div>
         )}
 
-        {/* ── Recovery form ── */}
+        {/* Recovery form */}
         {screen === 'recovery' && (
-          <div className="w-full max-w-sm">
+          <div style={{ width: '100%', maxWidth: 360 }}>
             <button
               onClick={() => setScreen(selectedUser ? 'password' : 'picker')}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-8 transition-colors"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6, marginBottom: 32,
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontFamily: FONT, fontSize: 12.5, color: 'rgba(0,0,0,0.45)', fontWeight: 500,
+              }}
             >
-              <ChevronLeft className="h-3.5 w-3.5" />
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M9 11L5 7L9 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
               Volver
             </button>
 
-            <div className="mb-8">
-              <h1 className="text-2xl font-bold text-black" style={{ letterSpacing: '-0.02em' }}>
+            <div style={{ marginBottom: 32 }}>
+              <h1 style={{ fontFamily: FONT, fontWeight: 700, fontSize: 34, letterSpacing: '-0.045em', lineHeight: 0.95, marginBottom: 8 }}>
                 Recuperar acceso
               </h1>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p style={{ fontSize: 13.5, color: 'rgba(0,0,0,0.55)', lineHeight: 1.5 }}>
                 Ingresá el email con el que te registraste y te enviamos un enlace para crear una nueva contraseña.
               </p>
             </div>
 
             {recoverySent ? (
-              <div className="flex flex-col items-center gap-4 py-8 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center">
-                  <CheckCircle className="h-8 w-8 text-emerald-500" />
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <div style={{ width: 56, height: 56, borderRadius: 16, background: MINT, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke={MINT_DEEP} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-foreground">¡Correo enviado!</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Revisá tu bandeja en <span className="font-medium text-foreground">{recoveryEmail}</span>.
-                    <br />El enlace expira en 1 hora.
-                  </p>
-                </div>
+                <p style={{ fontSize: 15, fontWeight: 700, color: '#000', marginBottom: 6 }}>¡Correo enviado!</p>
+                <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.55)', lineHeight: 1.5 }}>
+                  Revisá tu bandeja en <strong style={{ color: '#000' }}>{recoveryEmail}</strong>.<br/>El enlace expira en 1 hora.
+                </p>
                 <button
                   onClick={() => setScreen(selectedUser ? 'password' : 'picker')}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  style={{ marginTop: 20, background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT, fontSize: 12.5, color: 'rgba(0,0,0,0.45)' }}
                 >
                   Volver al inicio
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleRecovery} className="space-y-3">
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                  <Input
-                    type="email"
-                    placeholder="tu@email.com"
-                    value={recoveryEmail}
-                    onChange={(e) => setRecoveryEmail(e.target.value)}
-                    className="h-12 pl-9 text-sm"
-                    autoFocus
-                    disabled={isLoading}
-                  />
-                </div>
+              <form onSubmit={handleRecovery} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <input
+                  type="email"
+                  placeholder="tu@email.com"
+                  value={recoveryEmail}
+                  onChange={e => setRecoveryEmail(e.target.value)}
+                  autoFocus
+                  disabled={isLoading}
+                  required
+                  style={{
+                    height: 46, padding: '0 14px',
+                    border: '1px solid rgba(0,0,0,0.15)', borderRadius: 10,
+                    fontSize: 14.5, fontFamily: FONT, outline: 'none',
+                    background: '#FAFAFA', color: '#000',
+                    width: '100%', boxSizing: 'border-box',
+                  }}
+                />
 
                 {recoveryError && (
-                  <div className="flex items-center gap-2 text-destructive text-xs bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2.5">
-                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: '#c0392b', background: 'rgba(192,57,43,0.07)', border: '1px solid rgba(192,57,43,0.2)', borderRadius: 10, padding: '10px 14px' }}>
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" strokeWidth="1.3"/><path d="M6.5 3.5v3.5M6.5 8.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                     {recoveryError}
                   </div>
                 )}
 
-                <Button
+                <button
                   type="submit"
-                  className="w-full h-12 text-sm font-semibold"
                   disabled={isLoading || !recoveryEmail.trim()}
+                  style={{
+                    height: 46, width: '100%',
+                    background: isLoading || !recoveryEmail.trim() ? 'rgba(0,0,0,0.35)' : '#000',
+                    color: '#fff', border: 'none', borderRadius: 999,
+                    fontSize: 14, fontWeight: 700, fontFamily: FONT,
+                    cursor: isLoading || !recoveryEmail.trim() ? 'not-allowed' : 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    transition: 'background 0.15s',
+                  }}
                 >
-                  {isLoading ? (
-                    <span className="h-4 w-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Mail className="h-4 w-4 mr-2" />
-                      Enviar enlace
-                    </>
-                  )}
-                </Button>
+                  {isLoading
+                    ? <span style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'pp-spin 0.7s linear infinite' }} />
+                    : 'Enviar enlace →'
+                  }
+                </button>
               </form>
             )}
           </div>
@@ -324,12 +389,25 @@ export function ProfilePicker({ onLogout }: ProfilePickerProps) {
         {/* Logout */}
         <button
           onClick={onLogout}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors"
+          style={{
+            position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)',
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontFamily: FONT, fontSize: 12, color: 'rgba(0,0,0,0.35)',
+            whiteSpace: 'nowrap',
+          }}
         >
-          <LogOut className="h-3.5 w-3.5" />
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M5 2H2a1 1 0 00-1 1v7a1 1 0 001 1h3M9 9l3-3-3-3M12 6H5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
           Cerrar sesión del restaurante
         </button>
       </div>
+
+      <style>{`
+        @keyframes pp-spin { to { transform: rotate(360deg); } }
+        input::placeholder { color: rgba(0,0,0,0.3); }
+        input:focus { border-color: rgba(0,0,0,0.5) !important; background: #fff !important; }
+        @media (max-width: 768px) { .pp-left-panel { display: none !important; } }
+      `}</style>
     </div>
   )
 }
