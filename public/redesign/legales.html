@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Legales — WAITLESS</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="shared.css" />
+<style>
+  .doc h2{font-family:'Helvetica Neue',sans-serif;font-weight:700;letter-spacing:-0.04em;}
+  .doc p{font-size:14.5px;line-height:1.65;color:rgba(0,0,0,0.75);letter-spacing:-0.005em;}
+  .doc p:not(:last-child){margin-bottom:18px;}
+  .doc h3{font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;font-weight:700;color:#000;margin-top:32px;margin-bottom:12px;}
+  .doc ul{font-size:14.5px;line-height:1.65;color:rgba(0,0,0,0.75);letter-spacing:-0.005em;}
+  .doc ul li{padding-left:18px;position:relative;margin-bottom:6px;}
+  .doc ul li::before{content:"";position:absolute;left:0;top:11px;width:6px;height:1.5px;background:#000;}
+  .doc table{width:100%;margin:18px 0;border-collapse:collapse;}
+  .doc table th{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;font-weight:700;color:#909090;padding:8px 0;border-bottom:1px solid var(--line);}
+  .doc table td{padding:10px 0;border-bottom:1px solid var(--line-2);font-size:13.5px;}
+  .doc table td:first-child{font-weight:700;width:30%;}
+  .toc-link{display:flex;align-items:baseline;padding:8px 0;border-bottom:1px dotted #00000020;font-size:13px;color:rgba(0,0,0,0.65);font-weight:500;letter-spacing:-0.01em;}
+  .toc-link.active{color:#000;font-weight:700;}
+  .toc-link .num{font-family:var(--mono);font-size:11px;width:32px;color:#909090;}
+  .toc-link.active .num{color:#000;}
+  .toc-link .pages{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:#909090;}
+  .tab-bar{display:flex;gap:2px;background:var(--line);border-radius:12px;padding:3px;width:fit-content;}
+  .tab-bar > a{padding:9px 18px;border-radius:9px;font-size:13px;font-weight:700;letter-spacing:-0.01em;color:#909090;}
+  .tab-bar > a.active{background:#000;color:#fff;}
+</style>
+</head>
+<body class="antialiased">
+
+<!-- ─── PAGE HEADER ─── -->
+<header class="border-b hairline">
+  <div class="max-w-[1400px] mx-auto px-8 h-[68px] flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-2.5">
+      <span class="w-logo">W</span>
+      <span class="font-display text-[19px] tracking-[-0.045em]">WAITLESS</span>
+    </a>
+    <div class="flex items-center gap-3 mono text-[11px] text-black/55">
+      <span>v10.2 · 14·MAY·2026</span>
+      <span class="text-black/30">·</span>
+      <a href="#" class="hover:text-black hover-line">Descargar PDF</a>
+    </div>
+  </div>
+</header>
+
+<!-- ─── TITLE ─── -->
+<div class="border-b hairline">
+  <div class="max-w-[1400px] mx-auto px-8 py-16">
+    <div class="flex items-center gap-3 mb-4">
+      <span class="swiss-num">CAP. 13 · Legales</span>
+      <span class="h-px w-10 bg-black/30"></span>
+      <span class="eyebrow">Lo que firmas con nosotros</span>
+    </div>
+    <h1 class="font-display text-[clamp(48px,7vw,120px)] leading-[0.9] tracking-[-0.045em]">
+      Letras claras.<br/>
+      <span class="text-black/30">Sin letra chica.</span>
+    </h1>
+    <p class="mt-8 text-[16px] text-black/65 max-w-[560px] font-medium-tight">
+      Tres documentos — términos, privacidad y cookies. Escritos en español plano, sin frases legaleras innecesarias.
+      Si algo no te queda claro, dinos.
+    </p>
+    <div class="mt-8 tab-bar">
+      <a href="#terminos" class="active">Términos</a>
+      <a href="#privacidad">Privacidad</a>
+      <a href="#cookies">Cookies</a>
+    </div>
+  </div>
+</div>
+
+<!-- ─── BODY ─── -->
+<div class="max-w-[1400px] mx-auto px-8 py-14 grid grid-cols-12 gap-10">
+
+  <!-- TOC sidebar -->
+  <aside class="col-span-12 lg:col-span-3">
+    <div class="sticky top-6">
+      <div class="eyebrow mb-4">Índice</div>
+      <nav>
+        <a href="#terminos" class="toc-link active">
+          <span class="num">01</span> Términos de servicio <span class="pages">14p</span>
+        </a>
+        <a href="#1" class="toc-link" style="padding-left:32px;font-size:12px">
+          <span class="num">01.1</span> Cuenta y acceso
+        </a>
+        <a href="#2" class="toc-link" style="padding-left:32px;font-size:12px">
+          <span class="num">01.2</span> Suscripción y pago
+        </a>
+        <a href="#3" class="toc-link" style="padding-left:32px;font-size:12px">
+          <span class="num">01.3</span> Uso aceptable
+        </a>
+        <a href="#4" class="toc-link" style="padding-left:32px;font-size:12px">
+          <span class="num">01.4</span> Cancelación
+        </a>
+        <a href="#privacidad" class="toc-link">
+          <span class="num">02</span> Privacidad <span class="pages">8p</span>
+        </a>
+        <a href="#cookies" class="toc-link">
+          <span class="num">03</span> Cookies <span class="pages">3p</span>
+        </a>
+      </nav>
+
+      <div class="mt-8 pt-6 border-t hairline mono text-[11px] text-black/55 leading-relaxed">
+        <div>Última edición: <span class="text-black font-bold">14·MAY·2026</span></div>
+        <div class="mt-1">Versión: v10.2</div>
+        <div class="mt-3">¿Dudas?<br/><a href="mailto:legal@waitless.app" class="text-black font-bold hover-line">legal@waitless.app</a></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- DOC -->
+  <main class="col-span-12 lg:col-span-9 doc">
+    <article id="terminos">
+      <div class="flex items-baseline gap-4 mb-3">
+        <span class="font-display text-[80px] tracking-[-0.05em] text-black/20 leading-none num">01</span>
+        <h2 class="text-[44px] leading-[1] tracking-[-0.045em]">Términos de servicio</h2>
+      </div>
+      <p class="text-[15px] text-black/55 mt-2 italic">Vigentes desde el 14 de mayo de 2026. Reemplazan toda versión anterior.</p>
+
+      <!-- summary box -->
+      <div class="mt-8 rounded-2xl border-2 border-black p-6 bg-[#FAFAFA]">
+        <div class="eyebrow mb-3">Resumen en 30 segundos</div>
+        <ul>
+          <li>WAITLESS te da una plataforma — tú la usas para correr tu restaurante.</li>
+          <li>Pagas mensual por sucursal · puedes cancelar cuando quieras.</li>
+          <li>Tu data es tuya. La exportas con un clic. No la vendemos.</li>
+          <li>Sin uso ilegal · sin abuso · sin uso para spam.</li>
+        </ul>
+      </div>
+
+      <h3 id="1">01.1 — Cuenta y acceso</h3>
+      <p>Al crear una cuenta en WAITLESS te conviertes en titular. Eres responsable de cuidar tus credenciales y la actividad
+      bajo tu cuenta. Si compartes accesos con tu equipo, ellos quedan bajo tu responsabilidad operativa.</p>
+      <p>Puedes invitar a otros usuarios (meseros, cocina, encargados) con roles distintos. Cada uno tiene su propio acceso
+      pero la cuenta principal mantiene los permisos administrativos.</p>
+
+      <h3 id="2">01.2 — Suscripción y pago</h3>
+      <p>WAITLESS opera bajo suscripción mensual. El cobro se hace por sucursal activa. Los primeros 14 días son gratis y
+      no requieren tarjeta. Después de los 14 días, pediremos un método de pago para continuar.</p>
+
+      <table>
+        <thead>
+          <tr><th>Plan</th><th>Precio</th><th>Sucursales</th><th>Cancela cuando</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Starter</td><td>$29 USD / mes</td><td>1 (hasta 8 mesas)</td><td>Antes del cierre del mes</td></tr>
+          <tr><td>Pro</td><td>$89 USD / mes</td><td>1 (ilimitadas mesas)</td><td>Antes del cierre del mes</td></tr>
+          <tr><td>Cadenas</td><td>A medida</td><td>5+ sucursales</td><td>Según contrato</td></tr>
+        </tbody>
+      </table>
+
+      <h3 id="3">01.3 — Uso aceptable</h3>
+      <p>Puedes usar WAITLESS para correr cualquier restaurante, bar, cafetería, ghost kitchen o establecimiento similar
+      que sirva alimentos y bebidas legalmente en tu jurisdicción. No puedes usarlo para vender mercancía ilegal, lavar
+      dinero, ni usar la plataforma para hostigar a otros usuarios o competidores.</p>
+      <p>Si detectamos uso indebido, podemos suspender la cuenta sin previo aviso. Te avisaremos por correo y te daremos
+      30 días para exportar tu data si la cuenta queda permanentemente cerrada.</p>
+
+      <h3 id="4">01.4 — Cancelación</h3>
+      <p>Puedes cancelar tu cuenta cuando quieras desde Configuración → Cuenta → Cancelar suscripción. No hay penalización,
+      no hay "te llamamos para retenerte", no hay descuento sorpresa.</p>
+      <p>Conservamos tu data 90 días después de la cancelación, por si decides volver. Después se elimina permanentemente.</p>
+
+      <h3>01.5 — Responsabilidad y garantías</h3>
+      <p>WAITLESS se proporciona "tal como es". Hacemos nuestro mayor esfuerzo por mantener 99.9% de uptime y entregar
+      una plataforma estable, pero no garantizamos disponibilidad ininterrumpida. En caso de error grave que afecte tu
+      operación, te acreditamos pro-rata del tiempo afectado.</p>
+      <p>Nuestra responsabilidad máxima en cualquier caso se limita al monto pagado por ti en los 12 meses anteriores
+      al incidente. Esto no aplica para casos de negligencia grave de nuestra parte.</p>
+    </article>
+
+    <!-- privacy -->
+    <article id="privacidad" class="mt-20 pt-14 border-t hairline">
+      <div class="flex items-baseline gap-4 mb-3">
+        <span class="font-display text-[80px] tracking-[-0.05em] text-black/20 leading-none num">02</span>
+        <h2 class="text-[44px] leading-[1] tracking-[-0.045em]">Privacidad</h2>
+      </div>
+      <p class="text-[15px] text-black/55 mt-2 italic">Cómo manejamos tu data y la de tus comensales.</p>
+
+      <div class="mt-8 rounded-2xl border-2 border-black p-6 mint">
+        <div class="eyebrow mb-3 mint-fg">En claro</div>
+        <ul class="mint-fg">
+          <li>Tu data es tuya. La exportas en CSV o JSON cuando quieras.</li>
+          <li>No vendemos data a terceros. Nunca.</li>
+          <li>Cumple GDPR · LFPDPPP · CCPA.</li>
+          <li>Procesamos pagos vía Stripe (PCI-DSS Level 1).</li>
+        </ul>
+      </div>
+
+      <h3>02.1 — Qué recolectamos</h3>
+      <p>Cuando un comensal escanea tu QR, recolectamos: items pedidos, mesa, hora, monto, método de pago (token), y
+      opcionalmente correo si quiere recibir el ticket. No guardamos números de tarjeta — eso vive en Stripe.</p>
+
+      <h3>02.2 — Con quién la compartimos</h3>
+      <p>Solo con procesadores que ejecutan funciones específicas: Stripe (pagos), Twilio (SMS), Sentry (monitoreo de
+      errores), Vercel (hosting). Cada uno bajo contrato de procesamiento de datos firmado.</p>
+
+      <h3>02.3 — Cuánto la guardamos</h3>
+      <p>Datos transaccionales: 7 años (requisito fiscal). Datos personales (nombres, correos): mientras tengas cuenta
+      activa + 90 días post-cancelación. Logs de sistema: 90 días. Tickets de pago: indefinido (ofuscados).</p>
+    </article>
+
+    <!-- cookies -->
+    <article id="cookies" class="mt-20 pt-14 border-t hairline">
+      <div class="flex items-baseline gap-4 mb-3">
+        <span class="font-display text-[80px] tracking-[-0.05em] text-black/20 leading-none num">03</span>
+        <h2 class="text-[44px] leading-[1] tracking-[-0.045em]">Cookies</h2>
+      </div>
+      <p class="text-[15px] text-black/55 mt-2 italic">Las que usamos · y por qué.</p>
+
+      <table class="mt-8">
+        <thead>
+          <tr><th>Cookie</th><th>Función</th><th>Duración</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>__wls_session</td><td>Mantener tu sesión iniciada</td><td>30 días</td></tr>
+          <tr><td>__wls_tenant</td><td>Recordar tu restaurante o tu app de cliente</td><td>365 días</td></tr>
+          <tr><td>__wls_csrf</td><td>Proteger contra ataques CSRF</td><td>Sesión</td></tr>
+          <tr><td>__wls_pref</td><td>Idioma, tema (auto/oscuro/claro)</td><td>365 días</td></tr>
+          <tr><td>__stripe_*</td><td>Procesamiento de pago seguro</td><td>Sesión</td></tr>
+        </tbody>
+      </table>
+
+      <h3>03.1 — Sin analytics agresivo</h3>
+      <p>No usamos Google Analytics, Meta Pixel, ni rastreadores de terceros. Tampoco fingerprinting. Nuestro analytics
+      es interno, anonimizado y solo cuenta eventos agregados (cuántos pedidos por hora, qué plato más vendido) — sin
+      asociar a personas.</p>
+
+      <h3>03.2 — Tu control</h3>
+      <p>Puedes desactivar las cookies de preferencia en Configuración. Las técnicas (sesión, CSRF, pago) son necesarias
+      para el funcionamiento — si las desactivas, no podrás iniciar sesión ni pagar.</p>
+    </article>
+
+    <!-- contacto -->
+    <div class="mt-20 pt-14 border-t hairline">
+      <div class="bg-black text-white rounded-2xl p-10 relative overflow-hidden">
+        <span class="absolute -bottom-12 -right-8 font-display text-[180px] text-white/[0.06] leading-none">W</span>
+        <div class="flex items-center gap-3 mb-4 relative">
+          <span class="dot live-dot mint" style="width:7px;height:7px"></span>
+          <span class="eyebrow" style="color:#fff">Si algo no te queda claro</span>
+        </div>
+        <h3 class="font-display text-[40px] tracking-[-0.045em] relative">Hablemos.</h3>
+        <p class="text-[15px] text-white/65 mt-3 max-w-[420px] font-medium-tight relative">
+          legal@waitless.app responde en menos de 24h. Si es urgente, puedes llamar al
+          <span class="text-white font-bold">+52 55 1234 5678</span>.
+        </p>
+      </div>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

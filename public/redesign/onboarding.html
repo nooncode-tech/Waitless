@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Setup en 7 minutos — WAITLESS</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="shared.css" />
+<style>
+  body{background:#FAFAFA;}
+  .step-item{display:flex;gap:14px;padding:10px 4px;position:relative;}
+  .step-item .num-circle{
+    width:28px;height:28px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:11px;font-weight:700;
+    background:#fff;border:1.5px solid var(--line);color:#909090;
+    flex-shrink:0;
+    transition:all .2s ease;
+  }
+  .step-item.done .num-circle{background:#000;border-color:#000;color:#fff;}
+  .step-item.active .num-circle{background:#BEEBBE;border-color:#BEEBBE;color:#0a3a0a;}
+  .step-item:not(:last-child)::before{
+    content:""; position:absolute; left:18px; top:38px; bottom:-6px; width:1.5px;
+    background-image:linear-gradient(#00000020 50%, transparent 50%); background-size:1.5px 5px; background-repeat:repeat-y;
+  }
+  .step-item.done:not(:last-child)::before{background-image:linear-gradient(#000 0, #000 100%);}
+  .step-title{font-size:13.5px;font-weight:700;letter-spacing:-0.01em;}
+  .step-item.active .step-title{color:#000;}
+  .step-item:not(.active):not(.done) .step-title{color:#909090;}
+  .step-sub{font-size:11px;font-family:var(--mono);color:#909090;margin-top:1px;}
+
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field > label{font-size:11px;letter-spacing:0.18em;text-transform:uppercase;font-weight:700;color:#000;}
+  .field input, .field textarea, .field select{height:48px;padding:0 16px;border:1px solid var(--line);border-radius:10px;font-size:15px;letter-spacing:-0.01em;outline:none;background:#fff;}
+  .field textarea{height:auto;padding:14px 16px;}
+  .field input:focus, .field textarea:focus{border-color:#000;}
+  .field .hint{font-size:11.5px;color:#909090;font-family:var(--mono);}
+
+  .btn-primary{height:48px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;background:#000;color:#fff;font-weight:700;font-size:14px;padding:0 24px;letter-spacing:-0.01em;}
+  .btn-ghost{height:48px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;background:#fff;color:#000;font-weight:700;font-size:14px;padding:0 24px;border:1px solid var(--line);}
+  .btn-ghost:hover{border-color:#000;}
+
+  .type-tile{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px;border:1px solid var(--line);border-radius:14px;background:#fff;cursor:pointer;text-align:left;}
+  .type-tile.active{border-color:#000;background:#000;color:#fff;}
+  .type-tile.active .type-icon{background:#BEEBBE;color:#0a3a0a;}
+  .type-icon{width:32px;height:32px;border-radius:8px;background:#F4F4F4;display:flex;align-items:center;justify-content:center;font-weight:700;}
+</style>
+</head>
+<body class="antialiased">
+
+<!-- topbar -->
+<header class="bg-white border-b hairline">
+  <div class="max-w-[1400px] mx-auto px-8 h-[68px] flex items-center justify-between">
+    <a href="index.html" class="flex items-center gap-2.5">
+      <span class="w-logo">W</span>
+      <span class="font-display text-[19px] tracking-[-0.045em]">WAITLESS</span>
+      <span class="mono text-[10px] text-black/40 uppercase tracking-[0.16em] ml-1">setup</span>
+    </a>
+    <div class="flex items-center gap-3">
+      <div class="mono text-[11px] text-black/55 hidden md:block">⏱ <span class="text-black font-bold num">3:42</span> de ~7 min</div>
+      <button class="h-9 px-3.5 text-[13px] text-black/60 hover:text-black font-medium-tight">Guardar y salir</button>
+    </div>
+  </div>
+</header>
+
+<!-- page hero -->
+<div class="max-w-[1400px] mx-auto px-8 pt-12 pb-8">
+  <div class="flex items-end justify-between flex-wrap gap-6">
+    <div>
+      <div class="flex items-center gap-3 mb-3">
+        <span class="swiss-num">CAP. 10 · Setup</span>
+        <span class="h-px w-10 bg-black/30"></span>
+        <span class="eyebrow">Onboarding del restaurante</span>
+      </div>
+      <h1 class="font-display text-[clamp(36px,5vw,72px)]">
+        Tu restaurante,<br/>
+        <span class="text-black/30">corriendo en 7 min.</span>
+      </h1>
+    </div>
+    <div class="text-[14px] text-black/65 max-w-[400px] font-medium-tight">
+      Te ayudamos paso por paso. Guardamos todo automáticamente — puedes salir y volver cuando quieras.
+    </div>
+  </div>
+</div>
+
+<!-- main 2-col -->
+<div class="max-w-[1400px] mx-auto px-8 pb-20 grid grid-cols-12 gap-8">
+
+  <!-- ─── SIDEBAR STEPS ─── -->
+  <aside class="col-span-12 lg:col-span-3">
+    <div class="bg-white border hairline rounded-2xl p-5 sticky top-5">
+      <div class="flex items-center justify-between mb-2">
+        <span class="eyebrow">Setup</span>
+        <span class="chip-data num">3 / 8</span>
+      </div>
+      <!-- progress -->
+      <div class="h-1.5 rounded-full bg-[#00000010] overflow-hidden mb-5">
+        <div class="h-full mint" style="width:37.5%"></div>
+      </div>
+
+      <ol class="space-y-1">
+        <li class="step-item done">
+          <span class="num-circle">✓</span>
+          <div><div class="step-title">Cuenta</div><div class="step-sub">Verificada</div></div>
+        </li>
+        <li class="step-item done">
+          <span class="num-circle">✓</span>
+          <div><div class="step-title">Restaurante</div><div class="step-sub">noon · Mexicana</div></div>
+        </li>
+        <li class="step-item active">
+          <span class="num-circle">3</span>
+          <div><div class="step-title">Branding</div><div class="step-sub">Logo, colores, dominio</div></div>
+        </li>
+        <li class="step-item">
+          <span class="num-circle">4</span>
+          <div><div class="step-title">Mesas y QR</div><div class="step-sub">12 mesas estimadas</div></div>
+        </li>
+        <li class="step-item">
+          <span class="num-circle">5</span>
+          <div><div class="step-title">Menú</div><div class="step-sub">Sube CSV o template</div></div>
+        </li>
+        <li class="step-item">
+          <span class="num-circle">6</span>
+          <div><div class="step-title">Pagos</div><div class="step-sub">Conecta Stripe</div></div>
+        </li>
+        <li class="step-item">
+          <span class="num-circle">7</span>
+          <div><div class="step-title">Equipo</div><div class="step-sub">Meseros, cocina</div></div>
+        </li>
+        <li class="step-item">
+          <span class="num-circle">8</span>
+          <div><div class="step-title">Plan & primer turno</div><div class="step-sub">14 días gratis</div></div>
+        </li>
+      </ol>
+
+      <div class="mt-6 pt-5 border-t hairline-2 mono text-[11px] text-black/55 space-y-1.5">
+        <div class="flex items-center gap-2"><span class="dot live-dot mint" style="width:5px;height:5px"></span>Autoguardado · hace 8s</div>
+        <div>Setup empezado 13:32 · 14·MAY</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── FORM AREA ─── -->
+  <main class="col-span-12 lg:col-span-9">
+    <div class="bg-white border hairline rounded-2xl p-10">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="swiss-num">PASO 03 / 08</span>
+        <span class="h-px w-10 bg-black/20"></span>
+        <span class="eyebrow">Branding white-label</span>
+      </div>
+      <h2 class="font-display text-[44px] tracking-[-0.045em]">
+        Tu marca, no la nuestra.
+      </h2>
+      <p class="text-[14.5px] text-black/65 mt-3 max-w-[560px] font-medium-tight">
+        Tu cliente nunca verá a WAITLESS — verá a noon. Sube tu logo, define tus colores y elige tu dominio.
+      </p>
+
+      <!-- form sections -->
+      <div class="mt-10 grid grid-cols-12 gap-6">
+
+        <!-- LOGO -->
+        <div class="col-span-12 lg:col-span-6">
+          <div class="eyebrow mb-3">Logo</div>
+          <div class="border-2 border-dashed border-black/20 rounded-2xl p-6 flex items-center gap-5 hover:border-black/50 cursor-pointer">
+            <div class="w-20 h-20 rounded-xl bg-black text-white flex items-center justify-center font-display text-[28px] tracking-[-0.045em]">no</div>
+            <div class="flex-1">
+              <div class="text-[14px] font-bold">noon-logo.svg</div>
+              <div class="mono text-[11px] text-black/55 mt-0.5">2.4 KB · cargado hace 12s</div>
+              <div class="mt-2 flex gap-2">
+                <button class="text-[12px] font-bold hover-line">Reemplazar</button>
+                <span class="text-black/30">·</span>
+                <button class="text-[12px] font-bold hover-line text-black/55">Quitar</button>
+              </div>
+            </div>
+            <span class="chip-data">✓ Listo</span>
+          </div>
+          <div class="mono text-[11px] text-black/55 mt-2">SVG recomendado · 1:1 · transparente</div>
+        </div>
+
+        <!-- DOMINIO -->
+        <div class="col-span-12 lg:col-span-6">
+          <div class="eyebrow mb-3">Dominio</div>
+          <div class="flex border hairline rounded-xl overflow-hidden">
+            <input value="noon" class="flex-1 px-4 h-14 outline-none text-[16px] font-bold"/>
+            <div class="px-4 h-14 flex items-center bg-[#FAFAFA] border-l hairline mono text-[13px] text-black/55">.waitless.app</div>
+          </div>
+          <div class="mt-2 flex items-center justify-between">
+            <div class="mono text-[11px] flex items-center gap-1.5">
+              <span class="dot mint" style="width:6px;height:6px"></span>
+              <span class="text-[#0a3a0a] font-bold">noon.waitless.app disponible</span>
+            </div>
+            <a href="#" class="text-[11.5px] font-bold hover-line">+ Dominio propio →</a>
+          </div>
+        </div>
+
+        <!-- COLORES -->
+        <div class="col-span-12">
+          <div class="eyebrow mb-3">Paleta</div>
+          <div class="grid grid-cols-4 gap-3">
+            <button class="type-tile active">
+              <div class="flex gap-1.5">
+                <div class="w-6 h-6 rounded-md bg-black"></div>
+                <div class="w-6 h-6 rounded-md" style="background:#BEEBBE"></div>
+                <div class="w-6 h-6 rounded-md bg-white border hairline"></div>
+              </div>
+              <div class="text-[13.5px] font-bold mt-2">WAITLESS clásico</div>
+              <div class="mono text-[10.5px] opacity-70">Negro · Mint · Blanco</div>
+            </button>
+            <button class="type-tile">
+              <div class="flex gap-1.5">
+                <div class="w-6 h-6 rounded-md" style="background:#7A3300"></div>
+                <div class="w-6 h-6 rounded-md" style="background:#F2D194"></div>
+                <div class="w-6 h-6 rounded-md bg-white border hairline"></div>
+              </div>
+              <div class="text-[13.5px] font-bold mt-2">Tierra</div>
+              <div class="mono text-[10.5px] opacity-70">Cobre · Crema</div>
+            </button>
+            <button class="type-tile">
+              <div class="flex gap-1.5">
+                <div class="w-6 h-6 rounded-md" style="background:#0E2A40"></div>
+                <div class="w-6 h-6 rounded-md" style="background:#BFE3F0"></div>
+                <div class="w-6 h-6 rounded-md bg-white border hairline"></div>
+              </div>
+              <div class="text-[13.5px] font-bold mt-2">Mar</div>
+              <div class="mono text-[10.5px] opacity-70">Marino · Aqua</div>
+            </button>
+            <button class="type-tile">
+              <div class="flex gap-1.5">
+                <div class="w-6 h-6 rounded-md" style="background:#5C0E2A"></div>
+                <div class="w-6 h-6 rounded-md" style="background:#F2C0CB"></div>
+                <div class="w-6 h-6 rounded-md bg-white border hairline"></div>
+              </div>
+              <div class="text-[13.5px] font-bold mt-2">Vino</div>
+              <div class="mono text-[10.5px] opacity-70">Burdeos · Rosa</div>
+            </button>
+          </div>
+          <div class="mt-3 flex items-center justify-between">
+            <div class="mono text-[11px] text-black/55">Recomendamos máximo 3 colores</div>
+            <a href="#" class="text-[11.5px] font-bold hover-line">+ Paleta custom →</a>
+          </div>
+        </div>
+
+        <!-- TIPO COCINA -->
+        <div class="col-span-12">
+          <div class="eyebrow mb-3">Tipo de cocina · ya lo confirmamos en paso 2</div>
+          <div class="flex flex-wrap gap-2">
+            <span class="chip-data">★ Mexicana</span>
+            <span class="px-3 h-8 inline-flex items-center bg-white border hairline rounded-full text-[12px] font-bold">Contemporánea</span>
+            <span class="px-3 h-8 inline-flex items-center bg-white border hairline rounded-full text-[12px] font-bold">Cócteles</span>
+            <span class="px-3 h-8 inline-flex items-center bg-white border hairline rounded-full text-[12px] font-bold">+ Mariscos</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- preview -->
+      <div class="mt-10 pt-8 border-t hairline-2">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="swiss-num">§ Vista previa</span>
+          <span class="eyebrow">Tu menú QR</span>
+        </div>
+        <div class="grid grid-cols-3 gap-5 items-end">
+          <!-- iphone preview -->
+          <div class="rounded-[20px] border-[6px] border-black overflow-hidden bg-white aspect-[9/16] relative">
+            <div class="h-12" style="background:#3a2418">
+              <div class="h-full flex items-end p-2">
+                <div class="font-display text-[14px] tracking-[-0.04em] text-white">noon</div>
+              </div>
+            </div>
+            <div class="p-3">
+              <div class="flex gap-1">
+                <span class="px-2 h-4 inline-flex items-center bg-black text-white rounded-full text-[8px] font-bold">Tacos</span>
+                <span class="px-2 h-4 inline-flex items-center border hairline rounded-full text-[8px] font-bold">Bebidas</span>
+              </div>
+              <div class="mt-2 space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="text-[10px] font-bold">Taco al Pastor</div>
+                    <div class="text-[9px] font-bold">$35</div>
+                  </div>
+                  <div class="w-5 h-5 rounded-full bg-black text-white text-[12px] font-bold flex items-center justify-center leading-none">+</div>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="text-[10px] font-bold">Suadero</div>
+                    <div class="text-[9px] font-bold">$32</div>
+                  </div>
+                  <div class="w-5 h-5 rounded-full text-black flex items-center justify-center text-[12px] font-bold leading-none" style="background:#BEEBBE">+</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- QR -->
+          <div class="text-center">
+            <div class="w-[200px] h-[200px] mx-auto bg-white border-2 border-black rounded-2xl p-4 grid grid-cols-8 gap-[2px]">
+              <!-- pseudo qr -->
+              <script>
+                document.write(Array.from({length:64}, (_, i) => `<div style="background:${Math.random() > 0.5 ? '#000' : 'transparent'}"></div>`).join(''));
+              </script>
+            </div>
+            <div class="mono text-[10.5px] text-black/55 mt-3 uppercase tracking-[0.18em]">noon.waitless.app/m/7</div>
+          </div>
+
+          <!-- card preview -->
+          <div class="border hairline rounded-2xl p-4 bg-[#FAFAFA]">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center font-bold text-[12px]">no</div>
+              <div class="font-display text-[16px] tracking-[-0.035em]">noon</div>
+            </div>
+            <div class="mt-3 text-[11px] text-black/60">Polanco · Mexicana</div>
+            <div class="mt-3 mono text-[10.5px] text-black/55 space-y-1">
+              <div>15–25 min · $$$</div>
+              <div>★ 4.9 · 312 reseñas</div>
+            </div>
+            <div class="mt-3 inline-flex h-6 px-2 items-center bg-black text-white rounded-full text-[9.5px] font-bold">Ver carta →</div>
+          </div>
+        </div>
+        <div class="mono text-[10.5px] text-black/45 mt-3 uppercase tracking-[0.18em]">↑ Menú QR · QR de mesa 7 · Card en marketplace</div>
+      </div>
+
+      <!-- actions -->
+      <div class="mt-10 pt-6 border-t hairline-2 flex items-center justify-between flex-wrap gap-3">
+        <button class="btn-ghost">← Anterior · Restaurante</button>
+        <div class="flex items-center gap-3">
+          <button class="text-[13px] font-bold text-black/55 hover-line">Saltar paso</button>
+          <button class="btn-primary">Siguiente · Mesas y QR →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- bottom helper -->
+    <div class="mt-6 flex items-center gap-4 px-4 py-3 mono text-[12px] text-black/65">
+      <span class="dot live-dot mint" style="width:6px;height:6px"></span>
+      <span>Onboarding asistido · llama al <span class="text-black font-bold">+52 55 1234 5678</span> si te atoras</span>
+    </div>
+  </main>
+
+</div>
+
+</body>
+</html>

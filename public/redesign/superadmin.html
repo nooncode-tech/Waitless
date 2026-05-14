@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Superadmin — Red WAITLESS</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="shared.css" />
+<style>
+  body{background:#F7F7F5;color:#000;}
+  /* sidebar */
+  .sidebar{background:#000;color:#fff;width:220px;min-height:100vh;position:sticky;top:0;display:flex;flex-direction:column;}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:8px 12px;border-radius:10px;font-size:13px;color:rgba(255,255,255,0.6);font-weight:500;letter-spacing:-0.01em;cursor:pointer;transition:.15s ease;}
+  .nav-item:hover{color:#fff;background:rgba(255,255,255,0.05);}
+  .nav-item.active{background:#fff;color:#000;font-weight:700;}
+  .nav-item svg{width:15px;height:15px;flex-shrink:0;}
+  .nav-section{font-size:9.5px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(255,255,255,0.4);font-weight:700;padding:0 12px;margin-bottom:6px;margin-top:18px;}
+  .topbar{height:64px;padding:0 28px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30;}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;}
+  /* map dot */
+  .country-dot{position:absolute;width:14px;height:14px;border-radius:50%;background:#000;border:3px solid #fff;box-shadow:0 0 0 0 rgba(0,0,0,0.4);}
+  .country-dot.live{background:#BEEBBE;box-shadow:0 0 0 8px rgba(190,235,190,0.2);}
+  /* table */
+  .rest-row{display:grid;grid-template-columns:40px 1fr 130px 110px 100px 100px 90px 40px;gap:18px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line-2);font-size:13px;letter-spacing:-0.01em;}
+  .rest-row:hover{background:#FAFAFA;padding-left:6px;}
+  .rest-row .name{font-family:'Helvetica Neue',sans-serif;font-weight:700;letter-spacing:-0.035em;font-size:16px;}
+  .rest-row .sub{font-family:var(--mono);font-size:10.5px;color:#909090;margin-top:1px;}
+  .status-dot{width:6px;height:6px;border-radius:50%;display:inline-block;}
+  .alert-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px dashed #00000020;}
+  .alert-row:last-child{border-bottom:none;}
+</style>
+</head>
+<body class="antialiased">
+
+<div class="flex">
+
+  <!-- ─── SIDEBAR ─── -->
+  <aside class="sidebar">
+    <div class="px-4 pt-5 pb-4 border-b border-white/10">
+      <div class="flex items-center gap-2.5">
+        <span class="w-logo">W</span>
+        <div class="leading-tight">
+          <div class="font-display text-[14px] tracking-[-0.035em]">WAITLESS</div>
+          <div class="mono text-[10px] text-white/55">Superadmin · LATAM</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="flex-1 px-3 pt-3 pb-3">
+      <div class="nav-section">Red</div>
+      <div class="space-y-0.5">
+        <div class="nav-item active">
+          <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M2 8h12M8 2v12" stroke="currentColor" stroke-width="1.4"/></svg>
+          Overview
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/></svg>
+          Restaurantes <span class="ml-auto mono text-[10px] bg-white/10 px-1.5 rounded">340</span>
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M2 13l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          GMV & ventas
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M8 1L2 4v5c0 3 3 5 6 6 3-1 6-3 6-6V4L8 1Z" stroke="currentColor" stroke-width="1.3"/><path d="M5 8l2 2 4-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Salud · alertas <span class="ml-auto mono text-[10px] mint mint-fg px-1.5 rounded">3</span>
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M2 14c0-3 3-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/></svg>
+          Equipos · meseros <span class="ml-auto mono text-[10px] bg-white/10 px-1.5 rounded">1.4k</span>
+        </div>
+      </div>
+
+      <div class="nav-section">Negocio</div>
+      <div class="space-y-0.5">
+        <div class="nav-item">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M2 6h12" stroke="currentColor" stroke-width="1.4"/></svg>
+          Facturación
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M8 4v8M11 6.5c-1-1-2-1.5-3-1.5s-2 .5-2 1.5 1 1.5 2 1.5h0c1 0 2 .5 2 1.5s-1 1.5-2 1.5-2-.5-3-1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Comisiones
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 0 1 12 0M2 8a6 6 0 0 0 12 0M2 8h12M8 2c-2 2-2 10 0 12M8 2c2 2 2 10 0 12" stroke="currentColor" stroke-width="1.3"/></svg>
+          Marketplace global
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Logs
+        </div>
+      </div>
+
+      <div class="nav-section">Sistema</div>
+      <div class="space-y-0.5">
+        <div class="nav-item">
+          <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Feature flags
+        </div>
+        <div class="nav-item">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M3 11V5c0-1 1-2 2-2h6c1 0 2 1 2 2v6c0 1-1 2-2 2H5c-1 0-2-1-2-2Z" stroke="currentColor" stroke-width="1.3"/><path d="M6 8l2 2 3-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Auditoría
+        </div>
+      </div>
+    </nav>
+
+    <div class="px-3 py-3 border-t border-white/10">
+      <div class="p-3 rounded-xl bg-white/[0.04] border border-white/10">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="dot live-dot mint" style="width:6px;height:6px"></span>
+          <span class="mono text-[10px] uppercase tracking-[0.16em] text-white/65">Status red</span>
+        </div>
+        <div class="text-[12px] font-bold">340/340 online</div>
+        <div class="mono text-[10.5px] text-white/55 mt-0.5">99.98% uptime · 90d</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ─── -->
+  <main class="flex-1 min-w-0">
+
+    <!-- topbar -->
+    <header class="topbar">
+      <div>
+        <div class="font-display text-[20px] tracking-[-0.04em]">Red WAITLESS</div>
+        <div class="mono text-[10.5px] text-black/55 mt-0.5">340 restaurantes · 4 países · jueves 14·MAY 13:42</div>
+      </div>
+      <div class="flex items-center gap-2">
+        <div class="hidden md:flex items-center gap-2 h-9 px-3 border hairline rounded-full bg-[#FAFAFA] w-[300px]">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="3.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 8l3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <input class="flex-1 bg-transparent outline-none text-[12.5px]" placeholder="Restaurante, dominio, owner…"/>
+        </div>
+        <button class="h-9 px-3 border hairline rounded-full text-[12.5px] font-bold flex items-center gap-1.5 hover:border-black">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 4h9M3 6.5h7M4 9h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Filtros
+        </button>
+        <button class="h-9 px-4 bg-black text-white rounded-full text-[12.5px] font-bold flex items-center gap-1.5">+ Onboard restaurante</button>
+        <div class="h-6 w-px bg-black/10 mx-1"></div>
+        <button class="flex items-center gap-2 h-9 px-2 pr-3 border hairline rounded-full hover:border-black">
+          <div class="w-7 h-7 rounded-full bg-black text-white flex items-center justify-center font-display text-[11px]">VC</div>
+          <div class="text-left leading-tight">
+            <div class="text-[12px] font-bold">Víctor C.</div>
+            <div class="mono text-[9.5px] text-black/55">Founder</div>
+          </div>
+        </button>
+      </div>
+    </header>
+
+    <div class="p-7 max-w-[1500px] mx-auto">
+
+      <!-- HERO ROW -->
+      <div class="flex items-end justify-between gap-6 mb-7 flex-wrap">
+        <div>
+          <div class="flex items-center gap-3 mb-3">
+            <span class="dot live-dot mint" style="width:7px;height:7px"></span>
+            <span class="eyebrow">CAP. 14 · Superadmin</span>
+          </div>
+          <h1 class="font-display text-[clamp(36px,4.5vw,60px)] tracking-[-0.045em]">
+            La red corre.<br/>
+            <span class="text-black/30">Sin sobresaltos.</span>
+          </h1>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="h-9 px-3 border hairline rounded-full text-[12px] font-bold bg-black text-white border-black">Hoy</button>
+          <button class="h-9 px-3 border hairline rounded-full text-[12px] font-bold hover:border-black">7d</button>
+          <button class="h-9 px-3 border hairline rounded-full text-[12px] font-bold hover:border-black">30d</button>
+          <button class="h-9 px-3 border hairline rounded-full text-[12px] font-bold hover:border-black">YTD</button>
+        </div>
+      </div>
+
+      <!-- ─── BIG STATS ─── -->
+      <div class="grid grid-cols-12 gap-3 mb-7">
+        <div class="kpi col-span-6 lg:col-span-3">
+          <div class="text-[10px] tracking-[0.18em] uppercase font-bold text-black/55">Restaurantes</div>
+          <div class="font-display text-[44px] num leading-none mt-3">340<span class="text-[16px] text-black/45">+12 mes</span></div>
+          <div class="mono text-[10.5px] text-black/55 mt-2">↑ 14 nuevos en 7d · 326 activos hoy</div>
+        </div>
+        <div class="kpi col-span-6 lg:col-span-3">
+          <div class="text-[10px] tracking-[0.18em] uppercase font-bold text-black/55">GMV mes</div>
+          <div class="font-display text-[44px] num leading-none mt-3">$8.4<span class="text-[18px]">M</span></div>
+          <div class="mono text-[10.5px] text-black/55 mt-2">↑ +22% vs abril · pico 14·MAY</div>
+        </div>
+        <div class="kpi col-span-6 lg:col-span-3">
+          <div class="text-[10px] tracking-[0.18em] uppercase font-bold text-black/55">MRR</div>
+          <div class="font-display text-[44px] num leading-none mt-3">$42<span class="text-[18px]">k</span></div>
+          <div class="mono text-[10.5px] text-black/55 mt-2">↑ +$3.8k este mes · churn 0.4%</div>
+        </div>
+        <div class="kpi col-span-6 lg:col-span-3 mint">
+          <div class="text-[10px] tracking-[0.18em] uppercase font-bold mint-fg opacity-70">SLA red · uptime</div>
+          <div class="font-display text-[44px] num leading-none mt-3 mint-fg">99.98<span class="text-[18px]">%</span></div>
+          <div class="mono text-[10.5px] mt-2" style="color:#0a3a0a99">Últimos 90 días · 1 incidente</div>
+        </div>
+      </div>
+
+      <!-- ─── MAP + ALERTS ROW ─── -->
+      <div class="grid grid-cols-12 gap-3 mb-7">
+        <!-- MAP -->
+        <div class="col-span-12 lg:col-span-8 bg-white border hairline rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <span class="swiss-num">§ 01</span>
+              <span class="eyebrow">Mapa de la red · LATAM</span>
+            </div>
+            <div class="flex items-center gap-3 mono text-[11px]">
+              <span class="flex items-center gap-1.5"><span class="dot mint" style="width:6px;height:6px"></span>Activo</span>
+              <span class="flex items-center gap-1.5"><span class="dot bg-black" style="width:6px;height:6px"></span>Listed</span>
+            </div>
+          </div>
+
+          <!-- pseudo map svg -->
+          <div class="relative bg-[#FAFAFA] border hairline-2 rounded-xl h-[360px] overflow-hidden">
+            <!-- LATAM silhouette pseudo -->
+            <svg viewBox="0 0 800 500" class="absolute inset-0 w-full h-full opacity-90">
+              <defs>
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M40 0 L0 0 0 40" fill="none" stroke="#00000008" stroke-width="1"/>
+                </pattern>
+              </defs>
+              <rect width="800" height="500" fill="url(#grid)"/>
+              <!-- Mexico -->
+              <path d="M120 140 L180 130 L220 145 L240 170 L260 175 L290 195 L300 220 L280 230 L260 215 L240 220 L220 240 L180 250 L150 220 L130 200 L110 180 L120 140 Z" fill="#00000010" stroke="#000" stroke-width="1.5"/>
+              <!-- Guatemala/CA -->
+              <path d="M280 240 L320 245 L350 270 L370 290 L340 300 L320 290 L300 270 L280 240 Z" fill="#00000010" stroke="#000" stroke-width="1.5"/>
+              <!-- Colombia/Venezuela -->
+              <path d="M380 290 L430 300 L460 340 L450 380 L420 400 L390 380 L370 340 L380 290 Z" fill="#00000010" stroke="#000" stroke-width="1.5"/>
+              <!-- Brazil -->
+              <path d="M460 360 L560 350 L620 380 L640 430 L600 470 L520 470 L470 440 L450 400 L460 360 Z" fill="#00000010" stroke="#000" stroke-width="1.5"/>
+              <!-- Argentina -->
+              <path d="M450 460 L500 480 L490 520 L460 540 L440 510 L450 460 Z" fill="#00000010" stroke="#000" stroke-width="1.5"/>
+            </svg>
+
+            <!-- pins -->
+            <div class="country-dot live" style="top:32%;left:24%"></div>
+            <div class="country-dot live" style="top:38%;left:33%"></div>
+            <div class="country-dot" style="top:52%;left:43%"></div>
+            <div class="country-dot live" style="top:65%;left:54%"></div>
+            <div class="country-dot" style="top:78%;left:48%"></div>
+
+            <!-- legend -->
+            <div class="absolute bottom-4 left-4 right-4 grid grid-cols-4 gap-2">
+              <div class="bg-white border hairline rounded-lg p-2.5">
+                <div class="mono text-[9.5px] uppercase tracking-[0.16em] text-black/55">MX</div>
+                <div class="font-display text-[20px] num mt-1">228</div>
+                <div class="mono text-[10px] text-black/55">restaurantes</div>
+              </div>
+              <div class="bg-white border hairline rounded-lg p-2.5">
+                <div class="mono text-[9.5px] uppercase tracking-[0.16em] text-black/55">CO</div>
+                <div class="font-display text-[20px] num mt-1">62</div>
+                <div class="mono text-[10px] text-black/55">restaurantes</div>
+              </div>
+              <div class="bg-white border hairline rounded-lg p-2.5">
+                <div class="mono text-[9.5px] uppercase tracking-[0.16em] text-black/55">AR</div>
+                <div class="font-display text-[20px] num mt-1">36</div>
+                <div class="mono text-[10px] text-black/55">restaurantes</div>
+              </div>
+              <div class="bg-white border hairline rounded-lg p-2.5 mint">
+                <div class="mono text-[9.5px] uppercase tracking-[0.16em] mint-fg opacity-70">CR</div>
+                <div class="font-display text-[20px] num mt-1 mint-fg">14</div>
+                <div class="mono text-[10px] mint-fg opacity-70">+ Nuevo</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ALERTS -->
+        <div class="col-span-12 lg:col-span-4 bg-white border hairline rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <span class="swiss-num">§ 02</span>
+              <span class="eyebrow">Alertas activas · 3</span>
+            </div>
+            <a href="#" class="text-[12px] font-bold hover:underline">Ver todas →</a>
+          </div>
+
+          <div>
+            <div class="alert-row">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:#FEF3C7;color:#92400E">⚠</div>
+              <div class="flex-1 min-w-0">
+                <div class="text-[13px] font-bold truncate">Mariscos del Pacífico</div>
+                <div class="mono text-[10.5px] text-black/55">SLA cocina 78% · 14d · MX-Cancún</div>
+              </div>
+              <span class="px-2 h-5 inline-flex items-center text-[10px] font-bold rounded-full" style="background:#FEF3C7;color:#92400E">SLA</span>
+            </div>
+            <div class="alert-row">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:#FEE2E2;color:#991B1B">!</div>
+              <div class="flex-1 min-w-0">
+                <div class="text-[13px] font-bold truncate">POLLO ROJO · Suc. 3</div>
+                <div class="mono text-[10.5px] text-black/55">KDS desconectado hace 38 min · MX-CDMX</div>
+              </div>
+              <span class="px-2 h-5 inline-flex items-center text-[10px] font-bold rounded-full" style="background:#FEE2E2;color:#991B1B">DOWN</span>
+            </div>
+            <div class="alert-row">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center mint mint-fg">$</div>
+              <div class="flex-1 min-w-0">
+                <div class="text-[13px] font-bold truncate">noon</div>
+                <div class="mono text-[10.5px] text-black/55">Upgrade Pro · pendiente firma · MX-CDMX</div>
+              </div>
+              <span class="chip-data">REVENUE</span>
+            </div>
+          </div>
+
+          <!-- onboarding queue -->
+          <div class="mt-6 pt-5 border-t hairline-2">
+            <div class="flex items-center justify-between mb-3">
+              <span class="eyebrow">Onboarding · cola</span>
+              <span class="mono text-[11px] text-black/55">7 en proceso</span>
+            </div>
+            <div class="space-y-2.5">
+              <div class="leader pb-1.5 flex items-baseline text-[12.5px]">
+                <span class="font-bold">Café Otro</span>
+                <span class="mx-1 flex-1"></span>
+                <span class="mono text-[10.5px] text-black/55">paso 5/8 · 2d</span>
+              </div>
+              <div class="leader pb-1.5 flex items-baseline text-[12.5px]">
+                <span class="font-bold">Vinos & Co</span>
+                <span class="mx-1 flex-1"></span>
+                <span class="mono text-[10.5px] text-black/55">paso 7/8 · 5h</span>
+              </div>
+              <div class="leader pb-1.5 flex items-baseline text-[12.5px]">
+                <span class="font-bold">Tacos Norte · Suc. 2</span>
+                <span class="mx-1 flex-1"></span>
+                <span class="mono text-[10.5px] mint-fg font-bold">listo · firma</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── RESTAURANTS TABLE ─── -->
+      <div class="bg-white border hairline rounded-2xl p-6 mb-7">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <span class="swiss-num">§ 03</span>
+            <span class="eyebrow">Top performers · hoy</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="h-8 px-3 border hairline rounded-full text-[11.5px] font-bold flex items-center gap-1.5 hover:border-black">
+              <span class="mono text-[10px] text-black/55">ordenar</span>
+              GMV ↓
+            </button>
+            <button class="h-8 px-3 bg-black text-white rounded-full text-[11.5px] font-bold">Ver los 340 →</button>
+          </div>
+        </div>
+
+        <!-- header row -->
+        <div class="rest-row border-b border-black/15" style="border-bottom-width:1.5px">
+          <span class="mono text-[10px] uppercase tracking-[0.16em] text-black/55">#</span>
+          <span class="mono text-[10px] uppercase tracking-[0.16em] text-black/55">Restaurante</span>
+          <span class="mono text-[10px] uppercase tracking-[0.16em] text-black/55">Plan · país</span>
+          <span class="mono text-[10px] uppercase tracking-[0.16em] text-black/55 text-right">GMV hoy</span>
+          <span class="mono text-[10px] uppercase tracking-[0.16em] text-black/55 text-right">Tickets</span>
+          <span class="mono text-[10px] uppercase tracking-[0.16em] text-black/55 text-right">SLA</span>
+          <span class="mono text-[10px] uppercase tracking-[0.16em] text-black/55 text-right">Estado</span>
+          <span></span>
+        </div>
+
+        <!-- rows -->
+        <a href="panel_admin.html" class="rest-row">
+          <span class="font-display text-[20px] num">01</span>
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center font-display text-[14px] tracking-[-0.045em] mint mint-fg shrink-0">no</div>
+            <div class="min-w-0">
+              <div class="name truncate">noon</div>
+              <div class="sub truncate">noon.waitless.app · 3 suc · 38 mesas</div>
+            </div>
+          </div>
+          <div>
+            <div class="text-[12px] font-bold">Pro</div>
+            <div class="mono text-[10.5px] text-black/55">MX · CDMX</div>
+          </div>
+          <div class="text-right">
+            <div class="font-display text-[16px] num">$12,840</div>
+            <div class="mono text-[10.5px] mint-fg font-bold">↑ +18%</div>
+          </div>
+          <div class="text-right font-display text-[16px] num">28</div>
+          <div class="text-right font-display text-[16px] num mint-fg">100%</div>
+          <div class="text-right flex items-center justify-end gap-1.5">
+            <span class="status-dot mint live-dot"></span>
+            <span class="mono text-[11px] font-bold">Activo</span>
+          </div>
+          <span class="font-display text-[16px] text-right">→</span>
+        </a>
+
+        <div class="rest-row">
+          <span class="font-display text-[20px] num">02</span>
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center font-display text-[14px] tracking-[-0.045em] bg-black text-white shrink-0">B</div>
+            <div class="min-w-0">
+              <div class="name truncate">BURGER/CO</div>
+              <div class="sub truncate">burgerco.app · 6 suc · 64 mesas</div>
+            </div>
+          </div>
+          <div>
+            <div class="text-[12px] font-bold">Cadenas</div>
+            <div class="mono text-[10.5px] text-black/55">MX · 4 ciudades</div>
+          </div>
+          <div class="text-right">
+            <div class="font-display text-[16px] num">$11,240</div>
+            <div class="mono text-[10.5px] mint-fg font-bold">↑ +12%</div>
+          </div>
+          <div class="text-right font-display text-[16px] num">42</div>
+          <div class="text-right font-display text-[16px] num mint-fg">98%</div>
+          <div class="text-right flex items-center justify-end gap-1.5">
+            <span class="status-dot mint live-dot"></span>
+            <span class="mono text-[11px] font-bold">Activo</span>
+          </div>
+          <span class="font-display text-[16px] text-right">→</span>
+        </div>
+
+        <div class="rest-row">
+          <span class="font-display text-[20px] num">03</span>
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center font-display text-[14px] tracking-[-0.045em] bg-[#1a1a1a] text-white shrink-0">S8</div>
+            <div class="min-w-0">
+              <div class="name truncate">SUSHI 88</div>
+              <div class="sub truncate">sushi88.mx · 2 suc · 22 mesas</div>
+            </div>
+          </div>
+          <div>
+            <div class="text-[12px] font-bold">Pro</div>
+            <div class="mono text-[10.5px] text-black/55">MX · CDMX</div>
+          </div>
+          <div class="text-right">
+            <div class="font-display text-[16px] num">$9,820</div>
+            <div class="mono text-[10.5px] mint-fg font-bold">↑ +8%</div>
+          </div>
+          <div class="text-right font-display text-[16px] num">22</div>
+          <div class="text-right font-display text-[16px] num mint-fg">100%</div>
+          <div class="text-right flex items-center justify-end gap-1.5">
+            <span class="status-dot mint live-dot"></span>
+            <span class="mono text-[11px] font-bold">Activo</span>
+          </div>
+          <span class="font-display text-[16px] text-right">→</span>
+        </div>
+
+        <div class="rest-row">
+          <span class="font-display text-[20px] num">04</span>
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center font-display text-[14px] tracking-[-0.045em] bg-[#2a280f] text-white shrink-0">PR</div>
+            <div class="min-w-0">
+              <div class="name truncate">POLLO ROJO</div>
+              <div class="sub truncate">polloroj.com · 4 suc · 28 mesas</div>
+            </div>
+          </div>
+          <div>
+            <div class="text-[12px] font-bold">Cadenas</div>
+            <div class="mono text-[10.5px] text-black/55">MX · CDMX</div>
+          </div>
+          <div class="text-right">
+            <div class="font-display text-[16px] num">$8,140</div>
+            <div class="mono text-[10.5px] text-black/55">+2%</div>
+          </div>
+          <div class="text-right font-display text-[16px] num">34</div>
+          <div class="text-right font-display text-[16px] num" style="color:#92400E">82%</div>
+          <div class="text-right flex items-center justify-end gap-1.5">
+            <span class="status-dot" style="background:#DC2626"></span>
+            <span class="mono text-[11px] font-bold" style="color:#991B1B">Suc.3 ↓</span>
+          </div>
+          <span class="font-display text-[16px] text-right">→</span>
+        </div>
+
+        <div class="rest-row">
+          <span class="font-display text-[20px] num">05</span>
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center font-display text-[14px] tracking-[-0.045em] bg-[#1a2a1a] text-white shrink-0">LE</div>
+            <div class="min-w-0">
+              <div class="name truncate">La Esquina</div>
+              <div class="sub truncate">laesquina.app · 1 suc · 14 mesas</div>
+            </div>
+          </div>
+          <div>
+            <div class="text-[12px] font-bold">Starter</div>
+            <div class="mono text-[10.5px] text-black/55">MX · CDMX</div>
+          </div>
+          <div class="text-right">
+            <div class="font-display text-[16px] num">$5,420</div>
+            <div class="mono text-[10.5px] mint-fg font-bold">↑ +24%</div>
+          </div>
+          <div class="text-right font-display text-[16px] num">18</div>
+          <div class="text-right font-display text-[16px] num mint-fg">100%</div>
+          <div class="text-right flex items-center justify-end gap-1.5">
+            <span class="status-dot mint live-dot"></span>
+            <span class="mono text-[11px] font-bold">Activo</span>
+          </div>
+          <span class="font-display text-[16px] text-right">→</span>
+        </div>
+
+        <div class="rest-row">
+          <span class="font-display text-[20px] num">06</span>
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center font-display text-[14px] tracking-[-0.045em] bg-[#2a2218] text-white shrink-0">CO</div>
+            <div class="min-w-0">
+              <div class="name truncate">Café Otro</div>
+              <div class="sub truncate">cafeotro.mx · 1 suc · 8 mesas</div>
+            </div>
+          </div>
+          <div>
+            <div class="text-[12px] font-bold">Starter</div>
+            <div class="mono text-[10.5px] text-black/55">MX · CDMX</div>
+          </div>
+          <div class="text-right">
+            <div class="font-display text-[16px] num">$3,840</div>
+            <div class="mono text-[10.5px] mint-fg font-bold">↑ NUEVO</div>
+          </div>
+          <div class="text-right font-display text-[16px] num">12</div>
+          <div class="text-right font-display text-[16px] num mint-fg">100%</div>
+          <div class="text-right flex items-center justify-end gap-1.5">
+            <span class="chip-data">+ Nuevo</span>
+          </div>
+          <span class="font-display text-[16px] text-right">→</span>
+        </div>
+      </div>
+
+      <!-- ─── BOTTOM: editorial cohort ─── -->
+      <div class="bg-black text-white rounded-2xl p-7 mb-7 relative overflow-hidden grid grid-cols-12 gap-6 items-center">
+        <div class="col-span-12 lg:col-span-7">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="swiss-num" style="color:#909090">§ 04</span>
+            <span class="eyebrow" style="color:#fff">Crecimiento · cohorte mayo</span>
+          </div>
+          <h2 class="font-display text-[clamp(36px,4.5vw,60px)] tracking-[-0.045em] leading-[0.95]">
+            +14 restaurantes.<br/>
+            <span class="text-white/35">Cero churn este mes.</span>
+          </h2>
+          <p class="text-[14px] text-white/65 mt-4 max-w-[480px] font-medium-tight">
+            La cohorte de mayo está corriendo al <span class="text-white font-bold">142% de la meta</span>.
+            Tres restaurantes saltaron a Pro en sus primeras 2 semanas.
+          </p>
+        </div>
+        <div class="col-span-12 lg:col-span-5 grid grid-cols-2 gap-3">
+          <div class="rounded-xl bg-white/[0.06] border border-white/10 p-4">
+            <div class="mono text-[10px] uppercase tracking-[0.16em] text-white/55">Activaciones</div>
+            <div class="font-display text-[32px] num mt-2">14<span style="color:#BEEBBE"> / 10</span></div>
+          </div>
+          <div class="rounded-xl bg-white/[0.06] border border-white/10 p-4">
+            <div class="mono text-[10px] uppercase tracking-[0.16em] text-white/55">Setup avg</div>
+            <div class="font-display text-[32px] num mt-2">6<span class="text-[18px]">:42</span></div>
+          </div>
+          <div class="rounded-xl bg-white/[0.06] border border-white/10 p-4">
+            <div class="mono text-[10px] uppercase tracking-[0.16em] text-white/55">Conversion</div>
+            <div class="font-display text-[32px] num mt-2" style="color:#BEEBBE">71%</div>
+          </div>
+          <div class="rounded-xl bg-white/[0.06] border border-white/10 p-4">
+            <div class="mono text-[10px] uppercase tracking-[0.16em] text-white/55">Churn</div>
+            <div class="font-display text-[32px] num mt-2" style="color:#BEEBBE">0.0%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between text-[11px] mono text-black/45 pb-6">
+        <span>WAITLESS Superadmin · v10.2 · synced 13:42:05</span>
+        <span>Restringido · solo equipo WAITLESS · auditado</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

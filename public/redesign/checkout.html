@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pagar — Mesa 7 · noon</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="shared.css" />
+<style>
+  body{background:#F4F4F2;}
+  .phone{width:380px;height:780px;background:#fff;border-radius:44px;border:10px solid #000;box-shadow:0 30px 80px -30px rgba(0,0,0,0.4),0 8px 20px -10px rgba(0,0,0,0.2);position:relative;overflow:hidden;}
+  .notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:90px;height:24px;background:#000;border-radius:14px;z-index:50;}
+  .scroll{height:100%;overflow-y:auto;}
+  .scroll::-webkit-scrollbar{display:none;}
+  .tip-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:11px 8px;border:1px solid var(--line);border-radius:14px;cursor:pointer;background:#fff;}
+  .tip-pill.active{background:#000;color:#fff;border-color:#000;}
+  .tip-pill .pct{font-size:18px;font-weight:700;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;}
+  .tip-pill .amt{font-family:var(--mono);font-size:10px;opacity:0.7;margin-top:2px;}
+  .split-tab{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px;border:1px solid var(--line);border-radius:12px;cursor:pointer;background:#fff;}
+  .split-tab.active{background:#000;color:#fff;border-color:#000;}
+  .split-tab svg{width:18px;height:18px;}
+  .split-tab .label{font-size:10.5px;font-weight:700;letter-spacing:-0.01em;}
+  .pay-method{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);border-radius:14px;background:#fff;cursor:pointer;}
+  .pay-method.active{border-color:#000;}
+  .pay-method .radio{width:18px;height:18px;border:1.5px solid #000;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .pay-method.active .radio::after{content:"";width:10px;height:10px;background:#000;border-radius:50%;}
+</style>
+</head>
+<body class="antialiased">
+
+<!-- ─── PAGE HEADER ─── -->
+<div class="max-w-[1200px] mx-auto px-8 pt-12 pb-6">
+  <div class="flex items-end justify-between flex-wrap gap-6">
+    <div>
+      <div class="flex items-center gap-3 mb-3">
+        <span class="swiss-num">CAP. 07 · Pago</span>
+        <span class="h-px w-10 bg-black/30"></span>
+        <span class="eyebrow">El momento de la verdad</span>
+      </div>
+      <h1 class="font-display text-[clamp(36px,5vw,64px)]">
+        Pagan dividido.<br/>
+        <span class="text-black/30">En <span class="num">11</span> segundos.</span>
+      </h1>
+    </div>
+    <p class="max-w-[400px] text-[14px] text-black/60 font-medium-tight">
+      Split inteligente, propina con un tap, recibo al instante.
+      Sin esperar la cuenta, sin pasar la tarjeta.
+    </p>
+  </div>
+</div>
+
+<!-- ─── 3 phones flow ─── -->
+<div class="max-w-[1400px] mx-auto px-8 pb-20 grid grid-cols-1 lg:grid-cols-3 gap-10 place-items-center">
+
+  <!-- PHONE 1: REVIEW + SPLIT -->
+  <div class="text-center">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="scroll">
+        <!-- status -->
+        <div class="h-11 flex items-center justify-between px-7 pt-3">
+          <div class="text-[14px] font-bold num">13:42</div>
+          <div class="flex items-center gap-1.5">
+            <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><rect x="1" y="4" width="2" height="5" rx="0.5" fill="#000"/><rect x="4" y="2" width="2" height="7" rx="0.5" fill="#000"/><rect x="7" y="0" width="2" height="9" rx="0.5" fill="#000"/></svg>
+            <svg width="22" height="10" viewBox="0 0 22 10" fill="none"><rect x="0.5" y="0.5" width="18" height="9" rx="2" stroke="#000" fill="none"/><rect x="2" y="2" width="14" height="6" fill="#000"/></svg>
+          </div>
+        </div>
+
+        <!-- header -->
+        <div class="px-5 pt-2 pb-3 flex items-center justify-between">
+          <button class="w-9 h-9 rounded-full border hairline flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L4 7l4.5 4" stroke="#000" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <div class="text-center">
+            <div class="eyebrow">Mesa 7 · noon</div>
+            <div class="mono text-[10.5px] text-black/55">#481 · 4 pax · Carla</div>
+          </div>
+          <button class="w-9 h-9 rounded-full border hairline flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="3" cy="7" r="1" fill="#000"/><circle cx="7" cy="7" r="1" fill="#000"/><circle cx="11" cy="7" r="1" fill="#000"/></svg>
+          </button>
+        </div>
+
+        <!-- title -->
+        <div class="px-5">
+          <h2 class="font-display text-[32px] tracking-[-0.04em]">Tu cuenta.</h2>
+          <div class="mono text-[11.5px] text-black/55">7 items · sesión 11 min</div>
+        </div>
+
+        <!-- items -->
+        <div class="px-5 mt-5 space-y-2.5">
+          <div class="leader pb-1.5 flex items-baseline text-[13px]">
+            <span>2× Taco al Pastor</span>
+            <span class="mx-1 flex-1"></span>
+            <span class="font-bold num">$70.00</span>
+          </div>
+          <div class="leader pb-1.5 flex items-baseline text-[13px]">
+            <span>1× Suadero</span>
+            <span class="mx-1 flex-1"></span>
+            <span class="font-bold num">$32.00</span>
+          </div>
+          <div class="leader pb-1.5 flex items-baseline text-[13px]">
+            <span>1× Cochinita</span>
+            <span class="mx-1 flex-1"></span>
+            <span class="font-bold num">$38.00</span>
+          </div>
+          <div class="leader pb-1.5 flex items-baseline text-[13px]">
+            <span>1× Mole negro</span>
+            <span class="mx-1 flex-1"></span>
+            <span class="font-bold num">$310.00</span>
+          </div>
+          <div class="leader pb-1.5 flex items-baseline text-[13px]">
+            <span>3× Horchata</span>
+            <span class="mx-1 flex-1"></span>
+            <span class="font-bold num">$144.00</span>
+          </div>
+          <div class="leader pb-1.5 flex items-baseline text-[13px]">
+            <span>1× Mezcal Tobalá</span>
+            <span class="mx-1 flex-1"></span>
+            <span class="font-bold num">$220.00</span>
+          </div>
+        </div>
+
+        <!-- subtotals -->
+        <div class="mx-5 mt-5 pt-4 border-t border-dashed border-black/20 space-y-1.5">
+          <div class="flex items-baseline text-[12.5px] text-black/65 mono">
+            <span>Subtotal</span><span class="mx-1 flex-1"></span><span class="text-black font-bold">$814.00</span>
+          </div>
+          <div class="flex items-baseline text-[12.5px] text-black/65 mono">
+            <span>IVA 16%</span><span class="mx-1 flex-1"></span><span class="text-black font-bold">$130.24</span>
+          </div>
+          <div class="flex items-baseline text-[12.5px] text-black/65 mono">
+            <span>Servicio</span><span class="mx-1 flex-1"></span><span class="text-black font-bold">$0.00</span>
+          </div>
+        </div>
+
+        <!-- SPLIT -->
+        <div class="mx-5 mt-6 p-4 rounded-2xl border-2 border-black bg-white">
+          <div class="flex items-center justify-between mb-3">
+            <span class="eyebrow">Cómo pagan</span>
+            <span class="chip-data">Inteligente</span>
+          </div>
+          <div class="grid grid-cols-4 gap-1.5">
+            <button class="split-tab active">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="8" cy="9" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="16" cy="9" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M2 19c0-2.5 2.7-4 6-4M22 19c0-2.5-2.7-4-6-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              <span class="label">Igual<br/>÷ 4</span>
+            </button>
+            <button class="split-tab">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M5 3h14M5 21h14M7 3v18M17 3v18M11 8h4M11 13h4M11 17h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span class="label">Por<br/>item</span>
+            </button>
+            <button class="split-tab">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <span class="label">Lo<br/>que tú</span>
+            </button>
+            <button class="split-tab">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M12 17V7M9 10l3-3 3 3M9 14l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span class="label">Otra<br/>persona</span>
+            </button>
+          </div>
+          <div class="mt-3 pt-3 border-t hairline-2 flex items-baseline justify-between">
+            <span class="mono text-[11px] text-black/55">Tú pagas (4 pax)</span>
+            <span class="font-display text-[20px] num">$236.06</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-3 mono text-[10.5px] text-black/55 uppercase tracking-[0.18em]">↑ 01 · Revisar y dividir</div>
+  </div>
+
+  <!-- PHONE 2: TIP -->
+  <div class="text-center">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="scroll">
+        <div class="h-11 flex items-center justify-between px-7 pt-3">
+          <div class="text-[14px] font-bold num">13:42</div>
+          <div class="flex items-center gap-1.5">
+            <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><rect x="1" y="4" width="2" height="5" rx="0.5" fill="#000"/><rect x="4" y="2" width="2" height="7" rx="0.5" fill="#000"/><rect x="7" y="0" width="2" height="9" rx="0.5" fill="#000"/></svg>
+            <svg width="22" height="10" viewBox="0 0 22 10" fill="none"><rect x="0.5" y="0.5" width="18" height="9" rx="2" stroke="#000" fill="none"/><rect x="2" y="2" width="14" height="6" fill="#000"/></svg>
+          </div>
+        </div>
+
+        <div class="px-5 pt-2 pb-3 flex items-center justify-between">
+          <button class="w-9 h-9 rounded-full border hairline flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L4 7l4.5 4" stroke="#000" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <div class="text-center">
+            <div class="eyebrow">Paso 2 de 3</div>
+            <div class="mono text-[10.5px] text-black/55">Propina · Mesera Carla</div>
+          </div>
+          <span class="w-9"></span>
+        </div>
+
+        <div class="px-5">
+          <h2 class="font-display text-[32px] tracking-[-0.04em]">¿Cuánto le<br/>dejas a Carla?</h2>
+          <p class="text-[13px] text-black/60 mt-3 font-medium-tight">Tu propina va 100% a Carla, sin intermediarios. Liquidación diaria.</p>
+        </div>
+
+        <!-- waitress card -->
+        <div class="mx-5 mt-5 p-4 rounded-2xl border hairline flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center font-display text-[16px]">CR</div>
+          <div class="flex-1">
+            <div class="font-display text-[16px] tracking-[-0.035em]">Carla R.</div>
+            <div class="mono text-[10.5px] text-black/55">Mesera · 4.9 ★ · 312 reseñas</div>
+          </div>
+          <span class="chip-data">★ Top</span>
+        </div>
+
+        <!-- tip selector -->
+        <div class="px-5 mt-5">
+          <div class="grid grid-cols-4 gap-1.5">
+            <div class="tip-pill"><div class="pct">10%</div><div class="amt">$23.60</div></div>
+            <div class="tip-pill"><div class="pct">12%</div><div class="amt">$28.32</div></div>
+            <div class="tip-pill active"><div class="pct">15%</div><div class="amt">$35.40</div></div>
+            <div class="tip-pill"><div class="pct">20%</div><div class="amt">$47.20</div></div>
+          </div>
+          <button class="mt-2 w-full h-10 border hairline rounded-full text-[12.5px] font-bold flex items-center justify-center gap-1.5">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 7h9m0 0L8 4m3 3L8 10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            Otra cantidad
+          </button>
+        </div>
+
+        <!-- breakdown -->
+        <div class="mx-5 mt-6 p-4 rounded-2xl mint">
+          <div class="flex items-center justify-between mb-2">
+            <span class="eyebrow mint-fg">Tu total</span>
+            <span class="mono text-[10.5px] mint-fg opacity-70">15% propina</span>
+          </div>
+          <div class="space-y-1 mint-fg">
+            <div class="flex items-baseline text-[12px]"><span class="opacity-70">Subtotal</span><span class="mx-1 flex-1"></span><span class="font-bold mono">$236.06</span></div>
+            <div class="flex items-baseline text-[12px]"><span class="opacity-70">Propina</span><span class="mx-1 flex-1"></span><span class="font-bold mono">$35.40</span></div>
+            <div class="border-t border-[#0a3a0a]/20 pt-2 mt-2 flex items-baseline">
+              <span class="font-bold">Tú pagas</span>
+              <span class="mx-1 flex-1"></span>
+              <span class="font-display text-[24px] num">$271.46</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- mini "everyone tipping?" pulse -->
+        <div class="mx-5 mt-4 flex items-center gap-2 mono text-[11px] text-black/55">
+          <span class="dot live-dot mint" style="width:6px;height:6px"></span>
+          3 de 4 personas ya pagaron · faltas tú
+        </div>
+      </div>
+    </div>
+    <div class="mt-3 mono text-[10.5px] text-black/55 uppercase tracking-[0.18em]">↑ 02 · Propina</div>
+  </div>
+
+  <!-- PHONE 3: METHOD + CONFIRM -->
+  <div class="text-center">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="scroll">
+        <div class="h-11 flex items-center justify-between px-7 pt-3">
+          <div class="text-[14px] font-bold num">13:42</div>
+          <div class="flex items-center gap-1.5">
+            <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><rect x="1" y="4" width="2" height="5" rx="0.5" fill="#000"/><rect x="4" y="2" width="2" height="7" rx="0.5" fill="#000"/><rect x="7" y="0" width="2" height="9" rx="0.5" fill="#000"/></svg>
+            <svg width="22" height="10" viewBox="0 0 22 10" fill="none"><rect x="0.5" y="0.5" width="18" height="9" rx="2" stroke="#000" fill="none"/><rect x="2" y="2" width="14" height="6" fill="#000"/></svg>
+          </div>
+        </div>
+
+        <div class="px-5 pt-2 pb-3 flex items-center justify-between">
+          <button class="w-9 h-9 rounded-full border hairline flex items-center justify-center">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L4 7l4.5 4" stroke="#000" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <div class="text-center">
+            <div class="eyebrow">Paso 3 de 3</div>
+            <div class="mono text-[10.5px] text-black/55">Confirmar</div>
+          </div>
+          <span class="w-9"></span>
+        </div>
+
+        <div class="px-5">
+          <h2 class="font-display text-[32px] tracking-[-0.04em]">Confirma<br/>y termina.</h2>
+        </div>
+
+        <!-- total huge -->
+        <div class="mx-5 mt-5 p-5 rounded-2xl bg-black text-white">
+          <div class="mono text-[10.5px] text-white/55 uppercase tracking-[0.16em]">Vas a pagar</div>
+          <div class="font-display text-[56px] num tracking-[-0.05em] leading-none mt-2">$271.46</div>
+          <div class="mono text-[11px] text-white/55 mt-1">Mesa 7 · noon · ÷ 4 personas</div>
+        </div>
+
+        <!-- payment method -->
+        <div class="px-5 mt-5">
+          <div class="eyebrow mb-3">Método de pago</div>
+          <div class="space-y-2">
+            <label class="pay-method active">
+              <span class="radio"></span>
+              <div class="w-10 h-7 rounded bg-black text-white flex items-center justify-center font-bold text-[11px]">VISA</div>
+              <div class="flex-1 text-left">
+                <div class="text-[13px] font-bold">•••• 4242</div>
+                <div class="mono text-[10.5px] text-black/55">Vence 08/27</div>
+              </div>
+            </label>
+            <label class="pay-method">
+              <span class="radio"></span>
+              <div class="w-10 h-7 rounded mint mint-fg flex items-center justify-center font-bold text-[10px]">WAITLESS</div>
+              <div class="flex-1 text-left">
+                <div class="text-[13px] font-bold">Wallet</div>
+                <div class="mono text-[10.5px] text-black/55">$1,240 disponibles</div>
+              </div>
+            </label>
+            <label class="pay-method">
+              <span class="radio"></span>
+              <div class="w-10 h-7 rounded bg-[#1a1a1a] text-white flex items-center justify-center text-[10px] font-bold">  Pay</div>
+              <div class="flex-1 text-left">
+                <div class="text-[13px] font-bold">Apple Pay</div>
+                <div class="mono text-[10.5px] text-black/55">Touch ID</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- terms -->
+        <div class="px-5 mt-5">
+          <label class="flex items-start gap-2 text-[11.5px] text-black/65 font-medium-tight cursor-pointer">
+            <span class="w-4 h-4 mt-0.5 border-2 border-black rounded-[3px] flex items-center justify-center"><span class="w-2 h-2 bg-black rounded-[1px]"></span></span>
+            Quiero recibir el ticket a daniela@noon.mx
+          </label>
+        </div>
+
+        <!-- pay button (sticky-ish) -->
+        <div class="px-4 mt-6 pb-6">
+          <button class="w-full h-14 rounded-2xl bg-black text-white font-bold text-[15px] flex items-center justify-between px-5">
+            <span>Pagar con Visa ••42</span>
+            <span class="flex items-center gap-2">
+              <span class="font-display text-[20px] num">$271.46</span>
+              <span class="text-[16px]">→</span>
+            </span>
+          </button>
+          <div class="text-center mt-2 mono text-[10.5px] text-black/55">
+            🔒 Encriptado · 3D Secure · liquidación inmediata
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-3 mono text-[10.5px] text-black/55 uppercase tracking-[0.18em]">↑ 03 · Confirmar y pagar</div>
+  </div>
+
+</div>
+
+<!-- footer -->
+<footer class="border-t hairline py-10">
+  <div class="max-w-[1400px] mx-auto px-8 flex items-center justify-between mono text-[11px] text-black/55">
+    <span>WAITLESS · checkout · v10.2</span>
+    <span>Stripe · 3DS · PCI-DSS L1</span>
+  </div>
+</footer>
+
+</body>
+</html>

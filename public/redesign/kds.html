@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KDS Cocina · noon · plancha</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="shared.css" />
+<style>
+  html,body{background:#000;color:#fff;height:100vh;overflow:hidden;}
+  .ticket{background:#fff;color:#000;border-radius:14px;padding:18px;display:flex;flex-direction:column;height:100%;}
+  .ticket.warn{outline:3px solid #FBBF24;outline-offset:-3px;}
+  .ticket.crit{outline:3px solid #DC2626;outline-offset:-3px;background:#FEF2F2;}
+  .ticket.done{background:#BEEBBE;color:#0a3a0a;}
+  .ticket.new{background:#171717;color:#fff;}
+  .timer{font-family:var(--mono);font-size:24px;font-weight:700;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;}
+  .timer-pill{display:inline-flex;align-items:center;justify-content:center;height:30px;padding:0 12px;border-radius:999px;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:-0.01em;font-variant-numeric:tabular-nums;}
+  .item-line{display:flex;align-items:baseline;font-size:15px;letter-spacing:-0.01em;padding:5px 0;border-bottom:1px dashed currentColor;}
+  .item-line.struck{text-decoration:line-through;opacity:0.55;}
+  .qty{font-weight:700;font-family:var(--mono);width:32px;flex-shrink:0;}
+  .station-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1px solid rgba(255,255,255,0.15);font-size:12.5px;font-weight:700;letter-spacing:-0.01em;color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.04);}
+  .station-pill.active{background:#fff;color:#000;border-color:#fff;}
+  .station-pill .count{font-family:var(--mono);font-size:11px;padding:1px 6px;border-radius:999px;background:rgba(0,0,0,0.1);}
+  .station-pill:not(.active) .count{background:rgba(255,255,255,0.1);color:#fff;}
+  @keyframes blink{50%{opacity:0.3;}}
+  .blink{animation:blink 1.5s infinite;}
+  /* press button */
+  .ready-btn{margin-top:auto;width:100%;height:54px;border-radius:14px;font-weight:700;font-size:15px;letter-spacing:-0.01em;display:flex;align-items:center;justify-content:center;gap:8px;background:#000;color:#fff;}
+  .ticket.done .ready-btn{background:#0a3a0a;color:#BEEBBE;}
+  .ticket.new .ready-btn{background:#fff;color:#000;}
+  /* fullscreen grid */
+  .kds-grid{display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:16px;height:calc(100vh - 200px);}
+  /* top bar */
+  .topbar{height:72px;display:flex;align-items:center;gap:16px;padding:0 24px;background:#000;border-bottom:1px solid rgba(255,255,255,0.1);}
+  .stat-block{font-family:var(--mono);font-size:11px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.18em;}
+  .stat-value{font-family:'Helvetica Neue',sans-serif;font-weight:700;letter-spacing:-0.03em;font-size:24px;color:#fff;line-height:1;margin-top:2px;font-variant-numeric:tabular-nums;}
+  .stat-value.mint{color:#BEEBBE;}
+  /* footer status */
+  .footbar{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:#0a0a0a;border-top:1px solid rgba(255,255,255,0.1);font-family:var(--mono);font-size:11.5px;color:rgba(255,255,255,0.65);}
+</style>
+</head>
+<body class="antialiased">
+
+<!-- ─── TOPBAR ─── -->
+<header class="topbar">
+  <div class="flex items-center gap-2.5">
+    <span class="w-logo">W</span>
+    <div class="leading-tight">
+      <div class="font-display text-[15px] tracking-[-0.035em]">KDS · Cocina</div>
+      <div class="mono text-[10.5px] text-white/55">noon · Polanco · 14·MAY</div>
+    </div>
+  </div>
+
+  <!-- station tabs -->
+  <div class="flex items-center gap-1.5 ml-8">
+    <button class="station-pill active">
+      Plancha <span class="count num">4</span>
+    </button>
+    <button class="station-pill">
+      Frío <span class="count num">2</span>
+    </button>
+    <button class="station-pill">
+      Postres <span class="count num">1</span>
+    </button>
+    <button class="station-pill">
+      Bebidas <span class="count num">3</span>
+    </button>
+    <button class="station-pill">
+      Todo <span class="count num">10</span>
+    </button>
+  </div>
+
+  <!-- stats right -->
+  <div class="ml-auto flex items-center gap-8">
+    <div>
+      <div class="stat-block">Hora</div>
+      <div class="stat-value">13:42</div>
+    </div>
+    <div>
+      <div class="stat-block">SLA Plancha</div>
+      <div class="stat-value mint">100%</div>
+    </div>
+    <div>
+      <div class="stat-block">Prom. orden→listo</div>
+      <div class="stat-value">04:28</div>
+    </div>
+    <div>
+      <div class="stat-block">En cola</div>
+      <div class="stat-value">4</div>
+    </div>
+    <button class="w-10 h-10 rounded-full border border-white/15 flex items-center justify-center hover:border-white">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.5 1.5M11.5 11.5L13 13M3 13l1.5-1.5M11.5 4.5L13 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ─── TICKETS GRID ─── -->
+<main class="p-6">
+  <div class="kds-grid">
+
+    <!-- TICKET 1 — NEW / 00:08 -->
+    <div class="ticket new">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="flex items-center gap-2">
+            <div class="font-display text-[22px] tracking-[-0.04em]">#49</div>
+            <span class="px-2 h-5 inline-flex items-center bg-white text-black rounded-full text-[10px] font-bold tracking-wider uppercase">QR</span>
+          </div>
+          <div class="mono text-[11px] text-white/55 mt-1">Mesa 4 · 2 pax · Auto</div>
+        </div>
+        <span class="timer-pill bg-white text-black blink">00:08</span>
+      </div>
+
+      <div class="mt-4 flex-1">
+        <div class="text-[10.5px] tracking-[0.18em] uppercase font-bold text-white/55 mb-2">3 items · plancha</div>
+        <div>
+          <div class="item-line"><span class="qty">2×</span><span>Taco al Pastor</span></div>
+          <div class="item-line"><span class="qty">1×</span><span>Suadero</span></div>
+          <div class="item-line text-[12px]" style="border-color:rgba(255,255,255,0.15)">
+            <span class="qty"></span>
+            <span class="italic text-white/55">→ sin cilantro · mesa 2</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="ready-btn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 9l3 3 7-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Tomar ticket
+      </button>
+    </div>
+
+    <!-- TICKET 2 — OK / 02:14 -->
+    <div class="ticket">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="flex items-center gap-2">
+            <div class="font-display text-[22px] tracking-[-0.04em]">#47</div>
+            <span class="chip-data">M3 · 4 pax</span>
+          </div>
+          <div class="mono text-[11px] text-black/55 mt-1">Carla · 13:39</div>
+        </div>
+        <span class="timer-pill mint mint-fg">02:14</span>
+      </div>
+
+      <div class="mt-4 flex-1">
+        <div class="text-[10.5px] tracking-[0.18em] uppercase font-bold text-black/55 mb-2">5 items · plancha</div>
+        <div>
+          <div class="item-line struck"><span class="qty">2×</span><span>Taco al Pastor</span></div>
+          <div class="item-line struck"><span class="qty">1×</span><span>Suadero</span></div>
+          <div class="item-line"><span class="qty">1×</span><span>Cochinita</span></div>
+          <div class="item-line"><span class="qty">1×</span><span>Mole negro</span></div>
+        </div>
+      </div>
+
+      <button class="ready-btn" style="background:#BEEBBE;color:#0a3a0a">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 9l3 3 7-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Marcar listo · 60%
+      </button>
+    </div>
+
+    <!-- TICKET 3 — WARN / 06:42 -->
+    <div class="ticket warn">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="flex items-center gap-2">
+            <div class="font-display text-[22px] tracking-[-0.04em]">#48</div>
+            <span class="px-2 h-5 inline-flex items-center rounded-full text-[10px] font-bold tracking-wider uppercase" style="background:#FEF3C7;color:#92400E">M7</span>
+          </div>
+          <div class="mono text-[11px] text-black/55 mt-1">Luis · 2 pax · 13:35</div>
+        </div>
+        <span class="timer-pill" style="background:#FEF3C7;color:#92400E">06:42</span>
+      </div>
+
+      <div class="mt-4 flex-1">
+        <div class="text-[10.5px] tracking-[0.18em] uppercase font-bold text-black/55 mb-2">2 items · plancha</div>
+        <div>
+          <div class="item-line"><span class="qty">1×</span><span>Burger Clásica</span></div>
+          <div class="item-line"><span class="qty">1×</span><span>Papas</span></div>
+        </div>
+        <div class="mt-3 text-[11.5px] mono p-2.5 rounded-lg" style="background:#FEF3C7;color:#92400E">⚠ Alerta SLA · meta 5:00</div>
+      </div>
+
+      <button class="ready-btn">Marcar listo</button>
+    </div>
+
+    <!-- TICKET 4 — CRIT / 12:18 -->
+    <div class="ticket crit">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="flex items-center gap-2">
+            <div class="font-display text-[22px] tracking-[-0.04em]">#42</div>
+            <span class="px-2 h-5 inline-flex items-center rounded-full text-[10px] font-bold tracking-wider uppercase" style="background:#DC2626;color:#fff">M11</span>
+          </div>
+          <div class="mono text-[11px] text-black/55 mt-1">Andrés · 5 pax · 13:30</div>
+        </div>
+        <span class="timer-pill blink" style="background:#DC2626;color:#fff">12:18</span>
+      </div>
+
+      <div class="mt-4 flex-1">
+        <div class="text-[10.5px] tracking-[0.18em] uppercase font-bold text-black/55 mb-2">4 items · plancha</div>
+        <div>
+          <div class="item-line"><span class="qty">3×</span><span>Burger Doble</span></div>
+          <div class="item-line"><span class="qty">2×</span><span>Papas grande</span></div>
+          <div class="item-line"><span class="qty">1×</span><span>Aros de cebolla</span></div>
+        </div>
+        <div class="mt-3 text-[11.5px] mono p-2.5 rounded-lg font-bold" style="background:#DC2626;color:#fff">🔥 Crítico · 7m sobre meta · escalado a chef</div>
+      </div>
+
+      <button class="ready-btn" style="background:#DC2626;color:#fff">Atender ahora</button>
+    </div>
+
+    <!-- ─── ROW 2 ─── -->
+
+    <!-- TICKET 5 — DONE -->
+    <div class="ticket done">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="flex items-center gap-2">
+            <div class="font-display text-[22px] tracking-[-0.04em]">#44</div>
+            <span class="px-2 h-5 inline-flex items-center bg-[#0a3a0a] text-[#BEEBBE] rounded-full text-[10px] font-bold tracking-wider uppercase">M2</span>
+          </div>
+          <div class="mono text-[11px] mt-1" style="color:#0a3a0a99">Sofía · 2 pax</div>
+        </div>
+        <span class="timer-pill" style="background:#0a3a0a;color:#BEEBBE">✓ LISTO</span>
+      </div>
+
+      <div class="mt-4 flex-1">
+        <div class="text-[10.5px] tracking-[0.18em] uppercase font-bold mb-2" style="color:#0a3a0a99">2 items · esperando mesera</div>
+        <div>
+          <div class="item-line struck"><span class="qty">1×</span><span>Burger Clásica</span></div>
+          <div class="item-line struck"><span class="qty">1×</span><span>Papas</span></div>
+        </div>
+        <div class="mt-4 mono text-[12px]" style="color:#0a3a0a">
+          <div class="flex items-center gap-2"><span class="dot live-dot" style="background:#0a3a0a;width:6px;height:6px"></span> Avisado a Carla · 00:08</div>
+        </div>
+      </div>
+
+      <button class="ready-btn" style="background:#0a3a0a;color:#BEEBBE">Confirmar entregado</button>
+    </div>
+
+    <!-- TICKET 6 — OK / 03:50 -->
+    <div class="ticket">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="flex items-center gap-2">
+            <div class="font-display text-[22px] tracking-[-0.04em]">#46</div>
+            <span class="chip-data">M5 · 3 pax</span>
+          </div>
+          <div class="mono text-[11px] text-black/55 mt-1">Luis · 13:38</div>
+        </div>
+        <span class="timer-pill mint mint-fg">03:50</span>
+      </div>
+
+      <div class="mt-4 flex-1">
+        <div class="text-[10.5px] tracking-[0.18em] uppercase font-bold text-black/55 mb-2">3 items · plancha</div>
+        <div>
+          <div class="item-line"><span class="qty">2×</span><span>Burger Clásica</span></div>
+          <div class="item-line"><span class="qty">1×</span><span>Hot dog</span></div>
+          <div class="item-line"><span class="qty">3×</span><span>Papas chicas</span></div>
+        </div>
+      </div>
+
+      <button class="ready-btn" style="background:#BEEBBE;color:#0a3a0a">Marcar listo</button>
+    </div>
+
+    <!-- TICKET 7 — OK / 01:22 -->
+    <div class="ticket">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="flex items-center gap-2">
+            <div class="font-display text-[22px] tracking-[-0.04em]">#50</div>
+            <span class="chip-data">M6 · 2 pax</span>
+          </div>
+          <div class="mono text-[11px] text-black/55 mt-1">QR · 13:41</div>
+        </div>
+        <span class="timer-pill mint mint-fg">01:22</span>
+      </div>
+
+      <div class="mt-4 flex-1">
+        <div class="text-[10.5px] tracking-[0.18em] uppercase font-bold text-black/55 mb-2">2 items · plancha</div>
+        <div>
+          <div class="item-line"><span class="qty">1×</span><span>Burger Vegana</span></div>
+          <div class="item-line"><span class="qty">1×</span><span>Papas</span></div>
+          <div class="item-line text-[12px]" style="border-color:#00000020">
+            <span class="qty"></span>
+            <span class="italic text-black/55">→ sin queso · alergia lácteos</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="ready-btn" style="background:#BEEBBE;color:#0a3a0a">Marcar listo</button>
+    </div>
+
+    <!-- TICKET 8 — DONE -->
+    <div class="ticket done">
+      <div class="flex items-start justify-between">
+        <div>
+          <div class="flex items-center gap-2">
+            <div class="font-display text-[22px] tracking-[-0.04em]">#45</div>
+            <span class="px-2 h-5 inline-flex items-center bg-[#0a3a0a] text-[#BEEBBE] rounded-full text-[10px] font-bold tracking-wider uppercase">M8</span>
+          </div>
+          <div class="mono text-[11px] mt-1" style="color:#0a3a0a99">QR · 3 pax</div>
+        </div>
+        <span class="timer-pill" style="background:#0a3a0a;color:#BEEBBE">✓ LISTO</span>
+      </div>
+
+      <div class="mt-4 flex-1">
+        <div class="text-[10.5px] tracking-[0.18em] uppercase font-bold mb-2" style="color:#0a3a0a99">3 items · esperando mesera</div>
+        <div>
+          <div class="item-line struck"><span class="qty">3×</span><span>Burger Doble</span></div>
+        </div>
+        <div class="mt-4 mono text-[12px]" style="color:#0a3a0a">
+          <div class="flex items-center gap-2"><span class="dot live-dot" style="background:#0a3a0a;width:6px;height:6px"></span> Avisado a Luis · 02:14</div>
+        </div>
+      </div>
+
+      <button class="ready-btn" style="background:#0a3a0a;color:#BEEBBE">Confirmar entregado</button>
+    </div>
+
+  </div>
+</main>
+
+<!-- ─── FOOTBAR ─── -->
+<footer class="footbar">
+  <div class="flex items-center gap-6">
+    <span class="flex items-center gap-2">
+      <span class="dot live-dot mint" style="width:6px;height:6px"></span>
+      <span>Sync con panel cada 800ms · sin lag</span>
+    </span>
+    <span>Turno noche · 5h 12m</span>
+    <span>28 / 28 pedidos a tiempo hoy</span>
+  </div>
+  <div class="flex items-center gap-4">
+    <span class="text-white/45">Atajos:</span>
+    <kbd class="px-2 h-5 inline-flex items-center bg-white/10 rounded text-[10.5px]">Espacio</kbd>
+    <span>marcar listo</span>
+    <kbd class="px-2 h-5 inline-flex items-center bg-white/10 rounded text-[10.5px]">1–4</kbd>
+    <span>cambiar estación</span>
+    <span class="text-white/45 ml-4">WAITLESS v10.2</span>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Menú — noon · Mesa 7</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root{
+    --mint:#BEEBBE; --mint-deep:#0a3a0a;
+    --line:#E5E5E5; --line-2:#EFEFEF; --paper:#F7F5F0;
+    --mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+  }
+  body{font-family:'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif;
+       -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+       background:#F4F4F2; color:#000;}
+  .font-display{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:700;letter-spacing:-0.045em;line-height:0.95;}
+  .font-medium-tight{letter-spacing:-0.01em;}
+  .mono{font-family:var(--mono); letter-spacing:-0.01em;}
+  .hairline{border-color:var(--line);}
+  .hairline-2{border-color:var(--line-2);}
+  .mint{background:var(--mint);} .mint-fg{color:var(--mint-deep);}
+  .eyebrow{font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;font-weight:700;}
+  .num{font-variant-numeric:tabular-nums;}
+  .w-logo{width:32px;height:32px;background:#000;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;letter-spacing:-0.04em;}
+  .w-logo.sm{width:22px;height:22px;font-size:11px;border-radius:6px;}
+  .swiss-num{font-family:var(--mono);font-size:10.5px;color:#909090;letter-spacing:0.04em;}
+  .leader{background-image:radial-gradient(circle,#00000040 1px,transparent 1.5px);background-position:bottom;background-size:6px 4px;background-repeat:repeat-x;}
+  @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(190,235,190,.8)}70%{box-shadow:0 0 0 8px rgba(190,235,190,0)}100%{box-shadow:0 0 0 0 rgba(190,235,190,0)}}
+  .live-dot{animation:pulseDot 1.8s infinite;}
+  .dot{width:8px;height:8px;border-radius:999px;display:inline-block;}
+  .ph{background:repeating-linear-gradient(135deg,#f4f4f4 0 8px,#fafafa 8px 16px);}
+  /* tasty plate placeholders */
+  .plate{position:relative;overflow:hidden;border-radius:14px;}
+  .pal-pastor{background:radial-gradient(circle at 30% 30%, #c97a3a 0, #5a2a10 40%, #1a0a05 90%);}
+  .pal-suadero{background:radial-gradient(circle at 40% 40%, #8a5028 0, #3a1c0a 50%, #1a0805 90%);}
+  .pal-veggie{background:radial-gradient(circle at 50% 30%, #6aa86a 0, #2a5a2a 50%, #0a1a08 90%);}
+  .pal-bebida{background:radial-gradient(circle at 40% 30%, #d8c98a 0, #6a5520 50%, #2a1f08 90%);}
+  .pal-postre{background:radial-gradient(circle at 50% 40%, #b88a5a 0, #5a3818 50%, #2a1808 90%);}
+  .pal-mole{background:radial-gradient(circle at 40% 30%, #6a3a2a 0, #2a1208 50%, #0e0805 90%);}
+  /* checkbox-like modifier */
+  .check{width:18px;height:18px;border:1.5px solid #000;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;}
+  .check.on{background:#000;color:#fff;font-size:12px;}
+  /* mint chip */
+  .chip-data{background:#BEEBBE; color:#0a3a0a; padding:5px 9px; font-weight:700; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; border-radius:3px;}
+  /* sticky tabs */
+  .scrollbar-none::-webkit-scrollbar{display:none;}
+  .scrollbar-none{scrollbar-width:none;}
+  /* phone scaffolding (only on >md) */
+  @media (min-width: 768px){
+    .menu-frame{box-shadow: 0 30px 80px -30px rgba(0,0,0,0.25), 0 8px 20px -10px rgba(0,0,0,0.15);}
+  }
+  /* fab counter pulse */
+  @keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+  .pop{animation:pop .35s ease;}
+  /* dish row */
+  .dish:hover .add-btn{background:#BEEBBE; color:#0a3a0a;}
+  /* sticky banner top blur */
+  .banner-blur::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.65));}
+</style>
+</head>
+<body class="antialiased">
+
+<!-- Desktop layout — phone-frame centered with sidebar info -->
+<div class="min-h-screen grid place-items-start md:grid-cols-[1fr_520px_1fr] gap-0">
+
+  <!-- LEFT marginalia (desktop only) -->
+  <aside class="hidden md:flex flex-col items-end pt-20 pr-10 sticky top-0 h-screen">
+    <div class="max-w-[260px] text-right">
+      <div class="flex items-center gap-2 justify-end mb-3">
+        <span class="dot live-dot mint" style="width:7px;height:7px"></span>
+        <span class="eyebrow">Sesión activa · Mesa 7</span>
+      </div>
+      <div class="font-display text-[34px] tracking-[-0.045em]">noon</div>
+      <p class="text-[13px] text-black/60 font-medium-tight mt-2">
+        Mexicana contemporánea · Polanco. Tu mesero asignado es <span class="text-black font-bold">Carla</span> y cocina recibe en tiempo real lo que ordenes.
+      </p>
+      <div class="mt-6 border-t hairline pt-5 space-y-2">
+        <div class="leader pb-1.5 mono text-[11px] flex items-baseline">
+          <span class="text-black/60">Mesa</span><span class="mx-1 flex-1"></span><span class="font-bold">07</span>
+        </div>
+        <div class="leader pb-1.5 mono text-[11px] flex items-baseline">
+          <span class="text-black/60">Pax</span><span class="mx-1 flex-1"></span><span class="font-bold">4</span>
+        </div>
+        <div class="leader pb-1.5 mono text-[11px] flex items-baseline">
+          <span class="text-black/60">Sesión iniciada</span><span class="mx-1 flex-1"></span><span class="font-bold">13:31</span>
+        </div>
+        <div class="leader pb-1.5 mono text-[11px] flex items-baseline">
+          <span class="text-black/60">Servicio</span><span class="mx-1 flex-1"></span><span class="font-bold">En mesa</span>
+        </div>
+      </div>
+      <div class="mt-6 mono text-[10.5px] uppercase tracking-[0.18em] text-black/45">↑ Fig. A · vista comensal</div>
+    </div>
+  </aside>
+
+  <!-- PHONE / MENU FRAME -->
+  <main class="menu-frame w-full md:w-[520px] bg-white min-h-screen md:my-10 md:rounded-[28px] md:border md:hairline overflow-hidden relative">
+
+    <!-- ─── BANNER ─── -->
+    <div class="relative h-[260px] banner-blur" style="background:radial-gradient(circle at 30% 30%, #3a2418 0, #0a0805 70%);">
+      <!-- back button -->
+      <button class="absolute top-4 left-4 w-9 h-9 rounded-full bg-white/95 backdrop-blur flex items-center justify-center z-10">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L4 7l4.5 4" stroke="#000" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+      <!-- info -->
+      <button class="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/95 backdrop-blur flex items-center justify-center z-10">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#000" stroke-width="1.3"/><path d="M7 6v4M7 4v.2" stroke="#000" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+      <!-- live pill -->
+      <div class="absolute top-4 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-1.5 px-3 h-7 bg-black/80 backdrop-blur rounded-full text-white text-[10.5px] font-bold">
+        <span class="dot live-dot mint" style="width:6px;height:6px"></span>
+        Mesa 7 · 4 pax · Carla
+      </div>
+      <!-- bottom info -->
+      <div class="absolute bottom-5 left-5 right-5 text-white z-10">
+        <div class="flex items-end justify-between">
+          <div>
+            <div class="font-display text-[40px] tracking-[-0.045em] leading-none">noon</div>
+            <div class="text-[12.5px] text-white/75 mt-1 font-medium-tight">Mexicana contemporánea · 4.9 ★ · 312 reseñas</div>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-white text-black flex items-center justify-center font-display text-[18px] tracking-[-0.05em]">no</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SESSION BAR ─── -->
+    <div class="px-5 py-4 border-b hairline-2 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="eyebrow">Pide en mesa</div>
+        <span class="text-black/30">·</span>
+        <span class="mono text-[11.5px] text-black/65">comparte con tu grupo</span>
+      </div>
+      <button class="text-[12.5px] font-bold hover:underline">Cambiar mesa</button>
+    </div>
+
+    <!-- ─── CATEGORY TABS ─── -->
+    <div class="sticky top-0 z-20 bg-white border-b hairline-2">
+      <div class="flex items-center gap-1 px-5 py-3 overflow-x-auto scrollbar-none">
+        <a href="#entradas" class="shrink-0 px-3.5 h-8 inline-flex items-center bg-black text-white rounded-full text-[12.5px] font-bold">Entradas</a>
+        <a href="#tacos" class="shrink-0 px-3.5 h-8 inline-flex items-center text-black/65 hover:text-black rounded-full text-[12.5px] font-medium-tight">Tacos</a>
+        <a href="#principales" class="shrink-0 px-3.5 h-8 inline-flex items-center text-black/65 hover:text-black rounded-full text-[12.5px] font-medium-tight">Principales</a>
+        <a href="#postres" class="shrink-0 px-3.5 h-8 inline-flex items-center text-black/65 hover:text-black rounded-full text-[12.5px] font-medium-tight">Postres</a>
+        <a href="#bebidas" class="shrink-0 px-3.5 h-8 inline-flex items-center text-black/65 hover:text-black rounded-full text-[12.5px] font-medium-tight">Bebidas</a>
+        <a href="#cocteles" class="shrink-0 px-3.5 h-8 inline-flex items-center text-black/65 hover:text-black rounded-full text-[12.5px] font-medium-tight">Cócteles</a>
+      </div>
+    </div>
+
+    <!-- ─── SECTION: ENTRADAS ─── -->
+    <section id="entradas" class="px-5 pt-7 pb-5">
+      <div class="flex items-center gap-3 mb-5">
+        <span class="swiss-num">§ 01</span>
+        <span class="h-px w-7 bg-black/20"></span>
+        <h2 class="font-display text-[26px] tracking-[-0.04em]">Entradas</h2>
+      </div>
+
+      <ul class="space-y-5">
+        <li class="dish flex gap-4">
+          <div class="flex-1">
+            <div class="font-display text-[18px] tracking-[-0.025em]">Guacamole de la casa</div>
+            <div class="text-[12.5px] text-black/55 font-medium-tight mt-0.5 leading-snug">Aguacate hass, cilantro, jalapeño asado, totopos de maíz azul, queso fresco.</div>
+            <div class="flex items-center gap-1.5 mt-2">
+              <span class="chip-data" style="background:#0a3a0a;color:#BEEBBE">VG</span>
+              <span class="mono text-[10.5px] text-black/45">350 kcal</span>
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+              <div class="font-display text-[18px] num">$165</div>
+              <button class="add-btn w-9 h-9 rounded-full bg-black text-white flex items-center justify-center font-bold text-[18px] leading-none transition">+</button>
+            </div>
+          </div>
+          <div class="plate pal-veggie w-[110px] h-[110px] shrink-0"></div>
+        </li>
+
+        <li class="dish flex gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <div class="font-display text-[18px] tracking-[-0.025em]">Tostadas de atún</div>
+              <span class="chip-data">★ Top</span>
+            </div>
+            <div class="text-[12.5px] text-black/55 font-medium-tight mt-0.5 leading-snug">Atún sellado, ponzu, aguacate, ajonjolí negro, chile serrano. 3 piezas.</div>
+            <div class="flex items-center gap-1.5 mt-2">
+              <span class="mono text-[10.5px] text-black/45">540 kcal</span>
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+              <div class="font-display text-[18px] num">$245</div>
+              <button class="add-btn w-9 h-9 rounded-full bg-black text-white flex items-center justify-center font-bold text-[18px] leading-none transition">+</button>
+            </div>
+          </div>
+          <div class="plate pal-bebida w-[110px] h-[110px] shrink-0"></div>
+        </li>
+
+        <li class="dish flex gap-4">
+          <div class="flex-1">
+            <div class="font-display text-[18px] tracking-[-0.025em]">Esquites de la abuela</div>
+            <div class="text-[12.5px] text-black/55 font-medium-tight mt-0.5 leading-snug">Maíz tatemado, mayonesa de chipotle, cotija, limón, epazote.</div>
+            <div class="flex items-center gap-1.5 mt-2">
+              <span class="chip-data" style="background:#0a3a0a;color:#BEEBBE">VG</span>
+              <span class="mono text-[10.5px] text-black/45">280 kcal</span>
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+              <div class="font-display text-[18px] num">$120</div>
+              <button class="add-btn w-9 h-9 rounded-full bg-black text-white flex items-center justify-center font-bold text-[18px] leading-none transition">+</button>
+            </div>
+          </div>
+          <div class="plate pal-veggie w-[110px] h-[110px] shrink-0"></div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- divider -->
+    <div class="px-5"><div class="border-t border-dashed border-black/15"></div></div>
+
+    <!-- ─── SECTION: TACOS ─── -->
+    <section id="tacos" class="px-5 pt-7 pb-5">
+      <div class="flex items-center gap-3 mb-5">
+        <span class="swiss-num">§ 02</span>
+        <span class="h-px w-7 bg-black/20"></span>
+        <h2 class="font-display text-[26px] tracking-[-0.04em]">Tacos</h2>
+        <span class="mono text-[11px] text-black/45 ml-auto">— Pza · $</span>
+      </div>
+
+      <ul class="space-y-5">
+        <li class="dish flex gap-4 border-2 border-black rounded-2xl p-3 -mx-3 bg-white relative">
+          <span class="chip-data absolute -top-2.5 left-3">★ Recomendado del chef</span>
+          <div class="flex-1">
+            <div class="font-display text-[18px] tracking-[-0.025em]">Taco al Pastor</div>
+            <div class="text-[12.5px] text-black/55 font-medium-tight mt-0.5 leading-snug">Trompo lento al carbón, piña asada, cebolla blanca, cilantro fresco. Tortilla de maíz nixtamalizado.</div>
+            <!-- modifier expansion -->
+            <div class="mt-3 space-y-1.5">
+              <div class="leader pb-1 flex items-baseline justify-between text-[12px]">
+                <span class="flex items-center gap-2"><span class="check on">✓</span>Doble carne (+$15)</span>
+                <span class="mono font-bold">+$15</span>
+              </div>
+              <div class="leader pb-1 flex items-baseline justify-between text-[12px]">
+                <span class="flex items-center gap-2"><span class="check"></span>Sin cilantro</span>
+                <span class="mono text-black/45">—</span>
+              </div>
+              <div class="leader pb-1 flex items-baseline justify-between text-[12px]">
+                <span class="flex items-center gap-2"><span class="check"></span>Sin piña</span>
+                <span class="mono text-black/45">—</span>
+              </div>
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+              <div class="flex items-baseline gap-2">
+                <div class="font-display text-[20px] num">$50</div>
+                <div class="mono text-[11px] text-black/45">$35 base + $15</div>
+              </div>
+              <div class="flex items-center gap-2.5 bg-black rounded-full text-white px-2.5 h-9">
+                <button class="w-5 h-5 flex items-center justify-center text-[18px] leading-none">−</button>
+                <span class="font-bold text-[13px] num">2</span>
+                <button class="w-5 h-5 flex items-center justify-center text-[18px] leading-none">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="plate pal-pastor w-[110px] h-[110px] shrink-0"></div>
+        </li>
+
+        <li class="dish flex gap-4">
+          <div class="flex-1">
+            <div class="font-display text-[18px] tracking-[-0.025em]">Taco de Suadero</div>
+            <div class="text-[12.5px] text-black/55 font-medium-tight mt-0.5 leading-snug">Suadero confitado 8 horas, salsa verde tatemada, cebollita cambray.</div>
+            <div class="mt-3 flex items-center justify-between">
+              <div class="font-display text-[18px] num">$32</div>
+              <button class="add-btn w-9 h-9 rounded-full bg-black text-white flex items-center justify-center font-bold text-[18px] leading-none transition">+</button>
+            </div>
+          </div>
+          <div class="plate pal-suadero w-[110px] h-[110px] shrink-0"></div>
+        </li>
+
+        <li class="dish flex gap-4">
+          <div class="flex-1">
+            <div class="font-display text-[18px] tracking-[-0.025em]">Taco de Cochinita</div>
+            <div class="text-[12.5px] text-black/55 font-medium-tight mt-0.5 leading-snug">Cochinita pibil yucateca, cebolla morada al habanero, limón.</div>
+            <div class="flex items-center gap-1.5 mt-2">
+              <span class="chip-data" style="background:#FBBF24;color:#92400E">PICA</span>
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+              <div class="font-display text-[18px] num">$38</div>
+              <button class="add-btn w-9 h-9 rounded-full bg-black text-white flex items-center justify-center font-bold text-[18px] leading-none transition">+</button>
+            </div>
+          </div>
+          <div class="plate pal-mole w-[110px] h-[110px] shrink-0"></div>
+        </li>
+
+        <li class="dish flex gap-4">
+          <div class="flex-1">
+            <div class="font-display text-[18px] tracking-[-0.025em]">Taco de hongos al ajillo</div>
+            <div class="text-[12.5px] text-black/55 font-medium-tight mt-0.5 leading-snug">Trío de hongos silvestres, ajo confitado, epazote, queso oaxaca.</div>
+            <div class="flex items-center gap-1.5 mt-2">
+              <span class="chip-data" style="background:#0a3a0a;color:#BEEBBE">VG</span>
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+              <div class="font-display text-[18px] num">$34</div>
+              <button class="add-btn w-9 h-9 rounded-full bg-black text-white flex items-center justify-center font-bold text-[18px] leading-none transition">+</button>
+            </div>
+          </div>
+          <div class="plate pal-veggie w-[110px] h-[110px] shrink-0"></div>
+        </li>
+      </ul>
+    </section>
+
+    <div class="px-5"><div class="border-t border-dashed border-black/15"></div></div>
+
+    <!-- ─── SECTION: PRINCIPALES ─── -->
+    <section id="principales" class="px-5 pt-7 pb-5">
+      <div class="flex items-center gap-3 mb-5">
+        <span class="swiss-num">§ 03</span>
+        <span class="h-px w-7 bg-black/20"></span>
+        <h2 class="font-display text-[26px] tracking-[-0.04em]">Principales</h2>
+      </div>
+
+      <ul class="space-y-5">
+        <li class="dish flex gap-4">
+          <div class="flex-1">
+            <div class="font-display text-[18px] tracking-[-0.025em]">Mole negro de Oaxaca</div>
+            <div class="text-[12.5px] text-black/55 font-medium-tight mt-0.5 leading-snug">Mole de 28 ingredientes, pollo orgánico, arroz blanco, tortillas hechas a mano.</div>
+            <div class="flex items-center gap-1.5 mt-2">
+              <span class="chip-data">★ Top</span>
+              <span class="mono text-[10.5px] text-black/45">8 reseñas hoy</span>
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+              <div class="font-display text-[18px] num">$310</div>
+              <button class="add-btn w-9 h-9 rounded-full bg-black text-white flex items-center justify-center font-bold text-[18px] leading-none transition">+</button>
+            </div>
+          </div>
+          <div class="plate pal-mole w-[110px] h-[110px] shrink-0"></div>
+        </li>
+
+        <li class="dish flex gap-4">
+          <div class="flex-1">
+            <div class="font-display text-[18px] tracking-[-0.025em]">Pescado a la talla</div>
+            <div class="text-[12.5px] text-black/55 font-medium-tight mt-0.5 leading-snug">Pesca del día, adobo guerrerense, frijoles charros, plátanos fritos.</div>
+            <div class="mt-3 flex items-center justify-between">
+              <div class="font-display text-[18px] num">$385</div>
+              <button class="add-btn w-9 h-9 rounded-full bg-black text-white flex items-center justify-center font-bold text-[18px] leading-none transition">+</button>
+            </div>
+          </div>
+          <div class="plate pal-bebida w-[110px] h-[110px] shrink-0"></div>
+        </li>
+      </ul>
+    </section>
+
+    <div class="px-5"><div class="border-t border-dashed border-black/15"></div></div>
+
+    <!-- ─── POSTRES ─── -->
+    <section id="postres" class="px-5 pt-7 pb-5">
+      <div class="flex items-center gap-3 mb-5">
+        <span class="swiss-num">§ 04</span>
+        <span class="h-px w-7 bg-black/20"></span>
+        <h2 class="font-display text-[26px] tracking-[-0.04em]">Postres</h2>
+      </div>
+      <ul class="space-y-5">
+        <li class="dish flex gap-4">
+          <div class="flex-1">
+            <div class="font-display text-[18px] tracking-[-0.025em]">Flan de cajeta</div>
+            <div class="text-[12.5px] text-black/55 font-medium-tight mt-0.5 leading-snug">Flan suave de huevo, cajeta de Celaya, nuez caramelizada, sal de Maldon.</div>
+            <div class="mt-3 flex items-center justify-between">
+              <div class="font-display text-[18px] num">$95</div>
+              <button class="add-btn w-9 h-9 rounded-full bg-black text-white flex items-center justify-center font-bold text-[18px] leading-none transition">+</button>
+            </div>
+          </div>
+          <div class="plate pal-postre w-[110px] h-[110px] shrink-0"></div>
+        </li>
+      </ul>
+    </section>
+
+    <div class="px-5"><div class="border-t border-dashed border-black/15"></div></div>
+
+    <!-- ─── BEBIDAS ─── -->
+    <section id="bebidas" class="px-5 pt-7 pb-28">
+      <div class="flex items-center gap-3 mb-5">
+        <span class="swiss-num">§ 05</span>
+        <span class="h-px w-7 bg-black/20"></span>
+        <h2 class="font-display text-[26px] tracking-[-0.04em]">Bebidas</h2>
+      </div>
+
+      <!-- compact list (no photos) -->
+      <ul class="space-y-2">
+        <li class="leader pb-1.5 flex items-baseline">
+          <div>
+            <div class="font-display text-[15px] tracking-[-0.025em]">Agua de horchata</div>
+            <div class="text-[11px] text-black/55 mono">Casera · sin azúcar añadida</div>
+          </div>
+          <span class="mx-2 flex-1"></span>
+          <div class="flex items-center gap-3">
+            <div class="font-display text-[15px] num">$48</div>
+            <button class="add-btn w-7 h-7 rounded-full bg-black text-white flex items-center justify-center font-bold text-[14px] leading-none">+</button>
+          </div>
+        </li>
+        <li class="leader pb-1.5 flex items-baseline">
+          <div>
+            <div class="font-display text-[15px] tracking-[-0.025em]">Agua de jamaica</div>
+            <div class="text-[11px] text-black/55 mono">Hibiscus · canela</div>
+          </div>
+          <span class="mx-2 flex-1"></span>
+          <div class="flex items-center gap-3">
+            <div class="font-display text-[15px] num">$48</div>
+            <button class="add-btn w-7 h-7 rounded-full bg-black text-white flex items-center justify-center font-bold text-[14px] leading-none">+</button>
+          </div>
+        </li>
+        <li class="leader pb-1.5 flex items-baseline">
+          <div>
+            <div class="font-display text-[15px] tracking-[-0.025em]">Mezcal Tobalá</div>
+            <div class="text-[11px] text-black/55 mono">Real Minero · 45 ml · maguey silvestre</div>
+          </div>
+          <span class="mx-2 flex-1"></span>
+          <div class="flex items-center gap-3">
+            <div class="font-display text-[15px] num">$220</div>
+            <button class="add-btn w-7 h-7 rounded-full bg-black text-white flex items-center justify-center font-bold text-[14px] leading-none">+</button>
+          </div>
+        </li>
+        <li class="leader pb-1.5 flex items-baseline">
+          <div>
+            <div class="font-display text-[15px] tracking-[-0.025em]">Tepache</div>
+            <div class="text-[11px] text-black/55 mono">Fermentado de piña · 3 días</div>
+          </div>
+          <span class="mx-2 flex-1"></span>
+          <div class="flex items-center gap-3">
+            <div class="font-display text-[15px] num">$65</div>
+            <button class="add-btn w-7 h-7 rounded-full bg-black text-white flex items-center justify-center font-bold text-[14px] leading-none">+</button>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ─── CART STICKY ─── -->
+    <div class="sticky bottom-0 left-0 right-0 z-30 px-4 pb-4 pt-2 bg-gradient-to-t from-white via-white to-transparent">
+      <button class="w-full bg-black text-white rounded-2xl px-5 py-3.5 flex items-center justify-between shadow-[0_12px_28px_-12px_rgba(0,0,0,0.4)] hover:bg-[#171717]">
+        <div class="flex items-center gap-3">
+          <span class="w-9 h-9 rounded-xl flex items-center justify-center font-display text-[14px] num mint mint-fg">3</span>
+          <div class="text-left">
+            <div class="text-[12.5px] mono uppercase tracking-[0.16em] text-white/55">Tu mesa · 4 pax</div>
+            <div class="text-[15px] font-bold">Ver carrito y pagar</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <div class="text-[10.5px] mono uppercase tracking-[0.16em] text-white/55">Subtotal</div>
+            <div class="font-display text-[18px] num">$612.00</div>
+          </div>
+          <span class="text-[18px]">→</span>
+        </div>
+      </button>
+      <!-- mini split hint -->
+      <div class="text-center mt-2.5 text-[11px] text-black/55 font-medium-tight">
+        Paga ahora <span class="font-bold text-black">o</span> al final · divide entre <span class="font-bold text-black">4 personas</span> en 11s
+      </div>
+    </div>
+
+  </main>
+
+  <!-- RIGHT marginalia (desktop) -->
+  <aside class="hidden md:flex flex-col items-start pt-20 pl-10 sticky top-0 h-screen">
+    <div class="max-w-[260px]">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="eyebrow">→ Cómo funciona</span>
+      </div>
+      <ol class="space-y-3 mono text-[12px]">
+        <li class="flex gap-2">
+          <span class="text-black/45 shrink-0">01</span>
+          <span>Escaneas el QR de tu mesa.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="text-black/45 shrink-0">02</span>
+          <span>Agregas lo tuyo. Cada quien al suyo.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="text-black/45 shrink-0">03</span>
+          <span>Cocina recibe al instante.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="text-black/45 shrink-0">04</span>
+          <span>Pagan dividido, sin esperar la cuenta.</span>
+        </li>
+      </ol>
+      <div class="mt-7 border-t hairline pt-5">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="dot live-dot mint" style="width:6px;height:6px"></span>
+          <span class="eyebrow">Cocina · en vivo</span>
+        </div>
+        <ul class="mono text-[11.5px] space-y-1.5">
+          <li class="flex justify-between"><span class="text-black/55">SLA cocina</span><span class="font-bold">100%</span></li>
+          <li class="flex justify-between"><span class="text-black/55">Tiempo orden→listo</span><span class="font-bold">12:30 prom.</span></li>
+          <li class="flex justify-between"><span class="text-black/55">Mesas activas</span><span class="font-bold">6 / 12</span></li>
+        </ul>
+      </div>
+      <div class="mt-7 mono text-[10.5px] uppercase tracking-[0.18em] text-black/45">
+        Powered by <span class="text-black font-bold">WAITLESS</span>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+</body>
+</html>
