@@ -142,6 +142,15 @@ function AppContent({ initialBranding, startAtLogin }: AppContentProps) {
     }
   }, [currentUser, view])
 
+  // After Google OAuth, initAuth sets deviceUser but not currentUser (no saved localStorage profile).
+  // Transition to profile-picker so the user can select/confirm their active profile.
+  useEffect(() => {
+    if (deviceUser && !currentUser && (view === 'login' || view === 'landing')) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: auto-advance after OAuth session restore
+      setView('profile-picker')
+    }
+  }, [deviceUser, currentUser, view])
+
   const handleLoginSuccess = (role: UserRole) => {
     setView(roleToView(role))
   }
