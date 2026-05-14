@@ -92,7 +92,7 @@ function AuthCallbackInner() {
       await new Promise(r => setTimeout(r, 1500)) // show status briefly
 
       if (profile?.tenant_id) {
-        router.replace('/')
+        router.replace('/restaurante')
       } else {
         const { data: { user } } = await supabase.auth.getUser()
         const nombre = user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? ''
