@@ -156,7 +156,7 @@ function AppContent({ initialBranding, startAtLogin }: AppContentProps) {
   }
 
   const handleLogout = async () => {
-    setView('landing')
+    setView(startAtLogin ? 'login' : 'landing')
     setClienteMesa(null)
     window.history.replaceState({}, '', window.location.pathname)
     await logout()
