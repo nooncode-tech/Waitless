@@ -137,21 +137,13 @@ function AppContent({ initialBranding, startAtLogin }: AppContentProps) {
   // - currentUser activo → vista del rol correspondiente
   useEffect(() => {
     if (currentUser && (view === 'login' || view === 'landing' || view === 'profile-picker')) {
-      if (startAtLogin) {
-        router.replace('/')
-      } else {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional reactive navigation on auth state change
-        setView(roleToView(currentUser.role))
-      }
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional reactive navigation on auth state change
+      setView(roleToView(currentUser.role))
     }
-  }, [currentUser, view, startAtLogin, router])
+  }, [currentUser, view])
 
   const handleLoginSuccess = (role: UserRole) => {
-    if (startAtLogin) {
-      router.replace('/')
-    } else {
-      setView(roleToView(role))
-    }
+    setView(roleToView(role))
   }
 
   const handleLogout = async () => {
