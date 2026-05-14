@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { sendConsumerWelcome } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
   const { allowed } = rateLimit(`consumer-register:${getClientIp(req)}`, 5, 60_000)
@@ -48,6 +49,12 @@ export async function POST(req: NextRequest) {
     await supabaseAdmin.auth.admin.deleteUser(userId)
     return NextResponse.json({ error: 'Error al crear perfil' }, { status: 500 })
   }
+
+  // Welcome email (fire-and-forget)
+  sendConsumerWelcome({
+    to:     email.trim().toLowerCase(),
+    nombre: nombre.trim(),
+  }).catch(() => {})
 
   return NextResponse.json({ ok: true })
 }

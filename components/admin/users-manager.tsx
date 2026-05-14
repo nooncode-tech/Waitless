@@ -13,10 +13,11 @@ import { toast } from 'sonner'
 import type { User as UserType, UserRole } from '@/lib/store'
 
 const ROLE_CONFIG: Record<UserRole, { label: string; icon: React.ReactNode; bg: string; text: string }> = {
-  admin:   { label: 'Administrador', icon: <Shield className="h-3.5 w-3.5" />,    bg: 'bg-gray-900',   text: 'text-white' },
-  manager: { label: 'Manager',       icon: <User className="h-3.5 w-3.5" />,      bg: 'bg-purple-600', text: 'text-white' },
-  mesero:  { label: 'Mesero',        icon: <UserCheck className="h-3.5 w-3.5" />, bg: 'bg-amber-500',  text: 'text-white' },
-  cocina:  { label: 'Cocina',        icon: <ChefHat className="h-3.5 w-3.5" />,   bg: 'bg-[#06C167]',  text: 'text-white' },
+  admin:      { label: 'Administrador', icon: <Shield className="h-3.5 w-3.5" />,    bg: 'bg-gray-900',   text: 'text-white' },
+  manager:    { label: 'Manager',       icon: <User className="h-3.5 w-3.5" />,      bg: 'bg-purple-600', text: 'text-white' },
+  mesero:     { label: 'Mesero',        icon: <UserCheck className="h-3.5 w-3.5" />, bg: 'bg-amber-500',  text: 'text-white' },
+  cocina:     { label: 'Cocina',        icon: <ChefHat className="h-3.5 w-3.5" />,   bg: 'bg-[#06C167]',  text: 'text-white' },
+  repartidor: { label: 'Repartidor',    icon: <User className="h-3.5 w-3.5" />,      bg: 'bg-blue-600',   text: 'text-white' },
 }
 
 async function getToken(): Promise<string | null> {

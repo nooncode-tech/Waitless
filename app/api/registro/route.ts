@@ -16,6 +16,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { sendRestaurantWelcome } from '@/lib/email'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const SLUG_RE = /^[a-z0-9-]{3,40}$/
@@ -164,6 +165,8 @@ export async function POST(req: NextRequest) {
     await supabaseAdmin.from('app_config').delete().eq('tenant_id', tenantId)
     return NextResponse.json({ error: 'Error creando el perfil de administrador' }, { status: 500 })
   }
+
+  sendRestaurantWelcome({ to: email, nombreRestaurante: nombre }).catch(() => {})
 
   return NextResponse.json({
     success: true,

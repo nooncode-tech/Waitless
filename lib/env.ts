@@ -28,6 +28,12 @@ const CONDITIONAL_SERVER: Array<{ gate: string; requires: string[] }> = [
     gate: 'NEXT_PUBLIC_VAPID_PUBLIC_KEY',
     requires: ['NEXT_PUBLIC_VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY'],
   },
+  {
+    // CRON_SECRET is required when cron endpoints are enabled (presence of itself as gate).
+    // Set to any strong random string; pass as `Authorization: Bearer <secret>` from Vercel crons.
+    gate: 'CRON_SECRET',
+    requires: ['CRON_SECRET'],
+  },
 ]
 
 function validateEnv() {
@@ -89,4 +95,8 @@ export const env = {
   vapidPublicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
   vapidPrivateKey: process.env.VAPID_PRIVATE_KEY,
   vapidContactEmail: process.env.VAPID_CONTACT_EMAIL,
+  // Cron jobs — required when cron endpoints are active
+  cronSecret: process.env.CRON_SECRET,
+  // Waitless commission (default 5%). Override per-deployment via env var.
+  waitlessCommissionPercent: Number(process.env.WAITLESS_COMMISSION_PERCENT ?? '5'),
 } as const

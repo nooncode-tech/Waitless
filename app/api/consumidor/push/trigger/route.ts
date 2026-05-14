@@ -15,9 +15,19 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireRole } from '@/lib/api-auth'
 import { sendDeliveryStatus } from '@/lib/email'
 
-type DeliveryEvent = 'en_camino' | 'entregado'
+type DeliveryEvent = 'recibido' | 'listo' | 'en_camino' | 'entregado'
 
-const EVENT_PAYLOADS: Record<DeliveryEvent, (numero: number) => { title: string; body: string }> = {
+const EVENT_PAYLOADS: Record<DeliveryEvent, (numero: number, canal?: string) => { title: string; body: string }> = {
+  recibido: (numero) => ({
+    title: '¡Pedido confirmado!',
+    body: `Pedido #${numero} fue aceptado y está en preparación.`,
+  }),
+  listo: (numero, canal) => ({
+    title: 'Pedido listo',
+    body: canal === 'delivery'
+      ? `Pedido #${numero} listo para despacho — el repartidor está en camino.`
+      : `Pedido #${numero} está listo para retirar.`,
+  }),
   en_camino: (numero) => ({
     title: '¡Tu pedido está en camino!',
     body: `Pedido #${numero} — el repartidor ya salió hacia tu dirección.`,
@@ -57,7 +67,7 @@ export async function POST(req: NextRequest) {
   // Fetch the order to get consumer email and order number
   const ordersQuery = supabaseAdmin
     .from('orders')
-    .select('id, numero, email, canal, tenant_id')
+    .select('id, numero, email, nombre_cliente, canal, tenant_id')
     .eq('id', orderId)
 
   // Scope to caller's tenant if multi-tenant
@@ -67,15 +77,16 @@ export async function POST(req: NextRequest) {
 
   const { data: order } = await ordersQuery.single()
 
-  if (!order || order.canal !== 'delivery') {
-    return NextResponse.json({ skipped: 'not_a_delivery_order' })
+  if (!order) {
+    return NextResponse.json({ skipped: 'order_not_found' })
   }
 
-  // Email fallback (fire-and-forget) — always send regardless of push subscription
-  if (order.email) {
+  // Email fallback for delivery status events (fire-and-forget)
+  const isEmailEvent = event === 'en_camino' || event === 'entregado'
+  if (isEmailEvent && order.email && order.canal === 'delivery') {
     sendDeliveryStatus({
       to:            order.email as string,
-      nombreCliente: 'Cliente',
+      nombreCliente: (order.nombre_cliente as string | null) ?? 'Cliente',
       numeroPedido:  order.numero as number,
       restaurante:   String(auth.tenantId ?? 'Waitless'),
       event:         event as 'en_camino' | 'entregado',
@@ -89,7 +100,7 @@ export async function POST(req: NextRequest) {
   // Find the consumer by email
   const { data: consumer } = await supabaseAdmin
     .from('consumer_profiles')
-    .select('id')
+    .select('id, nombre')
     .eq('email', (order.email as string).toLowerCase())
     .single()
 
@@ -108,7 +119,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ skipped: 'no_subscription' })
   }
 
-  const { title, body } = EVENT_PAYLOADS[event as DeliveryEvent](order.numero as number)
+  const { title, body } = EVENT_PAYLOADS[event as DeliveryEvent](order.numero as number, order.canal as string)
   const payload = JSON.stringify({ title, body, url: '/consumidor/pedidos', icon: '/icon-192.png' })
 
   initWebPush()

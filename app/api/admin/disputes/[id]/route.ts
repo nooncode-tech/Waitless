@@ -17,7 +17,7 @@ import { sendDisputeResolution } from '@/lib/email'
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const auth = await requireRole(req, ['admin', 'manager'])
   if ('error' in auth) return auth.error
@@ -26,7 +26,7 @@ export async function POST(
     return NextResponse.json({ error: 'Requiere cuenta de restaurante' }, { status: 400 })
   }
 
-  const disputeId = params.id
+  const { id: disputeId } = await params
   const { searchParams } = new URL(req.url)
   const action = searchParams.get('action')
 
@@ -37,7 +37,7 @@ export async function POST(
   // Verify dispute belongs to this tenant
   const { data: dispute } = await supabaseAdmin
     .from('dispute_tickets')
-    .select('id, status, consumer_id, order_id, neto_cents')
+    .select('id, status, consumer_id, order_id, motivo, neto_cents')
     .eq('id', disputeId)
     .eq('tenant_id', auth.tenantId)
     .maybeSingle()
@@ -104,9 +104,11 @@ export async function POST(
 
     const newStatus = `resuelto_${resolucion}` as const
     const nota = (body.nota as string | undefined) ?? null
-    const refund_cents = resolucion === 'favor_cliente'
+    const grossRefund = resolucion === 'favor_cliente'
       ? Number(body.refund_cents ?? 0)
       : 0
+    // Waitless retains 5% mediation fee — consumer receives 95%
+    const refund_cents = grossRefund > 0 ? Math.round(grossRefund * 0.95) : 0
 
     // Issue refund to consumer wallet if applicable
     if (refund_cents > 0 && dispute.consumer_id) {
@@ -179,7 +181,7 @@ export async function POST(
       sendDisputeResolution({
         to:            consumerProfile.email as string,
         nombreCliente: (consumerProfile.nombre as string | null) ?? 'Cliente',
-        motivo:        dispute.motivo as unknown as string ?? '',
+        motivo:        (dispute.motivo as string | null) ?? '',
         resolucion:    resolucion as 'favor_cliente' | 'favor_restaurante',
         refundCents:   refund_cents,
       }).catch(() => {})

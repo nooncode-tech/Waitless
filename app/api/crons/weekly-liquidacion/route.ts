@@ -109,7 +109,19 @@ export async function POST(req: NextRequest) {
     }
 
     const comision_cents = Math.round(marketplace_cents * COMMISSION_PERCENT / 100)
-    const neto_cents     = bruto_cents - comision_cents
+
+    // Deduct refunds from disputes resolved in favor of the client during this period
+    const { data: disputeRefunds } = await supabaseAdmin
+      .from('dispute_tickets')
+      .select('refund_cents')
+      .eq('tenant_id', tenantId)
+      .eq('status', 'resuelto_favor_cliente')
+      .gt('refund_cents', 0)
+      .gte('resolved_at', `${periodStart}T00:00:00Z`)
+      .lte('resolved_at', `${periodEnd}T23:59:59Z`)
+    const reembolsos_cents = (disputeRefunds ?? []).reduce((s, d) => s + Math.abs(Number(d.refund_cents ?? 0)), 0)
+
+    const neto_cents = Math.max(0, bruto_cents - comision_cents - reembolsos_cents)
 
     let stripe_transfer_id: string | null = null
     let status = neto_cents === 0 ? 'procesada' : 'pendiente'
@@ -133,7 +145,7 @@ export async function POST(req: NextRequest) {
         console.error(`[weekly-liquidacion] Transfer failed for tenant ${tenantId}:`, error_message)
       }
     } else {
-      if (neto_cents === 0) processed++ else skipped++
+      if (neto_cents === 0) { processed++ } else { skipped++ }
     }
 
     await supabaseAdmin.from('liquidaciones').insert({
@@ -142,6 +154,7 @@ export async function POST(req: NextRequest) {
       period_end: periodEnd,
       bruto_cents,
       comision_waitless_cents: comision_cents,
+      reembolsos_cents,
       neto_cents,
       transaction_count,
       status,
@@ -171,6 +184,7 @@ export async function POST(req: NextRequest) {
             periodEnd,
             brutoCents:       bruto_cents,
             comisionCents:    comision_cents,
+            reembolsosCents:  reembolsos_cents,
             netoCents:        neto_cents,
             transactionCount: transaction_count,
             stripeTransferId: stripe_transfer_id,

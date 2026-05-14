@@ -9,6 +9,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireConsumerAuth } from '@/lib/api-auth'
 import { pushToTenantStaff } from '@/lib/push-server'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { sendDisputeOpenedToRestaurant } from '@/lib/email'
 
 export async function GET(req: NextRequest) {
   const auth = await requireConsumerAuth(req)
@@ -27,6 +29,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const { allowed } = rateLimit(`dispute-open:${getClientIp(req)}`, 5, 60_000)
+  if (!allowed) return NextResponse.json({ error: 'Demasiados intentos' }, { status: 429 })
+
   const auth = await requireConsumerAuth(req)
   if ('error' in auth) return auth.error
 
@@ -50,7 +55,7 @@ export async function POST(req: NextRequest) {
   // Verify the order belongs to this consumer
   const { data: order } = await supabaseAdmin
     .from('orders')
-    .select('id, email, tenant_id')
+    .select('id, numero, email, tenant_id')
     .eq('id', order_id)
     .eq('tenant_id', tenant_id)
     .maybeSingle()
@@ -105,12 +110,41 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Error guardando reclamo' }, { status: 500 })
   }
 
-  // Notify restaurant staff (fire-and-forget)
+  // Push + email al staff del restaurante (fire-and-forget)
   pushToTenantStaff(tenant_id, {
     title: 'Nuevo reclamo de cliente',
     body: `Motivo: ${motivo}`,
     url: '/admin',
   }).catch(() => {})
+
+  // Email al admin del restaurante
+  const { data: adminProfile } = await supabaseAdmin
+    .from('profiles')
+    .select('id, nombre')
+    .eq('tenant_id', tenant_id)
+    .eq('role', 'admin')
+    .eq('activo', true)
+    .limit(1)
+    .maybeSingle()
+
+  if (adminProfile) {
+    const { data: tenant } = await supabaseAdmin
+      .from('tenants')
+      .select('nombre')
+      .eq('id', tenant_id)
+      .maybeSingle()
+
+    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(adminProfile.id as string)
+    if (authUser.user?.email) {
+      sendDisputeOpenedToRestaurant({
+        to:               authUser.user.email,
+        nombreRestaurante: (tenant?.nombre as string | null) ?? 'tu restaurante',
+        numeroPedido:     order.numero as number,
+        motivo,
+        descripcion,
+      }).catch(() => {})
+    }
+  }
 
   return NextResponse.json({ dispute }, { status: 201 })
 }

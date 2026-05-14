@@ -89,6 +89,7 @@ export async function POST(req: NextRequest) {
       plan,
     },
     subscription_data: {
+      trial_period_days: 7,
       metadata: {
         tenantId: auth.tenantId ?? '',
         plan,

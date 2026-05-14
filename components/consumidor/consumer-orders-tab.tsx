@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   ShoppingBag, Loader2, ChevronDown, ChevronUp, Store,
-  AlertTriangle, X, CheckCircle2, Clock,
+  AlertTriangle, X, CheckCircle2, Clock, Camera, XCircle,
 } from 'lucide-react'
 import { formatPrice } from '@/lib/store'
 
@@ -90,9 +90,26 @@ function DisputeModal({
 }) {
   const [motivo, setMotivo] = useState(MOTIVOS[0])
   const [descripcion, setDescripcion] = useState('')
+  const [photos, setPhotos] = useState<File[]>([])
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handlePhotoAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    const next = [...photos, ...files].slice(0, 3)
+    setPhotos(next)
+    setPhotoPreviews(next.map(f => URL.createObjectURL(f)))
+    e.target.value = ''
+  }
+
+  const removePhoto = (i: number) => {
+    URL.revokeObjectURL(photoPreviews[i])
+    setPhotos(p => p.filter((_, idx) => idx !== i))
+    setPhotoPreviews(p => p.filter((_, idx) => idx !== i))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -100,14 +117,31 @@ function DisputeModal({
     setLoading(true)
     setError('')
 
+    // Upload photos first
+    const fotoUrls: string[] = []
+    for (const file of photos) {
+      const fd = new FormData()
+      fd.append('file', file)
+      const r = await fetch('/api/consumidor/disputes/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      })
+      if (r.ok) {
+        const d = await r.json()
+        fotoUrls.push(d.url)
+      }
+    }
+
     const res = await fetch('/api/consumidor/disputes', {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        order_id:   order.id,
-        tenant_id:  order.restaurant?.id,
+        order_id:    order.id,
+        tenant_id:   order.restaurant?.id,
         motivo,
         descripcion: descripcion.trim() || undefined,
+        foto_urls:   fotoUrls.length > 0 ? fotoUrls : undefined,
       }),
     })
     const data = await res.json()
@@ -174,6 +208,44 @@ function DisputeModal({
                 value={descripcion}
                 onChange={e => setDescripcion(e.target.value)}
                 className="w-full bg-gray-100 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10 resize-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                Fotos (opcional, máx. 3)
+              </label>
+              <div className="flex items-center gap-2 flex-wrap">
+                {photoPreviews.map((src, i) => (
+                  <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                    <img src={src} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(i)}
+                      className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center"
+                    >
+                      <XCircle className="h-3.5 w-3.5 text-white" />
+                    </button>
+                  </div>
+                ))}
+                {photos.length < 3 && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-16 h-16 rounded-xl bg-gray-100 flex flex-col items-center justify-center gap-1 text-gray-400 hover:bg-gray-200 transition-colors shrink-0"
+                  >
+                    <Camera className="h-5 w-5" />
+                    <span className="text-[9px] font-medium">Agregar</span>
+                  </button>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handlePhotoAdd}
               />
             </div>
 

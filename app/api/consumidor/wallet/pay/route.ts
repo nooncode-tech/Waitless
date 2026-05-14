@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { requireConsumerAuth } from '@/lib/api-auth'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
+  const { allowed } = rateLimit(`wallet-pay:${getClientIp(req)}`, 15, 60_000)
+  if (!allowed) return NextResponse.json({ error: 'Demasiados intentos' }, { status: 429 })
+
   const auth = await requireConsumerAuth(req)
   if ('error' in auth) return auth.error
 

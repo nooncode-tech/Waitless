@@ -188,6 +188,7 @@ export function sendLiquidacionReport({
   netoCents,
   transactionCount,
   stripeTransferId,
+  reembolsosCents = 0,
 }: {
   to: string
   nombreRestaurante: string
@@ -198,6 +199,7 @@ export function sendLiquidacionReport({
   netoCents: number
   transactionCount: number
   stripeTransferId: string | null
+  reembolsosCents?: number
 }) {
   const fmt = (cents: number) => `$${(cents / 100).toLocaleString('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   const fmtDate = (d: string) => new Date(d + 'T12:00:00Z').toLocaleDateString('es', { day: 'numeric', month: 'long' })
@@ -209,6 +211,10 @@ export function sendLiquidacionReport({
     <table>
       <tr><td>Ventas brutas (${transactionCount} transacción${transactionCount !== 1 ? 'es' : ''})</td><td>${fmt(brutoCents)}</td></tr>
       <tr><td style="color:#ef4444">Comisión Waitless (5%)</td><td style="color:#ef4444">-${fmt(comisionCents)}</td></tr>
+      ${reembolsosCents > 0
+        ? `<tr><td style="color:#ef4444">Reembolsos por disputas</td><td style="color:#ef4444">-${fmt(reembolsosCents)}</td></tr>`
+        : ''
+      }
       <tr style="border-top:2px solid #eee"><td style="font-weight:700;color:#111">Neto transferido</td><td style="color:#06C167;font-size:20px;font-weight:900">${fmt(netoCents)}</td></tr>
     </table>
     <hr class="divider" />
@@ -221,7 +227,88 @@ export function sendLiquidacionReport({
   return send(to, `Liquidación ${fmtDate(periodStart)}–${fmtDate(periodEnd)} — ${fmt(netoCents)} transferidos`, html)
 }
 
-// ─── 5. Resolución de disputa al consumidor ───────────────────────────────────
+// ─── 5. Nueva disputa — notificación al restaurante ──────────────────────────
+
+export function sendDisputeOpenedToRestaurant({
+  to,
+  nombreRestaurante,
+  numeroPedido,
+  motivo,
+  descripcion,
+}: {
+  to: string
+  nombreRestaurante: string
+  numeroPedido: number
+  motivo: string
+  descripcion?: string
+}) {
+  const html = layout(`
+    <p>Hola <strong>${nombreRestaurante}</strong>,</p>
+    <p>Un cliente abrió un reclamo por el <strong>Pedido #${numeroPedido}</strong>.</p>
+    <div style="background:#fffbeb;border-left:3px solid #f59e0b;border-radius:8px;padding:12px 16px;margin:16px 0">
+      <p style="font-size:13px;font-weight:700;color:#92400e;margin:0 0 4px">Motivo: ${motivo}</p>
+      ${descripcion ? `<p style="font-size:13px;color:#78350f;margin:0">${descripcion}</p>` : ''}
+    </div>
+    <p>Tenés <strong>24 horas</strong> para responder con las pruebas correspondientes. Si no respondés, el equipo de Waitless resolverá a favor del cliente.</p>
+    <a class="btn" href="${APP_URL}/restaurante">Ir al panel → Reclamos</a>
+    <hr class="divider" />
+    <p style="font-size:12px;color:#aaa">Si tenés dudas, escribinos a <a href="mailto:soporte@waitless.app" style="color:#06C167">soporte@waitless.app</a>.</p>
+  `)
+  return send(to, `Nuevo reclamo — Pedido #${numeroPedido} · ${nombreRestaurante}`, html)
+}
+
+// ─── 6. Bienvenida al consumidor ─────────────────────────────────────────────
+
+export function sendConsumerWelcome({
+  to,
+  nombre,
+}: {
+  to: string
+  nombre: string
+}) {
+  const html = layout(`
+    <p>Hola <strong>${nombre}</strong>,</p>
+    <p>¡Tu cuenta en <strong>Waitless</strong> está lista! Ahora podés hacer pedidos en tus restaurantes favoritos, rastrear entregas y gestionar tu monedero desde un solo lugar.</p>
+    <ul style="color:#444;font-size:15px;line-height:2">
+      <li>Escaneá el QR de cualquier mesa para pedir al instante</li>
+      <li>Seguí el estado de tu pedido en tiempo real</li>
+      <li>Cargá créditos a tu monedero Waitless para pagar más rápido</li>
+      <li>Guardá tus direcciones y métodos de pago favoritos</li>
+    </ul>
+    <a class="btn" href="${APP_URL}/consumidor">Explorar restaurantes →</a>
+    <hr class="divider" />
+    <p style="font-size:13px;color:#888">¿Tenés alguna pregunta? Escribinos a <a href="mailto:soporte@waitless.app" style="color:#06C167">soporte@waitless.app</a>.</p>
+  `)
+  return send(to, `¡Bienvenido a Waitless, ${nombre}!`, html)
+}
+
+// ─── 7. Cancelación de pedido al consumidor ───────────────────────────────────
+
+export function sendOrderCancellation({
+  to,
+  nombreCliente,
+  numeroPedido,
+  restaurante,
+  motivo,
+}: {
+  to: string
+  nombreCliente: string
+  numeroPedido: number
+  restaurante: string
+  motivo?: string
+}) {
+  const html = layout(`
+    <p style="font-size:48px;margin:0 0 12px">❌</p>
+    <p>Hola <strong>${nombreCliente}</strong>,</p>
+    <p>Lamentamos informarte que tu pedido <strong>#${numeroPedido}</strong> en <strong>${restaurante}</strong> fue cancelado.</p>
+    ${motivo ? `<div style="background:#fef2f2;border-radius:12px;padding:12px 16px;margin:16px 0"><p style="font-size:14px;color:#b91c1c;margin:0"><strong>Motivo:</strong> ${motivo}</p></div>` : ''}
+    <p style="font-size:14px;color:#888">Si pagaste con tarjeta o monedero, el reembolso se procesará en los próximos días hábiles. ¿Tenés dudas? Escribinos a <a href="mailto:soporte@waitless.app" style="color:#06C167">soporte@waitless.app</a>.</p>
+    <a class="btn" href="${APP_URL}/consumidor">Ir a mi cuenta →</a>
+  `)
+  return send(to, `Pedido #${numeroPedido} cancelado — ${restaurante}`, html)
+}
+
+// ─── 8. Resolución de disputa al consumidor ───────────────────────────────────
 
 export function sendDisputeResolution({
   to,
