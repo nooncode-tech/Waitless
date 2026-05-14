@@ -1,3 +1,4 @@
+import './explore.css'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { computeStoreOpen } from '@/lib/store-hours'
 import type { ExploreRestaurant } from '@/app/api/public/explore/route'

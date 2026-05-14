@@ -1,0 +1,226 @@
+/* tracking.css — prefixed trk- */
+
+:root {
+  --trk-mint: #BEEBBE;
+  --trk-mint-deep: #0a3a0a;
+  --trk-bg: #F4F4F2;
+  --trk-font: 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+}
+
+/* ── Map placeholder ── */
+.trk-map {
+  background:
+    radial-gradient(circle at 30% 40%, #1a1a1a 0, transparent 30%),
+    linear-gradient(120deg, #1f1f1f 0%, #0a0a0a 60%, #050505 100%);
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+}
+.trk-map::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+}
+.trk-map::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(45deg, transparent 49%, rgba(190,235,190,0.4) 49.5%, rgba(190,235,190,0.4) 50%, transparent 50.5%),
+    linear-gradient(-45deg, transparent 49%, rgba(255,255,255,0.15) 49.5%, rgba(255,255,255,0.15) 50%, transparent 50.5%);
+  background-size: 200px 200px, 400px 400px;
+  pointer-events: none;
+}
+
+/* ── Map pins ── */
+.trk-pin {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 11px;
+  font-family: var(--trk-font);
+}
+.trk-pin-driver {
+  background: var(--trk-mint);
+  color: var(--trk-mint-deep);
+  top: 35%;
+  left: 60%;
+  box-shadow: 0 0 0 8px rgba(190,235,190,0.25);
+}
+.trk-pin-dest {
+  background: #fff;
+  color: #000;
+  top: 60%;
+  left: 30%;
+  box-shadow: 0 0 0 8px rgba(255,255,255,0.15);
+}
+
+/* ── Radar pulse ── */
+@keyframes trk-radarPulse {
+  0%   { transform: scale(0.6); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+.trk-radar {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid var(--trk-mint);
+  width: 32px;
+  height: 32px;
+  top: 35%;
+  left: 60%;
+  animation: trk-radarPulse 2s infinite;
+  pointer-events: none;
+}
+
+/* ── ETA digits ── */
+.trk-eta {
+  font-feature-settings: "tnum";
+  font-family: var(--trk-font);
+  font-weight: 700;
+}
+
+/* ── Timeline rail ── */
+.trk-rail {
+  position: relative;
+}
+.trk-rail::before {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 24px;
+  bottom: 24px;
+  width: 2px;
+  background-image: linear-gradient(#000 50%, transparent 50%);
+  background-size: 2px 6px;
+  background-repeat: repeat-y;
+}
+
+/* ── Timeline step ── */
+.trk-step {
+  position: relative;
+  padding-left: 42px;
+  padding-bottom: 18px;
+}
+.trk-step:last-child {
+  padding-bottom: 0;
+}
+.trk-step-node {
+  position: absolute;
+  left: 6px;
+  top: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid rgba(0,0,0,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-family: var(--trk-font);
+}
+.trk-step-done .trk-step-node {
+  background: #000;
+  border-color: #000;
+  color: #fff;
+}
+.trk-step-live .trk-step-node {
+  background: var(--trk-mint);
+  border-color: var(--trk-mint);
+}
+.trk-step-live .trk-step-node::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--trk-mint-deep);
+}
+
+/* ── Live dot pulse ── */
+@keyframes trk-livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.7); }
+}
+.trk-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--trk-mint);
+  animation: trk-livePulse 1.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+/* ── Loading spinner ── */
+@keyframes trk-spin {
+  to { transform: rotate(360deg); }
+}
+.trk-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(0,0,0,0.12);
+  border-top-color: #000;
+  border-radius: 50%;
+  animation: trk-spin 0.8s linear infinite;
+}
+
+/* ── Chip ── */
+.trk-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--trk-font);
+  letter-spacing: 0.01em;
+}
+.trk-chip-mint {
+  background: var(--trk-mint);
+  color: var(--trk-mint-deep);
+}
+
+/* ── Staff card ── */
+.trk-staff-card {
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+}
+.trk-staff-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #000;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--trk-font);
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* ── Bottom status bar ── */
+.trk-status-bar {
+  background: #000;
+  color: #fff;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 0 0 16px 16px;
+}

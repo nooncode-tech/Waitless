@@ -1,0 +1,742 @@
+/* onboarding.css — prefijo ob- — negro/mint/Helvetica para completar registro */
+:root {
+  --ob-mint: #BEEBBE;
+  --ob-mint-deep: #0a3a0a;
+  --ob-line: #E5E5E5;
+  --ob-line-2: #EFEFEF;
+  --ob-font: 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+  --ob-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+}
+
+/* ── Root ── */
+.ob-root {
+  min-height: 100vh;
+  background: #FAFAFA;
+  font-family: var(--ob-font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: #000;
+}
+
+/* ── Topbar ── */
+.ob-topbar {
+  background: #fff;
+  border-bottom: 1px solid var(--ob-line);
+}
+
+.ob-topbar-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ob-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #000;
+}
+
+.ob-logo-mark {
+  width: 32px;
+  height: 32px;
+  background: #000;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.04em;
+  font-family: var(--ob-font);
+}
+
+.ob-logo-name {
+  font-family: var(--ob-font);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.045em;
+}
+
+.ob-logo-tag {
+  font-family: var(--ob-mono);
+  font-size: 10px;
+  color: rgba(0,0,0,0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  margin-left: 4px;
+}
+
+.ob-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ob-timer {
+  font-family: var(--ob-mono);
+  font-size: 11px;
+  color: rgba(0,0,0,0.55);
+}
+
+.ob-timer-num {
+  color: #000;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.ob-save-exit-btn {
+  height: 36px;
+  padding: 0 14px;
+  font-size: 13px;
+  color: rgba(0,0,0,0.6);
+  background: none;
+  border: 1px solid var(--ob-line);
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--ob-font);
+  letter-spacing: -0.01em;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.ob-save-exit-btn:hover { color: #000; border-color: #000; }
+
+/* ── Hero ── */
+.ob-hero {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 48px 32px 32px;
+}
+
+.ob-hero-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ob-swiss-num {
+  font-family: var(--ob-mono);
+  font-size: 10.5px;
+  color: #909090;
+  letter-spacing: 0.04em;
+}
+
+.ob-eyebrow {
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-family: var(--ob-font);
+}
+
+.ob-hero-title {
+  font-family: var(--ob-font);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+  font-size: clamp(36px, 5vw, 72px);
+  color: #000;
+}
+
+.ob-hero-title span { color: rgba(0,0,0,0.3); }
+
+.ob-hero-sub {
+  font-size: 14px;
+  color: rgba(0,0,0,0.65);
+  max-width: 400px;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+  margin-top: 12px;
+}
+
+/* ── Layout ── */
+.ob-layout {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 32px 80px;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .ob-layout { grid-template-columns: 1fr; }
+  .ob-sidebar { display: none; }
+}
+
+/* ── Sidebar ── */
+.ob-sidebar {
+  background: #fff;
+  border: 1px solid var(--ob-line);
+  border-radius: 16px;
+  padding: 20px;
+  position: sticky;
+  top: 80px;
+}
+
+.ob-sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.ob-progress-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.08);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.ob-progress-fill {
+  height: 100%;
+  background: var(--ob-mint);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.ob-chip-data {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  background: var(--ob-mint);
+  color: var(--ob-mint-deep);
+  font-family: var(--ob-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 3px;
+}
+
+/* Step list */
+.ob-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.ob-step-item {
+  display: flex;
+  gap: 14px;
+  padding: 10px 4px;
+  position: relative;
+}
+
+.ob-step-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 17px;
+  top: 38px;
+  bottom: -6px;
+  width: 1.5px;
+  background-image: linear-gradient(rgba(0,0,0,0.12) 50%, transparent 50%);
+  background-size: 1.5px 5px;
+  background-repeat: repeat-y;
+}
+
+.ob-step-item--done:not(:last-child)::before {
+  background-image: linear-gradient(#000 0, #000 100%);
+}
+
+.ob-step-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ob-mono);
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: #fff;
+  border: 1.5px solid var(--ob-line);
+  color: #909090;
+  transition: all 0.2s ease;
+}
+
+.ob-step-item--done .ob-step-circle {
+  background: #000;
+  border-color: #000;
+  color: #fff;
+}
+
+.ob-step-item--active .ob-step-circle {
+  background: var(--ob-mint);
+  border-color: var(--ob-mint);
+  color: var(--ob-mint-deep);
+}
+
+.ob-step-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #909090;
+  font-family: var(--ob-font);
+}
+
+.ob-step-item--active .ob-step-title { color: #000; }
+.ob-step-item--done .ob-step-title { color: #000; }
+
+.ob-step-sub {
+  font-size: 11px;
+  font-family: var(--ob-mono);
+  color: #909090;
+  margin-top: 1px;
+}
+
+.ob-sidebar-footer {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ob-line-2);
+  font-family: var(--ob-mono);
+  font-size: 11px;
+  color: rgba(0,0,0,0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ob-live-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ob-mint);
+  display: inline-block;
+  animation: ob-pulse 1.8s infinite;
+}
+
+@keyframes ob-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(190,235,190,0.8); }
+  70% { box-shadow: 0 0 0 6px rgba(190,235,190,0); }
+  100% { box-shadow: 0 0 0 0 rgba(190,235,190,0); }
+}
+
+/* ── Main form area ── */
+.ob-main {
+  background: #fff;
+  border: 1px solid var(--ob-line);
+  border-radius: 16px;
+  padding: 40px;
+}
+
+.ob-step-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.ob-h2 {
+  font-family: var(--ob-font);
+  font-weight: 700;
+  font-size: 44px;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+  color: #000;
+}
+
+.ob-desc {
+  font-size: 14.5px;
+  color: rgba(0,0,0,0.65);
+  max-width: 560px;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+  margin-top: 12px;
+}
+
+/* ── Form fields ── */
+.ob-form-body {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ob-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ob-label {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #000;
+  font-family: var(--ob-font);
+}
+
+.ob-input {
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--ob-line);
+  border-radius: 10px;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  outline: none;
+  font-family: var(--ob-font);
+  color: #000;
+  background: #fff;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.ob-input:focus { border-color: #000; }
+
+.ob-input-with-suffix {
+  display: flex;
+  border: 1px solid var(--ob-line);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.ob-input-with-suffix:focus-within { border-color: #000; }
+
+.ob-input-inner {
+  flex: 1;
+  height: 48px;
+  padding: 0 16px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  outline: none;
+  font-family: var(--ob-font);
+  color: #000;
+  background: #fff;
+  border: none;
+}
+
+.ob-input-suffix {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: #FAFAFA;
+  border-left: 1px solid var(--ob-line);
+  font-family: var(--ob-mono);
+  font-size: 13px;
+  color: rgba(0,0,0,0.55);
+  white-space: nowrap;
+}
+
+.ob-hint {
+  font-size: 11.5px;
+  color: #909090;
+  font-family: var(--ob-mono);
+}
+
+.ob-hint-success {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--ob-mono);
+  font-size: 11px;
+  color: var(--ob-mint-deep);
+  font-weight: 700;
+}
+
+/* ── Type tiles ── */
+.ob-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.ob-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--ob-line);
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--ob-font);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.ob-tile:hover { border-color: rgba(0,0,0,0.4); }
+
+.ob-tile--active {
+  border-color: #000;
+  background: #000;
+  color: #fff;
+}
+
+.ob-tile-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.ob-tile--active .ob-tile-icon {
+  background: var(--ob-mint);
+  color: var(--ob-mint-deep);
+}
+
+.ob-tile-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.ob-tile-sub {
+  font-size: 10.5px;
+  font-family: var(--ob-mono);
+  color: rgba(0,0,0,0.55);
+}
+
+.ob-tile--active .ob-tile-sub { color: rgba(255,255,255,0.6); }
+
+/* ── Color picker ── */
+.ob-color-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--ob-line);
+  border-radius: 10px;
+}
+
+.ob-color-input {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  cursor: pointer;
+  border: none;
+  padding: 2px;
+  background: transparent;
+}
+
+.ob-color-preview {
+  display: inline-flex;
+  height: 26px;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  font-family: var(--ob-font);
+}
+
+/* ── Logo upload ── */
+.ob-logo-upload {
+  border: 2px dashed rgba(0,0,0,0.2);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.ob-logo-upload:hover { border-color: rgba(0,0,0,0.5); }
+
+.ob-logo-preview {
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  object-fit: contain;
+  border: 1px solid var(--ob-line);
+}
+
+.ob-logo-placeholder {
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  background: rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ob-logo-info-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #000;
+  letter-spacing: -0.01em;
+}
+
+.ob-logo-info-meta {
+  font-family: var(--ob-mono);
+  font-size: 11px;
+  color: rgba(0,0,0,0.55);
+  margin-top: 2px;
+}
+
+.ob-logo-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.ob-text-btn {
+  font-size: 12px;
+  font-weight: 700;
+  color: #000;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--ob-font);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 0;
+}
+
+.ob-text-btn--muted { color: rgba(0,0,0,0.45); }
+
+/* ── Error ── */
+.ob-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #c00;
+  background: #fff0f0;
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+
+/* ── Actions bar ── */
+.ob-actions {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--ob-line-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ob-btn-primary {
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  background: #000;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 0 28px;
+  letter-spacing: -0.01em;
+  font-family: var(--ob-font);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ob-btn-primary:hover { background: #222; }
+.ob-btn-primary:disabled { background: #ddd; color: #999; cursor: not-allowed; }
+
+.ob-btn-ghost {
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  background: #fff;
+  color: #000;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 0 24px;
+  border: 1px solid var(--ob-line);
+  letter-spacing: -0.01em;
+  font-family: var(--ob-font);
+  cursor: pointer;
+  transition: border-color 0.15s;
+  text-decoration: none;
+}
+
+.ob-btn-ghost:hover { border-color: #000; }
+
+/* ── Success ── */
+.ob-success {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.ob-success-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--ob-mint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.ob-success-title {
+  font-family: var(--ob-font);
+  font-weight: 700;
+  font-size: 28px;
+  letter-spacing: -0.04em;
+  color: #000;
+  margin-bottom: 8px;
+}
+
+.ob-success-sub {
+  font-family: var(--ob-mono);
+  font-size: 12px;
+  color: rgba(0,0,0,0.55);
+}
+
+/* ── Spinner ── */
+.ob-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: ob-spin 0.7s linear infinite;
+}
+
+@keyframes ob-spin { to { transform: rotate(360deg); } }
+
+.ob-page-loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.ob-page-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(0,0,0,0.1);
+  border-top-color: #000;
+  border-radius: 50%;
+  animation: ob-spin 0.7s linear infinite;
+}

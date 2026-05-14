@@ -1,3 +1,4 @@
+import './menu.css'
 import { MenuDigitalPage } from '@/components/menu-digital/menu-digital-page'
 
 interface Props {

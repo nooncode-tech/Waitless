@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { GoogleAuthButton } from '@/components/ui/google-auth-button'
+import '@/app/consumidor/auth.css'
 
 type Mode = 'login' | 'register'
 
@@ -68,150 +69,252 @@ export function ConsumerAuth() {
     router.replace(next)
   }
 
+  const switchMode = (m: Mode) => { setMode(m); setError('') }
+
+  /* ── password strength ── */
+  const strength = form.password.length === 0 ? 0
+    : form.password.length < 6 ? 1
+    : form.password.length < 10 ? 2
+    : /[^a-zA-Z0-9]/.test(form.password) ? 4
+    : 3
+
   return (
-    <div className="min-h-screen bg-white flex flex-col" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+    <div className="ath-root">
 
-      {/* Header */}
-      <header className="px-6 pt-8 pb-4 flex items-center justify-between">
-        <a href="/consumidor/explorar" className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors">
-          ← Explorar
+      {/* Logo header */}
+      <div className="ath-header">
+        <a href="/consumidor/explorar" className="ath-logo">
+          <span className="ath-logo-mark">W</span>
+          <span className="ath-logo-name">WAITLESS</span>
         </a>
-        <div className="w-9 h-9 bg-black rounded-xl flex items-center justify-center">
-          <span className="text-white font-black text-sm tracking-tight">W</span>
+      </div>
+
+      {/* Card */}
+      <div className="ath-card">
+
+        {/* Tab bar */}
+        <div className="ath-tab-bar">
+          <button
+            className={`ath-tab${mode === 'login' ? ' ath-tab--active' : ''}`}
+            onClick={() => switchMode('login')}
+          >
+            Iniciar sesión
+          </button>
+          <button
+            className={`ath-tab${mode === 'register' ? ' ath-tab--active' : ''}`}
+            onClick={() => switchMode('register')}
+          >
+            Crear cuenta
+          </button>
         </div>
-      </header>
 
-      {/* Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
-        <div className="w-full max-w-sm">
-
-          {/* Title */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-black text-gray-900 mb-2" style={{ letterSpacing: '-0.03em' }}>
-              {mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
+        {/* Heading */}
+        {mode === 'login' ? (
+          <>
+            <h1 className="ath-heading ath-heading--36">
+              Bienvenido,<br />de vuelta.
             </h1>
-            <p className="text-gray-500 text-sm">
-              {mode === 'login'
-                ? '¿No tenés cuenta? '
-                : '¿Ya tenés cuenta? '}
-              <button
-                onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError('') }}
-                className="font-semibold text-black underline underline-offset-2"
-              >
-                {mode === 'login' ? 'Registrate' : 'Iniciá sesión'}
-              </button>
+            <p className="ath-subheading">
+              Entra a tu app de comensal con tu correo.
             </p>
+          </>
+        ) : (
+          <>
+            <h1 className="ath-heading ath-heading--32">
+              Crea tu cuenta.
+            </h1>
+            <p className="ath-subheading">
+              Accede a restaurantes, wallet y pedidos.
+            </p>
+          </>
+        )}
+
+        {/* Form */}
+        <form
+          onSubmit={mode === 'login' ? handleLogin : handleRegister}
+          className="ath-form"
+        >
+          {/* Register-only: nombre + apellido */}
+          {mode === 'register' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="ath-field">
+                <label className="ath-label">Nombre *</label>
+                <input
+                  className="ath-input"
+                  placeholder="Juan"
+                  value={form.nombre}
+                  onChange={set('nombre')}
+                  disabled={isLoading}
+                  autoFocus
+                />
+              </div>
+              <div className="ath-field">
+                <label className="ath-label">Apellido</label>
+                <input
+                  className="ath-input"
+                  placeholder="García"
+                  value={form.apellido}
+                  onChange={set('apellido')}
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Email */}
+          <div className="ath-field">
+            <label className="ath-label">Correo</label>
+            <input
+              className="ath-input"
+              type="email"
+              placeholder="tu@email.com"
+              value={form.email}
+              onChange={set('email')}
+              disabled={isLoading}
+              autoFocus={mode === 'login'}
+              autoComplete="email"
+            />
+          </div>
+
+          {/* Register-only: teléfono */}
+          {mode === 'register' && (
+            <div className="ath-field">
+              <label className="ath-label">Teléfono</label>
+              <input
+                className="ath-input"
+                type="tel"
+                placeholder="+1 234 567 8900"
+                value={form.telefono}
+                onChange={set('telefono')}
+                disabled={isLoading}
+              />
+            </div>
+          )}
+
+          {/* Password */}
+          <div className="ath-field">
+            <label className="ath-label">
+              <span>Contraseña</span>
+            </label>
+            <div className="ath-input-wrap">
+              <input
+                className="ath-input"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••••"
+                value={form.password}
+                onChange={set('password')}
+                disabled={isLoading}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                className="ath-eye-btn"
+                onClick={() => setShowPassword(s => !s)}
+              >
+                {showPassword
+                  ? <EyeOff style={{ width: 16, height: 16 }} />
+                  : <Eye style={{ width: 16, height: 16 }} />}
+              </button>
+            </div>
+            {mode === 'register' && form.password.length > 0 && (
+              <>
+                <div className="ath-strength">
+                  {[1,2,3,4].map(i => (
+                    <span
+                      key={i}
+                      className={
+                        'ath-strength-bar' +
+                        (i < strength ? ' ath-strength-bar--on' : '') +
+                        (i === strength && strength === 4 ? ' ath-strength-bar--full' : '')
+                      }
+                    />
+                  ))}
+                </div>
+                <span className="ath-hint">
+                  Fuerza:{' '}
+                  <strong style={{ color: '#000' }}>
+                    {strength <= 1 ? 'débil' : strength === 2 ? 'media' : strength === 3 ? 'buena' : 'fuerte'}
+                  </strong>
+                  {strength < 4 && ' · agrega un símbolo'}
+                </span>
+              </>
+            )}
+            {mode === 'register' && (
+              <span className="ath-hint">Mínimo 8 caracteres</span>
+            )}
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="ath-error">
+              <AlertCircle style={{ width: 16, height: 16, flexShrink: 0 }} />
+              {error}
+            </div>
+          )}
+
+          {/* Submit */}
+          <button
+            type="submit"
+            className="ath-btn-primary"
+            disabled={isLoading || !form.email || !form.password}
+          >
+            {isLoading ? (
+              <>
+                <span className="ath-spinner" />
+                {mode === 'login' ? 'Verificando...' : 'Creando cuenta...'}
+              </>
+            ) : mode === 'login' ? 'Entrar →' : 'Crear cuenta →'}
+          </button>
+
+          {/* Divider */}
+          <div className="ath-divider">
+            <div className="ath-divider-line" />
+            <span className="ath-divider-text">o continúa con</span>
+            <div className="ath-divider-line" />
           </div>
 
           {/* Google */}
           <GoogleAuthButton
             label="Continuar con Google"
-            redirectTo={typeof window !== 'undefined' ? `${window.location.origin}/consumidor/auth/callback` : '/consumidor/auth/callback'}
+            redirectTo={typeof window !== 'undefined'
+              ? `${window.location.origin}/consumidor/auth/callback`
+              : '/consumidor/auth/callback'}
             onBeforeRedirect={() => {
               if (next !== '/consumidor/explorar') localStorage.setItem('waitless:next', next)
             }}
           />
+        </form>
 
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-5">
-            <div className="flex-1 h-px bg-gray-100" />
-            <span className="text-xs text-gray-400 font-medium">o continuá con email</span>
-            <div className="flex-1 h-px bg-gray-100" />
-          </div>
-
-          {/* Form */}
-          <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-3">
-
-            {mode === 'register' && (
-              <div className="flex gap-2">
-                <div className="flex-1 space-y-1">
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Nombre *</label>
-                  <input
-                    value={form.nombre} onChange={set('nombre')} placeholder="Juan"
-                    disabled={isLoading} autoFocus
-                    className="w-full h-12 px-4 bg-gray-100 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10"
-                  />
-                </div>
-                <div className="flex-1 space-y-1">
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Apellido</label>
-                  <input
-                    value={form.apellido} onChange={set('apellido')} placeholder="García"
-                    disabled={isLoading}
-                    className="w-full h-12 px-4 bg-gray-100 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10"
-                  />
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</label>
-              <input
-                type="email" value={form.email} onChange={set('email')}
-                placeholder="tu@email.com" disabled={isLoading}
-                autoFocus={mode === 'login'} autoComplete="email"
-                className="w-full h-12 px-4 bg-gray-100 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10"
-              />
-            </div>
-
-            {mode === 'register' && (
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Teléfono</label>
-                <input
-                  type="tel" value={form.telefono} onChange={set('telefono')}
-                  placeholder="+1 234 567 8900" disabled={isLoading}
-                  className="w-full h-12 px-4 bg-gray-100 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10"
-                />
-              </div>
-            )}
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Contraseña</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={form.password} onChange={set('password')}
-                  placeholder="••••••••" disabled={isLoading}
-                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                  className="w-full h-12 pl-4 pr-11 bg-gray-100 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10"
-                />
-                <button type="button" tabIndex={-1}
-                  onClick={() => setShowPassword(s => !s)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-
-            {error && (
-              <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 rounded-xl px-4 py-3">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isLoading || !form.email || !form.password}
-              className="w-full h-12 bg-black hover:bg-zinc-800 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold text-sm rounded-xl transition-colors mt-2"
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  {mode === 'login' ? 'Verificando...' : 'Creando cuenta...'}
-                </span>
-              ) : mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
-            </button>
-          </form>
-
-          <p className="text-center text-xs text-gray-400 mt-8">
-            Al continuar aceptás los{' '}
-            <span className="text-gray-600 font-medium cursor-pointer hover:text-gray-900">Términos de servicio</span>
-            {' '}y la{' '}
-            <span className="text-gray-600 font-medium cursor-pointer hover:text-gray-900">Política de privacidad</span>
-          </p>
+        {/* Footer */}
+        <div className="ath-footer">
+          <span>
+            {mode === 'login' ? '¿Eres nuevo?' : '¿Ya tienes cuenta?'}
+          </span>
+          <button
+            className="ath-footer-link"
+            onClick={() => switchMode(mode === 'login' ? 'register' : 'login')}
+          >
+            {mode === 'login' ? 'Crear cuenta →' : 'Iniciar sesión →'}
+          </button>
         </div>
       </div>
+
+      {/* Legal note */}
+      <p style={{
+        marginTop: 24,
+        fontSize: 11,
+        color: 'rgba(0,0,0,0.4)',
+        fontFamily: 'var(--ath-mono)',
+        textAlign: 'center',
+        maxWidth: 440,
+        letterSpacing: '0.02em',
+      }}>
+        Al continuar aceptas los{' '}
+        <span style={{ color: 'rgba(0,0,0,0.65)', cursor: 'pointer' }}>Términos de servicio</span>
+        {' '}y la{' '}
+        <span style={{ color: 'rgba(0,0,0,0.65)', cursor: 'pointer' }}>Política de privacidad</span>
+      </p>
     </div>
   )
 }

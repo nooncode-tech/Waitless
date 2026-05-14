@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
-import { Check, Clock, ChefHat, Truck, Package, MapPin, AlertTriangle } from 'lucide-react'
+import '../tracking.css'
 
 type OrderStatus = 'recibido' | 'preparando' | 'listo' | 'en_camino' | 'entregado' | 'cancelado'
 
@@ -18,22 +18,56 @@ interface TrackingData {
   createdAt: string
 }
 
-const STEPS: { status: OrderStatus; label: string; icon: React.ReactNode; desc: string }[] = [
-  { status: 'recibido',   label: 'Recibido',     icon: <Package  className="h-5 w-5" />, desc: 'Tu pedido fue recibido por el restaurante' },
-  { status: 'preparando', label: 'En preparación', icon: <ChefHat  className="h-5 w-5" />, desc: 'El equipo de cocina está preparando tu pedido' },
-  { status: 'listo',      label: 'Listo',         icon: <Check    className="h-5 w-5" />, desc: 'Tu pedido está listo para salir' },
-  { status: 'en_camino',  label: 'En camino',     icon: <Truck    className="h-5 w-5" />, desc: 'Tu pedido está en camino' },
-  { status: 'entregado',  label: 'Entregado',     icon: <Check    className="h-5 w-5" />, desc: '¡Tu pedido fue entregado!' },
+const FONT = "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif"
+const MINT = '#BEEBBE'
+const MINT_DEEP = '#0a3a0a'
+
+interface StepDef {
+  status: OrderStatus
+  label: string
+  etaLabel: string
+}
+
+const STEPS: StepDef[] = [
+  { status: 'recibido',   label: 'Recibido',      etaLabel: 'Confirmado' },
+  { status: 'preparando', label: 'Cocinando',      etaLabel: 'En preparación' },
+  { status: 'listo',      label: 'Listo',          etaLabel: 'Listo para servir' },
+  { status: 'en_camino',  label: 'En camino',      etaLabel: 'En camino' },
+  { status: 'entregado',  label: 'Entregado',      etaLabel: 'Entregado' },
 ]
 
 const STATUS_ORDER: Record<OrderStatus, number> = {
   recibido: 0, preparando: 1, listo: 2, en_camino: 3, entregado: 4, cancelado: -1,
 }
 
+const STATUS_HEADLINE: Record<OrderStatus, string> = {
+  recibido:   'Tu pedido\nestá confirmado.',
+  preparando: 'Tu pedido\nestá al fuego.',
+  listo:      'Tu pedido\nestá listo.',
+  en_camino:  'Tu pedido\nestá en camino.',
+  entregado:  'Tu pedido\nfue entregado.',
+  cancelado:  'Pedido\ncancelado.',
+}
+
+const STATUS_SUB: Record<OrderStatus, string> = {
+  recibido:   'El restaurante ya lo recibió · en preparación pronto',
+  preparando: 'Cocina trabajando · llegará pronto a tu mesa',
+  listo:      'El mesero lo llevará en instantes',
+  en_camino:  'Ya salió hacia tu dirección',
+  entregado:  '¡Buen provecho!',
+  cancelado:  'Contacta al restaurante si tienes dudas',
+}
+
+function formatTime(iso: string) {
+  try {
+    return new Date(iso).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false })
+  } catch { return '--:--' }
+}
+
 export default function TrackingPage() {
   const { orderId } = useParams<{ orderId: string }>()
-  const [data, setData]     = useState<TrackingData | null>(null)
-  const [error, setError]   = useState<string | null>(null)
+  const [data, setData]       = useState<TrackingData | null>(null)
+  const [error, setError]     = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   const fetchStatus = useCallback(async () => {
@@ -56,124 +90,169 @@ export default function TrackingPage() {
     return () => clearInterval(interval)
   }, [fetchStatus])
 
+  /* ── Loading ── */
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="flex flex-col items-center gap-3 text-gray-500">
-          <Clock className="h-8 w-8 animate-spin" />
-          <p className="text-sm">Cargando tu pedido…</p>
+      <div style={{ minHeight: '100vh', background: '#F4F4F2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+          <div className="trk-spinner" />
+          <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.5)', fontFamily: FONT, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            Cargando pedido…
+          </p>
         </div>
       </div>
     )
   }
 
+  /* ── Error ── */
   if (error || !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="text-center max-w-xs">
-          <AlertTriangle className="h-10 w-10 text-gray-400 mx-auto mb-3" />
-          <p className="text-sm font-medium text-gray-700">{error ?? 'Pedido no encontrado'}</p>
-          <p className="text-xs text-gray-400 mt-1">Verificá que el link sea correcto.</p>
+      <div style={{ minHeight: '100vh', background: '#F4F4F2', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: FONT }}>
+        <div style={{ textAlign: 'center', maxWidth: 320 }}>
+          <div style={{ width: 56, height: 56, borderRadius: '50%', border: '2px solid rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 24 }}>!</div>
+          <p style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.03em' }}>{error ?? 'Pedido no encontrado'}</p>
+          <p style={{ fontSize: 12, color: 'rgba(0,0,0,0.45)', marginTop: 6 }}>Verifica que el link sea correcto.</p>
         </div>
       </div>
     )
   }
 
+  /* ── Cancelled ── */
   if (data.status === 'cancelado') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="text-center max-w-xs">
-          <AlertTriangle className="h-10 w-10 text-red-400 mx-auto mb-3" />
-          <p className="text-sm font-medium text-gray-700">Este pedido fue cancelado</p>
-          <p className="text-xs text-gray-400 mt-1">Contactá al restaurante si tenés dudas.</p>
+      <div style={{ minHeight: '100vh', background: '#F4F4F2', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: FONT }}>
+        <div style={{ textAlign: 'center', maxWidth: 320 }}>
+          <div style={{ width: 56, height: 56, borderRadius: '50%', border: '2px solid rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 28, color: 'rgba(0,0,0,0.35)' }}>×</div>
+          <p style={{ fontSize: 20, fontWeight: 700, letterSpacing: '-0.04em' }}>Pedido cancelado</p>
+          <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.5)', marginTop: 8 }}>Contacta al restaurante si tienes dudas.</p>
         </div>
       </div>
     )
   }
 
-  const currentIdx  = STATUS_ORDER[data.status]
-  const currentStep = STEPS.find(s => s.status === data.status)
-  const isDelivered = data.status === 'entregado'
+  const currentIdx = STATUS_ORDER[data.status]
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-start pt-12 px-4 pb-12">
-      <div className="w-full max-w-sm">
+    <div style={{ minHeight: '100vh', background: '#F4F4F2', fontFamily: FONT }}>
 
-        {/* Header */}
-        <div className="text-center mb-8">
-          <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">Pedido #{data.numero}</p>
-          {data.nombreCliente && (
-            <p className="text-lg font-bold text-gray-900">{data.nombreCliente}</p>
-          )}
-        </div>
+      {/* ── Top nav ── */}
+      <div style={{ background: '#fff', borderBottom: '1px solid rgba(0,0,0,0.08)', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontWeight: 700, fontSize: 17, letterSpacing: '-0.045em' }}>WAITLESS</span>
+        <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.45)', fontFamily: FONT, letterSpacing: '0.01em' }}>
+          Pedido #{data.numero}
+        </span>
+      </div>
 
-        {/* Current status highlight */}
-        <div className={`rounded-2xl p-5 mb-8 text-center ${isDelivered ? 'bg-green-500' : 'bg-black'}`}>
-          <div className="flex justify-center mb-2 text-white/80">
-            {currentStep?.icon}
+      <div style={{ maxWidth: 420, margin: '0 auto', padding: '20px 16px 40px' }}>
+
+        {/* ── Map placeholder ── */}
+        <div className="trk-map" style={{ height: 200, marginBottom: 20, position: 'relative' }}>
+          <div className="trk-radar" />
+          {/* Driver pin */}
+          <div className="trk-pin trk-pin-driver">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="7" r="3" fill={MINT_DEEP} />
+            </svg>
           </div>
-          <p className="text-white font-bold text-lg">{currentStep?.label}</p>
-          <p className="text-white/70 text-xs mt-1">{currentStep?.desc}</p>
+          {/* Dest pin */}
+          <div className="trk-pin trk-pin-dest">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M7 1c-2.2 0-4 1.8-4 4 0 2.7 4 8 4 8s4-5.3 4-8c0-2.2-1.8-4-4-4Z" stroke="#000" strokeWidth="1.4"/>
+            </svg>
+          </div>
+          {/* ETA overlay */}
+          <div style={{ position: 'absolute', top: 14, left: 14, right: 14, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', color: '#fff' }}>
+            <div>
+              <div style={{ fontFamily: FONT, fontSize: 9.5, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'rgba(255,255,255,0.7)' }}>Estado</div>
+              <div className="trk-eta" style={{ fontSize: 26, lineHeight: 1, marginTop: 4, color: '#fff', fontFamily: FONT, fontWeight: 700, letterSpacing: '-0.04em' }}>
+                {STEPS[Math.max(currentIdx, 0)]?.label ?? '—'}
+              </div>
+            </div>
+            <div className="trk-chip trk-chip-mint">En vivo</div>
+          </div>
         </div>
 
-        {/* Progress steps */}
-        <div className="space-y-0 mb-8">
+        {/* ── Live status ── */}
+        <div style={{ marginBottom: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <div className="trk-live-dot" />
+            <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'rgba(0,0,0,0.5)' }}>
+              {data.canal ? `Canal · ${data.canal}` : 'En tiempo real'}
+            </span>
+          </div>
+          <h2 style={{ fontFamily: FONT, fontWeight: 700, fontSize: 28, letterSpacing: '-0.045em', lineHeight: 1.1, whiteSpace: 'pre-line' }}>
+            {STATUS_HEADLINE[data.status]}
+          </h2>
+          <p style={{ fontSize: 12, color: 'rgba(0,0,0,0.5)', marginTop: 6, fontFamily: FONT }}>
+            {STATUS_SUB[data.status]}
+          </p>
+        </div>
+
+        {/* ── Timeline ── */}
+        <div className="trk-rail" style={{ marginTop: 24, paddingTop: 4 }}>
           {STEPS.map((step, idx) => {
             const done    = idx < currentIdx
-            const active  = idx === currentIdx
+            const live    = idx === currentIdx
             const pending = idx > currentIdx
+            const stepClass = done ? 'trk-step trk-step-done' : live ? 'trk-step trk-step-live' : 'trk-step'
 
             return (
-              <div key={step.status} className="flex items-start gap-3">
-                {/* Line + dot column */}
-                <div className="flex flex-col items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                    done   ? 'bg-green-500 text-white' :
-                    active ? 'bg-black text-white' :
-                    'bg-gray-200 text-gray-400'
-                  }`}>
-                    {done ? <Check className="h-4 w-4" /> : step.icon}
-                  </div>
-                  {idx < STEPS.length - 1 && (
-                    <div className={`w-0.5 h-8 ${done ? 'bg-green-500' : 'bg-gray-200'}`} />
-                  )}
+              <div key={step.status} className={stepClass}>
+                <div className="trk-step-node">
+                  {done && '✓'}
                 </div>
-
-                {/* Label */}
-                <div className="pt-1.5">
-                  <p className={`text-sm font-medium ${
-                    active  ? 'text-gray-900' :
-                    done    ? 'text-green-600' :
-                    'text-gray-400'
-                  }`}>
-                    {step.label}
-                  </p>
+                <div style={{ fontWeight: 700, fontSize: 13, color: pending ? 'rgba(0,0,0,0.4)' : '#000' }}>
+                  {step.label}
+                </div>
+                <div style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 10.5, color: pending ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.5)', marginTop: 2 }}>
+                  {done && idx === 0 ? `${formatTime(data.createdAt)} · #${data.numero} confirmado` :
+                   done             ? `${step.etaLabel} ✓` :
+                   live             ? `Ahora · actualiza cada 15s` :
+                   `ETA pronto`}
                 </div>
               </div>
             )
           })}
         </div>
 
-        {/* Delivery address */}
+        {/* ── Delivery address if any ── */}
         {data.direccion && (
-          <div className="bg-white rounded-xl p-4 border border-gray-100 mb-4">
-            <div className="flex items-start gap-2">
-              <MapPin className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-0.5">Dirección de entrega</p>
-                <p className="text-sm text-gray-800">{data.direccion}</p>
-                {data.zonaReparto && (
-                  <p className="text-xs text-gray-400 mt-0.5">{data.zonaReparto}</p>
-                )}
+          <div style={{ background: '#fff', borderRadius: 16, border: '1px solid rgba(0,0,0,0.08)', padding: '14px 16px', marginTop: 20, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginTop: 2, flexShrink: 0 }}>
+              <path d="M8 1C5.8 1 4 2.8 4 5c0 3.1 4 9 4 9s4-5.9 4-9c0-2.2-1.8-4-4-4Z" stroke="rgba(0,0,0,0.4)" strokeWidth="1.4"/>
+            </svg>
+            <div>
+              <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 700, color: 'rgba(0,0,0,0.4)', marginBottom: 3 }}>Dirección de entrega</div>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>{data.direccion}</div>
+              {data.zonaReparto && <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', marginTop: 2 }}>{data.zonaReparto}</div>}
+            </div>
+          </div>
+        )}
+
+        {/* ── Customer name ── */}
+        {data.nombreCliente && (
+          <div className="trk-staff-card" style={{ marginTop: 16 }}>
+            <div className="trk-staff-avatar">{data.nombreCliente.slice(0,2).toUpperCase()}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 700 }}>{data.nombreCliente}</div>
+              <div style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 10.5, color: 'rgba(0,0,0,0.5)' }}>
+                Pedido #{data.numero} · {data.canal || 'mesa'}
               </div>
             </div>
           </div>
         )}
 
-        {/* Auto-refresh notice */}
-        <p className="text-center text-[10px] text-gray-400">
-          Esta página se actualiza automáticamente cada 15 segundos.
-        </p>
+        {/* ── Auto-refresh notice ── */}
+        <div className="trk-status-bar" style={{ marginTop: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 11 }}>
+            <div className="trk-live-dot" style={{ width: 6, height: 6 }} />
+            <span>Actualiza cada 15s · en tiempo real</span>
+          </div>
+          <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
+            WAITLESS · v10.2
+          </span>
+        </div>
+
       </div>
     </div>
   )

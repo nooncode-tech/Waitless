@@ -1,0 +1,172 @@
+/*
+ * superadmin.css — Overrides / extensions for Superadmin panel
+ * Imports design system from admin.css (adm- prefix)
+ */
+
+/* Superadmin sidebar is slightly narrower */
+.sadm-sidebar-sub {
+  font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+  font-size: 10px;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.01em;
+}
+
+/* Tenant row grid — matches superadmin.html .rest-row */
+.sadm-tenant-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 130px 110px 100px 100px 90px 40px;
+  gap: 18px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid #EFEFEF;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  font-family: 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+  transition: background 0.1s ease, padding-left 0.1s ease;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.sadm-tenant-row:hover {
+  background: #FAFAFA;
+  padding-left: 6px;
+}
+
+.sadm-tenant-name {
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  font-size: 16px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+}
+
+.sadm-tenant-sub {
+  font-family: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+  font-size: 10.5px;
+  color: #909090;
+  margin-top: 1px;
+}
+
+/* Onboarding / alert rows */
+.sadm-alert-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px dashed rgba(0,0,0,0.15);
+}
+
+.sadm-alert-row:last-child {
+  border-bottom: none;
+}
+
+/* Stat cards within dark editorial block */
+.sadm-stat-card {
+  border-radius: 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 16px;
+}
+
+/* Country / map pin */
+.sadm-map-pin {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #000;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 0 rgba(0,0,0,0.4);
+}
+
+.sadm-map-pin.live {
+  background: #BEEBBE;
+  box-shadow: 0 0 0 8px rgba(190,235,190,0.2);
+}
+
+/* Dispute expand panel (keep original logic styles but brand them) */
+.sadm-resolve-panel {
+  padding: 16px 20px 20px;
+  border-top: 1px solid #EFEFEF;
+}
+
+.sadm-resolve-desc {
+  background: #F7F7F5;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #333;
+}
+
+.sadm-resolve-btn-row {
+  display: flex;
+  gap: 8px;
+}
+
+.sadm-resolve-btn {
+  flex: 1;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s ease;
+  font-family: 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+}
+
+.sadm-resolve-btn.cliente {
+  background: #000;
+  color: #BEEBBE;
+}
+
+.sadm-resolve-btn.cliente:hover {
+  background: #171717;
+}
+
+.sadm-resolve-btn.restaurante {
+  background: #F7F7F5;
+  color: #000;
+  border: 1px solid #E5E5E5;
+}
+
+.sadm-resolve-btn.restaurante:hover {
+  border-color: #000;
+}
+
+.sadm-resolve-btn.selected-cliente {
+  background: #000;
+  color: #BEEBBE;
+}
+
+.sadm-resolve-btn.selected-restaurante {
+  background: #000;
+  color: #fff;
+}
+
+.sadm-submit-btn {
+  width: 100%;
+  height: 40px;
+  border-radius: 12px;
+  background: #000;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-family: 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.sadm-submit-btn:hover:not(:disabled) {
+  background: #171717;
+}
+
+.sadm-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
