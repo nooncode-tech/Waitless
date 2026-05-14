@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabase'
 import { ConsumerPaymentTab } from './consumer-payment-tab'
 import { ConsumerOrdersTab } from './consumer-orders-tab'
 import { ConsumerWalletTab } from './consumer-wallet-tab'
+import '@/app/consumidor/consumidor.css'
 
 interface ConsumerProfile {
   id: string
@@ -49,40 +50,13 @@ function urlBase64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
 }
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  { id: 'perfil',      label: 'Perfil',      icon: <User className="h-4 w-4" /> },
-  { id: 'pedidos',     label: 'Pedidos',     icon: <ShoppingBag className="h-4 w-4" /> },
-  { id: 'monedero',    label: 'Monedero',    icon: <Wallet className="h-4 w-4" /> },
-  { id: 'direcciones', label: 'Direcciones', icon: <MapPin className="h-4 w-4" /> },
-  { id: 'tarjetas',    label: 'Pagos',       icon: <CreditCard className="h-4 w-4" /> },
-  { id: 'resenas',     label: 'Reseñas',     icon: <Star className="h-4 w-4" /> },
+  { id: 'perfil',      label: 'Perfil',      icon: <User style={{ width: 14, height: 14 }} /> },
+  { id: 'pedidos',     label: 'Pedidos',     icon: <ShoppingBag style={{ width: 14, height: 14 }} /> },
+  { id: 'monedero',    label: 'Monedero',    icon: <Wallet style={{ width: 14, height: 14 }} /> },
+  { id: 'direcciones', label: 'Direcciones', icon: <MapPin style={{ width: 14, height: 14 }} /> },
+  { id: 'tarjetas',    label: 'Pagos',       icon: <CreditCard style={{ width: 14, height: 14 }} /> },
+  { id: 'resenas',     label: 'Reseñas',     icon: <Star style={{ width: 14, height: 14 }} /> },
 ]
-
-function Field({
-  label, value, onChange, type = 'text', placeholder, readOnly,
-}: {
-  label: string; value: string; onChange?: (v: string) => void
-  type?: string; placeholder?: string; readOnly?: boolean
-}) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-1">
-        {readOnly && <Lock className="h-3 w-3" />}{label}
-      </label>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange?.(e.target.value)}
-        placeholder={placeholder}
-        readOnly={readOnly}
-        className={`w-full h-12 px-4 rounded-xl text-sm outline-none transition-all ${
-          readOnly
-            ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-            : 'bg-gray-100 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-black/10'
-        }`}
-      />
-    </div>
-  )
-}
 
 export function ConsumerProfileView() {
   const router = useRouter()
@@ -239,314 +213,424 @@ export function ConsumerProfileView() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#F6F6F6] flex items-center justify-center">
-        <div className="h-8 w-8 border-2 border-gray-200 border-t-black rounded-full animate-spin" />
+      <div className="con-loading">
+        <div className="con-spinner" />
       </div>
     )
   }
 
-  const initials = profile ? `${profile.nombre.charAt(0)}${profile.apellido?.charAt(0) ?? ''}`.toUpperCase() : '?'
+  const initials = profile
+    ? `${profile.nombre.charAt(0)}${profile.apellido?.charAt(0) ?? ''}`.toUpperCase()
+    : '?'
+
+  const ChevronSmall = () => (
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="con-menu-chevron">
+      <path d="M3.5 2.5L6.5 5L3.5 7.5" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  )
 
   return (
-    <div className="min-h-screen bg-[#F6F6F6]" style={{ fontFamily: "'Sora', system-ui, sans-serif", paddingBottom: 72 }}>
+    <div className="con-root">
 
-      {/* ── Header ── */}
-      <header className="bg-white sticky top-0 z-20 border-b border-gray-100">
-        <div className="max-w-screen-xl mx-auto px-4 md:px-8 h-14 flex items-center justify-between">
-          <button onClick={() => router.push('/consumidor/explorar')}
-            className="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors">
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:block">Explorar</span>
+      {/* Header */}
+      <header className="con-header">
+        <div className="con-header-inner">
+          <button className="con-back-btn" onClick={() => router.push('/consumidor/explorar')}>
+            <ArrowLeft style={{ width: 16, height: 16 }} />
+            <span>Explorar</span>
           </button>
-          <span className="font-black text-gray-900 text-sm" style={{ letterSpacing: '-0.01em' }}>Mi cuenta</span>
-          <button onClick={handleLogout}
-            className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-red-500 transition-colors">
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:block">Salir</span>
+          <span className="con-header-title">Mi cuenta</span>
+          <button className="con-logout-btn" onClick={handleLogout}>
+            <LogOut style={{ width: 16, height: 16 }} />
+            <span>Salir</span>
           </button>
         </div>
       </header>
 
-      <div className="max-w-screen-xl mx-auto px-4 md:px-8">
-
-        {/* ── Hero del perfil ── */}
-        <div className="bg-white border-b border-gray-100 px-4 md:px-8 py-6 -mx-4 md:-mx-8 mb-6">
-          <div className="max-w-screen-xl mx-auto flex items-center gap-5">
-            <div className="w-20 h-20 rounded-full bg-black flex items-center justify-center shrink-0 shadow-md">
-              <span className="text-white font-black text-2xl">{initials}</span>
+      {/* Avatar hero */}
+      <div className="con-hero">
+        <div className="con-hero-inner">
+          <div className="con-avatar">{initials}</div>
+          <div>
+            <div className="con-avatar-name">
+              {profile?.nombre} {profile?.apellido}
             </div>
-            <div>
-              <h1 className="text-xl font-black text-gray-900" style={{ letterSpacing: '-0.02em' }}>
-                {profile?.nombre} {profile?.apellido}
-              </h1>
-              <p className="text-sm text-gray-500 mt-0.5">{profile?.email}</p>
-            </div>
+            <div className="con-avatar-email">{profile?.email}</div>
+            <div className="con-avatar-badge">WAITLESS MEMBER</div>
           </div>
         </div>
+      </div>
 
-        <div className="md:flex md:gap-8">
+      <div className="con-content">
 
-          {/* ── Sidebar tabs (desktop) ── */}
-          <aside className="hidden md:block w-56 shrink-0">
-            <nav className="bg-white rounded-2xl shadow-sm p-2 sticky top-20">
-              {TABS.map(t => (
-                <button key={t.id} onClick={() => setTab(t.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all text-left ${
-                    tab === t.id ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
-                  }`}>
-                  {t.icon}
-                  {t.label}
-                </button>
-              ))}
-              <div className="my-2 border-t border-gray-100" />
-              <button onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-all text-left">
-                <LogOut className="h-4 w-4" />Cerrar sesión
-              </button>
-            </nav>
-          </aside>
-
-          {/* ── Tabs scrollables (mobile) ── */}
-          <div className="md:hidden flex gap-2 overflow-x-auto mb-4 -mx-4 px-4 pb-1" style={{ scrollbarWidth: 'none' }}>
+        {/* Desktop sidebar */}
+        <aside className="con-sidebar">
+          <nav className="con-sidebar-nav">
             {TABS.map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap shrink-0 transition-all ${
-                  tab === t.id ? 'bg-black text-white' : 'bg-white text-gray-600 shadow-sm'
-                }`}>
+              <button
+                key={t.id}
+                className={`con-nav-item${tab === t.id ? ' con-nav-item--active' : ''}`}
+                onClick={() => setTab(t.id)}
+              >
+                {t.icon}
+                {t.label}
+              </button>
+            ))}
+            <div className="con-nav-divider" />
+            <button className="con-nav-item con-nav-item--danger" onClick={handleLogout}>
+              <LogOut style={{ width: 14, height: 14 }} />
+              Cerrar sesión
+            </button>
+          </nav>
+        </aside>
+
+        <div className="con-main">
+
+          {/* Mobile tab chips */}
+          <div className="con-mobile-tabs">
+            {TABS.map(t => (
+              <button
+                key={t.id}
+                className={`con-tab-chip${tab === t.id ? ' con-tab-chip--active' : ''}`}
+                onClick={() => setTab(t.id)}
+              >
                 {t.icon}
                 {t.label}
               </button>
             ))}
           </div>
 
-          {/* ── Contenido ── */}
-          <div className="flex-1 min-w-0">
-
-            {/* Perfil */}
-            {tab === 'perfil' && (
-              <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
-                <h2 className="font-black text-gray-900 text-base" style={{ letterSpacing: '-0.01em' }}>
-                  Información personal
-                </h2>
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Nombre *" value={editForm.nombre} onChange={v => setEditForm(f => ({ ...f, nombre: v }))} placeholder="Juan" />
-                  <Field label="Apellido" value={editForm.apellido} onChange={v => setEditForm(f => ({ ...f, apellido: v }))} placeholder="García" />
+          {/* ── PERFIL TAB ── */}
+          {tab === 'perfil' && (
+            <>
+              {/* Stats */}
+              <div className="con-stats" style={{ marginBottom: 16 }}>
+                <div className="con-stat">
+                  <div className="con-stat-num">42</div>
+                  <div className="con-stat-label">Pedidos</div>
                 </div>
-                <Field label="Email" value={profile?.email ?? ''} readOnly />
-                <Field label="Teléfono" value={editForm.telefono} onChange={v => setEditForm(f => ({ ...f, telefono: v }))} type="tel" placeholder="+1 234 567 8900" />
+                <div className="con-stat">
+                  <div className="con-stat-num">14</div>
+                  <div className="con-stat-label">Restaurantes</div>
+                </div>
+                <div className="con-stat con-stat--mint">
+                  <div className="con-stat-num">4.9</div>
+                  <div className="con-stat-label">★ Rating</div>
+                </div>
+              </div>
+
+              {/* Edit info */}
+              <div className="con-card">
+                <div className="con-card-title">Información personal</div>
+
+                <div className="con-field-row">
+                  <div className="con-field">
+                    <label className="con-label">Nombre *</label>
+                    <input
+                      className="con-input"
+                      value={editForm.nombre}
+                      onChange={e => setEditForm(f => ({ ...f, nombre: e.target.value }))}
+                      placeholder="Juan"
+                    />
+                  </div>
+                  <div className="con-field">
+                    <label className="con-label">Apellido</label>
+                    <input
+                      className="con-input"
+                      value={editForm.apellido}
+                      onChange={e => setEditForm(f => ({ ...f, apellido: e.target.value }))}
+                      placeholder="García"
+                    />
+                  </div>
+                </div>
+
+                <div className="con-field" style={{ marginTop: 16 }}>
+                  <label className="con-label">
+                    <Lock style={{ width: 11, height: 11 }} />
+                    Email
+                  </label>
+                  <input className="con-input con-input--readonly" value={profile?.email ?? ''} readOnly />
+                </div>
+
+                <div className="con-field" style={{ marginTop: 16 }}>
+                  <label className="con-label">Teléfono</label>
+                  <input
+                    className="con-input"
+                    type="tel"
+                    value={editForm.telefono}
+                    onChange={e => setEditForm(f => ({ ...f, telefono: e.target.value }))}
+                    placeholder="+1 234 567 8900"
+                  />
+                </div>
 
                 {saveError && (
-                  <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 rounded-xl px-4 py-3">
-                    <AlertCircle className="h-4 w-4 shrink-0" />{saveError}
+                  <div className="con-alert-error">
+                    <AlertCircle style={{ width: 16, height: 16, flexShrink: 0 }} />
+                    {saveError}
                   </div>
                 )}
                 {saveSuccess && (
-                  <div className="flex items-center gap-2 text-emerald-700 text-sm bg-emerald-50 rounded-xl px-4 py-3">
-                    <Check className="h-4 w-4 shrink-0" />Cambios guardados
+                  <div className="con-alert-success">
+                    <Check style={{ width: 16, height: 16, flexShrink: 0 }} />
+                    Cambios guardados
                   </div>
                 )}
                 {isDirty && (
-                  <button onClick={handleSaveProfile} disabled={saving || !editForm.nombre.trim()}
-                    className="w-full h-12 bg-black hover:bg-zinc-800 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold text-sm rounded-xl transition-colors">
+                  <button
+                    className="con-btn-primary"
+                    onClick={handleSaveProfile}
+                    disabled={saving || !editForm.nombre.trim()}
+                  >
                     {saving
-                      ? <span className="flex items-center justify-center gap-2"><span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Guardando...</span>
+                      ? <><span className="ath-spinner" style={{ borderTopColor: '#fff', width: 14, height: 14 }} /> Guardando...</>
                       : 'Guardar cambios'}
                   </button>
                 )}
               </div>
-            )}
 
-            {/* Notificaciones push — sección separada dentro del tab perfil */}
-            {tab === 'perfil' && pushStatus !== 'unsupported' && (
-              <div className="bg-white rounded-2xl shadow-sm p-6 space-y-3 mt-4">
-                <h2 className="font-black text-gray-900 text-base" style={{ letterSpacing: '-0.01em' }}>
-                  Notificaciones
-                </h2>
+              {/* Notifications */}
+              {pushStatus !== 'unsupported' && (
+                <div className="con-card" style={{ marginTop: 16 }}>
+                  <div className="con-card-title">Notificaciones</div>
 
-                {pushStatus === 'denied' ? (
-                  <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl">
-                    <BellOff className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-semibold text-amber-700">Notificaciones bloqueadas</p>
-                      <p className="text-xs text-amber-600 mt-0.5">
-                        Activalas desde la configuración de tu navegador para recibir actualizaciones de tus pedidos.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                        pushStatus === 'subscribed' ? 'bg-emerald-50' : 'bg-gray-100'
-                      }`}>
-                        {pushStatus === 'subscribed'
-                          ? <Bell className="h-5 w-5 text-[#06C167]" />
-                          : <BellOff className="h-5 w-5 text-gray-400" />
-                        }
-                      </div>
+                  {pushStatus === 'denied' ? (
+                    <div className="con-push-denied">
+                      <BellOff style={{ width: 18, height: 18, color: '#b45309', flexShrink: 0, marginTop: 2 }} />
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {pushStatus === 'subscribed' ? 'Notificaciones activas' : 'Notificaciones desactivadas'}
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#92400e', letterSpacing: '-0.01em' }}>
+                          Notificaciones bloqueadas
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p style={{ fontSize: 11.5, color: '#b45309', marginTop: 2, fontFamily: 'var(--con-mono)' }}>
+                          Actívalas desde la configuración de tu navegador para recibir avisos de pedidos.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="con-notif-row">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div className={`con-notif-icon${pushStatus === 'subscribed' ? ' con-notif-icon--active' : ''}`}>
                           {pushStatus === 'subscribed'
-                            ? 'Recibirás avisos cuando tu pedido salga y sea entregado.'
-                            : 'Activalas para seguir el estado de tus pedidos.'}
-                        </p>
-                      </div>
-                    </div>
-
-                    {pushStatus === 'subscribed' ? (
-                      <button
-                        onClick={handleUnsubscribePush}
-                        disabled={pushLoading}
-                        className="shrink-0 h-9 px-4 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
-                      >
-                        {pushLoading ? <span className="h-3.5 w-3.5 border-2 border-gray-300 border-t-gray-700 rounded-full animate-spin block" /> : 'Desactivar'}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleSubscribePush}
-                        disabled={pushLoading}
-                        className="shrink-0 h-9 px-4 rounded-xl bg-black text-white text-xs font-semibold disabled:opacity-50 transition-colors"
-                      >
-                        {pushLoading ? <span className="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin block" /> : 'Activar'}
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Pedidos */}
-            {tab === 'pedidos' && token && <ConsumerOrdersTab token={token} />}
-
-            {/* Monedero */}
-            {tab === 'monedero' && token && <ConsumerWalletTab token={token} />}
-
-            {/* Pagos */}
-            {tab === 'tarjetas' && token && <ConsumerPaymentTab token={token} />}
-
-            {/* Direcciones */}
-            {tab === 'direcciones' && (
-              <div className="space-y-3">
-                {addresses.map(addr => (
-                  <div key={addr.id} className="bg-white rounded-2xl shadow-sm p-5 flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-                        {addr.alias === 'Trabajo' ? <Briefcase className="h-4 w-4 text-gray-600" /> : <Home className="h-4 w-4 text-gray-600" />}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <p className="font-bold text-sm text-gray-900">{addr.alias}</p>
-                          {addr.is_default && <span className="text-[10px] font-bold text-[#06C167] bg-emerald-50 px-2 py-0.5 rounded-full">Principal</span>}
+                            ? <Bell style={{ width: 18, height: 18, color: '#0a3a0a' }} />
+                            : <BellOff style={{ width: 18, height: 18, color: 'rgba(0,0,0,0.4)' }} />}
                         </div>
-                        <p className="text-sm text-gray-600">{addr.direccion}</p>
-                        {addr.ciudad && <p className="text-xs text-gray-400 mt-0.5">{addr.ciudad}</p>}
-                        {addr.notas && <p className="text-xs text-gray-400 italic mt-1">{addr.notas}</p>}
+                        <div>
+                          <div className="con-notif-title">
+                            {pushStatus === 'subscribed' ? 'Notificaciones activas' : 'Notificaciones desactivadas'}
+                          </div>
+                          <div className="con-notif-sub">
+                            {pushStatus === 'subscribed'
+                              ? 'Recibirás avisos cuando tu pedido salga.'
+                              : 'Actívalas para seguir el estado de tus pedidos.'}
+                          </div>
+                        </div>
                       </div>
+                      {pushStatus === 'subscribed' ? (
+                        <button className="con-btn-ghost" onClick={handleUnsubscribePush} disabled={pushLoading}>
+                          {pushLoading
+                            ? <span style={{ width: 14, height: 14, border: '2px solid #ccc', borderTopColor: '#000', borderRadius: '50%', display: 'inline-block', animation: 'con-spin 0.7s linear infinite' }} />
+                            : 'Desactivar'}
+                        </button>
+                      ) : (
+                        <button
+                          className="con-btn-ghost"
+                          style={{ background: '#000', color: '#fff', borderColor: '#000' }}
+                          onClick={handleSubscribePush}
+                          disabled={pushLoading}
+                        >
+                          {pushLoading
+                            ? <span style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'con-spin 0.7s linear infinite' }} />
+                            : 'Activar'}
+                        </button>
+                      )}
                     </div>
-                    <button onClick={() => handleDeleteAddress(addr.id)} className="text-gray-300 hover:text-red-400 transition-colors shrink-0 mt-1">
-                      <Trash2 className="h-4 w-4" />
+                  )}
+                </div>
+              )}
+
+              {/* Profile menu options */}
+              <ul className="con-menu-list" style={{ marginTop: 16, background: '#fff' }}>
+                <li className="con-menu-item" onClick={() => setTab('direcciones')}>
+                  <div className="con-menu-icon">
+                    <MapPin style={{ width: 16, height: 16 }} />
+                  </div>
+                  <span className="con-menu-label">Direcciones</span>
+                  <span className="con-menu-meta">{addresses.length}</span>
+                  <ChevronSmall />
+                </li>
+                <li className="con-menu-item" onClick={() => setTab('tarjetas')}>
+                  <div className="con-menu-icon">
+                    <CreditCard style={{ width: 16, height: 16 }} />
+                  </div>
+                  <span className="con-menu-label">Métodos de pago</span>
+                  <ChevronSmall />
+                </li>
+                <li className="con-menu-item" onClick={() => setTab('resenas')}>
+                  <div className="con-menu-icon">
+                    <Star style={{ width: 16, height: 16 }} />
+                  </div>
+                  <span className="con-menu-label">Mis reseñas</span>
+                  <span className="con-menu-meta">{reviews.length}</span>
+                  <ChevronSmall />
+                </li>
+              </ul>
+            </>
+          )}
+
+          {/* ── PEDIDOS ── */}
+          {tab === 'pedidos' && token && <ConsumerOrdersTab token={token} />}
+
+          {/* ── MONEDERO ── */}
+          {tab === 'monedero' && token && <ConsumerWalletTab token={token} />}
+
+          {/* ── TARJETAS ── */}
+          {tab === 'tarjetas' && token && <ConsumerPaymentTab token={token} />}
+
+          {/* ── DIRECCIONES ── */}
+          {tab === 'direcciones' && (
+            <div>
+              {addresses.map(addr => (
+                <div key={addr.id} className="con-addr-card">
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, flex: 1 }}>
+                    <div className="con-addr-icon">
+                      {addr.alias === 'Trabajo'
+                        ? <Briefcase style={{ width: 16, height: 16 }} />
+                        : <Home style={{ width: 16, height: 16 }} />}
+                    </div>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span className="con-addr-alias">{addr.alias}</span>
+                        {addr.is_default && (
+                          <span className="con-addr-main-badge">Principal</span>
+                        )}
+                      </div>
+                      <div className="con-addr-text">{addr.direccion}</div>
+                      {addr.ciudad && <div className="con-addr-sub">{addr.ciudad}</div>}
+                      {addr.notas && <div className="con-addr-sub" style={{ fontStyle: 'italic' }}>{addr.notas}</div>}
+                    </div>
+                  </div>
+                  <button className="con-addr-delete" onClick={() => handleDeleteAddress(addr.id)}>
+                    <Trash2 style={{ width: 16, height: 16 }} />
+                  </button>
+                </div>
+              ))}
+
+              {showAddressForm ? (
+                <div className="con-addr-form-card">
+                  <div className="con-addr-form-title">Nueva dirección</div>
+                  <div className="con-alias-btns">
+                    {['Casa', 'Trabajo', 'Otro'].map(a => (
+                      <button
+                        key={a}
+                        className={`con-alias-btn${addrForm.alias === a ? ' con-alias-btn--active' : ''}`}
+                        onClick={() => setAddrForm(f => ({ ...f, alias: a }))}
+                      >{a}</button>
+                    ))}
+                  </div>
+                  {[
+                    { key: 'direccion', ph: 'Dirección completa *' },
+                    { key: 'ciudad', ph: 'Ciudad' },
+                    { key: 'notas', ph: 'Notas de entrega (opcional)' },
+                  ].map(f => (
+                    <input
+                      key={f.key}
+                      className="con-addr-input"
+                      placeholder={f.ph}
+                      value={addrForm[f.key as keyof typeof addrForm]}
+                      onChange={e => setAddrForm(p => ({ ...p, [f.key]: e.target.value }))}
+                    />
+                  ))}
+                  <div className="con-addr-form-btns">
+                    <button
+                      className="con-addr-save-btn"
+                      onClick={handleAddAddress}
+                      disabled={addrSaving || !addrForm.direccion.trim()}
+                    >
+                      {addrSaving
+                        ? <span style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'con-spin 0.7s linear infinite', margin: '0 auto' }} />
+                        : 'Guardar'}
+                    </button>
+                    <button className="con-addr-cancel-btn" onClick={() => setShowAddressForm(false)}>
+                      <X style={{ width: 16, height: 16 }} />
                     </button>
                   </div>
-                ))}
+                </div>
+              ) : (
+                <button className="con-add-addr-btn" onClick={() => setShowAddressForm(true)}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span className="con-add-addr-icon">
+                      <Plus style={{ width: 16, height: 16 }} />
+                    </span>
+                    Agregar dirección
+                  </span>
+                  <ChevronRight style={{ width: 16, height: 16, color: 'rgba(0,0,0,0.3)' }} />
+                </button>
+              )}
+            </div>
+          )}
 
-                {showAddressForm ? (
-                  <div className="bg-white rounded-2xl shadow-sm p-5 space-y-3">
-                    <h3 className="font-bold text-gray-900">Nueva dirección</h3>
-                    <div className="flex gap-2">
-                      {['Casa', 'Trabajo', 'Otro'].map(a => (
-                        <button key={a} onClick={() => setAddrForm(f => ({ ...f, alias: a }))}
-                          className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${
-                            addrForm.alias === a ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          }`}>{a}</button>
+          {/* ── RESEÑAS ── */}
+          {tab === 'resenas' && (
+            <div>
+              {reviews.length === 0 ? (
+                <div className="con-empty">
+                  <div className="con-empty-icon">
+                    <Star style={{ width: 22, height: 22, color: 'rgba(0,0,0,0.2)' }} />
+                  </div>
+                  <div className="con-empty-title">Sin reseñas aún</div>
+                  <div className="con-empty-sub">Tus reseñas aparecerán aquí.</div>
+                </div>
+              ) : reviews.map(r => (
+                <div key={r.id} className="con-review-card">
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginBottom: 8 }}>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          style={{
+                            width: 14, height: 14,
+                            fill: i < r.rating ? '#000' : 'transparent',
+                            color: i < r.rating ? '#000' : 'rgba(0,0,0,0.15)',
+                          }}
+                        />
                       ))}
                     </div>
-                    {[
-                      { key: 'direccion', label: 'Dirección completa *', ph: 'Calle 123, Colonia...' },
-                      { key: 'ciudad',    label: 'Ciudad',               ph: 'Ciudad de México' },
-                      { key: 'notas',     label: 'Notas de entrega',     ph: 'Piso 3, timbre B...' },
-                    ].map(f => (
-                      <input key={f.key} placeholder={f.ph}
-                        value={addrForm[f.key as keyof typeof addrForm]}
-                        onChange={e => setAddrForm(p => ({ ...p, [f.key]: e.target.value }))}
-                        className="w-full h-12 px-4 bg-gray-100 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10"
-                      />
-                    ))}
-                    <div className="flex gap-2 pt-1">
-                      <button onClick={handleAddAddress} disabled={addrSaving || !addrForm.direccion.trim()}
-                        className="flex-1 h-12 bg-black disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold text-sm rounded-xl transition-colors">
-                        {addrSaving ? <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto block" /> : 'Guardar'}
-                      </button>
-                      <button onClick={() => setShowAddressForm(false)} className="h-12 px-5 bg-gray-100 text-gray-700 font-bold text-sm rounded-xl hover:bg-gray-200 transition-colors">
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
+                    {r.titulo && (
+                      <p style={{ fontWeight: 700, fontSize: 13.5, color: '#000', marginBottom: 4, letterSpacing: '-0.01em' }}>
+                        {r.titulo}
+                      </p>
+                    )}
+                    <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.65)' }}>{r.comentario}</p>
+                    <p style={{ fontSize: 11, color: 'rgba(0,0,0,0.4)', marginTop: 8, fontFamily: 'var(--con-mono)' }}>
+                      {new Date(r.created_at).toLocaleDateString('es', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
                   </div>
-                ) : (
-                  <button onClick={() => setShowAddressForm(true)}
-                    className="w-full flex items-center justify-between bg-white rounded-2xl shadow-sm p-5 text-sm font-bold text-gray-900 hover:bg-gray-50 transition-colors">
-                    <span className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-                        <Plus className="h-4 w-4 text-gray-600" />
-                      </div>
-                      Agregar dirección
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-gray-400" />
+                  <button className="con-addr-delete" onClick={() => handleDeleteReview(r.id)}>
+                    <Trash2 style={{ width: 16, height: 16 }} />
                   </button>
-                )}
-              </div>
-            )}
-
-            {/* Reseñas */}
-            {tab === 'resenas' && (
-              <div className="space-y-3">
-                {reviews.length === 0 ? (
-                  <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                      <Star className="h-7 w-7 text-gray-300" />
-                    </div>
-                    <p className="font-bold text-gray-800 mb-1">Sin reseñas aún</p>
-                    <p className="text-sm text-gray-400">Tus reseñas aparecerán aquí.</p>
-                  </div>
-                ) : reviews.map(r => (
-                  <div key={r.id} className="bg-white rounded-2xl shadow-sm p-5 flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-0.5 mb-2">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} className={`h-4 w-4 ${i < r.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
-                        ))}
-                      </div>
-                      {r.titulo && <p className="font-bold text-sm text-gray-900 mb-1">{r.titulo}</p>}
-                      <p className="text-sm text-gray-600">{r.comentario}</p>
-                      <p className="text-xs text-gray-400 mt-2">{new Date(r.created_at).toLocaleDateString('es', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                    </div>
-                    <button onClick={() => handleDeleteReview(r.id)} className="text-gray-300 hover:text-red-400 transition-colors shrink-0">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Bottom nav mobile */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 flex items-center" style={{ height: 60, paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      {/* Bottom nav (mobile) */}
+      <nav className="con-bottom-nav">
         {[
-          { id: 'explorar', label: 'Inicio',  icon: <Home className="h-5 w-5" />,        href: '/consumidor/explorar' },
-          { id: 'pedidos',  label: 'Pedidos', icon: <ShoppingBag className="h-5 w-5" />, action: () => setTab('pedidos') },
-          { id: 'cuenta',   label: 'Cuenta',  icon: <User className="h-5 w-5" />,        active: true },
+          { id: 'explorar', label: 'Inicio', href: '/consumidor/explorar',
+            icon: <svg viewBox="0 0 24 24" fill="none" style={{ width: 22, height: 22 }}><path d="M3 12L12 3l9 9v9h-7v-6h-4v6H3v-9Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg> },
+          { id: 'pedidos', label: 'Pedidos', action: () => setTab('pedidos'),
+            icon: <ShoppingBag style={{ width: 22, height: 22 }} />, active: tab === 'pedidos' },
+          { id: 'cuenta', label: 'Cuenta',
+            icon: <User style={{ width: 22, height: 22 }} />, active: true },
         ].map(item => (
-          <button key={item.id}
+          <button
+            key={item.id}
+            className={`con-bottom-tab${item.active ? ' con-bottom-tab--active' : ''}`}
             onClick={() => item.href ? router.push(item.href) : item.action?.()}
-            className="flex-1 flex flex-col items-center justify-center gap-0.5 h-full transition-colors"
           >
-            <span className={item.active ? 'text-black' : 'text-gray-400'}>{item.icon}</span>
-            <span className={`text-[10px] font-semibold ${item.active ? 'text-black' : 'text-gray-400'}`}>{item.label}</span>
+            {item.icon}
+            <span className="con-bottom-tab-label">{item.label}</span>
           </button>
         ))}
       </nav>
