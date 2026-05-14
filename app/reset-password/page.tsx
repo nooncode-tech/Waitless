@@ -2,10 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, Lock, CheckCircle, AlertCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+
+const FONT = "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif"
+const MONO = "ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace"
+const MINT = '#BEEBBE'
+const MINT_DEEP = '#0a3a0a'
+const LINE = '#E5E5E5'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -18,9 +21,6 @@ export default function ResetPasswordPage() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    // INITIAL_SESSION fires immediately on mount with any stored session (covers the
-    // redirect case where app-client-root already processed the hash).
-    // PASSWORD_RECOVERY fires when the page loads directly with the hash in the URL.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (
         event === 'PASSWORD_RECOVERY' ||
@@ -55,82 +55,207 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-xs">
-        <div className="mb-8 text-center">
-          <div className="w-12 h-12 bg-foreground rounded-xl flex items-center justify-center mx-auto mb-3">
-            <Lock className="h-6 w-6 text-background" />
-          </div>
-          <p className="text-sm font-semibold text-foreground">Nueva contraseña</p>
-          <p className="text-xs text-muted-foreground mt-1">Creá una contraseña segura para tu cuenta</p>
+    <div style={{
+      minHeight: '100vh',
+      background: '#000',
+      color: '#fff',
+      fontFamily: FONT,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Decorative W */}
+      <span style={{
+        position: 'absolute',
+        bottom: -48,
+        right: -32,
+        fontFamily: FONT,
+        fontWeight: 700,
+        fontSize: 280,
+        color: 'rgba(255,255,255,0.04)',
+        lineHeight: 1,
+        pointerEvents: 'none',
+        userSelect: 'none',
+      }}>W</span>
+
+      {/* Card */}
+      <div style={{ width: '100%', maxWidth: 400, position: 'relative', zIndex: 2 }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40 }}>
+          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', color: '#fff' }}>
+            <span style={{ width: 32, height: 32, background: '#fff', borderRadius: 8, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 700, fontSize: 16, letterSpacing: '-0.04em', fontFamily: FONT }}>W</span>
+            <span style={{ fontWeight: 700, fontSize: 19, letterSpacing: '-0.045em', fontFamily: FONT }}>WAITLESS</span>
+          </a>
+          <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.18em' }}>Reset</span>
         </div>
 
         {done ? (
-          <div className="flex flex-col items-center gap-3 py-6 text-center">
-            <CheckCircle className="h-10 w-10 text-emerald-500" />
-            <p className="text-sm font-semibold text-foreground">¡Contraseña actualizada!</p>
-            <p className="text-xs text-muted-foreground">Redirigiendo al inicio de sesión…</p>
+          /* ── Done state ── */
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: MINT, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <path d="M6 14l6 6 10-10" stroke={MINT_DEEP} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <h1 style={{ fontFamily: FONT, fontWeight: 700, fontSize: 36, letterSpacing: '-0.045em', lineHeight: 0.95, marginBottom: 12 }}>
+              ¡Listo!
+            </h1>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.65)', lineHeight: 1.5 }}>
+              Contraseña actualizada. Redirigiendo al inicio de sesión…
+            </p>
           </div>
         ) : !ready ? (
-          <div className="text-center py-10">
-            <div className="h-6 w-6 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-xs text-muted-foreground">Verificando enlace…</p>
+          /* ── Verifying state ── */
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ width: 40, height: 40, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#fff', borderRadius: '50%', margin: '0 auto 20px', animation: 'spin 0.7s linear infinite' }} />
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', fontFamily: MONO, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+              Verificando enlace…
+            </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="relative">
-              <Input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Nueva contraseña"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="h-11 pr-10"
-                autoFocus
-                disabled={isLoading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                tabIndex={-1}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
+          /* ── Form state ── */
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <div style={{ marginBottom: 24 }}>
+              <h1 style={{ fontFamily: FONT, fontWeight: 700, fontSize: 36, letterSpacing: '-0.045em', lineHeight: 0.95, marginBottom: 10 }}>
+                Nueva<br />contraseña.
+              </h1>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', fontFamily: FONT }}>
+                Elige una contraseña segura. Sin límite de intentos.
+              </p>
             </div>
 
-            <Input
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Confirmar contraseña"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              className="h-11"
-              disabled={isLoading}
-            />
+            {/* Password field */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
+              <label style={{ fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 700, color: '#fff', fontFamily: FONT }}>
+                Nueva contraseña
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="Mínimo 6 caracteres"
+                  autoFocus
+                  disabled={isLoading}
+                  style={{
+                    height: 48,
+                    padding: '0 44px 0 16px',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    borderRadius: 10,
+                    fontSize: 15,
+                    letterSpacing: '-0.01em',
+                    outline: 'none',
+                    fontFamily: FONT,
+                    color: '#fff',
+                    background: 'rgba(255,255,255,0.05)',
+                    width: '100%',
+                    boxSizing: 'border-box' as const,
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(v => !v)}
+                  style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.45)', display: 'flex', alignItems: 'center' }}
+                  tabIndex={-1}
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    {showPassword
+                      ? <><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z" stroke="currentColor" strokeWidth="1.3"/><circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3"/><path d="M2 2l12 12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></>
+                      : <><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5Z" stroke="currentColor" strokeWidth="1.3"/><circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3"/></>
+                    }
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm field */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>
+              <label style={{ fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 700, color: '#fff', fontFamily: FONT }}>
+                Confirmar contraseña
+              </label>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={confirm}
+                onChange={e => setConfirm(e.target.value)}
+                placeholder="Repite tu contraseña"
+                disabled={isLoading}
+                style={{
+                  height: 48,
+                  padding: '0 16px',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: 10,
+                  fontSize: 15,
+                  letterSpacing: '-0.01em',
+                  outline: 'none',
+                  fontFamily: FONT,
+                  color: '#fff',
+                  background: 'rgba(255,255,255,0.05)',
+                  width: '100%',
+                  boxSizing: 'border-box' as const,
+                }}
+              />
+            </div>
 
             {error && (
-              <div className="flex items-center gap-2 text-destructive text-xs bg-destructive/10 border border-destructive/20 rounded px-3 py-2">
-                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#ff6b6b', background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.25)', borderRadius: 10, padding: '12px 16px', marginBottom: 16 }}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.3"/><path d="M7 4v4M7 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                 {error}
               </div>
             )}
 
-            <Button
+            <button
               type="submit"
-              className="w-full h-11"
               disabled={isLoading || !password || !confirm}
+              style={{
+                width: '100%',
+                height: 48,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                borderRadius: 999,
+                background: MINT,
+                color: MINT_DEEP,
+                fontWeight: 700,
+                fontSize: 14,
+                letterSpacing: '-0.01em',
+                fontFamily: FONT,
+                border: 'none',
+                cursor: isLoading || !password || !confirm ? 'not-allowed' : 'pointer',
+                opacity: isLoading || !password || !confirm ? 0.5 : 1,
+              }}
             >
-              {isLoading ? (
-                <span className="h-4 w-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
-              ) : (
-                <>
-                  <Lock className="h-4 w-4 mr-2" />
-                  Guardar contraseña
-                </>
-              )}
-            </Button>
+              {isLoading
+                ? <span style={{ width: 16, height: 16, border: `2px solid ${MINT_DEEP}40`, borderTopColor: MINT_DEEP, borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} />
+                : 'Guardar nueva contraseña →'
+              }
+            </button>
+
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </form>
         )}
+
+        {/* Footer */}
+        <div style={{ marginTop: 40, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.1)', fontFamily: MONO, fontSize: 10.5, color: 'rgba(255,255,255,0.4)', lineHeight: 1.7 }}>
+          <div>El enlace de recuperación expira en <strong style={{ color: '#fff' }}>15 min</strong>.</div>
+          <div style={{ marginTop: 4 }}>
+            ¿Necesitas ayuda?{' '}
+            <a href="mailto:soporte@waitless.app" style={{ color: '#fff', fontWeight: 700, textDecoration: 'none' }}>soporte@waitless.app</a>
+          </div>
+        </div>
+
       </div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        input::placeholder { color: rgba(255,255,255,0.25); }
+        input:focus { border-color: rgba(255,255,255,0.4) !important; }
+      `}</style>
     </div>
   )
 }

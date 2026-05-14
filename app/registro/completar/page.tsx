@@ -1,5 +1,7 @@
+import './onboarding.css'
 import { Suspense } from 'react'
 import { CompletarRegistroForm } from '@/components/registro/completar-registro-form'
+import Link from 'next/link'
 
 export const metadata = {
   title: 'Configurá tu negocio — WAITLESS',
@@ -7,34 +9,55 @@ export const metadata = {
 
 export default function CompletarRegistroPage() {
   return (
-    <div className="min-h-screen bg-white flex">
-      {/* Left panel */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center p-12 bg-black">
-        <div className="max-w-xs w-full">
-          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center mb-8">
-            <span className="text-black font-black text-lg">W</span>
+    <div className="ob-root">
+      {/* Topbar */}
+      <header className="ob-topbar">
+        <div className="ob-topbar-inner">
+          <Link href="/" className="ob-logo">
+            <span className="ob-logo-mark">W</span>
+            <span className="ob-logo-name">WAITLESS</span>
+            <span className="ob-logo-tag">setup</span>
+          </Link>
+          <div className="ob-topbar-right">
+            <span className="ob-swiss-num">Último paso →</span>
           </div>
-          <h1 className="text-3xl font-black text-white leading-tight" style={{ letterSpacing: '-0.03em' }}>
-            Último paso.
-          </h1>
-          <p className="text-white/50 text-sm mt-4 leading-relaxed">
-            Configurá la identidad visual de tu negocio. Podés cambiarlo después desde el panel de configuración.
-          </p>
         </div>
+      </header>
+
+      {/* Hero */}
+      <div className="ob-hero">
+        <div className="ob-hero-eyebrow">
+          <span className="ob-swiss-num">CAP. 10 · Onboarding</span>
+          <span style={{ height: 1, width: 40, background: 'rgba(0,0,0,0.3)', display: 'block' }} />
+          <span className="ob-eyebrow">Configuración inicial</span>
+        </div>
+        <h1 className="ob-hero-title">
+          Último paso.<br />
+          <span>Casi listo.</span>
+        </h1>
       </div>
 
-      {/* Right panel */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 overflow-y-auto">
-        <div className="w-full max-w-sm">
-          <div className="lg:hidden mb-8 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center">
-              <span className="text-white font-black text-sm">W</span>
-            </div>
-            <span className="font-bold text-black text-lg" style={{ letterSpacing: '-0.02em' }}>WAITLESS</span>
+      {/* Form — centered card */}
+      <div style={{ maxWidth: 580, margin: '0 auto', padding: '0 32px 80px' }}>
+        <div className="ob-main">
+          <div className="ob-step-label">
+            <span className="ob-swiss-num">Paso final</span>
+            <span style={{ height: 1, width: 40, background: 'rgba(0,0,0,0.2)', display: 'block' }} />
+            <span className="ob-eyebrow">Branding white-label</span>
           </div>
-          <Suspense fallback={<div className="flex justify-center py-12"><div className="h-6 w-6 border-2 border-black/20 border-t-black rounded-full animate-spin" /></div>}>
-            <CompletarRegistroForm />
-          </Suspense>
+          <h2 className="ob-h2">Tu marca,<br />no la nuestra.</h2>
+          <p className="ob-desc">
+            Configurá la identidad visual de tu negocio. Podés cambiarlo después desde el panel de configuración.
+          </p>
+          <div style={{ marginTop: 32 }}>
+            <Suspense fallback={
+              <div className="ob-page-loading">
+                <div className="ob-page-spinner" />
+              </div>
+            }>
+              <CompletarRegistroForm />
+            </Suspense>
+          </div>
         </div>
       </div>
     </div>
