@@ -8,10 +8,6 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js'
-import {
-  CreditCard, Trash2, Star, Plus, Check, AlertCircle, X,
-  Loader2, Landmark, Banknote, ChevronRight,
-} from 'lucide-react'
 
 const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
@@ -35,29 +31,11 @@ const BRAND_LABELS: Record<string, string> = {
   unionpay: 'UnionPay',
 }
 
-const BRAND_COLORS: Record<string, string> = {
-  visa: '#1A1F71',
-  mastercard: '#EB001B',
-  amex: '#007BC1',
-  discover: '#FF6600',
-}
-
-function CardBadge({ brand }: { brand: string }) {
-  const bg = BRAND_COLORS[brand] ?? '#374151'
-  return (
-    <div
-      className="w-10 h-7 rounded-md flex items-center justify-center shrink-0"
-      style={{ backgroundColor: bg }}
-    >
-      <span className="text-white font-black text-[9px] tracking-tight uppercase">{brand.slice(0, 4)}</span>
-    </div>
-  )
-}
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
 
 function CardSetupForm({
-  token,
-  onSuccess,
-  onCancel,
+  token, onSuccess, onCancel,
 }: {
   token: string
   onSuccess: () => void
@@ -89,10 +67,7 @@ function CardSetupForm({
     if (setupIntent?.payment_method) {
       const res = await fetch('/api/consumidor/cards', {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ paymentMethodId: setupIntent.payment_method }),
       })
       if (res.ok) {
@@ -106,33 +81,33 @@ function CardSetupForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <PaymentElement options={{ layout: 'tabs', terms: { card: 'never' } }} />
 
       {error && (
-        <div className="flex items-center gap-2 text-red-600 text-xs bg-red-50 rounded-xl px-3 py-2.5">
-          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#c00', background: '#fff0f0', borderRadius: 10, padding: '10px 14px', fontFamily: FONT }}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#c00" strokeWidth="1.3"/><path d="M7 4.5v3M7 9.5v.2" stroke="#c00" strokeWidth="1.5" strokeLinecap="round"/></svg>
           {error}
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div style={{ display: 'flex', gap: 8 }}>
         <button
           type="submit"
           disabled={!stripe || saving}
-          className="flex-1 h-12 bg-black hover:bg-gray-900 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold text-sm rounded-xl transition-colors flex items-center justify-center gap-2"
+          style={{ flex: 1, height: 48, background: saving || !stripe ? '#E5E5E5' : '#000', color: saving || !stripe ? '#999' : '#fff', borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 13, fontFamily: FONT, cursor: !stripe || saving ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
         >
           {saving
-            ? <Loader2 className="h-4 w-4 animate-spin" />
-            : <><CreditCard className="h-4 w-4" />Guardar tarjeta</>
+            ? <span style={{ width: 14, height: 14, border: '2px solid #999', borderTopColor: '#fff', borderRadius: 999, animation: 'con-spin 0.7s linear infinite', display: 'inline-block' }} />
+            : 'Guardar tarjeta'
           }
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="h-12 w-12 border border-gray-200 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors"
+          style={{ width: 48, height: 48, border: '1px solid #E5E5E5', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', cursor: 'pointer', color: 'rgba(0,0,0,0.45)' }}
         >
-          <X className="h-4 w-4" />
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
         </button>
       </div>
     </form>
@@ -218,60 +193,56 @@ export function ConsumerPaymentTab({ token }: { token: string }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-gray-300" />
+      <div className="con-loading" style={{ minHeight: 200 }}>
+        <div className="con-spinner" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontFamily: FONT }}>
 
-      {/* ── Tarjetas ── */}
-      <section className="bg-white rounded-2xl overflow-hidden">
-        <div className="px-5 pt-5 pb-3">
-          <div className="flex items-center gap-2 mb-0.5">
-            <CreditCard className="h-4 w-4 text-gray-500" />
-            <h3 className="font-bold text-gray-900 text-sm">Tarjetas</h3>
-          </div>
-          <p className="text-xs text-gray-400">Débito y crédito guardadas para tus pedidos</p>
+      {/* Tarjetas */}
+      <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 16, overflow: 'hidden' }}>
+        <div style={{ padding: '20px 20px 12px' }}>
+          <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: '-0.02em', color: '#000', marginBottom: 4 }}>Tarjetas</div>
+          <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.4)' }}>Débito y crédito guardadas para tus pedidos</div>
         </div>
 
         {cards.length > 0 && (
-          <div className="border-t border-gray-50">
-            {cards.map(card => (
-              <div
-                key={card.id}
-                className="flex items-center gap-3 px-5 py-3.5 border-b border-gray-50 last:border-0"
-              >
-                <CardBadge brand={card.brand} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900">
+          <div style={{ borderTop: '1px solid #EFEFEF' }}>
+            {cards.map((card, i) => (
+              <div key={card.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: i < cards.length - 1 ? '1px solid #EFEFEF' : 'none' }}>
+                <div style={{ width: 40, height: 28, borderRadius: 6, background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ color: '#fff', fontWeight: 700, fontSize: 9, letterSpacing: '-0.02em', textTransform: 'uppercase' }}>{card.brand.slice(0, 4)}</span>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, fontSize: 13, letterSpacing: '-0.01em', color: '#000' }}>
                     {BRAND_LABELS[card.brand] ?? card.brand} •••• {card.last4}
-                  </p>
-                  <p className="text-[11px] text-gray-400">
+                  </div>
+                  <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.4)', marginTop: 2 }}>
                     {String(card.exp_month).padStart(2, '0')}/{card.exp_year}
                     {card.is_default && (
-                      <span className="ml-2 text-[#06C167] font-semibold">Principal</span>
+                      <span style={{ marginLeft: 8, color: '#0a3a0a', fontWeight: 700 }}>Principal</span>
                     )}
-                  </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-0.5">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   {!card.is_default && (
                     <button
                       onClick={() => handleSetDefault(card.id)}
                       title="Marcar como principal"
-                      className="p-2 rounded-xl text-gray-400 hover:text-[#06C167] hover:bg-green-50 transition-colors"
+                      style={{ width: 32, height: 32, borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(0,0,0,0.3)' }}
                     >
-                      <Star className="h-3.5 w-3.5" />
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 4.5h4.5l-3.5 2.5 1.5 4.5L7 10l-4 2.5 1.5-4.5L1 5.5h4.5L7 1Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/></svg>
                     </button>
                   )}
                   <button
                     onClick={() => handleDeleteCard(card.id)}
                     title="Eliminar"
-                    className="p-2 rounded-xl text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                    style={{ width: 32, height: 32, borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(0,0,0,0.25)' }}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 4h9M5 4V2.5h4V4M5.5 6.5v4M8.5 6.5v4M3 4l1 8h6l1-8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   </button>
                 </div>
               </div>
@@ -280,8 +251,8 @@ export function ConsumerPaymentTab({ token }: { token: string }) {
         )}
 
         {showAddCard && stripePromise && clientSecret ? (
-          <div className="px-5 pb-5 pt-4 border-t border-gray-50">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Nueva tarjeta</p>
+          <div style={{ padding: '16px 20px 20px', borderTop: '1px solid #EFEFEF' }}>
+            <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.4)', marginBottom: 16 }}>Nueva tarjeta</div>
             <Elements
               stripe={stripePromise}
               options={{
@@ -290,8 +261,8 @@ export function ConsumerPaymentTab({ token }: { token: string }) {
                   theme: 'stripe',
                   variables: {
                     colorPrimary: '#000000',
-                    borderRadius: '12px',
-                    fontFamily: "'Sora', system-ui, sans-serif",
+                    borderRadius: '10px',
+                    fontFamily: "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif",
                   },
                 },
               }}
@@ -304,55 +275,56 @@ export function ConsumerPaymentTab({ token }: { token: string }) {
             </Elements>
           </div>
         ) : !showAddCard && (
-          <div className="px-5 pb-5 pt-2">
+          <div style={{ padding: '8px 20px 16px', borderTop: cards.length > 0 ? '1px solid #EFEFEF' : 'none' }}>
             {!stripePromise ? (
-              <div className="flex items-center gap-2 text-amber-700 text-xs bg-amber-50 rounded-xl px-3 py-2.5">
-                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#b45309', background: '#fff8e6', borderRadius: 10, padding: '10px 14px' }}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.3"/><path d="M7 4.5v3M7 9.5v.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                 Stripe no configurado — agregá las claves en .env.local
               </div>
             ) : (
               <button
                 onClick={openAddCard}
                 disabled={setupLoading}
-                className="w-full flex items-center justify-between h-12 bg-gray-100 hover:bg-gray-200 rounded-xl px-4 text-sm font-semibold text-gray-700 transition-colors"
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 48, background: '#F4F4F2', borderRadius: 10, padding: '0 16px', border: 'none', fontSize: 13, fontWeight: 700, color: '#000', fontFamily: FONT, cursor: setupLoading ? 'not-allowed' : 'pointer' }}
               >
-                <span className="flex items-center gap-2">
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {setupLoading
-                    ? <Loader2 className="h-4 w-4 animate-spin" />
-                    : <Plus className="h-4 w-4" />}
+                    ? <span style={{ width: 14, height: 14, border: '2px solid #999', borderTopColor: '#000', borderRadius: 999, animation: 'con-spin 0.7s linear infinite', display: 'inline-block' }} />
+                    : <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                  }
                   Agregar tarjeta
                 </span>
-                <ChevronRight className="h-4 w-4 text-gray-400" />
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3.5 2.5L6.5 5L3.5 7.5" stroke="currentColor" strokeWidth="1.4"/></svg>
               </button>
             )}
           </div>
         )}
-      </section>
+      </div>
 
-      {/* ── PayPal ── */}
-      <section className="bg-white rounded-2xl p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-9 h-9 rounded-xl bg-[#003087] flex items-center justify-center shrink-0">
-            <span className="font-black text-[11px] text-white tracking-tight">PP</span>
+      {/* PayPal */}
+      <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 16, padding: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#003087', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ color: '#fff', fontWeight: 700, fontSize: 11, letterSpacing: '-0.02em' }}>PP</span>
           </div>
           <div>
-            <h3 className="font-bold text-gray-900 text-sm leading-tight">PayPal</h3>
-            <p className="text-[11px] text-gray-400">Vinculá tu cuenta de PayPal</p>
+            <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: '-0.02em', color: '#000' }}>PayPal</div>
+            <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.4)', marginTop: 2 }}>Vinculá tu cuenta de PayPal</div>
           </div>
         </div>
 
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <input
             type="email"
             placeholder="tu@email.com"
             value={paypalDraft}
             onChange={e => setPaypalDraft(e.target.value)}
-            className="w-full h-12 px-4 bg-gray-100 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10"
+            style={{ width: '100%', height: 48, padding: '0 16px', border: '1px solid #E5E5E5', borderRadius: 10, fontSize: 14, fontFamily: FONT, color: '#000', background: '#F4F4F2', outline: 'none', boxSizing: 'border-box' }}
           />
 
           {paypalSuccess && (
-            <div className="flex items-center gap-2 text-emerald-700 text-xs bg-emerald-50 rounded-xl px-3 py-2.5">
-              <Check className="h-3.5 w-3.5 shrink-0" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#0a3a0a', background: '#BEEBBE', borderRadius: 10, padding: '10px 14px' }}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#0a3a0a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
               Email de PayPal guardado
             </div>
           )}
@@ -361,46 +333,46 @@ export function ConsumerPaymentTab({ token }: { token: string }) {
             <button
               onClick={handleSavePaypal}
               disabled={paypalSaving || !paypalDraft.includes('@')}
-              className="w-full h-12 bg-[#003087] hover:bg-[#001f6b] disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold text-sm rounded-xl transition-colors flex items-center justify-center"
+              style={{ width: '100%', height: 48, background: paypalSaving || !paypalDraft.includes('@') ? '#E5E5E5' : '#003087', color: paypalSaving || !paypalDraft.includes('@') ? '#999' : '#fff', borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 13, fontFamily: FONT, cursor: paypalSaving || !paypalDraft.includes('@') ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
               {paypalSaving
-                ? <Loader2 className="h-4 w-4 animate-spin" />
+                ? <span style={{ width: 16, height: 16, border: '2px solid #999', borderTopColor: '#fff', borderRadius: 999, animation: 'con-spin 0.7s linear infinite', display: 'inline-block' }} />
                 : 'Guardar email de PayPal'
               }
             </button>
           )}
         </div>
-      </section>
+      </div>
 
-      {/* ── Transferencia bancaria ── */}
-      <section className="bg-white rounded-2xl p-5">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-            <Landmark className="h-4 w-4 text-gray-600" />
+      {/* Transferencia bancaria */}
+      <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 16, padding: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 7l7-4 7 4v1H2V7Z" stroke="#909090" strokeWidth="1.3" strokeLinejoin="round"/><rect x="3" y="8" width="2" height="6" stroke="#909090" strokeWidth="1.3"/><rect x="8" y="8" width="2" height="6" stroke="#909090" strokeWidth="1.3"/><rect x="13" y="8" width="2" height="6" stroke="#909090" strokeWidth="1.3"/><path d="M1.5 15h15" stroke="#909090" strokeWidth="1.3" strokeLinecap="round"/></svg>
           </div>
           <div>
-            <h3 className="font-bold text-gray-900 text-sm">Transferencia bancaria</h3>
-            <p className="text-[12px] text-gray-400 mt-0.5 leading-relaxed">
+            <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: '-0.02em', color: '#000' }}>Transferencia bancaria</div>
+            <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.45)', marginTop: 2, lineHeight: 1.4 }}>
               El restaurante te mostrará sus datos al seleccionar este método.
-            </p>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* ── Efectivo ── */}
-      <section className="bg-white rounded-2xl p-5">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-            <Banknote className="h-4 w-4 text-gray-600" />
+      {/* Efectivo */}
+      <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 16, padding: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1.5" y="5" width="15" height="8" rx="1.5" stroke="#909090" strokeWidth="1.3"/><circle cx="9" cy="9" r="2" stroke="#909090" strokeWidth="1.3"/><path d="M5 7.5h1M12 7.5h1M5 10.5h1M12 10.5h1" stroke="#909090" strokeWidth="1.3" strokeLinecap="round"/></svg>
           </div>
           <div>
-            <h3 className="font-bold text-gray-900 text-sm">Efectivo</h3>
-            <p className="text-[12px] text-gray-400 mt-0.5 leading-relaxed">
+            <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: '-0.02em', color: '#000' }}>Efectivo</div>
+            <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.45)', marginTop: 2, lineHeight: 1.4 }}>
               Avisale al mesero que pagás en efectivo. Él te indica el total y el vuelto.
-            </p>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
     </div>
   )

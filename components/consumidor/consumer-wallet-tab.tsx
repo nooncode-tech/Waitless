@@ -8,10 +8,6 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js'
-import {
-  Wallet, Plus, ArrowDownLeft, ArrowUpRight, RotateCcw,
-  Loader2, AlertCircle, X, Check, Gift,
-} from 'lucide-react'
 
 const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
@@ -30,11 +26,11 @@ interface WalletTransaction {
   balance_type?: string | null
 }
 
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
+
 function RechargeForm({
-  token,
-  amountCents,
-  onSuccess,
-  onCancel,
+  token, amountCents, onSuccess, onCancel,
 }: {
   token: string
   amountCents: number
@@ -69,33 +65,33 @@ function RechargeForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <PaymentElement options={{ layout: 'tabs', terms: { card: 'never' } }} />
 
       {error && (
-        <div className="flex items-center gap-2 text-red-600 text-xs bg-red-50 rounded-xl px-3 py-2.5">
-          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#c00', background: '#fff0f0', borderRadius: 10, padding: '10px 14px', fontFamily: FONT }}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#c00" strokeWidth="1.3"/><path d="M7 4.5v3M7 9.5v.2" stroke="#c00" strokeWidth="1.5" strokeLinecap="round"/></svg>
           {error}
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div style={{ display: 'flex', gap: 8 }}>
         <button
           type="submit"
           disabled={!stripe || loading}
-          className="flex-1 h-12 bg-black hover:bg-gray-900 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold text-sm rounded-xl transition-colors flex items-center justify-center gap-2"
+          style={{ flex: 1, height: 48, background: loading || !stripe ? '#E5E5E5' : '#000', color: loading || !stripe ? '#999' : '#fff', borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 13, fontFamily: FONT, cursor: !stripe || loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
         >
           {loading
-            ? <Loader2 className="h-4 w-4 animate-spin" />
-            : <><Wallet className="h-4 w-4" />Recargar ${(amountCents / 100).toFixed(2)}</>
+            ? <span style={{ width: 14, height: 14, border: '2px solid #999', borderTopColor: '#fff', borderRadius: 999, animation: 'con-spin 0.7s linear infinite', display: 'inline-block' }} />
+            : `Recargar $${(amountCents / 100).toFixed(2)}`
           }
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="h-12 w-12 border border-gray-200 rounded-xl flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors"
+          style={{ width: 48, height: 48, border: '1px solid #E5E5E5', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', cursor: 'pointer', color: 'rgba(0,0,0,0.45)' }}
         >
-          <X className="h-4 w-4" />
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
         </button>
       </div>
     </form>
@@ -155,7 +151,6 @@ export function ConsumerWalletTab({ token }: { token: string }) {
     setSelectedAmount(null)
     setCustomAmount('')
     setRechargeSuccess(true)
-    // Poll until cash balance increases (webhook fires async) — give up after 8s
     const previousCash = balanceCashCents
     let attempts = 0
     const poll = async () => {
@@ -183,90 +178,79 @@ export function ConsumerWalletTab({ token }: { token: string }) {
     type === 'recharge' || type === 'refund' ? `+${formatCurrency(cents)}` : `-${formatCurrency(cents)}`
 
   const txColor = (type: WalletTransaction['type']) =>
-    type === 'recharge' ? 'text-[#06C167]' : type === 'refund' ? 'text-blue-600' : 'text-gray-800'
-
-  const txIcon = (type: WalletTransaction['type']) => {
-    if (type === 'recharge') return <ArrowDownLeft className="h-4 w-4 text-[#06C167]" />
-    if (type === 'refund')   return <RotateCcw className="h-4 w-4 text-blue-500" />
-    return <ArrowUpRight className="h-4 w-4 text-gray-400" />
-  }
+    type === 'recharge' ? '#0a3a0a' : type === 'refund' ? '#1a4a9a' : '#000'
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-gray-300" />
+      <div className="con-loading" style={{ minHeight: 200 }}>
+        <div className="con-spinner" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontFamily: FONT }}>
 
-      {/* ── Balance card ── */}
-      <section
-        className="rounded-2xl p-6 text-white overflow-hidden relative"
-        style={{ background: 'linear-gradient(135deg, #111 0%, #333 100%)' }}
-      >
-        <div className="absolute inset-0 opacity-5"
-          style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #fff 0%, transparent 60%)' }} />
-        <p className="text-xs font-bold text-white/50 uppercase tracking-widest mb-1 relative">
-          Waitless Créditos
-        </p>
-        <p className="text-5xl font-black relative" style={{ letterSpacing: '-0.04em' }}>
+      {/* Balance hero */}
+      <div style={{ background: '#000', borderRadius: 20, padding: 24, color: '#fff', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', marginBottom: 4 }}>
+          Saldo total
+        </div>
+        <div style={{ fontWeight: 700, fontSize: 56, letterSpacing: '-0.05em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
           {formatCurrency(totalBalance)}
-        </p>
-        <p className="text-xs text-white/40 mt-1.5 relative">Saldo total disponible</p>
+        </div>
+        <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 4 }}>
+          Waitless Créditos · MXN
+        </div>
 
         {balanceRewardsCents > 0 && (
-          <div className="flex items-center gap-3 mt-4 relative">
-            <div className="flex items-center gap-1.5 bg-white/10 rounded-xl px-3 py-1.5">
-              <Wallet className="h-3.5 w-3.5 text-white/60" />
-              <span className="text-xs text-white/70">Efectivo</span>
-              <span className="text-xs font-bold text-white">{formatCurrency(balanceCashCents)}</span>
+          <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: '6px 12px' }}>
+              <span style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>Efectivo</span>
+              <span style={{ fontWeight: 700, fontSize: 12, color: '#fff', fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(balanceCashCents)}</span>
             </div>
-            <div className="flex items-center gap-1.5 bg-[#06C167]/20 rounded-xl px-3 py-1.5">
-              <Gift className="h-3.5 w-3.5 text-[#06C167]" />
-              <span className="text-xs text-[#06C167]/80">Rewards</span>
-              <span className="text-xs font-bold text-[#06C167]">{formatCurrency(balanceRewardsCents)}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(190,235,190,0.15)', borderRadius: 10, padding: '6px 12px' }}>
+              <span style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(190,235,190,0.7)' }}>Rewards</span>
+              <span style={{ fontWeight: 700, fontSize: 12, color: '#BEEBBE', fontVariantNumeric: 'tabular-nums' }}>{formatCurrency(balanceRewardsCents)}</span>
             </div>
           </div>
         )}
 
         {rechargeSuccess && (
-          <div className="flex items-center gap-2 mt-4 text-[#06C167] text-sm font-semibold relative">
-            <Check className="h-4 w-4" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 16, color: '#BEEBBE', fontSize: 13, fontWeight: 700 }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
             Recarga exitosa — saldo actualizado
           </div>
         )}
-      </section>
+      </div>
 
-      {/* ── Recargar ── */}
-      <section className="bg-white rounded-2xl p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <Plus className="h-4 w-4 text-gray-500" />
-          <h3 className="font-bold text-gray-900 text-sm">Recargar créditos</h3>
-        </div>
+      {/* Recargar */}
+      <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 16, padding: 20 }}>
+        <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: '-0.02em', color: '#000', marginBottom: 16 }}>Recargar créditos</div>
 
         {!showRecharge ? (
           <>
-            <div className="grid grid-cols-4 gap-2 mb-3">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 12 }}>
               {AMOUNTS.map(amt => (
                 <button
                   key={amt}
                   onClick={() => { setSelectedAmount(amt); setCustomAmount('') }}
-                  className={`rounded-xl py-3 text-sm font-bold transition-colors ${
-                    selectedAmount === amt && !customAmount
-                      ? 'bg-black text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  style={{
+                    height: 44, borderRadius: 10, fontSize: 13, fontWeight: 700, fontFamily: FONT,
+                    border: '1px solid',
+                    borderColor: selectedAmount === amt && !customAmount ? '#000' : '#E5E5E5',
+                    background: selectedAmount === amt && !customAmount ? '#000' : '#fff',
+                    color: selectedAmount === amt && !customAmount ? '#fff' : 'rgba(0,0,0,0.65)',
+                    cursor: 'pointer',
+                  }}
                 >
                   ${amt / 100}
                 </button>
               ))}
             </div>
 
-            <div className="relative mb-3">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">$</span>
+            <div style={{ position: 'relative', marginBottom: 12 }}>
+              <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'rgba(0,0,0,0.4)', fontSize: 14 }}>$</span>
               <input
                 type="number"
                 min="1"
@@ -274,13 +258,13 @@ export function ConsumerWalletTab({ token }: { token: string }) {
                 placeholder="Otro monto"
                 value={customAmount}
                 onChange={e => { setCustomAmount(e.target.value); setSelectedAmount(null) }}
-                className="w-full pl-8 pr-4 h-12 bg-gray-100 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10"
+                style={{ width: '100%', height: 48, paddingLeft: 32, paddingRight: 16, border: '1px solid #E5E5E5', borderRadius: 10, fontSize: 14, fontFamily: FONT, color: '#000', outline: 'none', boxSizing: 'border-box', background: '#F4F4F2' }}
               />
             </div>
 
             {!stripePromise && (
-              <div className="flex items-center gap-2 text-amber-700 text-xs bg-amber-50 rounded-xl px-3 py-2.5 mb-3">
-                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#b45309', background: '#fff8e6', borderRadius: 10, padding: '10px 14px', marginBottom: 12 }}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.3"/><path d="M7 4.5v3M7 9.5v.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                 Stripe no configurado — agregá NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
               </div>
             )}
@@ -288,10 +272,17 @@ export function ConsumerWalletTab({ token }: { token: string }) {
             <button
               onClick={handleStartRecharge}
               disabled={rechargeLoading || !stripePromise || getAmountCents() < 100}
-              className="w-full h-12 bg-black hover:bg-gray-900 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold text-sm rounded-xl transition-colors flex items-center justify-center"
+              style={{
+                width: '100%', height: 48,
+                background: rechargeLoading || !stripePromise || getAmountCents() < 100 ? '#E5E5E5' : '#000',
+                color: rechargeLoading || !stripePromise || getAmountCents() < 100 ? '#999' : '#fff',
+                borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 13, fontFamily: FONT,
+                cursor: rechargeLoading || !stripePromise || getAmountCents() < 100 ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
             >
               {rechargeLoading
-                ? <Loader2 className="h-4 w-4 animate-spin" />
+                ? <span style={{ width: 16, height: 16, border: '2px solid #999', borderTopColor: '#fff', borderRadius: 999, animation: 'con-spin 0.7s linear infinite', display: 'inline-block' }} />
                 : `Continuar${getAmountCents() >= 100 ? ` — $${(getAmountCents() / 100).toFixed(2)}` : ''}`
               }
             </button>
@@ -306,8 +297,8 @@ export function ConsumerWalletTab({ token }: { token: string }) {
                   theme: 'stripe',
                   variables: {
                     colorPrimary: '#000000',
-                    borderRadius: '12px',
-                    fontFamily: "'Sora', system-ui, sans-serif",
+                    borderRadius: '10px',
+                    fontFamily: "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif",
                   },
                 },
               }}
@@ -321,40 +312,47 @@ export function ConsumerWalletTab({ token }: { token: string }) {
             </Elements>
           )
         )}
-      </section>
+      </div>
 
-      {/* ── Historial ── */}
-      <section className="bg-white rounded-2xl p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <Wallet className="h-4 w-4 text-gray-500" />
-          <h3 className="font-bold text-gray-900 text-sm">Movimientos</h3>
-        </div>
+      {/* Historial */}
+      <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 16, padding: 20 }}>
+        <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: '-0.02em', color: '#000', marginBottom: 16 }}>Movimientos</div>
 
         {transactions.length === 0 ? (
-          <p className="text-sm text-gray-400 py-2">Aún no hay movimientos.</p>
+          <div style={{ fontFamily: MONO, fontSize: 12, color: 'rgba(0,0,0,0.4)', padding: '8px 0' }}>Aún no hay movimientos.</div>
         ) : (
-          <div className="space-y-0.5">
-            {transactions.map(tx => (
-              <div key={tx.id} className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0">
-                <div className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center shrink-0">
-                  {txIcon(tx.type)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+          <div>
+            {transactions.map((tx, i) => (
+              <div
+                key={tx.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  paddingBottom: 10,
+                  backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.25) 1px, transparent 1.5px)',
+                  backgroundPosition: 'bottom',
+                  backgroundSize: '6px 4px',
+                  backgroundRepeat: 'repeat-x',
+                  marginBottom: i < transactions.length - 1 ? 10 : 0,
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: '-0.03em', color: '#000' }}>
                     {tx.description ?? (tx.type === 'recharge' ? 'Recarga' : tx.type === 'refund' ? 'Reembolso' : 'Pago')}
-                  </p>
-                  <p className="text-[11px] text-gray-400">
+                  </div>
+                  <div style={{ fontFamily: MONO, fontSize: 10.5, color: 'rgba(0,0,0,0.45)', marginTop: 2 }}>
                     {new Date(tx.created_at).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  </p>
+                  </div>
                 </div>
-                <span className={`text-sm font-bold tabular-nums ${txColor(tx.type)}`}>
+                <span style={{ flexShrink: 0, width: 8 }} />
+                <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums', color: txColor(tx.type) }}>
                   {txSign(tx.type, Math.abs(tx.amount_cents))}
-                </span>
+                </div>
               </div>
             ))}
           </div>
         )}
-      </section>
+      </div>
 
     </div>
   )

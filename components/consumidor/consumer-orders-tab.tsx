@@ -1,10 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import {
-  ShoppingBag, Loader2, ChevronDown, ChevronUp, Store,
-  AlertTriangle, X, CheckCircle2, Clock, Camera, XCircle,
-} from 'lucide-react'
 import { formatPrice } from '@/lib/store'
 
 interface OrderItem {
@@ -28,14 +24,6 @@ interface ConsumerOrder {
   payment_status: string
   payment_method: string | null
   restaurant: { id: string; nombre: string; slug: string; logo_url: string | null } | null
-}
-
-const STATUS_CONFIG: Record<string, { label: string; dot: string; text: string; bg: string }> = {
-  recibido:   { label: 'Recibido',  dot: 'bg-gray-400',  text: 'text-gray-600',  bg: 'bg-gray-100' },
-  preparando: { label: 'En cocina', dot: 'bg-amber-500', text: 'text-amber-700', bg: 'bg-amber-50' },
-  listo:      { label: 'Listo',     dot: 'bg-blue-500',  text: 'text-blue-700',  bg: 'bg-blue-50' },
-  entregado:  { label: 'Entregado', dot: 'bg-[#06C167]', text: 'text-[#1A7A47]', bg: 'bg-[#E8F9F1]' },
-  cancelado:  { label: 'Cancelado', dot: 'bg-red-500',   text: 'text-red-600',   bg: 'bg-red-50' },
 }
 
 const CANAL_LABEL: Record<string, string> = {
@@ -62,6 +50,9 @@ const MOTIVOS = [
   'Otro',
 ]
 
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
+
 function formatDate(iso: string) {
   const d = new Date(iso)
   return d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -77,11 +68,18 @@ function formatDateGroup(iso: string) {
   return d.toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' })
 }
 
+function getTrackSegments(status: string): Array<'on' | 'live' | 'off'> {
+  switch (status) {
+    case 'recibido':   return ['on',  'off',  'off',  'off',  'off']
+    case 'preparando': return ['on',  'on',   'live', 'off',  'off']
+    case 'listo':      return ['on',  'on',   'on',   'live', 'off']
+    case 'entregado':  return ['on',  'on',   'on',   'on',   'on']
+    default:           return ['off', 'off',  'off',  'off',  'off']
+  }
+}
+
 function DisputeModal({
-  order,
-  token,
-  onClose,
-  onSuccess,
+  order, token, onClose, onSuccess,
 }: {
   order: ConsumerOrder
   token: string
@@ -117,7 +115,6 @@ function DisputeModal({
     setLoading(true)
     setError('')
 
-    // Upload photos first
     const fotoUrls: string[] = []
     for (const file of photos) {
       const fd = new FormData()
@@ -156,41 +153,46 @@ function DisputeModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.55)', padding: 16 }}>
+      <div style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 480, overflow: 'hidden', fontFamily: FONT }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 20px 16px', borderBottom: '1px solid #E5E5E5' }}>
           <div>
-            <h3 className="font-bold text-gray-900">Abrir reclamo</h3>
-            <p className="text-xs text-gray-400 mt-0.5">Pedido #{order.numero} · {order.restaurant?.nombre}</p>
+            <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.03em', color: '#000' }}>Abrir reclamo</div>
+            <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.45)', marginTop: 3 }}>
+              Pedido #{order.numero} · {order.restaurant?.nombre}
+            </div>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700">
-            <X className="h-5 w-5" />
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(0,0,0,0.4)' }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           </button>
         </div>
 
         {done ? (
-          <div className="px-5 py-10 text-center">
-            <CheckCircle2 className="h-12 w-12 text-[#06C167] mx-auto mb-3" />
-            <p className="font-bold text-gray-900">Reclamo enviado</p>
-            <p className="text-sm text-gray-400 mt-1">El restaurante tiene 24h para responder.</p>
+          <div style={{ padding: '40px 20px', textAlign: 'center' }}>
+            <div style={{ width: 48, height: 48, borderRadius: 999, background: '#BEEBBE', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10l4.5 4.5L16 6" stroke="#0a3a0a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </div>
+            <div style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.03em', color: '#000' }}>Reclamo enviado</div>
+            <div style={{ fontFamily: MONO, fontSize: 12, color: 'rgba(0,0,0,0.45)', marginTop: 4 }}>El restaurante tiene 24h para responder.</div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          <form onSubmit={handleSubmit} style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
-                Motivo
-              </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div style={{ fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 700, color: '#000', marginBottom: 10 }}>Motivo</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 {MOTIVOS.map(m => (
                   <button
                     key={m}
                     type="button"
                     onClick={() => setMotivo(m)}
-                    className={`text-xs font-medium rounded-xl px-3 py-2.5 text-left transition-colors ${
-                      motivo === m
-                        ? 'bg-gray-900 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                    style={{
+                      padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 700,
+                      textAlign: 'left', border: '1px solid', fontFamily: FONT,
+                      borderColor: motivo === m ? '#000' : '#E5E5E5',
+                      background: motivo === m ? '#000' : '#fff',
+                      color: motivo === m ? '#fff' : 'rgba(0,0,0,0.65)',
+                      cursor: 'pointer',
+                    }}
                   >
                     {m}
                   </button>
@@ -199,77 +201,53 @@ function DisputeModal({
             </div>
 
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
-                Descripción (opcional)
-              </label>
+              <div style={{ fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 700, color: '#000', marginBottom: 8 }}>Descripción (opcional)</div>
               <textarea
                 rows={3}
                 placeholder="Cuéntanos qué pasó con tu pedido..."
                 value={descripcion}
                 onChange={e => setDescripcion(e.target.value)}
-                className="w-full bg-gray-100 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10 resize-none"
+                style={{ width: '100%', background: '#F4F4F2', border: '1px solid #E5E5E5', borderRadius: 10, padding: '12px 14px', fontSize: 13, fontFamily: FONT, color: '#000', outline: 'none', resize: 'none', boxSizing: 'border-box' }}
               />
             </div>
 
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
-                Fotos (opcional, máx. 3)
-              </label>
-              <div className="flex items-center gap-2 flex-wrap">
+              <div style={{ fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 700, color: '#000', marginBottom: 8 }}>Fotos (opcional, máx. 3)</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                 {photoPreviews.map((src, i) => (
-                  <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden bg-gray-100 shrink-0">
-                    <img src={src} alt="" className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removePhoto(i)}
-                      className="absolute top-0.5 right-0.5 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center"
-                    >
-                      <XCircle className="h-3.5 w-3.5 text-white" />
+                  <div key={i} style={{ position: 'relative', width: 64, height: 64, borderRadius: 10, overflow: 'hidden', background: '#F4F4F2', flexShrink: 0 }}>
+                    <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button type="button" onClick={() => removePhoto(i)} style={{ position: 'absolute', top: 3, right: 3, width: 20, height: 20, borderRadius: 999, background: 'rgba(0,0,0,0.6)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 2l6 6M8 2L2 8" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg>
                     </button>
                   </div>
                 ))}
                 {photos.length < 3 && (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-16 h-16 rounded-xl bg-gray-100 flex flex-col items-center justify-center gap-1 text-gray-400 hover:bg-gray-200 transition-colors shrink-0"
-                  >
-                    <Camera className="h-5 w-5" />
-                    <span className="text-[9px] font-medium">Agregar</span>
+                  <button type="button" onClick={() => fileInputRef.current?.click()} style={{ width: 64, height: 64, borderRadius: 10, background: '#F4F4F2', border: '1px solid #E5E5E5', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, flexShrink: 0 }}>
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="5" width="14" height="10" rx="2" stroke="#909090" strokeWidth="1.3"/><circle cx="9" cy="10" r="2.5" stroke="#909090" strokeWidth="1.3"/><path d="M6 5V4a2 2 0 014 0v1" stroke="#909090" strokeWidth="1.3"/></svg>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(0,0,0,0.4)', fontFamily: FONT }}>Agregar</span>
                   </button>
                 )}
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={handlePhotoAdd}
-              />
+              <input ref={fileInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handlePhotoAdd} />
             </div>
 
             {error && (
-              <div className="flex items-center gap-2 text-red-600 text-xs bg-red-50 rounded-xl px-3 py-2.5">
-                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#c00', background: '#fff0f0', borderRadius: 10, padding: '10px 14px' }}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#c00" strokeWidth="1.3"/><path d="M7 4.5v3M7 9.5v.2" stroke="#c00" strokeWidth="1.5" strokeLinecap="round"/></svg>
                 {error}
               </div>
             )}
 
-            <div className="flex gap-2 pt-1">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 h-11 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-              >
+            <div style={{ display: 'flex', gap: 8, paddingTop: 4 }}>
+              <button type="button" onClick={onClose} style={{ flex: 1, height: 48, border: '1px solid #E5E5E5', borderRadius: 999, fontSize: 13, fontWeight: 700, color: 'rgba(0,0,0,0.55)', background: '#fff', fontFamily: FONT, cursor: 'pointer' }}>
                 Cancelar
               </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 h-11 bg-gray-900 hover:bg-black disabled:opacity-60 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
-              >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enviar reclamo'}
+              <button type="submit" disabled={loading} style={{ flex: 1, height: 48, background: loading ? '#E5E5E5' : '#000', color: loading ? '#999' : '#fff', borderRadius: 999, border: 'none', fontSize: 13, fontWeight: 700, fontFamily: FONT, cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                {loading
+                  ? <span style={{ width: 14, height: 14, border: '2px solid #999', borderTopColor: '#fff', borderRadius: 999, animation: 'con-spin 0.7s linear infinite', display: 'inline-block' }} />
+                  : 'Enviar reclamo'
+                }
               </button>
             </div>
           </form>
@@ -280,9 +258,7 @@ function DisputeModal({
 }
 
 function OrderCard({
-  order,
-  token,
-  onDisputeOpened,
+  order, token, onDisputeOpened,
 }: {
   order: ConsumerOrder
   token: string
@@ -290,15 +266,21 @@ function OrderCard({
 }) {
   const [expanded, setExpanded] = useState(false)
   const [showDispute, setShowDispute] = useState(false)
-  const st = STATUS_CONFIG[order.status] ?? { label: order.status, dot: 'bg-gray-400', text: 'text-gray-600', bg: 'bg-gray-100' }
   const isActive = order.status === 'recibido' || order.status === 'preparando' || order.status === 'listo'
+  const isCancelled = order.status === 'cancelado'
   const canClaim  = order.status === 'entregado'
+  const segments = getTrackSegments(order.status)
 
   const itemSummary = order.items
     .slice(0, 2)
     .map(i => `${i.cantidad > 1 ? `${i.cantidad}× ` : ''}${i.menuItem.nombre}`)
     .join(' · ')
   const extraCount = order.items.length > 2 ? ` · +${order.items.length - 2}` : ''
+
+  const statusLabel: Record<string, string> = {
+    recibido: 'Recibido', preparando: 'En cocina', listo: 'Listo',
+    entregado: 'Pagado', cancelado: 'Cancelado',
+  }
 
   return (
     <>
@@ -311,95 +293,131 @@ function OrderCard({
         />
       )}
 
-      <div className={`bg-white rounded-2xl overflow-hidden ${isActive ? 'shadow-md ring-1 ring-black/5' : 'shadow-sm'}`}>
-        {isActive && <div className="h-1 bg-black" />}
+      <div style={{
+        background: '#fff',
+        border: isActive ? '2px solid #000' : '1px solid #E5E5E5',
+        borderRadius: 16,
+        position: 'relative',
+        fontFamily: FONT,
+      }}>
+        {isActive && (
+          <div style={{ position: 'absolute', top: -10, left: 16, background: '#BEEBBE', color: '#0a3a0a', padding: '4px 9px', fontWeight: 700, fontSize: 9.5, letterSpacing: '0.06em', textTransform: 'uppercase', borderRadius: 3 }}>
+            EN CURSO
+          </div>
+        )}
+        {isCancelled && (
+          <div style={{ position: 'absolute', top: -10, left: 16, background: '#FEE2E2', color: '#c00', padding: '4px 9px', fontWeight: 700, fontSize: 9.5, letterSpacing: '0.06em', textTransform: 'uppercase', borderRadius: 3 }}>
+            CANCELADO
+          </div>
+        )}
 
-        <button className="w-full text-left p-4" onClick={() => setExpanded(e => !e)}>
-          <div className="flex items-start gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
-              {order.restaurant?.logo_url
-                ? <img src={order.restaurant.logo_url} alt="" className="w-full h-full object-cover" />
-                : <Store className="h-5 w-5 text-gray-400" />
-              }
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                <p className="font-bold text-sm text-gray-900 leading-tight">
-                  {order.restaurant?.nombre ?? 'Restaurante'}
-                </p>
-                <p className="text-sm font-black text-gray-900 shrink-0" style={{ letterSpacing: '-0.02em' }}>
-                  {formatPrice(order.total)}
-                </p>
+        <button
+          style={{ width: '100%', textAlign: 'left', padding: '16px 16px 12px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT }}
+          onClick={() => setExpanded(e => !e)}
+        >
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginTop: isActive || isCancelled ? 6 : 0 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, fontSize: 17, letterSpacing: '-0.035em', color: '#000', lineHeight: 1.1 }}>
+                {order.restaurant?.nombre ?? 'Restaurante'}
               </div>
-
-              <p className="text-[12px] text-gray-500 mt-0.5 truncate">
+              <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.45)', marginTop: 4 }}>
+                #{order.numero} · {new Date(order.created_at).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
+                {order.canal !== 'mesa' && order.canal !== 'mesero' && ` · ${CANAL_LABEL[order.canal] ?? order.canal}`}
+              </div>
+              <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.55)', marginTop: 4 }}>
                 {itemSummary}{extraCount}
-              </p>
-
-              <div className="flex items-center justify-between mt-2">
-                <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${st.bg} ${st.text}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${st.dot} ${isActive ? 'animate-pulse' : ''}`} />
-                  {st.label}
-                </span>
-                <div className="flex items-center gap-1 text-gray-400">
-                  <span className="text-[11px]">{CANAL_LABEL[order.canal] ?? order.canal}</span>
-                  {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              </div>
+            </div>
+            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+              <div style={{ fontWeight: 700, fontSize: 18, letterSpacing: '-0.04em', fontVariantNumeric: 'tabular-nums' }}>
+                {formatPrice(order.total)}
+              </div>
+              {!isActive && !isCancelled && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', height: 18, padding: '0 8px', background: '#0a3a0a', color: '#BEEBBE', fontFamily: MONO, fontSize: 9.5, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', borderRadius: 3, marginTop: 4 }}>
+                  {statusLabel[order.status] ?? order.status}
                 </div>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: 6 }}>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s', color: 'rgba(0,0,0,0.3)' }}>
+                  <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
               </div>
             </div>
           </div>
+
+          {isActive && (
+            <div style={{ marginTop: 14 }}>
+              <div style={{ display: 'flex', gap: 2 }}>
+                {segments.map((seg, i) => (
+                  <span key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: seg === 'on' ? '#000' : seg === 'live' ? '#BEEBBE' : 'rgba(0,0,0,0.08)' }} />
+                ))}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.45)' }}>
+                <span>Recibido</span>
+                <span>Cocinando</span>
+                <span>Listo</span>
+                <span>Servido</span>
+                <span>Pagado</span>
+              </div>
+            </div>
+          )}
         </button>
 
         {expanded && (
-          <div className="border-t border-gray-50 px-4 pb-4">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-3 mb-2.5">
-              Pedido #{order.numero} · {formatDate(order.created_at)}
-            </p>
-            <div className="space-y-2.5">
+          <div style={{ borderTop: '1px solid #EFEFEF', padding: '12px 16px 16px' }}>
+            <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.4)', marginBottom: 12 }}>
+              {formatDate(order.created_at)}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {order.items.map(item => (
-                <div key={item.id} className="flex justify-between gap-3 text-sm">
-                  <div className="min-w-0">
-                    <span className="font-medium text-gray-800">{item.cantidad}× {item.menuItem.nombre}</span>
+                <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#000', letterSpacing: '-0.01em' }}>
+                      {item.cantidad}× {item.menuItem.nombre}
+                    </div>
                     {item.extras && item.extras.length > 0 && (
-                      <p className="text-[11px] text-gray-400">+ {item.extras.map(e => e.nombre).join(', ')}</p>
+                      <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.4)', marginTop: 2 }}>
+                        + {item.extras.map(e => e.nombre).join(', ')}
+                      </div>
                     )}
-                    {item.notas && <p className="text-[11px] text-amber-600 italic">{item.notas}</p>}
+                    {item.notas && (
+                      <div style={{ fontFamily: MONO, fontSize: 11, color: '#b45309', marginTop: 2 }}>{item.notas}</div>
+                    )}
                   </div>
-                  <span className="text-gray-500 shrink-0 text-[13px]">
+                  <div style={{ fontSize: 13, color: 'rgba(0,0,0,0.55)', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
                     {formatPrice(item.menuItem.precio * item.cantidad)}
-                  </span>
+                  </div>
                 </div>
               ))}
             </div>
 
-            <div className="mt-3 pt-3 border-t border-gray-100 space-y-1">
+            <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid #EFEFEF' }}>
               {order.impuestos > 0 && (
                 <>
-                  <div className="flex justify-between text-[11px] text-gray-400">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.4)', marginBottom: 4 }}>
                     <span>Subtotal</span><span>{formatPrice(order.subtotal)}</span>
                   </div>
-                  <div className="flex justify-between text-[11px] text-gray-400">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.4)', marginBottom: 4 }}>
                     <span>Impuestos</span><span>{formatPrice(order.impuestos)}</span>
                   </div>
                 </>
               )}
-              <div className="flex justify-between text-sm font-bold text-gray-900">
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 14, color: '#000', letterSpacing: '-0.02em' }}>
                 <span>Total</span><span>{formatPrice(order.total)}</span>
               </div>
               {order.payment_method && (
-                <p className="text-[11px] text-gray-400 pt-0.5">
+                <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.4)', marginTop: 4 }}>
                   Pagado con {PAYMENT_LABEL[order.payment_method] ?? order.payment_method}
-                </p>
+                </div>
               )}
             </div>
 
             {canClaim && (
               <button
                 onClick={() => setShowDispute(true)}
-                className="w-full mt-3 h-10 border border-gray-200 rounded-xl text-xs font-semibold text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors flex items-center justify-center gap-1.5"
+                style={{ width: '100%', marginTop: 12, height: 40, border: '1px solid #E5E5E5', borderRadius: 999, fontSize: 12, fontWeight: 700, color: 'rgba(0,0,0,0.45)', background: '#fff', fontFamily: FONT, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
               >
-                <AlertTriangle className="h-3.5 w-3.5" />
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" strokeWidth="1.3"/><path d="M7 4.5v3M7 9.5v.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
                 Reclamar pedido
               </button>
             )}
@@ -427,22 +445,20 @@ export function ConsumerOrdersTab({ token }: { token: string }) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-gray-300" />
+      <div className="con-loading" style={{ minHeight: 200 }}>
+        <div className="con-spinner" />
       </div>
     )
   }
 
   if (orders.length === 0) {
     return (
-      <div className="bg-white rounded-2xl p-12 text-center">
-        <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <ShoppingBag className="h-8 w-8 text-gray-300" />
+      <div className="con-empty">
+        <div className="con-empty-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="2" stroke="#909090" strokeWidth="1.8"/><path d="M9 8h6M9 12h6M9 16h4" stroke="#909090" strokeWidth="1.8" strokeLinecap="round"/></svg>
         </div>
-        <p className="font-bold text-gray-900">Sin pedidos aún</p>
-        <p className="text-sm text-gray-400 mt-1.5 leading-relaxed">
-          Cuando hagas tu primer pedido aparecerá aquí.
-        </p>
+        <div className="con-empty-title">Sin pedidos aún</div>
+        <div className="con-empty-sub">Cuando hagas tu primer pedido aparecerá aquí.</div>
       </div>
     )
   }
@@ -456,13 +472,13 @@ export function ConsumerOrdersTab({ token }: { token: string }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {groups.map(group => (
         <div key={group.label}>
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-3 px-1">
+          <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.4)', marginBottom: 12, paddingLeft: 2 }}>
             {group.label}
-          </p>
-          <div className="space-y-3">
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {group.orders.map(order => (
               <OrderCard
                 key={order.id}
