@@ -1,0 +1,69 @@
+:root {
+  --mint: #BEEBBE;
+  --mint-deep: #0a3a0a;
+  --line: #E5E5E5;
+  --line-2: #EFEFEF;
+  --paper: #F7F5F0;
+  --mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+}
+
+body { font-family: 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif; }
+
+.exp-font-display { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 700; letter-spacing: -0.045em; line-height: 0.92; }
+.exp-medium-tight { letter-spacing: -0.01em; }
+.exp-mono { font-family: var(--mono); letter-spacing: -0.01em; }
+.exp-hairline { border-color: var(--line); }
+.exp-hairline-2 { border-color: var(--line-2); }
+.exp-mint { background: var(--mint); }
+.exp-mint-fg { color: var(--mint-deep); }
+.exp-eyebrow { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; }
+.exp-num { font-variant-numeric: tabular-nums; }
+
+.exp-w-logo { width: 32px; height: 32px; background: #000; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; letter-spacing: -0.04em; }
+.exp-w-logo-sm { width: 22px; height: 22px; font-size: 11px; border-radius: 6px; background: #000; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; letter-spacing: -0.04em; }
+
+.exp-swiss-num { font-family: var(--mono); font-size: 11px; color: #909090; letter-spacing: 0.04em; }
+
+.exp-hover-line { position: relative; }
+.exp-hover-line::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .25s ease; }
+.exp-hover-line:hover::after { transform: scaleX(1); }
+
+.exp-nav-shadow { box-shadow: 0 1px 0 0 var(--line); }
+
+/* photo palettes */
+.exp-photo { position: relative; overflow: hidden; }
+.exp-photo::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.12) 0, transparent 40%), radial-gradient(circle at 80% 20%, rgba(0,0,0,0.25) 0, transparent 50%); z-index: 1; pointer-events: none; }
+
+.exp-pal-1 { background: linear-gradient(135deg, #2a1810, #0e0805); }
+.exp-pal-2 { background: linear-gradient(135deg, #3a2418, #1a0e08); }
+.exp-pal-3 { background: linear-gradient(135deg, #1a2a2a, #08161a); }
+.exp-pal-4 { background: linear-gradient(135deg, #2a1818, #1a0808); }
+.exp-pal-5 { background: linear-gradient(135deg, #2a280f, #181708); }
+.exp-pal-6 { background: linear-gradient(135deg, #2a1f2a, #10081a); }
+.exp-pal-7 { background: linear-gradient(135deg, #1a2a1a, #081a08); }
+.exp-pal-8 { background: linear-gradient(135deg, #2a2218, #1a1408); }
+
+.exp-cat-icon { width: 22px; height: 22px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11px; font-weight: 700; }
+
+.exp-hero-card { background: #000; color: #fff; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column; transition: opacity 0.2s; }
+.exp-hero-card:hover { opacity: 0.92; }
+
+.exp-cat-strip { scrollbar-width: none; }
+.exp-cat-strip::-webkit-scrollbar { display: none; }
+
+.exp-chip { display: inline-flex; align-items: center; height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; font-size: 13.5px; font-weight: 600; letter-spacing: -0.01em; background: #fff; gap: 8px; cursor: pointer; white-space: nowrap; transition: background 0.15s, color 0.15s, border-color 0.15s; }
+.exp-chip.active { background: #000; color: #fff; border-color: #000; }
+.exp-chip:hover:not(.active) { border-color: #000; }
+
+.exp-star { display: inline-block; width: 10px; height: 10px; background: #000; clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); flex-shrink: 0; }
+
+.exp-pill { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+
+.exp-dot { width: 8px; height: 8px; border-radius: 999px; display: inline-block; flex-shrink: 0; }
+
+@keyframes expPulseDot {
+  0%   { box-shadow: 0 0 0 0   rgba(190, 235, 190, 0.8); }
+  70%  { box-shadow: 0 0 0 8px rgba(190, 235, 190, 0);   }
+  100% { box-shadow: 0 0 0 0   rgba(190, 235, 190, 0);   }
+}
+.exp-live-dot { animation: expPulseDot 1.8s infinite; }
