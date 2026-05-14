@@ -68,7 +68,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md nav-shadow">
         <div className="max-w-[1440px] mx-auto px-8 h-[68px] flex items-center justify-between">
           <div className="flex items-center gap-10">
-            <a href="#" className="flex items-center gap-2.5">
+            <a href="/" className="flex items-center gap-2.5">
               <span className="w-logo">W</span>
               <span className="font-display text-[19px] tracking-[-0.045em]">WAITLESS</span>
               <span className="mono text-[10px] text-black/40 uppercase tracking-[0.16em] ml-1 hidden md:inline">v10</span>
@@ -82,11 +82,23 @@ export default function LandingPage() {
             </nav>
           </div>
           <div className="flex items-center gap-1">
-            <a href="#" className="hidden md:inline-flex items-center gap-1.5 px-3.5 h-9 text-[13px] font-medium-tight text-black/65 hover:text-black">
+            <a href="/explore" className="hidden md:inline-flex items-center gap-1.5 px-3.5 h-9 text-[13px] font-medium-tight text-black/65 hover:text-black">
               Explorar restaurantes <span className="arr">→</span>
             </a>
-            <a href="#" className="hidden md:inline-flex items-center px-3.5 h-9 text-[13px] font-medium-tight text-black/65 hover:text-black">Iniciar sesión</a>
-            <a href="#" className="ml-2 inline-flex items-center gap-1.5 px-4 h-9 bg-black text-white rounded-full text-[13px] font-bold hover:bg-[#171717]">
+            <div className="hidden md:relative md:inline-block group">
+              <button className="inline-flex items-center px-3.5 h-9 text-[13px] font-medium-tight text-black/65 hover:text-black cursor-pointer bg-transparent border-none">Iniciar sesión</button>
+              <div className="absolute right-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                <div className="bg-white rounded-xl shadow-xl border border-black/10 p-1 w-52">
+                  <a href="/consumidor" className="flex items-center gap-2 px-3.5 py-2.5 text-[13px] font-medium-tight text-black/70 hover:text-black hover:bg-black/5 rounded-lg">
+                    Soy cliente
+                  </a>
+                  <a href="/restaurante" className="flex items-center gap-2 px-3.5 py-2.5 text-[13px] font-medium-tight text-black/70 hover:text-black hover:bg-black/5 rounded-lg">
+                    Soy restaurante
+                  </a>
+                </div>
+              </div>
+            </div>
+            <a href="#precios" className="ml-2 inline-flex items-center gap-1.5 px-4 h-9 bg-black text-white rounded-full text-[13px] font-bold hover:bg-[#171717]">
               Ver planes <span className="arr">→</span>
             </a>
           </div>
@@ -156,7 +168,7 @@ export default function LandingPage() {
                     fuente de verdad para tu restaurante.
                   </p>
                   <div className="mt-10 flex flex-wrap items-center gap-3">
-                    <a href="#" className="inline-flex items-center gap-2 h-12 px-6 bg-black text-white rounded-full text-[15px] font-bold">
+                    <a href="/registro" className="inline-flex items-center gap-2 h-12 px-6 bg-black text-white rounded-full text-[15px] font-bold">
                       Comenzar gratis <span className="arr">→</span>
                     </a>
                     <a href="#turno" className="inline-flex items-center gap-2 h-12 px-6 border hairline rounded-full text-[15px] font-medium-tight hover:border-black">
@@ -206,7 +218,7 @@ export default function LandingPage() {
                 </ul>
                 <div className="mt-5 flex items-center justify-between text-[11px] text-black/50 font-medium-tight border-t hairline pt-3">
                   <span>Datos reales agregados · 340 restaurantes</span>
-                  <a href="#" className="hover-line text-black">Ver todo →</a>
+                  <a href="/explore" className="hover-line text-black">Ver todo →</a>
                 </div>
               </aside>
             </div>
@@ -894,7 +906,7 @@ export default function LandingPage() {
               </div>
               <div className="col-span-12 md:col-span-4 md:col-start-9 md:text-right">
                 <div className="font-display text-[44px] num leading-none">$29<span className="text-[16px] text-black/55 font-medium-tight ml-1">/ mes</span></div>
-                <a href="#" className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-bold hover-line">Empezar gratis <span className="arr">→</span></a>
+                <a href="/registro" className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-bold hover-line">Empezar gratis <span className="arr">→</span></a>
               </div>
             </div>
       
@@ -922,7 +934,7 @@ export default function LandingPage() {
               </div>
               <div className="col-span-12 md:col-span-4 md:col-start-9 md:text-right">
                 <div className="font-display text-[44px] num leading-none">$89<span className="text-[16px] text-black/55 font-medium-tight ml-1">/ mes</span></div>
-                <a href="#" className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-bold hover-line">Empezar gratis <span className="arr">→</span></a>
+                <a href="/registro" className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-bold hover-line">Empezar gratis <span className="arr">→</span></a>
               </div>
             </div>
       
@@ -948,7 +960,7 @@ export default function LandingPage() {
               </div>
               <div className="col-span-12 md:col-span-4 md:col-start-9 md:text-right">
                 <div className="font-display text-[34px] tracking-[-0.04em] leading-none italic text-black/70">A medida</div>
-                <a href="#" className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-bold hover-line">Agendar demo <span className="arr">→</span></a>
+                <a href="mailto:demo@waitless.app" className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-bold hover-line">Agendar demo <span className="arr">→</span></a>
               </div>
             </div>
       
@@ -980,10 +992,10 @@ export default function LandingPage() {
               Setup en 7 minutos. Sin tarjeta. Sin compromiso. Mide tu primer cierre de caja con WAITLESS esta semana.
             </p>
             <div className="mt-10 flex items-center gap-3 flex-wrap">
-              <a href="#" className="inline-flex items-center gap-2 h-12 px-6 bg-black text-white rounded-full text-[15px] font-bold">
+              <a href="/registro" className="inline-flex items-center gap-2 h-12 px-6 bg-black text-white rounded-full text-[15px] font-bold">
                 Comenzar gratis <span className="arr">→</span>
               </a>
-              <a href="#" className="inline-flex items-center gap-2 h-12 px-6 border hairline rounded-full text-[15px] font-medium-tight hover:border-black">
+              <a href="mailto:ventas@waitless.app" className="inline-flex items-center gap-2 h-12 px-6 border hairline rounded-full text-[15px] font-medium-tight hover:border-black">
                 Hablar con ventas
               </a>
               <div className="mono text-[11px] text-black/45 ml-2">o agenda demo · 14 may libre 16:00</div>
@@ -1026,9 +1038,9 @@ export default function LandingPage() {
             <div className="col-span-6 md:col-span-2">
               <div className="eyebrow eyebrow-mute mb-4">Producto</div>
               <ul className="space-y-2.5 text-[13.5px] text-black/65 font-medium-tight">
-                <li><a href="#" className="hover:text-black">Cinco superficies</a></li>
-                <li><a href="#" className="hover:text-black">Carta de planes</a></li>
-                <li><a href="#" className="hover:text-black">Marketplace</a></li>
+                <li><a href="#superficies" className="hover:text-black">Cinco superficies</a></li>
+                <li><a href="#precios" className="hover:text-black">Carta de planes</a></li>
+                <li><a href="/explore" className="hover:text-black">Marketplace</a></li>
                 <li><a href="#" className="hover:text-black">API & webhooks</a></li>
                 <li><a href="#" className="hover:text-black">Changelog</a></li>
               </ul>
@@ -1036,11 +1048,11 @@ export default function LandingPage() {
             <div className="col-span-6 md:col-span-2">
               <div className="eyebrow eyebrow-mute mb-4">Negocio</div>
               <ul className="space-y-2.5 text-[13.5px] text-black/65 font-medium-tight">
-                <li><a href="#" className="hover:text-black">Clientes</a></li>
+                <li><a href="#clientes" className="hover:text-black">Clientes</a></li>
                 <li><a href="#" className="hover:text-black">Casos de éxito</a></li>
                 <li><a href="#" className="hover:text-black">Partners</a></li>
                 <li><a href="#" className="hover:text-black">Prensa</a></li>
-                <li><a href="#" className="hover:text-black">Contacto</a></li>
+                <li><a href="mailto:hola@waitless.app" className="hover:text-black">Contacto</a></li>
               </ul>
             </div>
             <div className="col-span-12 md:col-span-3">
@@ -1055,9 +1067,9 @@ export default function LandingPage() {
           <div className="mt-16 pt-8 border-t hairline flex items-center justify-between text-[12px] text-black/45 font-medium-tight flex-wrap gap-3">
             <div className="mono">© 2026 WAITLESS Labs · Hecho en CDMX · Servido en LATAM</div>
             <div className="flex items-center gap-5 mono">
-              <a href="#" className="hover:text-black">Términos</a>
-              <a href="#" className="hover:text-black">Privacidad</a>
-              <a href="#" className="hover:text-black">Cookies</a>
+              <a href="/legal/terminos" className="hover:text-black">Términos</a>
+              <a href="/legal/privacidad" className="hover:text-black">Privacidad</a>
+              <a href="/legal/cookies" className="hover:text-black">Cookies</a>
               <span>v10.2 · build 481</span>
             </div>
           </div>
