@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef } from "react"
 import { useState } from 'react'
-import { LayoutGrid, Package, Bell, LogOut, ChevronLeft, ChevronRight, ClipboardList } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { toast } from 'sonner'
 import { TablesGrid } from './tables-grid'
@@ -10,18 +9,10 @@ import { TableSession } from './table-session'
 import { DeliveryBoard } from './delivery-board'
 import { WaiterCallsPanel } from './waiter-calls-panel'
 import { WaitlistManager } from '@/components/admin/waitlist-manager'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
-import { WaitlessLogo } from '@/components/ui/waitless-logo'
-import { cn } from '@/lib/utils'
 import { PushSubscribeButton } from '@/components/shared/push-subscribe-button'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
 
 type MeseroScreen = 'tables' | 'session' | 'deliveries' | 'calls' | 'waitlist'
 
@@ -31,25 +22,22 @@ interface MeseroViewProps {
 }
 
 export function MeseroView({ onBack, onLockProfile }: MeseroViewProps) {
-  const { getPendingCalls, orders, waitlist, config } = useApp()
+  const { getPendingCalls, orders, waitlist, config, currentUser } = useApp()
   const [screen, setScreen] = useState<MeseroScreen>('tables')
   const [selectedTable, setSelectedTable] = useState<number | null>(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  
+
   const pendingCallsCount = getPendingCalls().length
   const waitingCount = waitlist.filter(e => e.estado === 'esperando').length
 
-  // Count ready orders for delivery badge
   const readyDeliveryCount = orders.filter(o =>
     o.status === 'listo' &&
     (o.canal === 'mesa' || o.canal === 'para_llevar' || o.canal === 'delivery' || o.canal === 'mesero')
   ).length
 
-  // Signal ready-to-deliver: play beep + toast when new orders become ready
   const prevReadyRef = useRef(readyDeliveryCount)
   useEffect(() => {
     if (readyDeliveryCount > prevReadyRef.current) {
-      // Web Audio beep — no external file needed
       try {
         const ctx = new AudioContext()
         const osc = ctx.createOscillator()
@@ -74,108 +62,73 @@ export function MeseroView({ onBack, onLockProfile }: MeseroViewProps) {
     setSelectedTable(mesa)
     setScreen('session')
   }
-  
+
   const handleBackFromSession = () => {
     setSelectedTable(null)
     setScreen('tables')
   }
-  
+
   const navItems = [
-    { 
-      id: 'tables' as const, 
-      label: 'Mesas', 
-      icon: <LayoutGrid className="h-5 w-5" />,
-      badge: undefined
-    },
-    { 
-      id: 'calls' as const, 
-      label: 'Llamadas', 
-      icon: <Bell className="h-5 w-5" />, 
-      badge: pendingCallsCount > 0 ? pendingCallsCount : undefined,
-      badgeVariant: 'destructive' as const
-    },
-    {
-      id: 'deliveries' as const,
-      label: 'Entregas',
-      icon: <Package className="h-5 w-5" />,
-      badge: readyDeliveryCount > 0 ? readyDeliveryCount : undefined,
-      badgeVariant: 'warning' as const
-    },
-    {
-      id: 'waitlist' as const,
-      label: 'Espera',
-      icon: <ClipboardList className="h-5 w-5" />,
-      badge: waitingCount > 0 ? waitingCount : undefined,
-      badgeVariant: 'default' as const
-    },
+    { id: 'tables' as const, label: 'Mesas', icon: '⊞', badge: undefined, badgeType: undefined },
+    { id: 'calls' as const, label: 'Llamadas', icon: '◉', badge: pendingCallsCount > 0 ? pendingCallsCount : undefined, badgeType: 'err' as const },
+    { id: 'deliveries' as const, label: 'Entregas', icon: '↑', badge: readyDeliveryCount > 0 ? readyDeliveryCount : undefined, badgeType: 'warn' as const },
+    { id: 'waitlist' as const, label: 'Espera', icon: '≡', badge: waitingCount > 0 ? waitingCount : undefined, badgeType: 'default' as const },
   ]
-  
+
   const activeNavId = screen === 'session' ? 'tables' : screen
-  
+
   return (
     <>
-      {/* Mobile layout for waiter view */}
-      <div className="min-h-screen bg-black flex flex-col md:hidden">
-        {/* Mobile Header */}
-        <header className="sticky top-0 z-50 bg-black border-b border-white/10 shadow-sm">
-          <div className="px-3 py-2">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-10 text-white/70 hover:text-white hover:bg-white/10"
-                onClick={onLockProfile ?? onBack}
-              >
-                <LogOut className="h-4 w-4 mr-1" />
-                {onLockProfile ? 'Cerrar perfil' : 'Salir'}
-              </Button>
-              <div className="border-l border-white/20 pl-2 flex items-center gap-2">
-                <WaitlessLogo size={22} color="light" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
-                <h1 className="text-xs font-bold text-white tracking-wide">
-                  Sala
-                </h1>
-              </div>
-            </div>
+      {/* ─── Mobile layout ─── */}
+      <div className="flex flex-col md:hidden" style={{ minHeight: '100vh', background: '#000', fontFamily: FONT }}>
+        {/* Mobile header */}
+        <header style={{ position: 'sticky', top: 0, zIndex: 50, background: '#000', borderBottom: '1px solid rgba(255,255,255,0.1)', padding: '10px 12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <button onClick={onLockProfile ?? onBack} style={{ height: 36, padding: '0 12px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: 999, color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
+              ← {onLockProfile ? 'Cerrar perfil' : 'Salir'}
+            </button>
+            <div style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.2)' }} />
+            <div style={{ width: 24, height: 24, background: '#fff', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#000', fontWeight: 700, fontSize: 12, letterSpacing: '-0.04em', flexShrink: 0 }}>W</div>
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#fff', letterSpacing: '-0.02em' }}>
+              {config.restaurantName ?? 'Waitless'} · {currentUser?.nombre ?? 'Sala'}
+            </span>
+          </div>
 
-            {/* Navigation Tabs - Scrollable on mobile */}
-            <div className="flex gap-1 mt-2 overflow-x-auto scrollbar-none pb-1">
-              {navItems.map((item) => (
+          {/* Nav tabs */}
+          <div style={{ display: 'flex', gap: 6, marginTop: 8, overflowX: 'auto', paddingBottom: 2 }}>
+            {navItems.map(item => {
+              const isActive = activeNavId === item.id
+              return (
                 <button
                   key={item.id}
-                  onClick={() => {
-                    setScreen(item.id)
-                    if (item.id === 'tables') {
-                      setSelectedTable(null)
-                    }
+                  onClick={() => { setScreen(item.id); if (item.id === 'tables') setSelectedTable(null) }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px',
+                    borderRadius: 999, fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap',
+                    border: 'none', cursor: 'pointer', fontFamily: FONT, position: 'relative',
+                    background: isActive ? '#fff' : 'rgba(255,255,255,0.1)',
+                    color: isActive ? '#000' : '#fff',
+                    flexShrink: 0,
                   }}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-colors relative",
-                    activeNavId === item.id
-                      ? 'bg-white text-black'
-                      : 'bg-white/10 text-white hover:bg-white/20'
-                  )}
                 >
-                  {item.icon}
+                  <span>{item.icon}</span>
                   {item.label}
                   {item.badge && item.badge > 0 && (
-                    <Badge className={cn(
-                      "h-4 min-w-4 px-1 text-[10px] ml-1",
-                      activeNavId === item.id
-                        ? "bg-black text-white"
-                        : item.badgeVariant === 'destructive' ? "bg-destructive text-destructive-foreground" : "bg-warning text-white"
-                    )}>
-                      {item.badge}
-                    </Badge>
+                    <span style={{
+                      fontFamily: MONO, fontSize: 10, fontWeight: 700, padding: '1px 5px', borderRadius: 999, marginLeft: 2,
+                      background: isActive ? '#000' : item.badgeType === 'err' ? '#991B1B' : '#92400E',
+                      color: '#fff',
+                    }}>{item.badge}</span>
                   )}
                 </button>
-              ))}
-            </div>
+              )
+            })}
           </div>
         </header>
 
-        {/* Mobile Content - White card background */}
-        <main className="flex-1 overflow-auto p-3">
-          <div className="bg-card rounded-lg shadow-sm min-h-full">
+        {/* Mobile content */}
+        <main style={{ flex: 1, overflow: 'auto', padding: 10 }}>
+          <div style={{ background: '#fff', borderRadius: 14, minHeight: '100%' }}>
             {screen === 'session' && selectedTable ? (
               <TableSession mesa={selectedTable} onBack={handleBackFromSession} />
             ) : screen === 'deliveries' ? (
@@ -183,209 +136,121 @@ export function MeseroView({ onBack, onLockProfile }: MeseroViewProps) {
             ) : screen === 'calls' ? (
               <WaiterCallsPanel />
             ) : screen === 'waitlist' ? (
-              <div className="p-3"><WaitlistManager /></div>
+              <div style={{ padding: 12 }}><WaitlistManager /></div>
             ) : (
               <TablesGrid onSelectTable={handleSelectTable} />
             )}
           </div>
         </main>
       </div>
-    <TooltipProvider delayDuration={0}>
-      <div className="hidden md:flex h-screen w-full overflow-hidden bg-secondary">
+
+      {/* ─── Desktop layout ─── */}
+      <div className="hidden md:flex" style={{ height: '100vh', width: '100%', overflow: 'hidden', background: '#F7F7F5', fontFamily: FONT }}>
         {/* Sidebar */}
-        <aside
-          className={cn(
-            "flex h-full flex-col border-r border-border bg-card transition-all duration-300",
-            sidebarCollapsed ? "w-16" : "w-56"
-          )}
-        >
-          {/* Logo / Brand */}
-          <div className="flex h-16 items-center border-b border-border px-3">
+        <aside style={{
+          display: 'flex', flexDirection: 'column', height: '100%',
+          borderRight: '1px solid #E5E5E5', background: '#fff',
+          width: sidebarCollapsed ? 60 : 220, transition: 'width 0.25s ease', flexShrink: 0,
+        }}>
+          {/* Brand */}
+          <div style={{ height: 60, display: 'flex', alignItems: 'center', borderBottom: '1px solid #E5E5E5', padding: '0 14px' }}>
             {!sidebarCollapsed ? (
-              <div className="flex items-center gap-3 flex-1">
-                <WaitlessLogo size={32} color="dark" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
-                <div className="flex flex-col min-w-0">
-                  <span className="text-sm font-bold text-foreground leading-tight tracking-tight">{config.restaurantName ?? ''}</span>
-                  <span className="text-xs text-muted-foreground">Sala & Mesas</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+                <div style={{ width: 30, height: 30, background: '#000', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 15, letterSpacing: '-0.04em', flexShrink: 0 }}>W</div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 13, letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{config.restaurantName ?? 'Waitless'}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 10, color: '#909090' }}>Sala & Mesas</div>
                 </div>
               </div>
             ) : (
-              <div className="flex w-full justify-center">
-                <WaitlessLogo size={28} color="dark" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
+              <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <div style={{ width: 28, height: 28, background: '#000', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 14, letterSpacing: '-0.04em' }}>W</div>
               </div>
             )}
           </div>
 
-          {/* Navigation */}
-          <ScrollArea className="flex-1 px-2 py-4">
-            <nav className="flex flex-col gap-1">
-              {navItems.map((item) => {
-                const isActive = activeNavId === item.id
-                const button = (
-                  <Button
-                    key={item.id}
-                    variant={isActive ? "secondary" : "ghost"}
-                    className={cn(
-                      "w-full justify-start gap-3 h-11 transition-colors",
-                      sidebarCollapsed && "justify-center px-0",
-                      isActive && "bg-foreground/8 text-foreground font-semibold"
-                    )}
-                    onClick={() => {
-                      setScreen(item.id)
-                      if (item.id === 'tables') {
-                        setSelectedTable(null)
-                      }
-                    }}
-                  >
-                    <span className="shrink-0">{item.icon}</span>
-                    {!sidebarCollapsed && (
-                      <>
-                        <span className="flex-1 text-left text-sm">{item.label}</span>
-                        {item.badge !== undefined && (
-                          <Badge
-                            className={cn(
-                              "h-5 min-w-5 px-1.5 text-xs",
-                              item.badgeVariant === 'destructive' && "bg-destructive text-destructive-foreground animate-pulse",
-                              item.badgeVariant === 'warning' && "bg-warning text-white"
-                            )}
-                          >
-                            {item.badge}
-                          </Badge>
-                        )}
-                      </>
-                    )}
-                  </Button>
-                )
+          {/* Nav */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {navItems.map(item => {
+              const isActive = activeNavId === item.id
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => { setScreen(item.id); if (item.id === 'tables') setSelectedTable(null) }}
+                  title={sidebarCollapsed ? item.label : undefined}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10, padding: sidebarCollapsed ? '0 0' : '0 12px',
+                    height: 42, borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: FONT,
+                    background: isActive ? '#000' : 'transparent', color: isActive ? '#fff' : '#333',
+                    fontWeight: isActive ? 700 : 500, fontSize: 14, width: '100%',
+                    justifyContent: sidebarCollapsed ? 'center' : 'flex-start', position: 'relative',
+                  }}
+                >
+                  <span style={{ fontSize: 16, flexShrink: 0 }}>{item.icon}</span>
+                  {!sidebarCollapsed && (
+                    <>
+                      <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>
+                      {item.badge !== undefined && (
+                        <span style={{
+                          fontFamily: MONO, fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
+                          background: isActive ? 'rgba(255,255,255,0.2)' : item.badgeType === 'err' ? '#FEE2E2' : '#FEF3C7',
+                          color: isActive ? '#fff' : item.badgeType === 'err' ? '#991B1B' : '#92400E',
+                        }}>{item.badge}</span>
+                      )}
+                    </>
+                  )}
+                  {sidebarCollapsed && item.badge !== undefined && (
+                    <span style={{ position: 'absolute', top: 4, right: 4, width: 16, height: 16, borderRadius: 999, background: item.badgeType === 'err' ? '#991B1B' : '#92400E', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: MONO, fontSize: 9, fontWeight: 700, color: '#fff' }}>{item.badge}</span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
 
-                if (sidebarCollapsed) {
-                  return (
-                    <Tooltip key={item.id}>
-                      <TooltipTrigger asChild>
-                        <div className="relative">
-                          {button}
-                          {item.badge !== undefined && (
-                            <span className={cn(
-                              "absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-medium",
-                              item.badgeVariant === 'destructive' && "bg-destructive text-destructive-foreground animate-pulse",
-                              item.badgeVariant === 'warning' && "bg-warning text-white"
-                            )}>
-                              {item.badge}
-                            </span>
-                          )}
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" className="flex items-center gap-2">
-                        {item.label}
-                        {item.badge !== undefined && (
-                          <Badge className={cn(
-                            "h-5 min-w-5 px-1.5 text-xs",
-                            item.badgeVariant === 'destructive' && "bg-destructive text-destructive-foreground",
-                            item.badgeVariant === 'warning' && "bg-warning text-white"
-                          )}>
-                            {item.badge}
-                          </Badge>
-                        )}
-                      </TooltipContent>
-                    </Tooltip>
-                  )
-                }
+          {/* Footer */}
+          <div style={{ borderTop: '1px solid #E5E5E5', padding: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {/* Collapse toggle */}
+            <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: sidebarCollapsed ? '0' : '0 12px', height: 36, borderRadius: 10, border: 'none', cursor: 'pointer', background: 'transparent', color: '#909090', fontSize: 13, fontFamily: FONT, width: '100%', justifyContent: sidebarCollapsed ? 'center' : 'flex-start' }}>
+              <span style={{ fontSize: 16 }}>{sidebarCollapsed ? '→' : '←'}</span>
+              {!sidebarCollapsed && <span>Colapsar</span>}
+            </button>
 
-                return button
-              })}
-            </nav>
-          </ScrollArea>
-
-          {/* Footer with collapse toggle and logout */}
-          <div className="border-t border-border p-2 space-y-1">
-            {/* Collapse Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "w-full justify-start gap-3 h-9 text-muted-foreground",
-                sidebarCollapsed && "justify-center px-0"
-              )}
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            >
-              {sidebarCollapsed ? (
-                <ChevronRight className="h-4 w-4" />
-              ) : (
-                <>
-                  <ChevronLeft className="h-4 w-4" />
-                  <span className="text-sm">Colapsar</span>
-                </>
-              )}
-            </Button>
-            
-            {/* Push notifications toggle */}
+            {/* Push notifications */}
             <PushSubscribeButton collapsed={sidebarCollapsed} />
 
-            {/* Cerrar perfil / Cerrar sesión */}
+            {/* Lock / logout */}
             {onLockProfile && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "w-full justify-start gap-3 h-9 text-muted-foreground hover:text-foreground hover:bg-muted",
-                      sidebarCollapsed && "justify-center px-0"
-                    )}
-                    onClick={onLockProfile}
-                  >
-                    <LogOut className="h-4 w-4" />
-                    {!sidebarCollapsed && <span className="text-sm">Cerrar perfil</span>}
-                  </Button>
-                </TooltipTrigger>
-                {sidebarCollapsed && (
-                  <TooltipContent side="right">Cerrar perfil</TooltipContent>
-                )}
-              </Tooltip>
+              <button onClick={onLockProfile} title={sidebarCollapsed ? 'Cerrar perfil' : undefined}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: sidebarCollapsed ? '0' : '0 12px', height: 36, borderRadius: 10, border: 'none', cursor: 'pointer', background: 'transparent', color: '#909090', fontSize: 13, fontFamily: FONT, width: '100%', justifyContent: sidebarCollapsed ? 'center' : 'flex-start' }}>
+                <span style={{ fontSize: 14 }}>←</span>
+                {!sidebarCollapsed && <span>Cerrar perfil</span>}
+              </button>
             )}
             {!onLockProfile && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "w-full justify-start gap-3 h-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
-                      sidebarCollapsed && "justify-center px-0"
-                    )}
-                    onClick={onBack}
-                  >
-                    <LogOut className="h-4 w-4" />
-                    {!sidebarCollapsed && <span className="text-sm">Cerrar sesión</span>}
-                  </Button>
-                </TooltipTrigger>
-                {sidebarCollapsed && (
-                  <TooltipContent side="right">Cerrar sesión</TooltipContent>
-                )}
-              </Tooltip>
+              <button onClick={onBack} title={sidebarCollapsed ? 'Cerrar sesión' : undefined}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: sidebarCollapsed ? '0' : '0 12px', height: 36, borderRadius: 10, border: 'none', cursor: 'pointer', background: 'transparent', color: '#991B1B', fontSize: 13, fontFamily: FONT, width: '100%', justifyContent: sidebarCollapsed ? 'center' : 'flex-start' }}>
+                <span style={{ fontSize: 14 }}>←</span>
+                {!sidebarCollapsed && <span>Cerrar sesión</span>}
+              </button>
             )}
           </div>
         </aside>
 
-        {/* Main Content */}
-        <main className="flex flex-1 flex-col overflow-hidden">
-          {/* Top bar with alerts */}
+        {/* Main content */}
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {/* Calls alert bar */}
           {pendingCallsCount > 0 && screen !== 'calls' && (
-            <div className="shrink-0 border-b border-destructive/20 bg-destructive/10 px-4 py-2 rounded-tl-xl">
-              <button 
-                onClick={() => setScreen('calls')}
-                className="flex items-center gap-2 text-sm text-destructive hover:underline"
-              >
-                <Bell className="h-4 w-4 animate-pulse" />
-                <span className="font-medium">
-                  {pendingCallsCount} llamada{pendingCallsCount !== 1 ? 's' : ''} pendiente{pendingCallsCount !== 1 ? 's' : ''}
-                </span>
+            <div style={{ flexShrink: 0, borderBottom: '1px solid #FEE2E2', background: '#FEF2F2', padding: '8px 16px' }}>
+              <button onClick={() => setScreen('calls')} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#991B1B', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', fontFamily: FONT }}>
+                <span style={{ fontSize: 14 }}>◉</span>
+                {pendingCallsCount} llamada{pendingCallsCount !== 1 ? 's' : ''} pendiente{pendingCallsCount !== 1 ? 's' : ''}
               </button>
             </div>
           )}
 
-          {/* Content - White bg for content area */}
-          <div className={cn(
-            "flex-1 overflow-auto bg-card",
-            !(pendingCallsCount > 0 && screen !== 'calls') && "rounded-tl-xl"
-          )}>
+          {/* Content area */}
+          <div style={{ flex: 1, overflowY: 'auto', background: '#fff', borderTopLeftRadius: pendingCallsCount > 0 && screen !== 'calls' ? 0 : 14 }}>
             {screen === 'session' && selectedTable ? (
               <TableSession mesa={selectedTable} onBack={handleBackFromSession} />
             ) : screen === 'deliveries' ? (
@@ -393,14 +258,13 @@ export function MeseroView({ onBack, onLockProfile }: MeseroViewProps) {
             ) : screen === 'calls' ? (
               <WaiterCallsPanel />
             ) : screen === 'waitlist' ? (
-              <div className="p-6"><WaitlistManager /></div>
+              <div style={{ padding: 24 }}><WaitlistManager /></div>
             ) : (
               <TablesGrid onSelectTable={handleSelectTable} />
             )}
           </div>
         </main>
       </div>
-    </TooltipProvider>
     </>
   )
 }
