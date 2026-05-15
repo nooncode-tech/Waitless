@@ -1,23 +1,26 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Plus, Edit2, User, Shield, ChefHat, UserCheck, Trash2 } from 'lucide-react'
-import { Spinner } from '@/components/ui/spinner'
 import { useApp } from '@/lib/context'
 import { supabase } from '@/lib/supabase'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import type { User as UserType, UserRole } from '@/lib/store'
 
-const ROLE_CONFIG: Record<UserRole, { label: string; icon: React.ReactNode; bg: string; text: string }> = {
-  admin:      { label: 'Administrador', icon: <Shield className="h-3.5 w-3.5" />,    bg: 'bg-gray-900',   text: 'text-white' },
-  manager:    { label: 'Manager',       icon: <User className="h-3.5 w-3.5" />,      bg: 'bg-purple-600', text: 'text-white' },
-  mesero:     { label: 'Mesero',        icon: <UserCheck className="h-3.5 w-3.5" />, bg: 'bg-amber-500',  text: 'text-white' },
-  cocina:     { label: 'Cocina',        icon: <ChefHat className="h-3.5 w-3.5" />,   bg: 'bg-[#06C167]',  text: 'text-white' },
-  repartidor: { label: 'Repartidor',    icon: <User className="h-3.5 w-3.5" />,      bg: 'bg-blue-600',   text: 'text-white' },
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
+
+const ROLE_LABELS: Record<UserRole, string> = {
+  admin:      'Admin',
+  manager:    'Manager',
+  mesero:     'Mesero',
+  cocina:     'Cocina',
+  repartidor: 'Repartidor',
+}
+
+function getRoleChip(role: UserRole): React.CSSProperties {
+  if (role === 'admin')   return { background: '#000',              color: '#fff',             border: 'none' }
+  if (role === 'manager') return { background: 'rgba(0,0,0,0.07)', color: 'rgba(0,0,0,0.55)', border: 'none' }
+  return { background: 'transparent', color: '#000', border: '1px solid #E5E5E5' }
 }
 
 async function getToken(): Promise<string | null> {
@@ -34,7 +37,7 @@ async function callUsersApi(
 
   const res = await fetch('/api/admin/users', {
     method,
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify(body),
   })
 
@@ -45,9 +48,11 @@ async function callUsersApi(
 
 export function UsersManager() {
   const { users, refreshUsers, currentUser } = useApp()
-  const [showAddDialog, setShowAddDialog] = useState(false)
-  const [editingUser, setEditingUser] = useState<UserType | null>(null)
-  const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [showAddDialog, setShowAddDialog]   = useState(false)
+  const [editingUser, setEditingUser]       = useState<UserType | null>(null)
+  const [togglingId, setTogglingId]         = useState<string | null>(null)
+
+  const activeCount = users.filter(u => u.activo).length
 
   const handleToggleActive = async (user: UserType) => {
     if (user.id === currentUser?.id) return
@@ -65,8 +70,8 @@ export function UsersManager() {
   const handleSave = async (userData: Partial<UserType> & { password?: string }) => {
     if (editingUser) {
       const updates: Record<string, unknown> = {}
-      if (userData.nombre)   updates.nombre = userData.nombre
-      if (userData.role)     updates.role   = userData.role
+      if (userData.nombre)   updates.nombre   = userData.nombre
+      if (userData.role)     updates.role     = userData.role
       if (userData.password) updates.password = userData.password
 
       const result = await callUsersApi('PUT', { userId: editingUser.id, updates })
@@ -99,93 +104,171 @@ export function UsersManager() {
     }
   }
 
+  const gridCols = '44px 1fr 120px 130px 60px'
+
   return (
-    <div style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
-      {/* Stats */}
-      <div className="grid grid-cols-4 gap-2 mb-4">
-        {(Object.keys(ROLE_CONFIG) as UserRole[]).map((role) => {
-          const count = users.filter(u => u.role === role && u.activo).length
-          const cfg = ROLE_CONFIG[role]
-          return (
-            <div key={role} className="border border-gray-100 rounded-2xl p-3 bg-white text-center">
-              <p className="text-xl font-black text-gray-900">{count}</p>
-              <p className="text-[9px] text-gray-400 truncate">{cfg.label}s</p>
-            </div>
-          )
-        })}
-      </div>
+    <div style={{ fontFamily: FONT }}>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 14, marginBottom: 18 }}>
         <div>
-          <h2 className="text-sm font-black text-gray-900">Gestión de usuarios</h2>
-          <p className="text-[10px] text-gray-400">
-            {users.filter(u => u.activo).length} usuario{users.filter(u => u.activo).length !== 1 ? 's' : ''} activo{users.filter(u => u.activo).length !== 1 ? 's' : ''}
-          </p>
+          <div style={{ fontFamily: MONO, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#909090', fontWeight: 700 }}>
+            Equipo
+          </div>
+          <h2 style={{ fontFamily: FONT, fontWeight: 700, letterSpacing: '-0.04em', fontSize: 24, margin: '4px 0 0' }}>
+            {users.length} miembros · {activeCount} activos
+          </h2>
         </div>
         <button
           onClick={() => setShowAddDialog(true)}
-          className="h-8 px-3 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1.5"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            height: 36, padding: '0 16px', borderRadius: 999,
+            background: '#000', color: '#fff',
+            fontWeight: 700, fontSize: 12.5, border: 'none',
+            cursor: 'pointer', fontFamily: FONT,
+          }}
         >
-          <Plus className="h-3 w-3" />Agregar
+          ＋ Invitar usuario
         </button>
       </div>
 
-      {/* Users List */}
-      <div className="space-y-2">
-        {users.map((user) => {
-          const cfg = ROLE_CONFIG[user.role]
-          const isCurrentUser = user.id === currentUser?.id
-          const isToggling = togglingId === user.id
-
+      {/* KPI row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 18 }}>
+        {(Object.keys(ROLE_LABELS) as UserRole[]).map(role => {
+          const count = users.filter(u => u.role === role).length
           return (
-            <div
-              key={user.id}
-              className={`border rounded-2xl p-3 bg-white transition-opacity ${!user.activo ? 'opacity-50' : ''} ${isCurrentUser ? 'border-gray-900' : 'border-gray-100'}`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <div className={`w-8 h-8 rounded-full ${cfg.bg} ${cfg.text} flex items-center justify-center shrink-0`}>
-                    {cfg.icon}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <h4 className="font-semibold text-xs text-gray-900">{user.nombre}</h4>
-                      {isCurrentUser && (
-                        <span className="text-[8px] border border-gray-300 text-gray-500 rounded-full px-1.5 py-0.5">Tú</span>
-                      )}
-                    </div>
-                    <p className="text-[10px] text-gray-400">@{user.username}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${cfg.bg} ${cfg.text}`}>
-                    {cfg.label}
-                  </span>
-                  <div className="flex items-center">
-                    {isToggling ? (
-                      <Spinner className="size-3 text-gray-400" />
-                    ) : (
-                      <Switch
-                        checked={user.activo}
-                        onCheckedChange={() => handleToggleActive(user)}
-                        disabled={isCurrentUser || isToggling}
-                        className="scale-[0.6]"
-                      />
-                    )}
-                  </div>
-                  <button
-                    onClick={() => setEditingUser(user)}
-                    className="h-6 w-6 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-900 transition-colors"
-                  >
-                    <Edit2 className="h-3 w-3" />
-                  </button>
-                </div>
+            <div key={role} style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 14, padding: 14 }}>
+              <div style={{ fontFamily: MONO, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#909090', fontWeight: 700 }}>
+                {ROLE_LABELS[role]}
+              </div>
+              <div style={{ fontFamily: FONT, fontWeight: 700, letterSpacing: '-0.04em', fontSize: 28, marginTop: 6 }}>
+                {count}
               </div>
             </div>
           )
         })}
+      </div>
+
+      {/* Table */}
+      <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 14, overflow: 'hidden' }}>
+
+        {/* Header row */}
+        <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: 14, alignItems: 'center', padding: '10px 16px', background: '#FAFAFA', borderBottom: '1px solid #E5E5E5' }}>
+          {['', 'Usuario', 'Rol', 'Estado', ''].map((h, i) => (
+            <span key={i} style={{ fontFamily: MONO, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#909090', fontWeight: 700 }}>
+              {h}
+            </span>
+          ))}
+        </div>
+
+        {users.length === 0 ? (
+          <div style={{ padding: '48px 24px', textAlign: 'center' }}>
+            <div style={{ fontWeight: 700, letterSpacing: '-0.06em', fontSize: 64, color: 'rgba(0,0,0,0.08)', lineHeight: 1 }}>Ø</div>
+            <div style={{ fontWeight: 700, letterSpacing: '-0.04em', fontSize: 20, marginTop: 14 }}>Sin usuarios</div>
+          </div>
+        ) : (
+          users.map((user, i) => {
+            const isCurrentUser = user.id === currentUser?.id
+            const isToggling    = togglingId === user.id
+            const initial       = (user.nombre || user.username || '?')[0].toUpperCase()
+            const chipStyle     = getRoleChip(user.role)
+            const isLast        = i === users.length - 1
+
+            return (
+              <div
+                key={user.id}
+                style={{
+                  display: 'grid', gridTemplateColumns: gridCols,
+                  gap: 14, alignItems: 'center',
+                  padding: '12px 16px',
+                  borderBottom: isLast ? 'none' : '1px solid #EFEFEF',
+                  opacity: user.activo ? 1 : 0.55,
+                  outline: isCurrentUser ? '2px solid #000' : 'none',
+                  outlineOffset: -2,
+                }}
+              >
+                {/* Avatar */}
+                <div style={{
+                  width: 38, height: 38, borderRadius: '50%',
+                  background: '#000', color: '#fff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontWeight: 700, letterSpacing: '-0.03em', fontSize: 13,
+                }}>
+                  {initial}
+                </div>
+
+                {/* Info */}
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {user.nombre}
+                    {isCurrentUser && (
+                      <span style={{ fontFamily: MONO, fontSize: 9.5, border: '1px solid #E5E5E5', borderRadius: 999, padding: '1px 6px', color: '#909090' }}>Tú</span>
+                    )}
+                  </div>
+                  <div style={{ fontFamily: MONO, fontSize: 11, color: '#909090', marginTop: 1 }}>
+                    @{user.username}
+                  </div>
+                </div>
+
+                {/* Role chip */}
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center',
+                  padding: '3px 8px', borderRadius: 999,
+                  fontFamily: MONO, fontSize: 10.5, fontWeight: 700,
+                  letterSpacing: '0.04em', textTransform: 'uppercase',
+                  ...chipStyle,
+                }}>
+                  {ROLE_LABELS[user.role]}
+                </span>
+
+                {/* Status */}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <style>{`@keyframes umPulse{0%{box-shadow:0 0 0 0 rgba(190,235,190,0.85)}70%{box-shadow:0 0 0 6px rgba(190,235,190,0)}100%{box-shadow:0 0 0 0 rgba(190,235,190,0)}}`}</style>
+                  <span style={{
+                    width: 6, height: 6, borderRadius: '50%',
+                    background: user.activo ? '#BEEBBE' : 'rgba(0,0,0,0.2)',
+                    display: 'inline-block',
+                    animation: user.activo ? 'umPulse 1.8s infinite' : 'none',
+                  }} />
+                  <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: user.activo ? 700 : 400, color: user.activo ? '#000' : '#909090' }}>
+                    {user.activo ? 'Activo' : 'Inactivo'}
+                  </span>
+                </span>
+
+                {/* Actions */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
+                  {isToggling ? (
+                    <span style={{ fontFamily: MONO, fontSize: 11, color: '#909090' }}>…</span>
+                  ) : (
+                    <button
+                      onClick={() => handleToggleActive(user)}
+                      disabled={isCurrentUser}
+                      style={{
+                        width: 30, height: 18, borderRadius: 999, position: 'relative',
+                        background: user.activo ? '#BEEBBE' : 'rgba(0,0,0,0.12)',
+                        border: 'none', cursor: isCurrentUser ? 'not-allowed' : 'pointer',
+                        padding: 0, opacity: isCurrentUser ? 0.4 : 1,
+                      }}
+                    >
+                      <span style={{
+                        position: 'absolute', top: 2, left: user.activo ? 14 : 2,
+                        width: 14, height: 14, borderRadius: '50%',
+                        background: '#fff', transition: 'left 0.15s', display: 'block',
+                      }} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setEditingUser(user)}
+                    style={{ fontFamily: MONO, fontSize: 11, color: '#909090', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
+                    Editar
+                  </button>
+                </div>
+              </div>
+            )
+          })
+        )}
       </div>
 
       {(showAddDialog || editingUser) && (
@@ -201,14 +284,14 @@ export function UsersManager() {
 }
 
 interface UserDialogProps {
-  user: UserType | null
-  onClose: () => void
-  onSave: (userData: Partial<UserType> & { password?: string }) => Promise<void>
+  user:      UserType | null
+  onClose:   () => void
+  onSave:    (userData: Partial<UserType> & { password?: string }) => Promise<void>
   onDelete?: () => void
 }
 
 function UserDialog({ user, onClose, onSave, onDelete }: UserDialogProps) {
-  const [nombre, setNombre]     = useState(user?.nombre || '')
+  const [nombre, setNombre]     = useState(user?.nombre   || '')
   const [username, setUsername] = useState(user?.username || '')
   const [password, setPassword] = useState('')
   const [role, setRole]         = useState<UserRole>(user?.role || 'mesero')
@@ -233,68 +316,98 @@ function UserDialog({ user, onClose, onSave, onDelete }: UserDialogProps) {
     }
   }
 
+  const inputStyle: React.CSSProperties = {
+    height: 42, padding: '0 14px',
+    border: '1px solid #E5E5E5', borderRadius: 10,
+    fontSize: 14, letterSpacing: '-0.01em',
+    fontFamily: FONT, outline: 'none', background: '#fff',
+    width: '100%', boxSizing: 'border-box',
+  }
+
+  const labelStyle: React.CSSProperties = {
+    fontFamily: MONO, fontSize: 10.5,
+    textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700,
+    display: 'block', marginBottom: 6,
+  }
+
+  const canSubmit = nombre.trim() && username.trim() && (!!user || password.trim())
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-sm bg-white rounded-2xl overflow-hidden shadow-xl">
-        <div className="px-5 py-4 border-b border-gray-100">
-          <h3 className="text-sm font-black text-gray-900">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', padding: 16 }}>
+      <div style={{ width: '100%', maxWidth: 400, background: '#fff', borderRadius: 18, overflow: 'hidden', boxShadow: '0 24px 64px -16px rgba(0,0,0,0.35)', fontFamily: FONT }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #E5E5E5' }}>
+          <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.03em' }}>
             {user ? 'Editar usuario' : 'Agregar usuario'}
-          </h3>
+          </div>
+          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 8, border: '1px solid #E5E5E5', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700 }}>✕</button>
         </div>
-        <div className="px-5 py-4 space-y-3">
+
+        {/* Fields */}
+        <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
           {error && (
-            <p className="text-xs text-red-500 bg-red-50 rounded-xl px-3 py-2">{error}</p>
+            <div style={{ fontSize: 12.5, color: '#991B1B', background: '#FEE2E2', borderRadius: 10, padding: '10px 14px' }}>
+              {error}
+            </div>
           )}
+
           <div>
-            <Label className="text-xs text-gray-500">Nombre completo</Label>
-            <Input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Juan Perez" className="h-9 text-sm mt-1" disabled={loading} />
+            <label style={labelStyle}>Nombre completo</label>
+            <input style={inputStyle} value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Juan Pérez" disabled={loading} />
           </div>
+
           <div>
-            <Label className="text-xs text-gray-500">Usuario</Label>
-            <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="juanperez" className="h-9 text-sm mt-1" disabled={loading || !!user} />
+            <label style={labelStyle}>Usuario</label>
+            <input style={{ ...inputStyle, opacity: (loading || !!user) ? 0.5 : 1 }} value={username} onChange={e => setUsername(e.target.value)} placeholder="juanperez" disabled={loading || !!user} />
           </div>
+
           <div>
-            <Label className="text-xs text-gray-500">Contraseña {user && '(dejar vacío para mantener)'}</Label>
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="********" className="h-9 text-sm mt-1" disabled={loading} />
+            <label style={labelStyle}>
+              Contraseña{user ? ' (vacío = sin cambios)' : ''}
+            </label>
+            <input type="password" style={inputStyle} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" disabled={loading} />
           </div>
+
           <div>
-            <Label className="text-xs text-gray-500">Rol</Label>
-            <Select value={role} onValueChange={(v) => setRole(v as UserRole)} disabled={loading}>
-              <SelectTrigger className="h-9 text-xs mt-1">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(ROLE_CONFIG) as UserRole[]).map((r) => (
-                  <SelectItem key={r} value={r}>
-                    <span className="flex items-center gap-1.5">
-                      {ROLE_CONFIG[r].icon}
-                      {ROLE_CONFIG[r].label}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <label style={labelStyle}>Rol</label>
+            <select
+              value={role}
+              onChange={e => setRole(e.target.value as UserRole)}
+              disabled={loading}
+              style={{ ...inputStyle, cursor: 'pointer', appearance: 'auto' }}
+            >
+              {(Object.keys(ROLE_LABELS) as UserRole[]).map(r => (
+                <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+              ))}
+            </select>
           </div>
         </div>
-        <div className="px-5 py-4 border-t border-gray-100 flex gap-2">
+
+        {/* Footer */}
+        <div style={{ padding: '14px 20px', borderTop: '1px solid #E5E5E5', display: 'flex', gap: 8 }}>
           {onDelete && (
             <button
-              className="h-9 px-3 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 text-xs flex items-center gap-1 disabled:opacity-50"
               onClick={onDelete}
               disabled={loading}
+              style={{ height: 44, padding: '0 14px', borderRadius: 999, border: '1px solid #FCA5A5', background: '#fff', color: '#991B1B', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, opacity: loading ? 0.5 : 1 }}
             >
-              <Trash2 className="h-3 w-3" />
+              Eliminar
             </button>
           )}
-          <button className="flex-1 h-9 rounded-xl border border-gray-200 text-gray-700 text-xs font-medium hover:bg-gray-50 disabled:opacity-50" onClick={onClose} disabled={loading}>
+          <button
+            onClick={onClose}
+            disabled={loading}
+            style={{ flex: 1, height: 44, borderRadius: 999, border: '1px solid #E5E5E5', background: '#fff', color: '#000', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}
+          >
             Cancelar
           </button>
           <button
-            className="flex-1 h-9 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold flex items-center justify-center disabled:opacity-50"
             onClick={handleSubmit}
-            disabled={loading || !nombre.trim() || !username.trim() || (!user && !password.trim())}
+            disabled={loading || !canSubmit}
+            style={{ flex: 1, height: 44, borderRadius: 999, border: 'none', background: '#000', color: '#fff', fontSize: 13, fontWeight: 700, cursor: canSubmit && !loading ? 'pointer' : 'not-allowed', fontFamily: FONT, opacity: (!canSubmit || loading) ? 0.4 : 1 }}
           >
-            {loading ? <Spinner className="size-3.5" /> : user ? 'Guardar' : 'Agregar'}
+            {loading ? '…' : user ? 'Guardar' : 'Agregar'}
           </button>
         </div>
       </div>
