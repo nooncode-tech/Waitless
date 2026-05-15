@@ -1,26 +1,47 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Plus, AlertTriangle, Package, TrendingDown, TrendingUp, Edit2, History, X, Calendar, Filter, FolderOpen } from 'lucide-react'
 import { useApp } from '@/lib/context'
-import { Input } from '@/components/ui/input'
 import type { Ingredient, IngredientCategory, InventoryAdjustment } from '@/lib/store'
 import { DEFAULT_INGREDIENT_CATEGORIES } from '@/lib/store'
 import { IngredientCategoryManager } from './ingredient-category-manager'
 
-const sora = { fontFamily: "'Sora', system-ui, sans-serif" }
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
+
+const inp: React.CSSProperties = {
+  height: 36, padding: '0 12px',
+  border: '1px solid #E5E5E5', borderRadius: 10,
+  fontSize: 13.5, letterSpacing: '-0.01em',
+  fontFamily: FONT, outline: 'none', background: '#fff',
+  width: '100%', boxSizing: 'border-box',
+}
+
+function getStockState(ingredient: Ingredient): 'ok' | 'warn' | 'err' {
+  if (ingredient.stockActual <= 0) return 'err'
+  if (ingredient.stockActual <= ingredient.stockMinimo) return 'err'
+  if (ingredient.cantidadMaxima > 0 && ingredient.stockActual <= ingredient.cantidadMaxima * 0.3) return 'warn'
+  return 'ok'
+}
 
 export function InventoryManager() {
   const { ingredients, menuItems, getLowStockIngredients, adjustInventory, updateIngredient, addIngredient, inventoryAdjustments, users } = useApp()
-  const [showAddDialog, setShowAddDialog] = useState(false)
-  const [showAdjustDialog, setShowAdjustDialog] = useState<Ingredient | null>(null)
+  const [showAddDialog, setShowAddDialog]           = useState(false)
+  const [showAdjustDialog, setShowAdjustDialog]     = useState<Ingredient | null>(null)
   const [showAdvancedDialog, setShowAdvancedDialog] = useState<Ingredient | null>(null)
-  const [showHistoryDialog, setShowHistoryDialog] = useState(false)
+  const [showHistoryDialog, setShowHistoryDialog]   = useState(false)
   const [showCategoryDialog, setShowCategoryDialog] = useState(false)
-  const [activeTab, setActiveTab] = useState<'all' | 'low'>('all')
+  const [activeFilter, setActiveFilter]             = useState<'all' | 'low' | 'agotado'>('all')
   const [showDeleteBlockedDialog, setShowDeleteBlockedDialog] = useState<{ ingredient: Ingredient; reasons: string[] } | null>(null)
 
-  const lowStockItems = getLowStockIngredients().filter(i => i.activo !== false)
+  const lowStockItems   = getLowStockIngredients().filter(i => i.activo !== false)
+  const activeIngredients = ingredients.filter(i => i.activo !== false)
+  const agotados        = activeIngredients.filter(i => i.stockActual <= 0)
+
+  const displayItems =
+    activeFilter === 'low'    ? lowStockItems :
+    activeFilter === 'agotado' ? agotados :
+    activeIngredients
 
   const getIngredientUsage = (ingredientId: string): string[] => {
     const reasons: string[] = []
@@ -33,153 +54,178 @@ export function InventoryManager() {
     return reasons
   }
 
-  const isIngredientInUse = (ingredientId: string) => getIngredientUsage(ingredientId).length > 0
-
   const handleDeactivateIngredient = (ingredient: Ingredient) => {
     const usageReasons = getIngredientUsage(ingredient.id)
     if (usageReasons.length > 0) { setShowDeleteBlockedDialog({ ingredient, reasons: usageReasons }); return }
-    if (!confirm('¿Seguro que quieres eliminar este ingrediente?')) return
+    if (!confirm('¿Seguro que querés eliminar este ingrediente?')) return
     updateIngredient(ingredient.id, { activo: false })
   }
 
-  const activeIngredients = ingredients.filter(i => i.activo !== false)
-  const activeLowStock = lowStockItems.filter(i => i.activo !== false)
-  const displayItems = activeTab === 'low' ? activeLowStock : activeIngredients
+  const gridCols = '1fr 80px 100px 200px 90px'
 
   return (
-    <div style={sora}>
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-2 mb-3">
-        <div className="border border-gray-100 rounded-2xl bg-white p-2 text-center">
-          <p className="text-lg font-bold text-gray-900">{activeIngredients.length}</p>
-          <p className="text-[9px] text-gray-400">Ingredientes</p>
-        </div>
-        <div className={`border rounded-2xl p-2 text-center ${lowStockItems.length > 0 ? 'border-red-200 bg-red-50' : 'border-emerald-200 bg-emerald-50'}`}>
-          <p className={`text-lg font-bold ${lowStockItems.length > 0 ? 'text-red-500' : 'text-[#06C167]'}`}>{lowStockItems.length}</p>
-          <p className="text-[9px] text-gray-400">Stock bajo</p>
-        </div>
-        <div className="border border-gray-100 rounded-2xl bg-white p-2 text-center cursor-pointer hover:border-gray-300 transition-colors" onClick={() => setShowHistoryDialog(true)}>
-          <History className="h-4 w-4 mx-auto text-gray-400 mb-0.5" />
-          <p className="text-[9px] text-gray-400">Ver historial</p>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-1 mb-3">
-        <button onClick={() => setActiveTab('all')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeTab === 'all' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700'}`}>
-          <Package className="h-3 w-3" />Todos
-        </button>
-        <button onClick={() => setActiveTab('low')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeTab === 'low' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700'}`}>
-          <AlertTriangle className="h-3 w-3" />
-          Stock bajo
-          {lowStockItems.length > 0 && (
-            <span className="ml-1 bg-white/20 text-white rounded-full px-1.5 text-[9px] font-bold">{lowStockItems.length}</span>
-          )}
-        </button>
-      </div>
+    <div style={{ fontFamily: FONT }}>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-xs font-semibold text-gray-900">
-          {activeTab === 'low' ? 'Ingredientes con stock bajo' : 'Todos los ingredientes'}
-        </h2>
-        <div className="flex gap-1.5">
-          <button onClick={() => setShowCategoryDialog(true)}
-            className="h-7 px-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 flex items-center gap-1 transition-colors">
-            <FolderOpen className="h-3 w-3" />Categorías
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 14, marginBottom: 18 }}>
+        <div>
+          <div style={{ fontFamily: MONO, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#909090', fontWeight: 700 }}>
+            Inventario
+          </div>
+          <h2 style={{ fontFamily: FONT, fontWeight: 700, letterSpacing: '-0.04em', fontSize: 24, margin: '4px 0 0' }}>
+            {activeIngredients.length} ingredientes · {lowStockItems.length} críticos
+          </h2>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => setShowCategoryDialog(true)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 16px', borderRadius: 999, background: '#fff', color: '#000', fontWeight: 700, fontSize: 12.5, border: '1px solid #E5E5E5', cursor: 'pointer', fontFamily: FONT }}
+          >
+            Categorías
           </button>
-          <button onClick={() => setShowAddDialog(true)}
-            className="h-7 px-2.5 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1 transition-colors">
-            <Plus className="h-3 w-3" />Agregar
+          <button
+            onClick={() => setShowHistoryDialog(true)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 16px', borderRadius: 999, background: '#fff', color: '#000', fontWeight: 700, fontSize: 12.5, border: '1px solid #E5E5E5', cursor: 'pointer', fontFamily: FONT }}
+          >
+            Historial
+          </button>
+          <button
+            onClick={() => setShowAddDialog(true)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 16px', borderRadius: 999, background: '#000', color: '#fff', fontWeight: 700, fontSize: 12.5, border: 'none', cursor: 'pointer', fontFamily: FONT }}
+          >
+            ＋ Ingrediente
           </button>
         </div>
       </div>
 
-      {/* Ingredients List */}
-      <div className="space-y-1.5">
-        {displayItems.map((ingredient) => {
-          const isCritical = ingredient.stockActual <= ingredient.stockMinimo
-          const warningThreshold = ingredient.cantidadMaxima * 0.3
-          const isWarning = ingredient.stockActual > ingredient.stockMinimo && ingredient.stockActual <= warningThreshold
-          const inUse = isIngredientInUse(ingredient.id)
-          const stockPercentage = ingredient.cantidadMaxima > 0 ? (ingredient.stockActual / ingredient.cantidadMaxima) * 100 : 0
-
-          return (
-            <div key={ingredient.id}
-              className={`border rounded-2xl bg-white p-2 ${isCritical ? 'border-red-200 bg-red-50' : 'border-gray-100'}`}>
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <h4 className="font-medium text-xs text-gray-900 truncate">{ingredient.nombre}</h4>
-                    {isCritical && <AlertTriangle className="h-3 w-3 text-red-500 shrink-0" />}
-                  </div>
-                  <p className="text-[10px] text-gray-400">{ingredient.categoria}</p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className={`font-semibold text-xs ${isCritical ? 'text-red-500' : 'text-gray-900'}`}>
-                    {parseFloat(ingredient.stockActual.toFixed(2))} {ingredient.unidad}
-                  </p>
-                  <p className="text-[9px] text-gray-400">de {(Number(ingredient.cantidadMaxima ?? 0)).toFixed(2)} {ingredient.unidad}</p>
-                </div>
-              </div>
-
-              <div className="mt-2 mb-2">
-                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full transition-all ${isCritical ? 'bg-red-500' : isWarning ? 'bg-amber-500' : 'bg-[#06C167]'}`}
-                    style={{ width: `${Math.min(100, stockPercentage)}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-1">
-                <button onClick={() => setShowAdjustDialog(ingredient)}
-                  className="flex-1 h-6 rounded-xl border border-gray-200 text-[10px] font-semibold text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-1 transition-colors">
-                  <Edit2 className="h-2.5 w-2.5" />Ajustar
-                </button>
-                <button
-                  onClick={() => handleDeactivateIngredient(ingredient)}
-                  title={inUse ? 'En uso - no se puede eliminar' : 'Eliminar ingrediente'}
-                  className={`h-6 px-2.5 rounded-xl text-[10px] font-semibold transition-colors ${inUse ? 'border border-gray-200 text-gray-400' : 'border border-red-200 text-red-500 hover:bg-red-50'}`}
-                >
-                  {inUse ? 'En uso' : 'Eliminar'}
-                </button>
-              </div>
-            </div>
-          )
-        })}
-
-        {displayItems.length === 0 && (
-          <div className="border border-dashed border-gray-200 rounded-2xl py-6 text-center">
-            <Package className="h-6 w-6 mx-auto text-gray-300 mb-2" />
-            <p className="text-xs text-gray-400">
-              {activeTab === 'low' ? 'No hay ingredientes con stock bajo' : 'No hay ingredientes'}
-            </p>
-          </div>
-        )}
+      {/* Filter pills */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+        {([
+          { id: 'all',    label: `Todos · ${activeIngredients.length}`,   bg: activeFilter === 'all' ? '#000' : '#fff',     color: activeFilter === 'all' ? '#fff' : '#000',    border: activeFilter === 'all' ? '#000' : '#E5E5E5' },
+          { id: 'low',    label: `Stock bajo · ${lowStockItems.length}`,  bg: activeFilter === 'low' ? '#FEF3C7' : '#fff',  color: activeFilter === 'low' ? '#92400E' : '#000', border: activeFilter === 'low' ? '#FEF3C7' : '#E5E5E5' },
+          { id: 'agotado',label: `Agotados · ${agotados.length}`,         bg: activeFilter === 'agotado' ? '#FEE2E2' : '#fff', color: activeFilter === 'agotado' ? '#991B1B' : '#000', border: activeFilter === 'agotado' ? '#FEE2E2' : '#E5E5E5' },
+        ] as const).map(f => (
+          <button
+            key={f.id}
+            onClick={() => setActiveFilter(f.id)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0 12px', height: 30, borderRadius: 999, fontSize: 12.5, fontWeight: 700, letterSpacing: '-0.01em', background: f.bg, color: f.color, border: `1px solid ${f.border}`, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: FONT }}
+          >
+            {f.label}
+          </button>
+        ))}
       </div>
+
+      {/* Table */}
+      {displayItems.length === 0 ? (
+        <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 14, padding: '48px 24px', textAlign: 'center' }}>
+          <div style={{ fontFamily: FONT, fontWeight: 700, letterSpacing: '-0.06em', fontSize: 64, color: 'rgba(0,0,0,0.08)', lineHeight: 1 }}>Ø</div>
+          <div style={{ fontWeight: 700, letterSpacing: '-0.04em', fontSize: 20, marginTop: 14 }}>Sin ingredientes</div>
+          <div style={{ fontFamily: MONO, fontSize: 11.5, color: '#909090', marginTop: 6 }}>
+            {activeFilter === 'low' ? 'No hay ingredientes con stock bajo.' : activeFilter === 'agotado' ? 'No hay ingredientes agotados.' : 'Agregá el primer ingrediente.'}
+          </div>
+        </div>
+      ) : (
+        <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 14, overflow: 'hidden' }}>
+          {/* Header */}
+          <div style={{ display: 'grid', gridTemplateColumns: gridCols, gap: 14, alignItems: 'center', padding: '10px 16px', background: '#FAFAFA', borderBottom: '1px solid #E5E5E5' }}>
+            {['Ingrediente', 'Unidad', 'Stock', 'Nivel', ''].map((h, i) => (
+              <span key={i} style={{ fontFamily: MONO, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#909090', fontWeight: 700 }}>{h}</span>
+            ))}
+          </div>
+
+          {displayItems.map((ingredient, i) => {
+            const state           = getStockState(ingredient)
+            const stockPct        = ingredient.cantidadMaxima > 0 ? Math.min(100, (ingredient.stockActual / ingredient.cantidadMaxima) * 100) : 0
+            const barColor        = state === 'ok' ? '#BEEBBE' : state === 'warn' ? '#FBBF24' : '#DC2626'
+            const stockColor      = state === 'err' ? '#991B1B' : state === 'warn' ? '#92400E' : '#000'
+            const isLast          = i === displayItems.length - 1
+            const inUse           = getIngredientUsage(ingredient.id).length > 0
+
+            return (
+              <div
+                key={ingredient.id}
+                style={{
+                  display: 'grid', gridTemplateColumns: gridCols,
+                  gap: 14, alignItems: 'center',
+                  padding: '14px 16px',
+                  borderBottom: isLast ? 'none' : '1px solid #EFEFEF',
+                }}
+              >
+                {/* Ingrediente */}
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em' }}>{ingredient.nombre}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 10.5, color: '#909090', marginTop: 1 }}>
+                    Mín: {ingredient.stockMinimo} · {ingredient.categoria}
+                  </div>
+                </div>
+
+                {/* Unidad */}
+                <div style={{ fontFamily: MONO, fontSize: 10.5, color: '#909090' }}>{ingredient.unidad}</div>
+
+                {/* Stock */}
+                <div style={{ fontFamily: MONO, fontWeight: 700, fontSize: 13, color: stockColor }}>
+                  {parseFloat(ingredient.stockActual.toFixed(2))}
+                </div>
+
+                {/* Level bar */}
+                <div style={{ height: 6, background: 'rgba(0,0,0,0.07)', borderRadius: 999, overflow: 'hidden' }}>
+                  <span style={{ display: 'block', height: '100%', width: `${stockPct}%`, background: barColor }} />
+                </div>
+
+                {/* Action */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+                  {state !== 'ok' ? (
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center',
+                      padding: '3px 8px', borderRadius: 999,
+                      fontFamily: MONO, fontSize: 10.5, fontWeight: 700,
+                      letterSpacing: '0.04em', textTransform: 'uppercase',
+                      background: state === 'err' ? '#FEE2E2' : '#FEF3C7',
+                      color: state === 'err' ? '#991B1B' : '#92400E',
+                    }}>
+                      {ingredient.stockActual <= 0 ? 'Agotado' : state === 'err' ? 'Crítico' : 'Bajo'}
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => setShowAdjustDialog(ingredient)}
+                      style={{ fontFamily: MONO, fontSize: 11, color: '#909090', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    >
+                      Ajustar
+                    </button>
+                  )}
+                  {state !== 'ok' && (
+                    <button
+                      onClick={() => setShowAdjustDialog(ingredient)}
+                      style={{ fontFamily: MONO, fontSize: 11, color: '#909090', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    >
+                      Ajustar
+                    </button>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
 
       {/* Delete Blocked Modal */}
       {showDeleteBlockedDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl p-5 w-full max-w-sm shadow-xl space-y-3">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-500" />
-              <h3 className="text-sm font-black text-red-600">No se puede eliminar</h3>
-            </div>
-            <p className="text-xs text-gray-500">
-              El ingrediente <strong className="text-gray-900">{showDeleteBlockedDialog.ingredient.nombre}</strong> está siendo utilizado en:
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', padding: 16 }}>
+          <div style={{ background: '#fff', borderRadius: 18, padding: 24, width: '100%', maxWidth: 400, boxShadow: '0 24px 64px -16px rgba(0,0,0,0.35)', fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.03em', color: '#991B1B' }}>No se puede eliminar</div>
+            <p style={{ fontSize: 13.5, color: '#000' }}>
+              <strong>{showDeleteBlockedDialog.ingredient.nombre}</strong> está en uso:
             </p>
-            <ul className="space-y-1 max-h-40 overflow-y-auto">
-              {showDeleteBlockedDialog.reasons.map((reason, idx) => (
-                <li key={idx} className="text-xs text-gray-900 bg-gray-100 px-2 py-1 rounded-lg">{reason}</li>
+            <ul style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 160, overflowY: 'auto', listStyle: 'none', padding: 0, margin: 0 }}>
+              {showDeleteBlockedDialog.reasons.map((r, idx) => (
+                <li key={idx} style={{ fontSize: 12.5, background: '#F4F4F2', borderRadius: 8, padding: '6px 10px' }}>{r}</li>
               ))}
             </ul>
-            <p className="text-[10px] text-gray-400">Debes remover este ingrediente de todas las recetas y extras antes de poder eliminarlo.</p>
-            <button onClick={() => setShowDeleteBlockedDialog(null)}
-              className="w-full h-8 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold transition-colors">
+            <div style={{ fontFamily: MONO, fontSize: 10.5, color: '#909090' }}>Removelo de todas las recetas antes de eliminarlo.</div>
+            <button
+              onClick={() => setShowDeleteBlockedDialog(null)}
+              style={{ height: 44, borderRadius: 999, background: '#000', color: '#fff', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', fontFamily: FONT }}
+            >
               Entendido
             </button>
           </div>
@@ -225,25 +271,17 @@ export function InventoryManager() {
       )}
 
       {showCategoryDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col shadow-xl">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
-              <span className="text-sm font-black text-gray-900 flex items-center gap-2">
-                <FolderOpen className="h-4 w-4" />Administrar Categorías
-              </span>
-              <button onClick={() => setShowCategoryDialog(false)}
-                className="w-7 h-7 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400 transition-colors">
-                <X className="h-4 w-4" />
-              </button>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', padding: 16 }}>
+          <div style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 440, maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px -16px rgba(0,0,0,0.35)', fontFamily: FONT }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid #E5E5E5' }}>
+              <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.03em' }}>Categorías</span>
+              <button onClick={() => setShowCategoryDialog(false)} style={{ width: 28, height: 28, borderRadius: 8, border: '1px solid #E5E5E5', background: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>✕</button>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
+            <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '12px 20px' }}>
               <IngredientCategoryManager />
             </div>
-            <div className="shrink-0 px-4 py-3 border-t border-gray-100">
-              <button onClick={() => setShowCategoryDialog(false)}
-                className="w-full h-8 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-                Cerrar
-              </button>
+            <div style={{ padding: '12px 20px', borderTop: '1px solid #E5E5E5' }}>
+              <button onClick={() => setShowCategoryDialog(false)} style={{ width: '100%', height: 40, borderRadius: 999, border: '1px solid #E5E5E5', background: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: FONT }}>Cerrar</button>
             </div>
           </div>
         </div>
@@ -266,13 +304,13 @@ function InventoryHistoryDialog({ adjustments, ingredients, users, onClose }: In
     const now = new Date()
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
   })
-  const [filterType, setFilterType] = useState<string>('all')
+  const [filterType, setFilterType]             = useState<string>('all')
   const [filterIngredient, setFilterIngredient] = useState<string>('all')
 
   const filteredAdjustments = useMemo(() => {
     return adjustments
       .filter(adj => {
-        const adjDate = new Date(adj.createdAt)
+        const adjDate  = new Date(adj.createdAt)
         const adjMonth = `${adjDate.getFullYear()}-${String(adjDate.getMonth() + 1).padStart(2, '0')}`
         if (adjMonth !== filterMonth) return false
         if (filterType !== 'all' && adj.tipo !== filterType) return false
@@ -283,53 +321,48 @@ function InventoryHistoryDialog({ adjustments, ingredients, users, onClose }: In
   }, [adjustments, filterMonth, filterType, filterIngredient])
 
   const getIngredientName = (id: string) => ingredients.find(i => i.id === id)?.nombre || 'Desconocido'
-  const getUserName = (id: string) => users.find(u => u.id === id)?.nombre || 'Sistema'
+  const getUserName       = (id: string) => users.find(u => u.id === id)?.nombre || 'Sistema'
+  const getTipoLabel      = (tipo: string) => ({ entrada: 'Entrada', salida: 'Salida', merma: 'Merma', ajuste: 'Ajuste' }[tipo] ?? tipo)
 
-  const getTipoLabel = (tipo: string) => ({ entrada: 'Entrada', salida: 'Salida', merma: 'Merma', ajuste: 'Ajuste' }[tipo] ?? tipo)
-
-  const getTipoColor = (tipo: string) => {
-    if (tipo === 'entrada') return 'bg-emerald-100 text-[#06C167]'
-    if (tipo === 'salida') return 'bg-amber-100 text-amber-600'
-    if (tipo === 'merma') return 'bg-red-100 text-red-500'
-    return 'bg-gray-100 text-gray-500'
+  function getTipoChip(tipo: string): React.CSSProperties {
+    if (tipo === 'entrada') return { background: '#BEEBBE', color: '#0a3a0a' }
+    if (tipo === 'salida')  return { background: '#FEF3C7', color: '#92400E' }
+    if (tipo === 'merma')   return { background: '#FEE2E2', color: '#991B1B' }
+    return { background: 'rgba(0,0,0,0.07)', color: 'rgba(0,0,0,0.55)' }
   }
 
   const monthOptions = useMemo(() => {
     const options = []
     const now = new Date()
     for (let i = 0; i < 12; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const d     = new Date(now.getFullYear(), now.getMonth() - i, 1)
       const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-      const label = d.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
+      const label = d.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })
       options.push({ value, label })
     }
     return options
   }, [])
 
+  const selStyle: React.CSSProperties = { ...inp, height: 36, cursor: 'pointer', appearance: 'auto' }
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] flex flex-col shadow-xl" style={sora}>
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 shrink-0">
-          <span className="text-sm font-black text-gray-900 flex items-center gap-2">
-            <History className="h-4 w-4" />Historial de ajustes de inventario
-          </span>
-          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400 transition-colors">
-            <X className="h-4 w-4" />
-          </button>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', padding: 16 }}>
+      <div style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 520, maxHeight: '85vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px -16px rgba(0,0,0,0.35)', fontFamily: FONT, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid #E5E5E5', flexShrink: 0 }}>
+          <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.03em' }}>Historial de ajustes</span>
+          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 8, border: '1px solid #E5E5E5', background: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>✕</button>
         </div>
 
-        <div className="px-4 py-3 border-b border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-2 shrink-0">
+        <div style={{ padding: '12px 20px', borderBottom: '1px solid #E5E5E5', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, flexShrink: 0 }}>
           <div>
-            <p className="text-[10px] text-gray-400 mb-1 flex items-center gap-1"><Calendar className="h-3 w-3" />Mes</p>
-            <select value={filterMonth} onChange={(e) => setFilterMonth(e.target.value)}
-              className="w-full h-8 rounded-xl border border-gray-200 px-2 text-xs bg-white text-gray-900 capitalize">
+            <div style={{ fontFamily: MONO, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#909090', fontWeight: 700, marginBottom: 6 }}>Mes</div>
+            <select value={filterMonth} onChange={e => setFilterMonth(e.target.value)} style={selStyle}>
               {monthOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
           </div>
           <div>
-            <p className="text-[10px] text-gray-400 mb-1 flex items-center gap-1"><Filter className="h-3 w-3" />Tipo</p>
-            <select value={filterType} onChange={(e) => setFilterType(e.target.value)}
-              className="w-full h-8 rounded-xl border border-gray-200 px-2 text-xs bg-white text-gray-900">
+            <div style={{ fontFamily: MONO, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#909090', fontWeight: 700, marginBottom: 6 }}>Tipo</div>
+            <select value={filterType} onChange={e => setFilterType(e.target.value)} style={selStyle}>
               <option value="all">Todos</option>
               <option value="entrada">Entrada</option>
               <option value="salida">Salida</option>
@@ -338,56 +371,55 @@ function InventoryHistoryDialog({ adjustments, ingredients, users, onClose }: In
             </select>
           </div>
           <div>
-            <p className="text-[10px] text-gray-400 mb-1">Ingrediente</p>
-            <select value={filterIngredient} onChange={(e) => setFilterIngredient(e.target.value)}
-              className="w-full h-8 rounded-xl border border-gray-200 px-2 text-xs bg-white text-gray-900">
+            <div style={{ fontFamily: MONO, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#909090', fontWeight: 700, marginBottom: 6 }}>Ingrediente</div>
+            <select value={filterIngredient} onChange={e => setFilterIngredient(e.target.value)} style={selStyle}>
               <option value="all">Todos</option>
               {ingredients.filter(i => i.activo).map(ing => <option key={ing.id} value={ing.id}>{ing.nombre}</option>)}
             </select>
           </div>
         </div>
 
-        <p className="px-4 py-1.5 text-[10px] text-gray-400 border-b border-gray-100 shrink-0">
+        <div style={{ fontFamily: MONO, fontSize: 10.5, color: '#909090', padding: '8px 20px', borderBottom: '1px solid #E5E5E5', flexShrink: 0 }}>
           {filteredAdjustments.length} ajuste{filteredAdjustments.length !== 1 ? 's' : ''} encontrado{filteredAdjustments.length !== 1 ? 's' : ''}
-        </p>
+        </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1.5">
-          {filteredAdjustments.map((adj) => (
-            <div key={adj.id} className="border border-gray-100 rounded-2xl bg-white p-2">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="text-xs font-medium text-gray-900 truncate">{getIngredientName(adj.ingredientId)}</span>
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${getTipoColor(adj.tipo)}`}>{getTipoLabel(adj.tipo)}</span>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {filteredAdjustments.map(adj => (
+            <div key={adj.id} style={{ border: '1px solid #E5E5E5', borderRadius: 12, padding: '10px 14px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.01em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getIngredientName(adj.ingredientId)}</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 7px', borderRadius: 999, fontFamily: MONO, fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', flexShrink: 0, ...getTipoChip(adj.tipo) }}>
+                      {getTipoLabel(adj.tipo)}
+                    </span>
                   </div>
-                  <p className="text-[10px] text-gray-400 line-clamp-1">{adj.motivo}</p>
+                  <div style={{ fontFamily: MONO, fontSize: 10.5, color: '#909090', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{adj.motivo}</div>
                 </div>
-                <div className="text-right shrink-0">
-                  <p className={`text-xs font-semibold ${adj.tipo === 'entrada' ? 'text-[#06C167]' : 'text-red-500'}`}>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontFamily: MONO, fontWeight: 700, fontSize: 13, color: adj.tipo === 'entrada' ? '#0a3a0a' : '#991B1B' }}>
                     {adj.tipo === 'entrada' ? '+' : '-'}{adj.cantidad}
-                  </p>
-                  <p className="text-[9px] text-gray-400">{new Date(adj.createdAt).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}</p>
+                  </div>
+                  <div style={{ fontFamily: MONO, fontSize: 10.5, color: '#909090', marginTop: 2 }}>
+                    {new Date(adj.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
+                  </div>
                 </div>
               </div>
-              <p className="text-[9px] text-gray-400 mt-1">
-                Por: {getUserName(adj.userId)} — {new Date(adj.createdAt).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
-              </p>
+              <div style={{ fontFamily: MONO, fontSize: 10, color: '#909090', marginTop: 6 }}>
+                Por: {getUserName(adj.userId)} — {new Date(adj.createdAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+              </div>
             </div>
           ))}
-
           {filteredAdjustments.length === 0 && (
-            <div className="text-center py-8">
-              <History className="h-8 w-8 mx-auto text-gray-300 mb-2" />
-              <p className="text-xs text-gray-400">No hay ajustes en este periodo</p>
+            <div style={{ textAlign: 'center', padding: '32px 0' }}>
+              <div style={{ fontFamily: FONT, fontWeight: 700, letterSpacing: '-0.06em', fontSize: 48, color: 'rgba(0,0,0,0.08)', lineHeight: 1 }}>Ø</div>
+              <div style={{ fontFamily: MONO, fontSize: 11.5, color: '#909090', marginTop: 10 }}>No hay ajustes en este periodo</div>
             </div>
           )}
         </div>
 
-        <div className="shrink-0 px-4 py-3 border-t border-gray-100">
-          <button onClick={onClose}
-            className="w-full h-8 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-            Cerrar
-          </button>
+        <div style={{ padding: '12px 20px', borderTop: '1px solid #E5E5E5', flexShrink: 0 }}>
+          <button onClick={onClose} style={{ width: '100%', height: 40, borderRadius: 999, border: '1px solid #E5E5E5', background: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', fontFamily: FONT }}>Cerrar</button>
         </div>
       </div>
     </div>
@@ -404,58 +436,48 @@ interface AdvancedIngredientDialogProps {
 
 function AdvancedIngredientDialog({ ingredient, onClose, onSave }: AdvancedIngredientDialogProps) {
   const { ingredients: allIngredients } = useApp()
-  const [stockActual, setStockActual] = useState(ingredient.stockActual.toString())
-  const [stockMinimo, setStockMinimo] = useState(ingredient.stockMinimo.toString())
+  const [stockActual, setStockActual]     = useState(ingredient.stockActual.toString())
+  const [stockMinimo, setStockMinimo]     = useState(ingredient.stockMinimo.toString())
   const [cantidadMaxima, setCantidadMaxima] = useState(ingredient.cantidadMaxima.toString())
-  const [categoria, setCategoria] = useState<IngredientCategory>(ingredient.categoria)
+  const [categoria, setCategoria]         = useState<IngredientCategory>(ingredient.categoria)
   const [showNewCategory, setShowNewCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
-  const [motivo, setMotivo] = useState('')
-  const [motivoError, setMotivoError] = useState(false)
+  const [motivo, setMotivo]               = useState('')
+  const [motivoError, setMotivoError]     = useState(false)
 
   const originalStock = ingredient.stockActual
-  const newStock = parseFloat(stockActual) || 0
-  const stockChanged = Math.abs(newStock - originalStock) > 0.001
-
+  const newStock      = parseFloat(stockActual) || 0
+  const stockChanged  = Math.abs(newStock - originalStock) > 0.001
   const existingCategories = [...new Set([...DEFAULT_INGREDIENT_CATEGORIES, ...allIngredients.map(i => i.categoria)])].sort()
 
   const handleSave = () => {
     if (stockChanged && !motivo.trim()) { setMotivoError(true); return }
     const finalCategoria = showNewCategory && newCategoryName.trim() ? newCategoryName.trim() : categoria
-    const stockChange = newStock - originalStock
     onSave({
       stockActual: newStock,
       stockMinimo: parseFloat(stockMinimo) >= 0 ? parseFloat(stockMinimo) : 0,
       cantidadMaxima: parseFloat(cantidadMaxima) > 0 ? parseFloat(cantidadMaxima) : 1,
       categoria: finalCategoria as IngredientCategory,
-    }, stockChange, motivo.trim())
+    }, newStock - originalStock, motivo.trim())
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md p-5 shadow-xl space-y-4" style={sora}>
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-black text-gray-900 flex items-center gap-2">
-            <Edit2 className="h-4 w-4" />Ajustes avanzados — {ingredient.nombre}
-          </h3>
-          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400 transition-colors">
-            <X className="h-4 w-4" />
-          </button>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', padding: 16 }}>
+      <div style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 440, padding: 24, boxShadow: '0 24px 64px -16px rgba(0,0,0,0.35)', fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.03em' }}>Ajustes avanzados — {ingredient.nombre}</div>
+          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 8, border: '1px solid #E5E5E5', background: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>✕</button>
         </div>
 
         <div>
-          <label className="text-xs text-gray-500 block mb-1">Categoría</label>
+          <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700, display: 'block', marginBottom: 6 }}>Categoría</label>
           {showNewCategory ? (
-            <div className="flex gap-1">
-              <Input value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="Nueva categoría..." className="h-9 text-xs" />
-              <button onClick={() => { setShowNewCategory(false); setNewCategoryName('') }}
-                className="h-9 px-3 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors shrink-0">
-                Cancelar
-              </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input style={inp} value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nueva categoría..." />
+              <button onClick={() => { setShowNewCategory(false); setNewCategoryName('') }} style={{ height: 36, padding: '0 12px', borderRadius: 999, border: '1px solid #E5E5E5', background: '#fff', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, flexShrink: 0 }}>Cancelar</button>
             </div>
           ) : (
-            <select value={categoria} onChange={(e) => { if (e.target.value === '__new__') setShowNewCategory(true); else setCategoria(e.target.value as IngredientCategory) }}
-              className="w-full h-9 rounded-xl border border-gray-200 px-3 text-xs bg-white text-gray-900">
+            <select value={categoria} onChange={e => { if (e.target.value === '__new__') setShowNewCategory(true); else setCategoria(e.target.value as IngredientCategory) }} style={{ ...inp, cursor: 'pointer', appearance: 'auto' }}>
               {existingCategories.map((cat, i) => <option key={`${cat}-${i}`} value={cat}>{cat}</option>)}
               <option value="__new__">+ Crear nueva categoría</option>
             </select>
@@ -463,43 +485,39 @@ function AdvancedIngredientDialog({ ingredient, onClose, onSave }: AdvancedIngre
         </div>
 
         <div>
-          <label className="text-xs text-gray-500 block mb-1">Stock actual ({ingredient.unidad})</label>
-          <Input type="number" step="0.01" value={stockActual} onChange={(e) => setStockActual(e.target.value)} className="h-9 text-xs" />
+          <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700, display: 'block', marginBottom: 6 }}>Stock actual ({ingredient.unidad})</label>
+          <input type="number" step="0.01" style={inp} value={stockActual} onChange={e => setStockActual(e.target.value)} />
           {stockChanged && (
-            <p className={`text-[10px] mt-1 ${newStock > originalStock ? 'text-[#06C167]' : 'text-amber-500'}`}>
+            <div style={{ fontFamily: MONO, fontSize: 10.5, marginTop: 4, color: newStock > originalStock ? '#0a3a0a' : '#92400E' }}>
               Cambio: {newStock > originalStock ? '+' : ''}{(newStock - originalStock).toFixed(2)} {ingredient.unidad}
-            </p>
+            </div>
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div>
-            <label className="text-xs text-gray-500 block mb-1">Stock mínimo</label>
-            <Input type="number" step="0.01" value={stockMinimo} onChange={(e) => setStockMinimo(e.target.value)} className="h-9 text-xs" />
-            <p className="text-[9px] text-gray-400 mt-0.5">Alerta bajo este nivel</p>
+            <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700, display: 'block', marginBottom: 6 }}>Stock mínimo</label>
+            <input type="number" step="0.01" style={inp} value={stockMinimo} onChange={e => setStockMinimo(e.target.value)} />
           </div>
           <div>
-            <label className="text-xs text-gray-500 block mb-1">Stock máximo</label>
-            <Input type="number" step="0.01" value={cantidadMaxima} onChange={(e) => setCantidadMaxima(e.target.value)} className="h-9 text-xs" />
-            <p className="text-[9px] text-gray-400 mt-0.5">Capacidad máxima</p>
+            <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700, display: 'block', marginBottom: 6 }}>Stock máximo</label>
+            <input type="number" step="0.01" style={inp} value={cantidadMaxima} onChange={e => setCantidadMaxima(e.target.value)} />
           </div>
         </div>
 
         {stockChanged && (
           <div>
-            <label className={`text-xs block mb-1 ${motivoError ? 'text-red-500' : 'text-gray-500'}`}>
-              Motivo del cambio de stock <span className="text-red-500">*</span>
+            <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700, display: 'block', marginBottom: 6, color: motivoError ? '#991B1B' : '#000' }}>
+              Motivo del cambio *
             </label>
-            <Input value={motivo} onChange={(e) => { setMotivo(e.target.value); if (e.target.value.trim()) setMotivoError(false) }}
-              placeholder="Ej: Conteo físico, ajuste por pérdida..."
-              className={`h-9 text-xs ${motivoError ? 'border-red-400' : ''}`} />
-            {motivoError && <p className="text-[9px] text-red-500 mt-0.5">Debes proporcionar un motivo para cambios de stock</p>}
+            <input style={{ ...inp, borderColor: motivoError ? '#FCA5A5' : '#E5E5E5' }} value={motivo} onChange={e => { setMotivo(e.target.value); if (e.target.value.trim()) setMotivoError(false) }} placeholder="Ej: Conteo físico, ajuste por pérdida..." />
+            {motivoError && <div style={{ fontFamily: MONO, fontSize: 10.5, color: '#991B1B', marginTop: 4 }}>El motivo es obligatorio para cambios de stock</div>}
           </div>
         )}
 
-        <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="h-9 px-4 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">Cancelar</button>
-          <button onClick={handleSave} className="h-9 px-4 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold transition-colors">Guardar cambios</button>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button onClick={onClose} style={{ height: 40, padding: '0 16px', borderRadius: 999, border: '1px solid #E5E5E5', background: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Cancelar</button>
+          <button onClick={handleSave} style={{ height: 40, padding: '0 16px', borderRadius: 999, border: 'none', background: '#000', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Guardar cambios</button>
         </div>
       </div>
     </div>
@@ -517,14 +535,14 @@ interface AdjustStockDialogProps {
 }
 
 function AdjustStockDialog({ ingredient, onClose, onAdjust, onUpdateIngredient, onOpenAdvanced }: AdjustStockDialogProps) {
-  const { ingredients: allIngredients } = useApp()
-  const [tipo, setTipo] = useState<'entrada' | 'salida' | 'merma' | 'ajuste'>('entrada')
-  const [cantidad, setCantidad] = useState('')
-  const [motivo, setMotivo] = useState('')
+  const { ingredients: allIngredients }  = useApp()
+  const [tipo, setTipo]                  = useState<'entrada' | 'salida' | 'merma' | 'ajuste'>('entrada')
+  const [cantidad, setCantidad]          = useState('')
+  const [motivo, setMotivo]              = useState('')
   const [editCategoria, setEditCategoria] = useState<IngredientCategory>(ingredient.categoria)
   const [showNewCategory, setShowNewCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
-  const [motivoError, setMotivoError] = useState(false)
+  const [motivoError, setMotivoError]    = useState(false)
 
   const existingCategories = [...new Set([...DEFAULT_INGREDIENT_CATEGORIES, ...allIngredients.map(i => i.categoria)])].sort()
 
@@ -537,39 +555,34 @@ function AdjustStockDialog({ ingredient, onClose, onAdjust, onUpdateIngredient, 
     else if (finalCategoria !== ingredient.categoria) { onClose() }
   }
 
+  const selStyle: React.CSSProperties = { ...inp, cursor: 'pointer', appearance: 'auto' }
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl space-y-3" style={sora}>
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-black text-gray-900">Ajustar: {ingredient.nombre}</h3>
-          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400 transition-colors">
-            <X className="h-4 w-4" />
-          </button>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', padding: 16 }}>
+      <div style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 400, padding: 24, boxShadow: '0 24px 64px -16px rgba(0,0,0,0.35)', fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.03em' }}>Ajustar: {ingredient.nombre}</div>
+          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 8, border: '1px solid #E5E5E5', background: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>✕</button>
         </div>
 
         <div>
-          <label className="text-xs text-gray-500 block mb-1">Categoría</label>
+          <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700, display: 'block', marginBottom: 6 }}>Categoría</label>
           {showNewCategory ? (
-            <div className="flex gap-1">
-              <Input value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="Nueva categoría..." className="h-9 text-xs" />
-              <button onClick={() => { setShowNewCategory(false); setNewCategoryName('') }}
-                className="h-9 px-3 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors shrink-0">
-                Cancelar
-              </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input style={inp} value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nueva categoría..." />
+              <button onClick={() => { setShowNewCategory(false); setNewCategoryName('') }} style={{ height: 36, padding: '0 12px', borderRadius: 999, border: '1px solid #E5E5E5', background: '#fff', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, flexShrink: 0 }}>✕</button>
             </div>
           ) : (
-            <select value={editCategoria} onChange={(e) => { if (e.target.value === '__new__') setShowNewCategory(true); else setEditCategoria(e.target.value as IngredientCategory) }}
-              className="w-full h-9 rounded-xl border border-gray-200 px-3 text-xs bg-white text-gray-900">
+            <select value={editCategoria} onChange={e => { if (e.target.value === '__new__') setShowNewCategory(true); else setEditCategoria(e.target.value as IngredientCategory) }} style={selStyle}>
               {existingCategories.map((cat, i) => <option key={`${cat}-${i}`} value={cat}>{cat}</option>)}
-              <option value="__new__">+ Crear nueva categoría</option>
+              <option value="__new__">+ Nueva categoría</option>
             </select>
           )}
         </div>
 
         <div>
-          <label className="text-xs text-gray-500 block mb-1">Tipo de ajuste</label>
-          <select value={tipo} onChange={(e) => setTipo(e.target.value as typeof tipo)}
-            className="w-full h-9 rounded-xl border border-gray-200 px-3 text-xs bg-white text-gray-900">
+          <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700, display: 'block', marginBottom: 6 }}>Tipo de ajuste</label>
+          <select value={tipo} onChange={e => setTipo(e.target.value as typeof tipo)} style={selStyle}>
             <option value="entrada">↑ Entrada (compra)</option>
             <option value="salida">↓ Salida (uso)</option>
             <option value="merma">⚠ Merma (pérdida)</option>
@@ -578,32 +591,22 @@ function AdjustStockDialog({ ingredient, onClose, onAdjust, onUpdateIngredient, 
         </div>
 
         <div>
-          <label className="text-xs text-gray-500 block mb-1">Cantidad ({ingredient.unidad})</label>
-          <Input type="number" value={cantidad} onChange={(e) => setCantidad(e.target.value)} placeholder="0" className="h-9 text-xs" />
-          <p className="text-[9px] text-gray-400 mt-0.5">Stock actual: {parseFloat(ingredient.stockActual.toFixed(2))} {ingredient.unidad}</p>
+          <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700, display: 'block', marginBottom: 6 }}>Cantidad ({ingredient.unidad})</label>
+          <input type="number" style={inp} value={cantidad} onChange={e => setCantidad(e.target.value)} placeholder="0" />
+          <div style={{ fontFamily: MONO, fontSize: 10.5, color: '#909090', marginTop: 4 }}>Stock actual: {parseFloat(ingredient.stockActual.toFixed(2))} {ingredient.unidad}</div>
         </div>
 
         <div>
-          <label className={`text-xs block mb-1 ${motivoError ? 'text-red-500' : 'text-gray-500'}`}>
-            Motivo <span className="text-red-500">*</span>
-          </label>
-          <Input value={motivo} onChange={(e) => { setMotivo(e.target.value); if (e.target.value.trim()) setMotivoError(false) }}
-            placeholder="Motivo del ajuste (obligatorio)..."
-            className={`h-9 text-xs ${motivoError ? 'border-red-400' : ''}`} />
-          {motivoError && <p className="text-[9px] text-red-500 mt-0.5">El motivo es obligatorio para registrar el ajuste</p>}
+          <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700, display: 'block', marginBottom: 6, color: motivoError ? '#991B1B' : '#000' }}>Motivo *</label>
+          <input style={{ ...inp, borderColor: motivoError ? '#FCA5A5' : '#E5E5E5' }} value={motivo} onChange={e => { setMotivo(e.target.value); if (e.target.value.trim()) setMotivoError(false) }} placeholder="Motivo del ajuste (obligatorio)..." />
+          {motivoError && <div style={{ fontFamily: MONO, fontSize: 10.5, color: '#991B1B', marginTop: 4 }}>El motivo es obligatorio</div>}
         </div>
 
-        <div className="flex items-center justify-between pt-1">
-          <button onClick={() => { onOpenAdvanced(ingredient); onClose() }}
-            className="h-9 px-3 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-            Ajustes avanzados
-          </button>
-          <div className="flex gap-2">
-            <button onClick={onClose} className="h-9 px-3 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">Cancelar</button>
-            <button onClick={handleSubmit} disabled={!cantidad && editCategoria === ingredient.categoria}
-              className="h-9 px-3 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold disabled:opacity-40 transition-colors">
-              Aplicar
-            </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <button onClick={() => { onOpenAdvanced(ingredient); onClose() }} style={{ height: 40, padding: '0 14px', borderRadius: 999, border: '1px solid #E5E5E5', background: '#fff', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Avanzado</button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={onClose} style={{ height: 40, padding: '0 14px', borderRadius: 999, border: '1px solid #E5E5E5', background: '#fff', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Cancelar</button>
+            <button onClick={handleSubmit} disabled={!cantidad && editCategoria === ingredient.categoria} style={{ height: 40, padding: '0 14px', borderRadius: 999, border: 'none', background: '#000', color: '#fff', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, opacity: (!cantidad && editCategoria === ingredient.categoria) ? 0.4 : 1 }}>Aplicar</button>
           </div>
         </div>
       </div>
@@ -620,15 +623,15 @@ interface AddIngredientDialogProps {
 
 function AddIngredientDialog({ onClose, onAdd }: AddIngredientDialogProps) {
   const { ingredients: allIngredients } = useApp()
-  const [nombre, setNombre] = useState('')
-  const [categoria, setCategoria] = useState('Carnes')
+  const [nombre, setNombre]             = useState('')
+  const [categoria, setCategoria]       = useState('Carnes')
   const [showNewCategory, setShowNewCategory] = useState(false)
   const [newCategoryName, setNewCategoryName] = useState('')
-  const [unidad, setUnidad] = useState('kg')
-  const [stockActual, setStockActual] = useState('')
+  const [unidad, setUnidad]             = useState('kg')
+  const [stockActual, setStockActual]   = useState('')
   const [cantidadMaxima, setCantidadMaxima] = useState('')
-  const [stockMinimo, setStockMinimo] = useState('')
-  const [costo, setCosto] = useState('')
+  const [stockMinimo, setStockMinimo]   = useState('')
+  const [costo, setCosto]               = useState('')
 
   const existingCategories = [...new Set([...DEFAULT_INGREDIENT_CATEGORIES, ...allIngredients.map(i => i.categoria)])].sort()
 
@@ -648,44 +651,40 @@ function AddIngredientDialog({ onClose, onAdd }: AddIngredientDialogProps) {
     }
   }
 
+  const selStyle: React.CSSProperties = { ...inp, cursor: 'pointer', appearance: 'auto' }
+  const canSubmit = nombre.trim() && stockActual && cantidadMaxima && stockMinimo
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto p-5 shadow-xl space-y-3" style={sora}>
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-black text-gray-900">Agregar ingrediente</h3>
-          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400 transition-colors">
-            <X className="h-4 w-4" />
-          </button>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', padding: 16 }}>
+      <div style={{ background: '#fff', borderRadius: 18, width: '100%', maxWidth: 400, maxHeight: '90vh', overflowY: 'auto', padding: 24, boxShadow: '0 24px 64px -16px rgba(0,0,0,0.35)', fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.03em' }}>Agregar ingrediente</div>
+          <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 8, border: '1px solid #E5E5E5', background: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>✕</button>
         </div>
 
         <div>
-          <label className="text-xs text-gray-500 block mb-1">Nombre</label>
-          <Input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre del ingrediente" className="h-9 text-xs" />
+          <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700, display: 'block', marginBottom: 6 }}>Nombre</label>
+          <input style={inp} value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre del ingrediente" />
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div>
-            <label className="text-xs text-gray-500 block mb-1">Categoría</label>
+            <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700, display: 'block', marginBottom: 6 }}>Categoría</label>
             {showNewCategory ? (
-              <div className="flex gap-1">
-                <Input value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="Nueva..." className="h-9 text-xs" />
-                <button onClick={() => { setShowNewCategory(false); setNewCategoryName('') }}
-                  className="h-9 w-9 shrink-0 flex items-center justify-center rounded-xl border border-gray-200 text-gray-400 hover:bg-gray-50 transition-colors">
-                  <X className="h-3 w-3" />
-                </button>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <input style={{ ...inp, flex: 1 }} value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} placeholder="Nueva..." />
+                <button onClick={() => { setShowNewCategory(false); setNewCategoryName('') }} style={{ height: 36, width: 36, borderRadius: 8, border: '1px solid #E5E5E5', background: '#fff', cursor: 'pointer', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>✕</button>
               </div>
             ) : (
-              <select value={categoria} onChange={(e) => { if (e.target.value === '__new__') setShowNewCategory(true); else setCategoria(e.target.value) }}
-                className="w-full h-9 rounded-xl border border-gray-200 px-2 text-xs bg-white text-gray-900">
+              <select value={categoria} onChange={e => { if (e.target.value === '__new__') setShowNewCategory(true); else setCategoria(e.target.value) }} style={selStyle}>
                 {existingCategories.map((cat, i) => <option key={`${cat}-${i}`} value={cat}>{cat}</option>)}
-                <option value="__new__">+ Nueva categoría</option>
+                <option value="__new__">+ Nueva</option>
               </select>
             )}
           </div>
           <div>
-            <label className="text-xs text-gray-500 block mb-1">Unidad</label>
-            <select value={unidad} onChange={(e) => setUnidad(e.target.value)}
-              className="w-full h-9 rounded-xl border border-gray-200 px-2 text-xs bg-white text-gray-900">
+            <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700, display: 'block', marginBottom: 6 }}>Unidad</label>
+            <select value={unidad} onChange={e => setUnidad(e.target.value)} style={selStyle}>
               <option value="kg">kg</option>
               <option value="g">g</option>
               <option value="l">l</option>
@@ -696,32 +695,27 @@ function AddIngredientDialog({ onClose, onAdd }: AddIngredientDialogProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          <div>
-            <label className="text-xs text-gray-500 block mb-1">Stock actual</label>
-            <Input type="number" value={stockActual} onChange={(e) => setStockActual(e.target.value)} placeholder="0" className="h-9 text-xs" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500 block mb-1">Stock mín</label>
-            <Input type="number" value={stockMinimo} onChange={(e) => setStockMinimo(e.target.value)} placeholder="0" className="h-9 text-xs" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500 block mb-1">Stock máx</label>
-            <Input type="number" value={cantidadMaxima} onChange={(e) => setCantidadMaxima(e.target.value)} placeholder="0" className="h-9 text-xs" />
-          </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+          {[
+            { label: 'Stock actual', val: stockActual, set: setStockActual },
+            { label: 'Stock mín',    val: stockMinimo,  set: setStockMinimo },
+            { label: 'Stock máx',    val: cantidadMaxima, set: setCantidadMaxima },
+          ].map(({ label, val, set }) => (
+            <div key={label}>
+              <label style={{ fontFamily: MONO, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700, display: 'block', marginBottom: 6 }}>{label}</label>
+              <input type="number" style={inp} value={val} onChange={e => set(e.target.value)} placeholder="0" />
+            </div>
+          ))}
         </div>
 
         <div>
-          <label className="text-xs text-gray-500 block mb-1">Costo unitario ($)</label>
-          <Input type="number" step="0.01" value={costo} onChange={(e) => setCosto(e.target.value)} placeholder="0.00" className="h-9 text-xs" />
+          <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700, display: 'block', marginBottom: 6 }}>Costo unitario ($)</label>
+          <input type="number" step="0.01" style={inp} value={costo} onChange={e => setCosto(e.target.value)} placeholder="0.00" />
         </div>
 
-        <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="h-9 px-4 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">Cancelar</button>
-          <button onClick={handleSubmit} disabled={!nombre.trim() || !stockActual || !cantidadMaxima || !stockMinimo}
-            className="h-9 px-4 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold disabled:opacity-40 transition-colors">
-            Agregar
-          </button>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button onClick={onClose} style={{ height: 40, padding: '0 16px', borderRadius: 999, border: '1px solid #E5E5E5', background: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>Cancelar</button>
+          <button onClick={handleSubmit} disabled={!canSubmit} style={{ height: 40, padding: '0 16px', borderRadius: 999, border: 'none', background: '#000', color: '#fff', fontSize: 13, fontWeight: 700, cursor: canSubmit ? 'pointer' : 'not-allowed', fontFamily: FONT, opacity: canSubmit ? 1 : 0.4 }}>Agregar</button>
         </div>
       </div>
     </div>
