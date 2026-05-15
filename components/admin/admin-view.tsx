@@ -3,31 +3,6 @@
 import React from 'react'
 import { useState } from 'react'
 import '@/app/restaurante/admin.css'
-import {
-  Package,
-  Archive,
-  Users,
-  Settings,
-  TrendingUp,
-  QrCode,
-  Truck,
-  RotateCcw,
-  Receipt,
-  UtensilsCrossed,
-  History,
-  LogOut,
-  Lock,
-  LayoutGrid,
-  ShieldCheck,
-  UserCircle2,
-  Menu as MenuIcon,
-  X,
-  Bell,
-  ChevronDown,
-  ChevronRight,
-  Cog,
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { MenuManager } from './menu-manager'
 import { OrdersManager } from './orders-manager'
 import { InventoryManager } from './inventory-manager'
@@ -45,7 +20,6 @@ import { FeedbackManager } from './feedback-manager'
 import { HealthPanel } from './health-panel'
 import { useApp } from '@/lib/context'
 import { canDo } from '@/lib/permissions'
-import { MessageSquare, HeartPulse, ClipboardList, DatabaseBackup, BarChart2 } from 'lucide-react'
 import { WaitlistManager } from './waitlist-manager'
 import { BackupManager } from './backup-manager'
 import { AnalyticsDashboard } from './analytics-dashboard'
@@ -58,7 +32,6 @@ import { ConnectSettings } from './connect-settings'
 import { LiquidacionView } from './liquidacion-view'
 import { DisputesManager } from './disputes-manager'
 import { CalendarEmbed } from './calendar-embed'
-import { CreditCard, Banknote, FileText, Link2, ArrowDownCircle, AlertTriangle, CalendarDays } from 'lucide-react'
 
 type AdminScreen = 'reports' | 'menu' | 'orders' | 'inventory' | 'users' | 'config' | 'qr' | 'refunds' | 'closing' | 'history' | 'expo' | 'tables' | 'audit' | 'feedback' | 'health' | 'waitlist' | 'backup' | 'analytics' | 'billing' | 'payment-methods' | 'payments-review' | 'sales-notes' | 'connect' | 'liquidacion' | 'disputes' | 'calendar'
 
@@ -70,7 +43,7 @@ interface AdminViewProps {
 interface NavItem {
   id: AdminScreen
   label: string
-  icon: React.ReactNode
+  icon: string
   badge?: number
 }
 
@@ -95,41 +68,41 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
     {
       title: 'Operación',
       items: [
-        { id: 'reports', label: 'Dashboard', icon: <TrendingUp size={16} /> },
-        { id: 'tables', label: 'Mesas', icon: <LayoutGrid size={16} />, badge: undefined },
-        { id: 'orders', label: 'Pedidos', icon: <Package size={16} />, badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined },
-        { id: 'closing', label: 'Turno & Caja', icon: <Receipt size={16} /> },
+        { id: 'reports',  label: 'Dashboard',        icon: '↗' },
+        { id: 'tables',   label: 'Mesas',             icon: '⊞' },
+        { id: 'orders',   label: 'Pedidos',            icon: '◫', badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined },
+        { id: 'closing',  label: 'Turno & Caja',       icon: '▤' },
         ...(canDo(role, 'validar_pago') ? [
-          { id: 'payments-review' as AdminScreen, label: 'Pagos pendientes', icon: <Banknote size={16} /> },
-          { id: 'sales-notes' as AdminScreen, label: 'Notas de venta', icon: <FileText size={16} /> },
+          { id: 'payments-review' as AdminScreen, label: 'Pagos pendientes', icon: '$' },
+          { id: 'sales-notes' as AdminScreen,     label: 'Notas de venta',   icon: '▤' },
         ] : []),
-        ...(canDo(role, 'hacer_refund') && hasPlanFeature('refunds') ? [{ id: 'refunds' as AdminScreen, label: 'Reembolsos', icon: <RotateCcw size={16} />, badge: pendingRefundsCount > 0 ? pendingRefundsCount : undefined }] : []),
-        ...(hasPlanFeature('waitlist') ? [{ id: 'waitlist' as AdminScreen, label: 'Lista de espera', icon: <ClipboardList size={16} />, badge: waitingCount > 0 ? waitingCount : undefined }] : []),
-        { id: 'feedback', label: 'Feedback', icon: <MessageSquare size={16} /> },
-        ...(hasPlanFeature('analytics') ? [{ id: 'analytics' as AdminScreen, label: 'Analítica', icon: <BarChart2 size={16} /> }] : []),
+        ...(canDo(role, 'hacer_refund') && hasPlanFeature('refunds') ? [{ id: 'refunds' as AdminScreen, label: 'Reembolsos', icon: '↺', badge: pendingRefundsCount > 0 ? pendingRefundsCount : undefined }] : []),
+        ...(hasPlanFeature('waitlist') ? [{ id: 'waitlist' as AdminScreen, label: 'Lista de espera', icon: '≡', badge: waitingCount > 0 ? waitingCount : undefined }] : []),
+        { id: 'feedback',  label: 'Feedback',          icon: '◻' },
+        ...(hasPlanFeature('analytics') ? [{ id: 'analytics' as AdminScreen, label: 'Analítica', icon: '↗' }] : []),
       ]
     },
     {
       title: 'Catálogo',
       items: [
-        { id: 'menu', label: 'Menú', icon: <UtensilsCrossed size={16} /> },
-        { id: 'inventory', label: 'Inventario', icon: <Archive size={16} /> },
+        { id: 'menu',      label: 'Menú',       icon: '⊠' },
+        { id: 'inventory', label: 'Inventario', icon: '◈' },
       ]
     },
     {
       title: 'Sistema',
       items: [
-        { id: 'expo', label: 'Expo / Entrega', icon: <Truck size={16} /> },
-        ...(canDo(role, 'gestionar_usuarios') ? [{ id: 'qr' as AdminScreen, label: 'Códigos QR', icon: <QrCode size={16} /> }] : []),
-        { id: 'history', label: 'Historial de Mesas', icon: <History size={16} /> },
+        { id: 'expo',    label: 'Expo / Entrega',        icon: '↑' },
+        ...(canDo(role, 'gestionar_usuarios') ? [{ id: 'qr' as AdminScreen, label: 'Códigos QR', icon: '⊞' }] : []),
+        { id: 'history', label: 'Historial de Mesas',     icon: '⏱' },
         ...(canDo(role, 'editar_config') ? [
-          { id: 'payment-methods' as AdminScreen, label: 'Métodos de pago', icon: <CreditCard size={16} /> },
-          { id: 'backup' as AdminScreen, label: 'Backup y Recuperación', icon: <DatabaseBackup size={16} /> },
-          { id: 'billing' as AdminScreen, label: 'Plan & Facturación', icon: <CreditCard size={16} /> },
-          { id: 'connect' as AdminScreen, label: 'Stripe Connect', icon: <Link2 size={16} /> },
-          { id: 'liquidacion' as AdminScreen, label: 'Liquidaciones', icon: <ArrowDownCircle size={16} /> },
-          { id: 'disputes' as AdminScreen, label: 'Reclamos', icon: <AlertTriangle size={16} /> },
-          { id: 'calendar' as AdminScreen, label: 'Calendario', icon: <CalendarDays size={16} /> },
+          { id: 'payment-methods' as AdminScreen, label: 'Métodos de pago',    icon: '◫' },
+          { id: 'backup' as AdminScreen,          label: 'Backup y Recuperación', icon: '◈' },
+          { id: 'billing' as AdminScreen,         label: 'Plan & Facturación', icon: '◫' },
+          { id: 'connect' as AdminScreen,         label: 'Stripe Connect',     icon: '⊕' },
+          { id: 'liquidacion' as AdminScreen,     label: 'Liquidaciones',      icon: '↓' },
+          { id: 'disputes' as AdminScreen,        label: 'Reclamos',           icon: '⚠' },
+          { id: 'calendar' as AdminScreen,        label: 'Calendario',         icon: '◫' },
         ] : []),
       ]
     },
@@ -140,13 +113,12 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
   const getScreenTitle = () => {
     const allItems = navGroups.flatMap(g => g.items)
     const adminItems: NavItem[] = [
-      { id: 'users', label: 'Usuarios', icon: null },
-      { id: 'audit', label: 'Auditoría', icon: null },
-      { id: 'health', label: 'Salud del sistema', icon: null },
-      { id: 'config', label: 'Configuración', icon: null },
+      { id: 'users', label: 'Usuarios', icon: '◎' },
+      { id: 'audit', label: 'Auditoría', icon: '◉' },
+      { id: 'health', label: 'Salud del sistema', icon: '♥' },
+      { id: 'config', label: 'Configuración', icon: '⚙' },
     ]
-    const item = [...allItems, ...adminItems].find(i => i.id === screen)
-    return item?.label ?? 'Admin'
+    return [...allItems, ...adminItems].find(i => i.id === screen)?.label ?? 'Admin'
   }
 
   const navigate = (id: AdminScreen) => {
@@ -156,50 +128,45 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
 
   const renderContent = () => (
     <>
-      {screen === 'reports' && <ReportsManager />}
-      {screen === 'tables' && <TablesManager />}
-      {screen === 'closing' && <DailyClosing />}
-      {screen === 'orders' && <OrdersManager />}
-      {screen === 'menu' && <MenuManager />}
-      {screen === 'inventory' && <InventoryManager />}
-      {screen === 'refunds' && <RefundsManager />}
-      {screen === 'expo' && <ExpoView />}
-      {screen === 'qr' && <QRManager />}
-      {screen === 'history' && <TableHistory />}
-      {screen === 'audit' && <AuditLogViewer />}
-      {screen === 'users' && <UsersManager />}
-      {screen === 'config' && <ConfigManager />}
-      {screen === 'waitlist' && <WaitlistManager />}
-      {screen === 'feedback' && <FeedbackManager />}
-      {screen === 'analytics' && <AnalyticsDashboard />}
-      {screen === 'health' && <HealthPanel />}
-      {screen === 'backup' && <BackupManager />}
-      {screen === 'billing' && <BillingManager />}
+      {screen === 'reports'         && <ReportsManager />}
+      {screen === 'tables'          && <TablesManager />}
+      {screen === 'closing'         && <DailyClosing />}
+      {screen === 'orders'          && <OrdersManager />}
+      {screen === 'menu'            && <MenuManager />}
+      {screen === 'inventory'       && <InventoryManager />}
+      {screen === 'refunds'         && <RefundsManager />}
+      {screen === 'expo'            && <ExpoView />}
+      {screen === 'qr'              && <QRManager />}
+      {screen === 'history'         && <TableHistory />}
+      {screen === 'audit'           && <AuditLogViewer />}
+      {screen === 'users'           && <UsersManager />}
+      {screen === 'config'          && <ConfigManager />}
+      {screen === 'waitlist'        && <WaitlistManager />}
+      {screen === 'feedback'        && <FeedbackManager />}
+      {screen === 'analytics'       && <AnalyticsDashboard />}
+      {screen === 'health'          && <HealthPanel />}
+      {screen === 'backup'          && <BackupManager />}
+      {screen === 'billing'         && <BillingManager />}
       {screen === 'payment-methods' && <PaymentMethodsManager />}
       {screen === 'payments-review' && <PaymentsReviewManager />}
-      {screen === 'sales-notes' && <SalesNotesManager />}
-      {screen === 'connect' && <ConnectSettings />}
-      {screen === 'liquidacion' && <LiquidacionView />}
-      {screen === 'disputes' && <DisputesManager />}
-      {screen === 'calendar' && <CalendarEmbed />}
+      {screen === 'sales-notes'     && <SalesNotesManager />}
+      {screen === 'connect'         && <ConnectSettings />}
+      {screen === 'liquidacion'     && <LiquidacionView />}
+      {screen === 'disputes'        && <DisputesManager />}
+      {screen === 'calendar'        && <CalendarEmbed />}
     </>
   )
 
-  // ─── Sidebar nav item ─────────────────────────────────────────────────────────
   const SidebarItem = ({ item }: { item: NavItem }) => {
     const active = screen === item.id
     return (
       <button
         onClick={() => navigate(item.id)}
         title={sidebarCollapsed ? item.label : undefined}
-        className={cn(
-          'adm-nav-item',
-          active ? 'active' : '',
-          sidebarCollapsed ? 'justify-center px-0' : ''
-        )}
+        className={['adm-nav-item', active ? 'active' : '', sidebarCollapsed ? 'justify-center' : ''].filter(Boolean).join(' ')}
         style={sidebarCollapsed ? { padding: '10px', justifyContent: 'center' } : undefined}
       >
-        <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{item.icon}</span>
+        <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0, fontSize: 15 }}>{item.icon}</span>
         {!sidebarCollapsed && <span style={{ flex: 1, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>}
         {!sidebarCollapsed && item.badge !== undefined && (
           <span className="adm-nav-badge">{item.badge}</span>
@@ -213,7 +180,6 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
     )
   }
 
-  // ─── Sidebar content ──────────────────────────────────────────────────────────
   const SidebarContent = ({ inDrawer = false }: { inDrawer?: boolean }) => (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Brand */}
@@ -224,7 +190,6 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
           onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
           onMouseLeave={e => (e.currentTarget.style.background = 'none')}
         >
-          {/* Logo tile */}
           <div className="adm-sidebar-logo">
             {config.restaurantName ? config.restaurantName.slice(0, 2).toLowerCase() : 'W'}
           </div>
@@ -243,12 +208,8 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
       <nav className="adm-sidebar-nav">
         {navGroups.map(group => (
           <div key={group.title}>
-            {(!sidebarCollapsed || inDrawer) && (
-              <div className="adm-nav-section">{group.title}</div>
-            )}
-            {sidebarCollapsed && !inDrawer && (
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', margin: '12px 0 8px' }} />
-            )}
+            {(!sidebarCollapsed || inDrawer) && <div className="adm-nav-section">{group.title}</div>}
+            {sidebarCollapsed && !inDrawer && <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', margin: '12px 0 8px' }} />}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {group.items.map(item => <SidebarItem key={item.id} item={item} />)}
             </div>
@@ -258,36 +219,30 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
         {/* Admin group */}
         {(canDo(role, 'gestionar_usuarios') || canDo(role, 'editar_config')) && (
           <div>
-            {(!sidebarCollapsed || inDrawer) && (
-              <div className="adm-nav-section">Administración</div>
-            )}
-            {sidebarCollapsed && !inDrawer && (
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', margin: '12px 0 8px' }} />
-            )}
+            {(!sidebarCollapsed || inDrawer) && <div className="adm-nav-section">Administración</div>}
+            {sidebarCollapsed && !inDrawer && <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', margin: '12px 0 8px' }} />}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {canDo(role, 'gestionar_usuarios') && (
                 <>
-                  <SidebarItem item={{ id: 'users', label: 'Usuarios', icon: <Users size={16} /> }} />
-                  <SidebarItem item={{ id: 'audit', label: 'Auditoría', icon: <ShieldCheck size={16} /> }} />
+                  <SidebarItem item={{ id: 'users', label: 'Usuarios',   icon: '◎' }} />
+                  <SidebarItem item={{ id: 'audit', label: 'Auditoría',  icon: '◉' }} />
                 </>
               )}
-              <SidebarItem item={{ id: 'health', label: 'Salud del sistema', icon: <HeartPulse size={16} /> }} />
+              <SidebarItem item={{ id: 'health', label: 'Salud del sistema', icon: '♥' }} />
             </div>
           </div>
         )}
 
-        {/* Config in drawer */}
         {inDrawer && canDo(role, 'editar_config') && (
           <div style={{ marginTop: 4 }}>
             <div className="adm-nav-section">Configuración</div>
-            <SidebarItem item={{ id: 'config', label: 'Configuración', icon: <Cog size={16} /> }} />
+            <SidebarItem item={{ id: 'config', label: 'Configuración', icon: '⚙' }} />
           </div>
         )}
       </nav>
 
       {/* Footer */}
       <div className="adm-sidebar-footer">
-        {/* Status pill */}
         {(!sidebarCollapsed || inDrawer) && (
           <div className="adm-sidebar-status" style={{ marginBottom: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
@@ -303,15 +258,11 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
 
         <PushSubscribeButton collapsed={sidebarCollapsed && !inDrawer} />
 
-        {/* Lock / logout (drawer only) */}
         {inDrawer && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 8 }}>
             {onLockProfile && (
-              <button
-                onClick={onLockProfile}
-                className="adm-nav-item"
-              >
-                <Lock size={16} style={{ flexShrink: 0 }} />
+              <button onClick={onLockProfile} className="adm-nav-item">
+                <span style={{ fontSize: 15, flexShrink: 0 }}>⊙</span>
                 <span>Cerrar perfil</span>
               </button>
             )}
@@ -322,13 +273,12 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgb(248,113,113)'; (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.1)' }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(248,113,113,0.85)'; (e.currentTarget as HTMLElement).style.background = 'transparent' }}
             >
-              <LogOut size={16} style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: 15, flexShrink: 0 }}>←</span>
               <span>Cerrar sesión</span>
             </button>
           </div>
         )}
 
-        {/* Collapse toggle (desktop only) */}
         {!inDrawer && (
           <button
             onClick={() => setSidebarCollapsed(v => !v)}
@@ -336,14 +286,7 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
             className="adm-nav-item"
             style={{ marginTop: 4 }}
           >
-            <ChevronRight
-              size={16}
-              style={{
-                flexShrink: 0,
-                transition: 'transform 0.2s',
-                transform: sidebarCollapsed ? 'rotate(0deg)' : 'rotate(180deg)'
-              }}
-            />
+            <span style={{ fontSize: 15, flexShrink: 0, display: 'inline-block', transition: 'transform 0.2s', transform: sidebarCollapsed ? 'rotate(0deg)' : 'rotate(180deg)' }}>›</span>
             {!sidebarCollapsed && <span>Contraer</span>}
           </button>
         )}
@@ -351,7 +294,6 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
     </div>
   )
 
-  // ── Topbar user initials ───────────────────────────────────────────────────────
   const userInitial = currentUser?.nombre?.charAt(0).toUpperCase() ?? 'A'
 
   return (
@@ -359,36 +301,21 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
 
       {/* ── DESKTOP layout ─────────────────────────────────────────────────── */}
       <div className="hidden md:flex" style={{ width: '100%', height: '100vh', overflow: 'hidden' }}>
-
-        {/* Sidebar */}
-        <aside
-          className="adm-sidebar"
-          style={{ width: sidebarCollapsed ? 64 : 240 }}
-        >
+        <aside className="adm-sidebar" style={{ width: sidebarCollapsed ? 64 : 240 }}>
           <SidebarContent />
         </aside>
 
-        {/* Main */}
         <div className="adm-main">
-
-          {/* Topbar */}
           <header className="adm-topbar">
             <div>
               <div className="adm-topbar-title">{getScreenTitle()}</div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {/* User menu */}
               <div style={{ position: 'relative' }}>
                 <button
                   onClick={() => setUserMenuOpen(v => !v)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    height: 36, padding: '0 10px 0 6px',
-                    border: '1px solid #E5E5E5', borderRadius: 999,
-                    background: '#fff', cursor: 'pointer',
-                    fontFamily: "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif"
-                  }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, height: 36, padding: '0 10px 0 6px', border: '1px solid #E5E5E5', borderRadius: 999, background: '#fff', cursor: 'pointer', fontFamily: "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif" }}
                   onMouseEnter={e => (e.currentTarget.style.borderColor = '#000')}
                   onMouseLeave={e => (e.currentTarget.style.borderColor = '#E5E5E5')}
                 >
@@ -401,64 +328,43 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
                       {currentUser?.role ?? 'admin'}
                     </div>
                   </div>
-                  <ChevronDown size={10} style={{ color: 'rgba(0,0,0,0.45)', flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.45)', flexShrink: 0 }}>▾</span>
                 </button>
 
                 {userMenuOpen && (
                   <>
                     <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setUserMenuOpen(false)} />
-                    <div style={{
-                      position: 'absolute', right: 0, top: '100%', marginTop: 8,
-                      width: 210, background: '#fff', borderRadius: 14,
-                      border: '1px solid #E5E5E5', boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-                      zIndex: 50, overflow: 'hidden', padding: '6px 0'
-                    }}>
-                      <div style={{ padding: '10px 16px 10px', borderBottom: '1px solid #EFEFEF', marginBottom: 4 }}>
+                    <div style={{ position: 'absolute', right: 0, top: '100%', marginTop: 8, width: 210, background: '#fff', borderRadius: 14, border: '1px solid #E5E5E5', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', zIndex: 50, overflow: 'hidden', padding: '6px 0' }}>
+                      <div style={{ padding: '10px 16px', borderBottom: '1px solid #EFEFEF', marginBottom: 4 }}>
                         <div style={{ fontSize: 13, fontWeight: 700 }}>{currentUser?.nombre ?? 'Administrador'}</div>
                         <div className="adm-mono" style={{ fontSize: 10, color: 'rgba(0,0,0,0.45)', textTransform: 'capitalize', marginTop: 1 }}>{currentUser?.role ?? 'admin'}</div>
                       </div>
-                      {canDo(role, 'gestionar_usuarios') && (
-                        <button onClick={() => { navigate('users'); setUserMenuOpen(false) }}
-                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', fontSize: 13, background: 'none', border: 'none', cursor: 'pointer', color: '#000', textAlign: 'left' }}
-                          onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                        >
-                          <Users size={14} style={{ color: '#909090' }} /> Usuarios
-                        </button>
-                      )}
-                      {canDo(role, 'gestionar_usuarios') && (
-                        <button onClick={() => { navigate('audit'); setUserMenuOpen(false) }}
-                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', fontSize: 13, background: 'none', border: 'none', cursor: 'pointer', color: '#000', textAlign: 'left' }}
-                          onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                        >
-                          <ShieldCheck size={14} style={{ color: '#909090' }} /> Auditoría
-                        </button>
-                      )}
-                      <button onClick={() => { navigate('health'); setUserMenuOpen(false) }}
-                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', fontSize: 13, background: 'none', border: 'none', cursor: 'pointer', color: '#000', textAlign: 'left' }}
-                        onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                      >
-                        <HeartPulse size={14} style={{ color: '#909090' }} /> Salud del sistema
-                      </button>
+                      {[
+                        canDo(role, 'gestionar_usuarios') && { label: 'Usuarios',          icon: '◎', screen: 'users' as AdminScreen },
+                        canDo(role, 'gestionar_usuarios') && { label: 'Auditoría',          icon: '◉', screen: 'audit' as AdminScreen },
+                        { label: 'Salud del sistema', icon: '♥', screen: 'health' as AdminScreen },
+                        canDo(role, 'editar_config') && { label: 'Configuración', icon: '⚙', screen: 'config' as AdminScreen },
+                      ].filter(Boolean).map((item, i) => {
+                        if (!item) return null
+                        const { label, icon, screen: sc } = item as { label: string; icon: string; screen: AdminScreen }
+                        return (
+                          <button key={i} onClick={() => { navigate(sc); setUserMenuOpen(false) }}
+                            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', fontSize: 13, background: 'none', border: 'none', cursor: 'pointer', color: '#000', textAlign: 'left' }}
+                            onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
+                            onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                          >
+                            <span style={{ color: '#909090', fontSize: 14 }}>{icon}</span> {label}
+                          </button>
+                        )
+                      })}
                       <div style={{ borderTop: '1px solid #EFEFEF', margin: '4px 0' }} />
-                      {canDo(role, 'editar_config') && (
-                        <button onClick={() => { navigate('config'); setUserMenuOpen(false) }}
-                          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', fontSize: 13, background: 'none', border: 'none', cursor: 'pointer', color: '#000', textAlign: 'left' }}
-                          onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                        >
-                          <Cog size={14} style={{ color: '#909090' }} /> Configuración
-                        </button>
-                      )}
                       {onLockProfile && (
                         <button onClick={() => { onLockProfile(); setUserMenuOpen(false) }}
                           style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', fontSize: 13, background: 'none', border: 'none', cursor: 'pointer', color: '#000', textAlign: 'left' }}
                           onMouseEnter={e => (e.currentTarget.style.background = '#FAFAFA')}
                           onMouseLeave={e => (e.currentTarget.style.background = 'none')}
                         >
-                          <Lock size={14} style={{ color: '#909090' }} /> Cerrar perfil
+                          <span style={{ color: '#909090', fontSize: 14 }}>⊙</span> Cerrar perfil
                         </button>
                       )}
                       <button onClick={onBack}
@@ -466,7 +372,7 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
                         onMouseEnter={e => (e.currentTarget.style.background = '#FEF2F2')}
                         onMouseLeave={e => (e.currentTarget.style.background = 'none')}
                       >
-                        <LogOut size={14} /> Cerrar sesión
+                        <span style={{ fontSize: 14 }}>←</span> Cerrar sesión
                       </button>
                     </div>
                   </>
@@ -475,7 +381,6 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
             </div>
           </header>
 
-          {/* Content */}
           <main style={{ flex: 1, overflow: 'auto', padding: 20, background: '#F7F7F5' }}>
             <div style={{ background: '#fff', borderRadius: 16, minHeight: '100%', padding: 20, border: '1px solid #E5E5E5' }}>
               {renderContent()}
@@ -487,7 +392,6 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
       {/* ── MOBILE layout ──────────────────────────────────────────────────── */}
       <div className="md:hidden" style={{ minHeight: '100vh', background: '#F7F7F5', flexDirection: 'column', width: '100%' }}>
 
-        {/* Mobile Header */}
         <header style={{ position: 'sticky', top: 0, zIndex: 50, padding: '0 16px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#000', flexShrink: 0 }}>
           <button
             onClick={() => navigate('reports')}
@@ -505,9 +409,9 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
             {pendingOrdersCount > 0 && (
               <button
                 onClick={() => navigate('orders')}
-                style={{ position: 'relative', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer' }}
+                style={{ position: 'relative', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.7)', fontSize: 18 }}
               >
-                <Bell size={20} style={{ color: 'rgba(255,255,255,0.7)' }} />
+                ◑
                 <span style={{ position: 'absolute', top: 4, right: 4, width: 16, height: 16, background: '#BEEBBE', color: '#0a3a0a', fontSize: 9, fontWeight: 700, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {pendingOrdersCount}
                 </span>
@@ -515,15 +419,14 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
             )}
             <button
               onClick={() => setMobileDrawerOpen(true)}
-              style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.7)' }}
+              style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.7)', fontSize: 20 }}
             >
-              <MenuIcon size={20} />
+              ≡
             </button>
           </div>
         </header>
 
-        {/* Mobile Content */}
-        <main style={{ flex: 1, overflow: 'auto', paddingBottom: 80, padding: '12px 12px 80px' }}>
+        <main style={{ flex: 1, overflow: 'auto', padding: '12px 12px 80px' }}>
           <div style={{ background: '#fff', borderRadius: 14, minHeight: '100%', padding: 12, border: '1px solid #E5E5E5' }}>
             {renderContent()}
           </div>
@@ -532,11 +435,11 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
         {/* Mobile Bottom Nav */}
         <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50, background: '#fff', borderTop: '1px solid #E5E5E5', display: 'flex', paddingBottom: 'env(safe-area-inset-bottom)' }}>
           {[
-            { id: 'reports' as AdminScreen, label: 'Dashboard', icon: <TrendingUp size={20} /> },
-            { id: 'tables' as AdminScreen, label: 'Mesas', icon: <LayoutGrid size={20} /> },
-            { id: 'orders' as AdminScreen, label: 'Pedidos', icon: <Package size={20} />, badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined },
-            { id: 'closing' as AdminScreen, label: 'Caja', icon: <Receipt size={20} /> },
-            { id: 'menu' as AdminScreen, label: 'Menú', icon: <UtensilsCrossed size={20} /> },
+            { id: 'reports' as AdminScreen, label: 'Dashboard', icon: '↗' },
+            { id: 'tables'  as AdminScreen, label: 'Mesas',     icon: '⊞' },
+            { id: 'orders'  as AdminScreen, label: 'Pedidos',   icon: '◫', badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined },
+            { id: 'closing' as AdminScreen, label: 'Caja',      icon: '▤' },
+            { id: 'menu'    as AdminScreen, label: 'Menú',      icon: '⊠' },
           ].map(item => {
             const active = screen === item.id
             return (
@@ -547,13 +450,11 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
                   flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
                   justifyContent: 'center', padding: '10px 0', minHeight: 52, gap: 4,
                   position: 'relative', background: 'none', border: 'none', cursor: 'pointer',
-                  color: active ? '#000' : '#909090', transition: 'color 0.15s ease'
+                  color: active ? '#000' : '#909090',
                 }}
               >
-                {active && (
-                  <span style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 32, height: 2.5, background: '#000', borderRadius: 999 }} />
-                )}
-                <div style={{ position: 'relative' }}>
+                {active && <span style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 32, height: 2.5, background: '#000', borderRadius: 999 }} />}
+                <div style={{ position: 'relative', fontSize: 20 }}>
                   {item.icon}
                   {item.badge && (
                     <span style={{ position: 'absolute', top: -6, right: -8, minWidth: 16, height: 16, padding: '0 2px', background: '#BEEBBE', color: '#0a3a0a', fontSize: 9, fontWeight: 700, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -582,8 +483,8 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
                     <div className="adm-mono" style={{ color: 'rgba(255,255,255,0.4)', fontSize: 10, textTransform: 'capitalize' }}>{currentUser?.role ?? 'admin'}</div>
                   </div>
                 </div>
-                <button onClick={() => setMobileDrawerOpen(false)} style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', borderRadius: 8 }}>
-                  <X size={16} />
+                <button onClick={() => setMobileDrawerOpen(false)} style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', borderRadius: 8, fontSize: 18 }}>
+                  ×
                 </button>
               </div>
               <div style={{ flex: 1, overflow: 'hidden' }}>

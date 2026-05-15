@@ -1,6 +1,7 @@
 'use client'
 
-import { ClipboardList, Bell, UtensilsCrossed, Receipt } from 'lucide-react'
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MINT = '#BEEBBE'
 
 type ClienteScreen = 'menu' | 'item' | 'cart' | 'status' | 'bill' | 'payment' | 'feedback'
 
@@ -30,23 +31,25 @@ export function ClienteBottomNav({
     {
       key: 'menu',
       label: 'Menú',
-      icon: UtensilsCrossed,
+      symbol: '◫',
       onClick: onMenuClick,
       active: activeScreen === 'menu',
       badge: false,
+      hidden: false,
     },
     {
       key: 'status',
       label: 'Pedidos',
-      icon: ClipboardList,
+      symbol: '≡',
       onClick: onStatusClick,
       active: activeScreen === 'status',
       badge: hasActiveOrders,
+      hidden: false,
     },
     {
       key: 'bill',
       label: 'Cuenta',
-      icon: Receipt,
+      symbol: '$',
       onClick: onBillClick,
       active: activeScreen === 'bill',
       badge: false,
@@ -55,47 +58,77 @@ export function ClienteBottomNav({
     {
       key: 'waiter',
       label: 'Mesero',
-      icon: Bell,
+      symbol: '◈',
       onClick: onCallWaiter,
       active: false,
       badge: hasActiveWaiterCall,
       isAlert: hasActiveWaiterCall,
+      hidden: false,
     },
   ]
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50"
+      style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        background: '#fff', borderTop: '1px solid #f0f0f0',
+        zIndex: 50, paddingBottom: 'env(safe-area-inset-bottom)',
+        fontFamily: FONT,
+      }}
       aria-label="Navegación principal"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      <div className="flex items-center justify-around">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
         {navItems
           .filter(item => !item.hidden)
           .map((item) => {
-            const Icon = item.icon
+            const isActive = item.active
+            const isAlert = item.isAlert
 
             return (
               <button
                 key={item.key}
                 onClick={item.onClick}
                 aria-label={item.label}
-                aria-current={item.active ? 'page' : undefined}
-                className={`flex flex-col items-center gap-0.5 px-4 py-3 min-h-[52px] rounded-lg transition-colors relative ${
-                  item.active
-                    ? 'text-primary'
-                    : item.isAlert
-                    ? 'text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
+                aria-current={isActive ? 'page' : undefined}
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                  padding: '12px 16px', minHeight: 52, background: 'none', border: 'none',
+                  cursor: 'pointer', position: 'relative', fontFamily: FONT,
+                  color: isActive ? '#000' : isAlert ? '#000' : '#999',
+                  transition: 'color 0.15s',
+                }}
               >
-                <div className="relative">
-                  <Icon className={`h-5 w-5 ${item.isAlert ? 'animate-pulse' : ''}`} aria-hidden="true" />
+                <div style={{ position: 'relative' }}>
+                  <span
+                    style={{
+                      fontSize: 22, lineHeight: 1,
+                      display: 'block',
+                      animation: isAlert ? 'pulse 1.5s infinite' : 'none',
+                    }}
+                    aria-hidden="true"
+                  >
+                    {item.symbol}
+                  </span>
                   {item.badge && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" aria-hidden="true" />
+                    <span style={{
+                      position: 'absolute', top: -2, right: -4,
+                      width: 7, height: 7, background: MINT,
+                      borderRadius: '50%', border: '1.5px solid #000',
+                    }} aria-hidden="true" />
                   )}
                 </div>
-                <span className="text-[10px] font-medium">{item.label}</span>
+                <span style={{
+                  fontSize: 10, fontWeight: isActive ? 700 : 500,
+                  letterSpacing: '0.01em',
+                }}>
+                  {item.label}
+                </span>
+                {isActive && (
+                  <span style={{
+                    position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+                    width: 20, height: 2, background: '#000', borderRadius: 2,
+                  }} />
+                )}
               </button>
             )
           })}

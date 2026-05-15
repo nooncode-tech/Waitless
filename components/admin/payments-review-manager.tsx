@@ -4,14 +4,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { useApp } from '@/lib/context'
 import { canDo } from '@/lib/permissions'
 import { supabase } from '@/lib/supabase'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  CheckCircle2, XCircle, AlertCircle, ExternalLink,
-  ChevronDown, ChevronUp, Clock, RefreshCw,
-} from 'lucide-react'
 import type { PaymentStatus2 } from '@/lib/store'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
 
 async function getToken(): Promise<string | null> {
   const { data: { session } } = await supabase.auth.getSession()
@@ -45,15 +41,25 @@ const STATUS_LABELS: Record<PaymentStatus2, string> = {
   ANULADO: 'Anulado',
 }
 
-const STATUS_STYLE: Record<PaymentStatus2, string> = {
-  PENDIENTE_DE_PAGO: 'bg-gray-100 text-gray-600',
-  COMPROBANTE_CARGADO: 'bg-amber-100 text-amber-700 border border-amber-200',
-  EN_REVISION: 'bg-blue-100 text-blue-700 border border-blue-200',
-  PAGO_VALIDADO: 'bg-emerald-100 text-[#06C167] border border-emerald-200',
-  PAGO_RECHAZADO: 'bg-red-100 text-red-600 border border-red-200',
-  PAGO_PARCIAL: 'bg-amber-100 text-amber-700 border border-amber-200',
-  CORRECCION_SOLICITADA: 'bg-gray-100 text-gray-700',
-  ANULADO: 'bg-gray-100 text-gray-500',
+const STATUS_STYLE: Record<PaymentStatus2, React.CSSProperties> = {
+  PENDIENTE_DE_PAGO:     { background: '#f3f3f3', color: '#666' },
+  COMPROBANTE_CARGADO:   { background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a' },
+  EN_REVISION:           { background: '#dbeafe', color: '#1d4ed8', border: '1px solid #bfdbfe' },
+  PAGO_VALIDADO:         { background: '#d1fae5', color: '#059669', border: '1px solid #a7f3d0' },
+  PAGO_RECHAZADO:        { background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' },
+  PAGO_PARCIAL:          { background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a' },
+  CORRECCION_SOLICITADA: { background: '#f3f3f3', color: '#444' },
+  ANULADO:               { background: '#f3f3f3', color: '#aaa' },
+}
+
+const textareaStyle: React.CSSProperties = {
+  width: '100%', borderRadius: 10, border: '1px solid #E5E5E5',
+  padding: '8px 10px', fontSize: 13, fontFamily: FONT, outline: 'none',
+  background: '#fff', color: '#111', resize: 'vertical', boxSizing: 'border-box',
+}
+
+const labelStyle: React.CSSProperties = {
+  fontSize: 11, color: '#888', marginBottom: 4, display: 'block',
 }
 
 export function PaymentsReviewManager() {
@@ -131,60 +137,110 @@ export function PaymentsReviewManager() {
 
   const pendingCount = payments.filter(p => p.status === 'COMPROBANTE_CARGADO' || p.status === 'EN_REVISION').length
 
+  const FILTER_OPTIONS: Array<{ value: string; label: string }> = [
+    { value: '', label: 'Todos' },
+    { value: 'COMPROBANTE_CARGADO', label: STATUS_LABELS['COMPROBANTE_CARGADO'] },
+    { value: 'EN_REVISION', label: STATUS_LABELS['EN_REVISION'] },
+    { value: 'PAGO_VALIDADO', label: STATUS_LABELS['PAGO_VALIDADO'] },
+    { value: 'PAGO_RECHAZADO', label: STATUS_LABELS['PAGO_RECHAZADO'] },
+    { value: 'CORRECCION_SOLICITADA', label: STATUS_LABELS['CORRECCION_SOLICITADA'] },
+  ]
+
   return (
-    <div className="space-y-4" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
-      <div className="flex items-center justify-between">
+    <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 className="text-sm font-black text-gray-900 flex items-center gap-2">
+          <h2 style={{ fontSize: 13, fontWeight: 900, color: '#111', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
             Revisión de pagos
             {pendingCount > 0 && (
-              <span className="flex items-center justify-center h-5 min-w-[20px] px-1.5 text-[10px] font-bold bg-red-500 text-white rounded-full">
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                height: 20, minWidth: 20, padding: '0 6px',
+                fontSize: 10, fontWeight: 700,
+                background: '#ef4444', color: '#fff', borderRadius: 99,
+              }}>
                 {pendingCount}
               </span>
             )}
           </h2>
-          <p className="text-[10px] text-gray-400 mt-0.5">Valida comprobantes de transferencias y pagos digitales</p>
+          <p style={{ fontSize: 10, color: '#aaa', margin: '2px 0 0 0' }}>
+            Valida comprobantes de transferencias y pagos digitales
+          </p>
         </div>
-        <button onClick={fetchPayments} className="h-9 w-9 rounded-xl hover:bg-gray-100 flex items-center justify-center text-gray-500">
-          <RefreshCw className="h-4 w-4" />
-        </button>
+        <button
+          onClick={fetchPayments}
+          style={{
+            width: 36, height: 36, borderRadius: 10, border: 'none',
+            background: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 16, color: '#888',
+          }}
+          title="Actualizar"
+        >↺</button>
       </div>
 
+      {/* Approved banner */}
       {approvedNote && (
-        <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-[#06C167] shrink-0" />
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '10px 14px', background: '#d1fae5',
+          border: '1px solid #a7f3d0', borderRadius: 10,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ color: '#059669', fontSize: 16 }}>✓</span>
             <div>
-              <p className="text-sm font-semibold text-[#06C167]">Pago aprobado</p>
-              <p className="text-xs text-[#06C167]/80 font-mono">{approvedNote.numero}</p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#059669', margin: 0 }}>Pago aprobado</p>
+              <p style={{ fontSize: 11, color: '#059669', margin: 0, fontFamily: MONO, opacity: 0.8 }}>
+                {approvedNote.numero}
+              </p>
             </div>
           </div>
-          <button onClick={() => setApprovedNote(null)} className="text-xs text-[#06C167]/60 hover:text-[#06C167]">✕</button>
+          <button
+            onClick={() => setApprovedNote(null)}
+            style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 14, color: '#059669', opacity: 0.6 }}
+          >✕</button>
         </div>
       )}
 
       {/* Filter pills */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 no-scrollbar">
-        {(['COMPROBANTE_CARGADO', 'EN_REVISION', 'PAGO_VALIDADO', 'PAGO_RECHAZADO', 'CORRECCION_SOLICITADA', ''] as const).map(s => (
+      <div style={{
+        display: 'flex', gap: 8, overflowX: 'auto',
+        paddingBottom: 4, margin: '0 -4px', padding: '0 4px',
+      }}>
+        {FILTER_OPTIONS.map(opt => (
           <button
-            key={s}
-            onClick={() => setFilterStatus(s)}
-            className={`shrink-0 text-xs px-3 py-1.5 rounded-full border transition-colors ${filterStatus === s ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'}`}
+            key={opt.value}
+            onClick={() => setFilterStatus(opt.value)}
+            style={{
+              flexShrink: 0, fontSize: 11, padding: '5px 12px', borderRadius: 99,
+              border: filterStatus === opt.value ? '1px solid #111' : '1px solid #E5E5E5',
+              background: filterStatus === opt.value ? '#111' : '#fff',
+              color: filterStatus === opt.value ? '#fff' : '#666',
+              cursor: 'pointer', fontFamily: FONT, transition: 'all 0.15s',
+            }}
           >
-            {s ? STATUS_LABELS[s as PaymentStatus2] : 'Todos'}
+            {opt.label}
           </button>
         ))}
       </div>
 
+      {/* Content */}
       {loading ? (
-        <div className="text-sm text-gray-400 text-center py-10">Cargando…</div>
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <span style={{ fontSize: 22, color: '#ccc', display: 'inline-block', animation: 'spin 1s linear infinite' }}>↻</span>
+          <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+        </div>
       ) : payments.length === 0 ? (
-        <div className="text-center py-12 border border-dashed border-gray-200 rounded-2xl">
-          <Clock className="h-8 w-8 text-gray-200 mx-auto mb-2" />
-          <p className="text-sm text-gray-400">No hay pagos en este estado</p>
+        <div style={{
+          textAlign: 'center', padding: '48px 16px',
+          border: '1px dashed #E5E5E5', borderRadius: 14,
+        }}>
+          <div style={{ fontSize: 28, color: '#ddd', marginBottom: 8 }}>⏱</div>
+          <p style={{ fontSize: 13, color: '#aaa', margin: 0 }}>No hay pagos en este estado</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {payments.map(p => {
             const isExpanded = expandedId === p.id
             const isLoading = actionLoading === p.id
@@ -192,91 +248,156 @@ export function PaymentsReviewManager() {
             const isPending = ['COMPROBANTE_CARGADO', 'EN_REVISION'].includes(p.status)
 
             return (
-              <div key={p.id} className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
+              <div
+                key={p.id}
+                style={{
+                  border: '1px solid #E5E5E5', borderRadius: 14,
+                  background: '#fff', overflow: 'hidden',
+                }}
+              >
+                {/* Row header (clickable) */}
                 <button
-                  className="w-full flex items-start gap-3 p-3 text-left hover:bg-gray-50 transition-colors"
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'flex-start', gap: 12,
+                    padding: '12px', textAlign: 'left', background: 'none',
+                    border: 'none', cursor: 'pointer', fontFamily: FONT,
+                  }}
                   onClick={() => setExpandedId(isExpanded ? null : p.id)}
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-semibold text-gray-900">Mesa {p.table_sessions?.mesa ?? '—'}</span>
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${STATUS_STYLE[p.status]}`}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>
+                        Mesa {p.table_sessions?.mesa ?? '—'}
+                      </span>
+                      <span style={{
+                        fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 99,
+                        ...STATUS_STYLE[p.status],
+                      }}>
                         {STATUS_LABELS[p.status]}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4, fontSize: 12, color: '#aaa' }}>
                       <span>{p.payment_methods?.nombre ?? 'Sin método'}</span>
                       <span>·</span>
-                      <span className="font-medium text-gray-900">${p.monto_declarado ?? p.monto_requerido} {p.moneda}</span>
+                      <span style={{ fontWeight: 600, color: '#111', fontFamily: MONO }}>
+                        ${p.monto_declarado ?? p.monto_requerido} {p.moneda}
+                      </span>
                       {p.monto_declarado && p.monto_declarado !== p.monto_requerido && (
-                        <span className="text-amber-600">(req. ${p.monto_requerido})</span>
+                        <span style={{ color: '#d97706' }}>(req. ${p.monto_requerido})</span>
                       )}
                     </div>
                   </div>
-                  {isExpanded
-                    ? <ChevronUp className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />
-                    : <ChevronDown className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />}
+                  <span style={{ fontSize: 14, color: '#aaa', flexShrink: 0, marginTop: 2 }}>
+                    {isExpanded ? '↑' : '↓'}
+                  </span>
                 </button>
 
+                {/* Expanded content */}
                 {isExpanded && (
-                  <div className="px-3 pb-3 space-y-3 border-t border-gray-100">
+                  <div style={{
+                    padding: '0 12px 12px 12px',
+                    borderTop: '1px solid #f0f0f0',
+                    display: 'flex', flexDirection: 'column', gap: 12,
+                  }}>
+                    {/* Receipt */}
                     {latestReceipt && (
-                      <div className="mt-3 p-3 bg-gray-50 rounded-xl space-y-2">
-                        <p className="text-xs font-semibold text-gray-900">Comprobante</p>
+                      <div style={{
+                        marginTop: 12, padding: '12px',
+                        background: '#f9f9f9', borderRadius: 10,
+                        display: 'flex', flexDirection: 'column', gap: 8,
+                      }}>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: '#111', margin: 0 }}>Comprobante</p>
                         {latestReceipt.referencia && (
-                          <p className="text-sm text-gray-900">Ref: <span className="font-mono">{latestReceipt.referencia}</span></p>
+                          <p style={{ fontSize: 13, color: '#111', margin: 0 }}>
+                            Ref: <span style={{ fontFamily: MONO }}>{latestReceipt.referencia}</span>
+                          </p>
                         )}
                         {latestReceipt.file_url && (
-                          <a href={latestReceipt.file_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-blue-600 underline">
-                            <ExternalLink className="h-3 w-3" />Ver imagen / PDF
+                          <a
+                            href={latestReceipt.file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ fontSize: 12, color: '#1d4ed8', display: 'flex', alignItems: 'center', gap: 6 }}
+                          >
+                            ↗ Ver imagen / PDF
                           </a>
                         )}
                         {latestReceipt.monto_declarado && (
-                          <p className="text-xs text-gray-500">Monto declarado: <span className="font-medium text-gray-900">${latestReceipt.monto_declarado}</span></p>
+                          <p style={{ fontSize: 12, color: '#888', margin: 0 }}>
+                            Monto declarado: <span style={{ fontWeight: 600, color: '#111' }}>${latestReceipt.monto_declarado}</span>
+                          </p>
                         )}
                       </div>
                     )}
 
+                    {/* Rejection reason */}
                     {p.motivo_rechazo && (
-                      <div className="p-2 bg-red-50 border border-red-200 rounded-xl">
-                        <p className="text-xs text-red-600 font-medium">Motivo de rechazo:</p>
-                        <p className="text-xs text-red-500/80 mt-0.5">{p.motivo_rechazo}</p>
+                      <div style={{
+                        padding: '8px 12px', background: '#fee2e2',
+                        border: '1px solid #fecaca', borderRadius: 10,
+                      }}>
+                        <p style={{ fontSize: 11, color: '#dc2626', fontWeight: 600, margin: 0 }}>Motivo de rechazo:</p>
+                        <p style={{ fontSize: 11, color: '#dc2626', margin: '2px 0 0 0', opacity: 0.8 }}>{p.motivo_rechazo}</p>
                       </div>
                     )}
 
+                    {/* Internal notes */}
                     {p.notas_internas && (
-                      <div className="p-2 bg-gray-50 rounded-xl">
-                        <p className="text-xs text-gray-500 font-medium">Notas internas:</p>
-                        <p className="text-xs text-gray-900 mt-0.5">{p.notas_internas}</p>
+                      <div style={{ padding: '8px 12px', background: '#f9f9f9', borderRadius: 10 }}>
+                        <p style={{ fontSize: 11, color: '#888', fontWeight: 600, margin: 0 }}>Notas internas:</p>
+                        <p style={{ fontSize: 11, color: '#111', margin: '2px 0 0 0' }}>{p.notas_internas}</p>
                       </div>
                     )}
 
                     {p.payment_receipts.length > 1 && (
-                      <p className="text-xs text-gray-400">{p.payment_receipts.length} comprobantes cargados en total</p>
+                      <p style={{ fontSize: 11, color: '#aaa', margin: 0 }}>
+                        {p.payment_receipts.length} comprobantes cargados en total
+                      </p>
                     )}
 
+                    {/* Action buttons */}
                     {canValidate && isPending && (
-                      <div className="flex gap-2 pt-1">
+                      <div style={{ display: 'flex', gap: 8 }}>
                         <button
                           onClick={() => handleApprove(p.id)}
                           disabled={isLoading}
-                          className="flex-1 h-9 rounded-xl bg-[#06C167] hover:bg-[#05a857] text-white text-xs font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50"
+                          style={{
+                            flex: 1, height: 36, borderRadius: 10, border: 'none',
+                            background: '#059669', color: '#fff',
+                            fontSize: 12, fontWeight: 600, cursor: isLoading ? 'not-allowed' : 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                            opacity: isLoading ? 0.5 : 1, fontFamily: FONT,
+                          }}
                         >
-                          <CheckCircle2 className="h-3.5 w-3.5" />Aprobar
+                          ✓ Aprobar
                         </button>
                         <button
                           onClick={() => { setCorrectionModal({ id: p.id }); setCorrectionNotas('') }}
                           disabled={isLoading}
-                          className="flex-1 h-9 rounded-xl border border-amber-300 text-amber-700 hover:bg-amber-50 text-xs font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50"
+                          style={{
+                            flex: 1, height: 36, borderRadius: 10,
+                            border: '1px solid #fde68a', background: '#fff',
+                            color: '#b45309', fontSize: 12, fontWeight: 600,
+                            cursor: isLoading ? 'not-allowed' : 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                            opacity: isLoading ? 0.5 : 1, fontFamily: FONT,
+                          }}
                         >
-                          <AlertCircle className="h-3.5 w-3.5" />Corrección
+                          ⚠ Corrección
                         </button>
                         <button
                           onClick={() => { setRejectModal({ id: p.id }); setRejectMotivo('') }}
                           disabled={isLoading}
-                          className="flex-1 h-9 rounded-xl border border-red-300 text-red-600 hover:bg-red-50 text-xs font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50"
+                          style={{
+                            flex: 1, height: 36, borderRadius: 10,
+                            border: '1px solid #fecaca', background: '#fff',
+                            color: '#dc2626', fontSize: 12, fontWeight: 600,
+                            cursor: isLoading ? 'not-allowed' : 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                            opacity: isLoading ? 0.5 : 1, fontFamily: FONT,
+                          }}
                         >
-                          <XCircle className="h-3.5 w-3.5" />Rechazar
+                          ✕ Rechazar
                         </button>
                       </div>
                     )}
@@ -290,16 +411,53 @@ export function PaymentsReviewManager() {
 
       {/* Reject Modal */}
       {rejectModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50" onClick={() => setRejectModal(null)}>
-          <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-5 space-y-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} onClick={e => e.stopPropagation()}>
-            <h3 className="text-sm font-black text-gray-900">Rechazar pago</h3>
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 50,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.5)',
+          }}
+          onClick={() => setRejectModal(null)}
+        >
+          <div
+            style={{
+              background: '#fff', borderRadius: '16px 16px 0 0',
+              width: '100%', maxWidth: 480, padding: 20,
+              paddingBottom: 'env(safe-area-inset-bottom, 20px)',
+              display: 'flex', flexDirection: 'column', gap: 16,
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 style={{ fontSize: 13, fontWeight: 900, color: '#111', margin: 0 }}>Rechazar pago</h3>
             <div>
-              <Label className="text-xs text-gray-500">Motivo (obligatorio)</Label>
-              <Textarea value={rejectMotivo} onChange={e => setRejectMotivo(e.target.value)} placeholder="ej. El monto no coincide con el total de la cuenta." rows={3} className="mt-1 text-sm" />
+              <label style={labelStyle}>Motivo (obligatorio)</label>
+              <textarea
+                value={rejectMotivo}
+                onChange={e => setRejectMotivo(e.target.value)}
+                placeholder="ej. El monto no coincide con el total de la cuenta."
+                rows={3}
+                style={textareaStyle}
+              />
             </div>
-            <div className="flex gap-2">
-              <button onClick={() => setRejectModal(null)} className="flex-1 h-9 rounded-xl border border-gray-200 text-gray-700 text-xs font-medium hover:bg-gray-50">Cancelar</button>
-              <button onClick={handleReject} disabled={!!actionLoading} className="flex-1 h-9 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-semibold disabled:opacity-50">Rechazar</button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => setRejectModal(null)}
+                style={{
+                  flex: 1, height: 36, borderRadius: 10, border: '1px solid #E5E5E5',
+                  background: '#fff', color: '#444', fontSize: 12, fontWeight: 500,
+                  cursor: 'pointer', fontFamily: FONT,
+                }}
+              >Cancelar</button>
+              <button
+                onClick={handleReject}
+                disabled={!!actionLoading}
+                style={{
+                  flex: 1, height: 36, borderRadius: 10, border: 'none',
+                  background: '#ef4444', color: '#fff', fontSize: 12, fontWeight: 600,
+                  cursor: actionLoading ? 'not-allowed' : 'pointer',
+                  opacity: actionLoading ? 0.5 : 1, fontFamily: FONT,
+                }}
+              >Rechazar</button>
             </div>
           </div>
         </div>
@@ -307,16 +465,53 @@ export function PaymentsReviewManager() {
 
       {/* Correction Modal */}
       {correctionModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50" onClick={() => setCorrectionModal(null)}>
-          <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-5 space-y-4" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} onClick={e => e.stopPropagation()}>
-            <h3 className="text-sm font-black text-gray-900">Solicitar corrección</h3>
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 50,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.5)',
+          }}
+          onClick={() => setCorrectionModal(null)}
+        >
+          <div
+            style={{
+              background: '#fff', borderRadius: '16px 16px 0 0',
+              width: '100%', maxWidth: 480, padding: 20,
+              paddingBottom: 'env(safe-area-inset-bottom, 20px)',
+              display: 'flex', flexDirection: 'column', gap: 16,
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h3 style={{ fontSize: 13, fontWeight: 900, color: '#111', margin: 0 }}>Solicitar corrección</h3>
             <div>
-              <Label className="text-xs text-gray-500">Instrucciones para el cliente (opcional)</Label>
-              <Textarea value={correctionNotas} onChange={e => setCorrectionNotas(e.target.value)} placeholder="ej. Por favor incluye el número de referencia de la operación." rows={3} className="mt-1 text-sm" />
+              <label style={labelStyle}>Instrucciones para el cliente (opcional)</label>
+              <textarea
+                value={correctionNotas}
+                onChange={e => setCorrectionNotas(e.target.value)}
+                placeholder="ej. Por favor incluye el número de referencia de la operación."
+                rows={3}
+                style={textareaStyle}
+              />
             </div>
-            <div className="flex gap-2">
-              <button onClick={() => setCorrectionModal(null)} className="flex-1 h-9 rounded-xl border border-gray-200 text-gray-700 text-xs font-medium hover:bg-gray-50">Cancelar</button>
-              <button onClick={handleCorrection} disabled={!!actionLoading} className="flex-1 h-9 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold disabled:opacity-50">Enviar</button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => setCorrectionModal(null)}
+                style={{
+                  flex: 1, height: 36, borderRadius: 10, border: '1px solid #E5E5E5',
+                  background: '#fff', color: '#444', fontSize: 12, fontWeight: 500,
+                  cursor: 'pointer', fontFamily: FONT,
+                }}
+              >Cancelar</button>
+              <button
+                onClick={handleCorrection}
+                disabled={!!actionLoading}
+                style={{
+                  flex: 1, height: 36, borderRadius: 10, border: 'none',
+                  background: '#111', color: '#fff', fontSize: 12, fontWeight: 600,
+                  cursor: actionLoading ? 'not-allowed' : 'pointer',
+                  opacity: actionLoading ? 0.5 : 1, fontFamily: FONT,
+                }}
+              >Enviar</button>
             </div>
           </div>
         </div>

@@ -3,12 +3,9 @@
 import { useState, useCallback } from 'react'
 import '@/app/restaurante/admin.css'
 import '@/app/superadmin/superadmin.css'
-import {
-  AlertTriangle, CheckCircle2, XCircle, Clock, MessageSquare,
-  Loader2, RefreshCcw, ChevronDown, DollarSign, ShieldCheck, Lock,
-  Globe, LayoutGrid, TrendingUp, Users, Receipt, BarChart2,
-  FileText, Settings, Activity,
-} from 'lucide-react'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -32,12 +29,12 @@ interface Dispute {
 
 // ── Status metadata ───────────────────────────────────────────────────────────
 
-const STATUS_META: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  abierto:                    { label: 'Abierto',             color: '#D97706',  bg: '#FEF3C7',   icon: <Clock size={13} /> },
-  restaurante_respondio:      { label: 'Respondido',          color: '#2563EB',  bg: '#EFF6FF',   icon: <MessageSquare size={13} /> },
-  en_revision:                { label: 'En revisión',         color: '#7C3AED',  bg: '#F5F3FF',   icon: <ShieldCheck size={13} /> },
-  resuelto_favor_cliente:     { label: 'Resuelto — cliente',  color: '#0a3a0a',  bg: '#BEEBBE',   icon: <CheckCircle2 size={13} /> },
-  resuelto_favor_restaurante: { label: 'Resuelto — rest.',    color: '#374151',  bg: '#F3F4F6',   icon: <XCircle size={13} /> },
+const STATUS_META: Record<string, { label: string; color: string; bg: string; icon: string }> = {
+  abierto:                    { label: 'Abierto',             color: '#D97706',  bg: '#FEF3C7',   icon: '⏱' },
+  restaurante_respondio:      { label: 'Respondido',          color: '#2563EB',  bg: '#EFF6FF',   icon: '◎' },
+  en_revision:                { label: 'En revisión',         color: '#7C3AED',  bg: '#F5F3FF',   icon: '◈' },
+  resuelto_favor_cliente:     { label: 'Resuelto — cliente',  color: '#0a3a0a',  bg: '#BEEBBE',   icon: '✓' },
+  resuelto_favor_restaurante: { label: 'Resuelto — rest.',    color: '#374151',  bg: '#F3F4F6',   icon: '✕' },
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -152,7 +149,9 @@ function ResolvePanel({
             disabled={loading}
             className="sadm-submit-btn"
           >
-            {loading ? <Loader2 size={16} style={{ animation: 'adm-spin 0.7s linear infinite' }} /> : 'Resolver reclamo'}
+            {loading
+              ? <span style={{ display: 'inline-block', width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'adm-spin 0.7s linear infinite', verticalAlign: 'middle' }} />
+              : 'Resolver reclamo'}
           </button>
         </>
       ) : (
@@ -171,7 +170,7 @@ function ResolvePanel({
 
       {error && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#DC2626', fontSize: 12, background: '#FEF2F2', borderRadius: 10, padding: '10px 12px' }}>
-          <AlertTriangle size={14} style={{ flexShrink: 0 }} />{error}
+          <span style={{ flexShrink: 0 }}>⚠</span>{error}
         </div>
       )}
     </div>
@@ -220,7 +219,7 @@ function GlobalDisputesPanel({ superKey }: { superKey: string }) {
             <span className="adm-live-dot" style={{ width: 6, height: 6, marginRight: 8, verticalAlign: 'middle' }} />
             Cola global de reclamos
           </div>
-          <div style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif", fontWeight: 700, fontSize: 28, letterSpacing: '-0.04em' }}>
+          <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 28, letterSpacing: '-0.04em' }}>
             Disputas
           </div>
           <p className="adm-mono" style={{ fontSize: 11.5, color: 'rgba(0,0,0,0.5)', marginTop: 4 }}>
@@ -230,11 +229,11 @@ function GlobalDisputesPanel({ superKey }: { superKey: string }) {
         </div>
         <button
           onClick={() => fetch_(filter)}
-          style={{ width: 36, height: 36, border: '1px solid #E5E5E5', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', cursor: 'pointer', flexShrink: 0 }}
+          style={{ width: 36, height: 36, border: '1px solid #E5E5E5', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', cursor: 'pointer', flexShrink: 0, fontSize: 15, color: '#909090' }}
           onMouseEnter={e => (e.currentTarget.style.borderColor = '#000')}
           onMouseLeave={e => (e.currentTarget.style.borderColor = '#E5E5E5')}
         >
-          <RefreshCcw size={14} style={{ color: '#909090' }} />
+          ↺
         </button>
       </div>
 
@@ -249,7 +248,7 @@ function GlobalDisputesPanel({ superKey }: { superKey: string }) {
               fontSize: 12, fontWeight: 700, border: 'none', cursor: 'pointer',
               background: filter === f.value ? '#000' : '#F7F7F5',
               color: filter === f.value ? '#fff' : 'rgba(0,0,0,0.6)',
-              fontFamily: "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif",
+              fontFamily: FONT,
               transition: 'background 0.15s ease',
             }}
           >
@@ -264,13 +263,13 @@ function GlobalDisputesPanel({ superKey }: { superKey: string }) {
         </div>
       ) : disputes.length === 0 ? (
         <div style={{ background: '#fff', borderRadius: 16, border: '1px dashed #E5E5E5', padding: '56px 24px', textAlign: 'center' }}>
-          <CheckCircle2 size={40} style={{ color: '#E5E5E5', margin: '0 auto 12px' }} />
+          <p style={{ fontSize: 40, margin: '0 0 12px', color: '#E5E5E5' }}>✓</p>
           <p style={{ fontSize: 13, fontWeight: 600, color: '#909090' }}>Sin reclamos</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {disputes.map(d => {
-            const meta = STATUS_META[d.status] ?? { label: d.status, color: '#909090', bg: '#F3F4F6', icon: null }
+            const meta = STATUS_META[d.status] ?? { label: d.status, color: '#909090', bg: '#F3F4F6', icon: '◎' }
             const isOpen = expanded === d.id
             return (
               <div key={d.id} className="adm-card" style={{ padding: 0, overflow: 'hidden', borderRadius: 14 }}>
@@ -281,7 +280,7 @@ function GlobalDisputesPanel({ superKey }: { superKey: string }) {
                   onClick={() => setExpanded(isOpen ? null : d.id)}
                 >
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, padding: '4px 8px', borderRadius: 4, flexShrink: 0, background: meta.bg, color: meta.color }}>
-                    {meta.icon}{meta.label}
+                    <span>{meta.icon}</span>{meta.label}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: 13, fontWeight: 600, color: '#000', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.motivo}</p>
@@ -290,12 +289,11 @@ function GlobalDisputesPanel({ superKey }: { superKey: string }) {
                     </p>
                   </div>
                   {d.refund_cents ? (
-                    <span style={{ fontSize: 12, fontWeight: 700, color: '#0a3a0a', display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
-                      <DollarSign size={12} />
-                      {(d.refund_cents / 100).toFixed(2)}
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#0a3a0a', display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0, fontFamily: MONO }}>
+                      ${(d.refund_cents / 100).toFixed(2)}
                     </span>
                   ) : null}
-                  <ChevronDown size={16} style={{ color: '#909090', flexShrink: 0, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                  <span style={{ color: '#909090', flexShrink: 0, fontSize: 14, display: 'inline-block', transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>↓</span>
                 </button>
                 {isOpen && (
                   <ResolvePanel
@@ -319,27 +317,27 @@ const SA_NAV = [
   {
     section: 'Red',
     items: [
-      { id: 'overview', label: 'Overview', icon: <Globe size={15} /> },
-      { id: 'restaurantes', label: 'Restaurantes', icon: <LayoutGrid size={15} />, badge: '340' },
-      { id: 'gmv', label: 'GMV & ventas', icon: <TrendingUp size={15} /> },
-      { id: 'salud', label: 'Salud · alertas', icon: <Activity size={15} />, badge: '3', badgeMint: true },
-      { id: 'equipos', label: 'Equipos · meseros', icon: <Users size={15} />, badge: '1.4k' },
+      { id: 'overview', label: 'Overview', icon: '◎' },
+      { id: 'restaurantes', label: 'Restaurantes', icon: '⊞', badge: '340' },
+      { id: 'gmv', label: 'GMV & ventas', icon: '↑' },
+      { id: 'salud', label: 'Salud · alertas', icon: '◑', badge: '3', badgeMint: true },
+      { id: 'equipos', label: 'Equipos · meseros', icon: '◉', badge: '1.4k' },
     ],
   },
   {
     section: 'Negocio',
     items: [
-      { id: 'facturacion', label: 'Facturación', icon: <Receipt size={15} /> },
-      { id: 'comisiones', label: 'Comisiones', icon: <DollarSign size={15} /> },
-      { id: 'marketplace', label: 'Marketplace global', icon: <Globe size={15} /> },
-      { id: 'logs', label: 'Logs', icon: <FileText size={15} /> },
+      { id: 'facturacion', label: 'Facturación', icon: '≡' },
+      { id: 'comisiones', label: 'Comisiones', icon: '$' },
+      { id: 'marketplace', label: 'Marketplace global', icon: '◎' },
+      { id: 'logs', label: 'Logs', icon: '▤' },
     ],
   },
   {
     section: 'Sistema',
     items: [
-      { id: 'flags', label: 'Feature flags', icon: <Settings size={15} /> },
-      { id: 'auditoria', label: 'Auditoría', icon: <ShieldCheck size={15} /> },
+      { id: 'flags', label: 'Feature flags', icon: '◈' },
+      { id: 'auditoria', label: 'Auditoría', icon: '◈' },
     ],
   },
 ]
@@ -348,7 +346,7 @@ function SuperadminShell({ superKey }: { superKey: string }) {
   const [activeNav, setActiveNav] = useState('disputes')
 
   return (
-    <div className="adm-shell" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif" }}>
+    <div className="adm-shell" style={{ fontFamily: FONT }}>
       <div style={{ display: 'flex', width: '100%', height: '100vh', overflow: 'hidden' }}>
 
         {/* ── Sidebar ── */}
@@ -356,7 +354,7 @@ function SuperadminShell({ superKey }: { superKey: string }) {
           {/* Brand */}
           <div className="adm-sidebar-brand">
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 9, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif", fontWeight: 700, fontSize: 15, letterSpacing: '-0.04em', color: '#000', flexShrink: 0 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 9, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT, fontWeight: 700, fontSize: 15, letterSpacing: '-0.04em', color: '#000', flexShrink: 0 }}>
                 W
               </div>
               <div>
@@ -378,10 +376,10 @@ function SuperadminShell({ superKey }: { superKey: string }) {
                       onClick={() => setActiveNav(item.id)}
                       className={`adm-nav-item ${activeNav === item.id ? 'active' : ''}`}
                     >
-                      <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{item.icon}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0, fontSize: 14 }}>{item.icon}</span>
                       <span style={{ flex: 1, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
                       {item.badge && (
-                        <span className={`adm-nav-badge${(item as any).badgeMint ? ' mint' : ''}`}>
+                        <span className={`adm-nav-badge${item.badgeMint ? ' mint' : ''}`}>
                           {item.badge}
                         </span>
                       )}
@@ -399,7 +397,7 @@ function SuperadminShell({ superKey }: { superKey: string }) {
                   onClick={() => setActiveNav('disputes')}
                   className={`adm-nav-item ${activeNav === 'disputes' ? 'active' : ''}`}
                 >
-                  <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}><AlertTriangle size={15} /></span>
+                  <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0, fontSize: 14 }}>⚠</span>
                   <span style={{ flex: 1, textAlign: 'left' }}>Reclamos</span>
                 </button>
               </div>
@@ -413,7 +411,7 @@ function SuperadminShell({ superKey }: { superKey: string }) {
                 <span className="adm-live-dot" style={{ width: 6, height: 6 }} />
                 <span className="adm-mono" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.16em', color: 'rgba(255,255,255,0.65)' }}>Status red</span>
               </div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', fontFamily: "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif" }}>340/340 online</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', fontFamily: FONT }}>340/340 online</div>
               <div className="adm-mono" style={{ fontSize: 10.5, color: 'rgba(255,255,255,0.55)', marginTop: 2 }}>99.98% uptime · 90d</div>
             </div>
           </div>
@@ -460,7 +458,6 @@ function SuperadminShell({ superKey }: { superKey: string }) {
             {activeNav === 'disputes' ? (
               <GlobalDisputesPanel superKey={superKey} />
             ) : (
-              /* Placeholder for other sections — shows real disputes panel is the operational one */
               <div style={{ padding: '28px', maxWidth: 1200, margin: '0 auto' }}>
                 {/* Hero */}
                 <div style={{ marginBottom: 28 }}>
@@ -468,7 +465,7 @@ function SuperadminShell({ superKey }: { superKey: string }) {
                     <span className="adm-live-dot" style={{ width: 7, height: 7 }} />
                     <span className="adm-eyebrow">Superadmin · LATAM</span>
                   </div>
-                  <h1 style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif", fontWeight: 700, fontSize: 'clamp(36px, 4.5vw, 60px)', letterSpacing: '-0.045em', lineHeight: 0.95, margin: 0 }}>
+                  <h1 style={{ fontFamily: FONT, fontWeight: 700, fontSize: 'clamp(36px, 4.5vw, 60px)', letterSpacing: '-0.045em', lineHeight: 0.95, margin: 0 }}>
                     La red corre.<br />
                     <span style={{ color: 'rgba(0,0,0,0.3)' }}>Sin sobresaltos.</span>
                   </h1>
@@ -500,7 +497,7 @@ function SuperadminShell({ superKey }: { superKey: string }) {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 24, alignItems: 'center' }}>
                     <div>
                       <div className="adm-eyebrow" style={{ color: 'rgba(255,255,255,0.6)', marginBottom: 12 }}>Disputas activas</div>
-                      <h2 style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif", fontWeight: 700, fontSize: 40, letterSpacing: '-0.045em', lineHeight: 0.95, color: '#fff', margin: 0 }}>
+                      <h2 style={{ fontFamily: FONT, fontWeight: 700, fontSize: 40, letterSpacing: '-0.045em', lineHeight: 0.95, color: '#fff', margin: 0 }}>
                         Cola global<br />
                         <span style={{ color: 'rgba(255,255,255,0.35)' }}>de reclamos.</span>
                       </h2>
@@ -510,7 +507,7 @@ function SuperadminShell({ superKey }: { superKey: string }) {
                     </div>
                     <button
                       onClick={() => setActiveNav('disputes')}
-                      style={{ height: 44, padding: '0 24px', borderRadius: 999, background: '#BEEBBE', color: '#0a3a0a', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif", flexShrink: 0 }}
+                      style={{ height: 44, padding: '0 24px', borderRadius: 999, background: '#BEEBBE', color: '#0a3a0a', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: FONT, flexShrink: 0 }}
                     >
                       Ver disputas →
                     </button>
@@ -557,15 +554,15 @@ export default function SuperadminPage() {
   if (key) return <SuperadminShell superKey={key} />
 
   return (
-    <div className="adm-gate" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif" }}>
+    <div className="adm-gate" style={{ fontFamily: FONT }}>
       <div className="adm-gate-card">
         {/* Logo */}
-        <div className="adm-gate-icon">
-          <Lock size={20} style={{ color: '#fff' }} />
+        <div className="adm-gate-icon" style={{ fontSize: 20 }}>
+          ⊙
         </div>
 
         {/* Title */}
-        <div style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif", fontWeight: 700, fontSize: 22, letterSpacing: '-0.04em', marginBottom: 4 }}>
+        <div style={{ fontFamily: FONT, fontWeight: 700, fontSize: 22, letterSpacing: '-0.04em', marginBottom: 4 }}>
           WAIT<span style={{ color: '#BEEBBE' }}>LESS</span> Superadmin
         </div>
         <p className="adm-mono" style={{ fontSize: 12.5, color: 'rgba(0,0,0,0.5)', marginBottom: 24 }}>
@@ -592,7 +589,7 @@ export default function SuperadminPage() {
             style={{ marginTop: 4 }}
           >
             {checking
-              ? <Loader2 size={16} style={{ animation: 'adm-spin 0.7s linear infinite' }} />
+              ? <span style={{ display: 'inline-block', width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'adm-spin 0.7s linear infinite', verticalAlign: 'middle' }} />
               : 'Ingresar'}
           </button>
         </form>

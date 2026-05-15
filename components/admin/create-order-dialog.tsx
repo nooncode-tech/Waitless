@@ -1,10 +1,18 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { X, Plus, Minus, MapPin, Phone, User, AlertCircle, Truck } from 'lucide-react'
 import { useApp } from '@/lib/context'
-import { Input } from '@/components/ui/input'
 import { formatPrice, type Channel, type MenuItem } from '@/lib/store'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
+
+const inputStyle: React.CSSProperties = {
+  width: '100%', height: 34, padding: '0 10px', borderRadius: 8,
+  border: '1px solid #E5E5E5', fontSize: 13, fontFamily: FONT,
+  outline: 'none', boxSizing: 'border-box', background: '#fff',
+}
+const inputErrStyle: React.CSSProperties = { ...inputStyle, borderColor: '#FCA5A5' }
 
 interface CreateOrderDialogProps {
   channel: Channel
@@ -39,10 +47,7 @@ export function CreateOrderDialog({ channel, onClose }: CreateOrderDialogProps) 
   const deliveryZones = getDeliveryZones()
   const isDelivery = channel === 'delivery'
 
-  const availableItems = menuItems.filter(m => m.disponible)
-  const filteredItems = availableItems.filter(item =>
-    item.nombre.toLowerCase().includes(search.toLowerCase())
-  )
+  const filteredItems = menuItems.filter(m => m.disponible && m.nombre.toLowerCase().includes(search.toLowerCase()))
 
   const addItem = (item: MenuItem) => {
     setLocalCart(prev => {
@@ -84,21 +89,16 @@ export function CreateOrderDialog({ channel, onClose }: CreateOrderDialogProps) 
       case 'zona':
         if (isDelivery && !value) return 'Selecciona una zona de reparto'
         return undefined
-      default:
-        return undefined
+      default: return undefined
     }
   }
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
-    const nombreError = validateField('nombre', nombre)
-    if (nombreError) newErrors.nombre = nombreError
-    const telefonoError = validateField('telefono', telefono)
-    if (telefonoError) newErrors.telefono = telefonoError
-    const direccionError = validateField('direccion', direccion)
-    if (direccionError) newErrors.direccion = direccionError
-    const zonaError = validateField('zona', zona)
-    if (zonaError) newErrors.zona = zonaError
+    const ne = validateField('nombre', nombre); if (ne) newErrors.nombre = ne
+    const te = validateField('telefono', telefono); if (te) newErrors.telefono = te
+    const de = validateField('direccion', direccion); if (de) newErrors.direccion = de
+    const ze = validateField('zona', zona); if (ze) newErrors.zona = ze
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -110,8 +110,7 @@ export function CreateOrderDialog({ channel, onClose }: CreateOrderDialogProps) 
   }
 
   const handleSubmit = () => {
-    if (!validateForm()) return
-    if (localCart.length === 0) return
+    if (!validateForm() || localCart.length === 0) return
     localCart.forEach(({ item, cantidad }) => { addToCart(item, cantidad) })
     createOrder(channel, undefined, {
       nombre: nombre || undefined,
@@ -131,175 +130,108 @@ export function CreateOrderDialog({ channel, onClose }: CreateOrderDialogProps) 
   }, [localCart.length, channel, isDelivery, nombre, telefono, direccion, zona])
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] flex flex-col shadow-xl" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-          <div className="flex items-center gap-2">
-            {isDelivery && <Truck className="h-4 w-4 text-gray-500" />}
-            <h2 className="text-sm font-black text-gray-900">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, fontFamily: FONT }}>
+      <div style={{ background: '#fff', borderRadius: 20, width: '100%', maxWidth: 480, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px 14px', borderBottom: '1px solid #F5F5F5', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {isDelivery && <span style={{ fontSize: 16 }}>↑</span>}
+            <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>
               Nuevo pedido {isDelivery ? 'delivery' : 'para llevar'}
             </h2>
           </div>
-          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400 transition-colors">
-            <X className="h-4 w-4" />
-          </button>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 8, border: '1px solid #E5E5E5', background: '#FAFAFA', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333' }}>×</button>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
-          {/* Customer Info */}
-          <div className="p-4 border-b border-gray-100 space-y-3">
-            <h3 className="text-xs font-semibold text-gray-900 flex items-center gap-1">
-              <User className="h-3 w-3" />
-              Datos del cliente
-              {isDelivery && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-600 font-semibold ml-1">Requerido</span>}
-            </h3>
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          {/* Customer info */}
+          <div style={{ padding: '14px 20px', borderBottom: '1px solid #F5F5F5' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: '#333', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+              ◎ Datos del cliente
+              {isDelivery && <span style={{ fontSize: 10, background: '#FEE2E2', color: '#991B1B', padding: '2px 7px', borderRadius: 999, fontWeight: 700 }}>Requerido</span>}
+            </p>
 
-            <div className="grid gap-3 md:grid-cols-2">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
               <div>
-                <label className="text-xs text-gray-500 block mb-1">
-                  Nombre {isDelivery && <span className="text-red-500">*</span>}
+                <label style={{ fontSize: 11, color: '#666', display: 'block', marginBottom: 4 }}>
+                  Nombre {isDelivery && <span style={{ color: '#DC2626' }}>*</span>}
                 </label>
-                <Input
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  onBlur={() => handleBlur('nombre', nombre)}
-                  placeholder="Nombre del cliente"
-                  className={`h-8 text-xs ${errors.nombre && touched.nombre ? 'border-red-400' : ''}`}
-                />
-                {errors.nombre && touched.nombre && (
-                  <p className="text-[10px] text-red-500 mt-0.5 flex items-center gap-0.5">
-                    <AlertCircle className="h-2.5 w-2.5" />{errors.nombre}
-                  </p>
-                )}
+                <input value={nombre} onChange={e => setNombre(e.target.value)} onBlur={() => handleBlur('nombre', nombre)} placeholder="Nombre del cliente" style={errors.nombre && touched.nombre ? inputErrStyle : inputStyle} />
+                {errors.nombre && touched.nombre && <p style={{ fontSize: 10, color: '#DC2626', marginTop: 2 }}>⚠ {errors.nombre}</p>}
               </div>
               <div>
-                <label className="text-xs text-gray-500 block mb-1 flex items-center gap-1">
-                  <Phone className="h-2.5 w-2.5" />
-                  Teléfono {isDelivery && <span className="text-red-500">*</span>}
+                <label style={{ fontSize: 11, color: '#666', display: 'block', marginBottom: 4 }}>
+                  Teléfono {isDelivery && <span style={{ color: '#DC2626' }}>*</span>}
                 </label>
-                <Input
-                  value={telefono}
-                  onChange={(e) => setTelefono(e.target.value)}
-                  onBlur={() => handleBlur('telefono', telefono)}
-                  placeholder="55 1234 5678"
-                  type="tel"
-                  className={`h-8 text-xs ${errors.telefono && touched.telefono ? 'border-red-400' : ''}`}
-                />
-                {errors.telefono && touched.telefono && (
-                  <p className="text-[10px] text-red-500 mt-0.5 flex items-center gap-0.5">
-                    <AlertCircle className="h-2.5 w-2.5" />{errors.telefono}
-                  </p>
-                )}
+                <input value={telefono} onChange={e => setTelefono(e.target.value)} onBlur={() => handleBlur('telefono', telefono)} placeholder="55 1234 5678" type="tel" style={errors.telefono && touched.telefono ? inputErrStyle : inputStyle} />
+                {errors.telefono && touched.telefono && <p style={{ fontSize: 10, color: '#DC2626', marginTop: 2 }}>⚠ {errors.telefono}</p>}
               </div>
             </div>
 
             {isDelivery && (
               <>
-                <div>
-                  <label className="text-xs text-gray-500 block mb-1 flex items-center gap-1">
-                    <MapPin className="h-2.5 w-2.5" />
-                    Zona de reparto <span className="text-red-500">*</span>
+                <div style={{ marginBottom: 10 }}>
+                  <label style={{ fontSize: 11, color: '#666', display: 'block', marginBottom: 4 }}>
+                    Zona de reparto <span style={{ color: '#DC2626' }}>*</span>
                   </label>
-                  <select
-                    value={zona}
-                    onChange={(e) => { setZona(e.target.value); handleBlur('zona', e.target.value) }}
-                    className={`w-full h-8 rounded-xl border px-3 text-xs bg-white text-gray-900 ${errors.zona && touched.zona ? 'border-red-400' : 'border-gray-200'}`}
-                  >
+                  <select value={zona} onChange={e => { setZona(e.target.value); handleBlur('zona', e.target.value) }} style={{ ...inputStyle, appearance: 'none' }}>
                     <option value="">Selecciona zona...</option>
                     {deliveryZones.map(z => (
-                      <option key={z.nombre} value={z.nombre}>
-                        {z.nombre} - {formatPrice(z.costoEnvio)} ({z.tiempoEstimado} min)
-                      </option>
+                      <option key={z.nombre} value={z.nombre}>{z.nombre} - {formatPrice(z.costoEnvio)} ({z.tiempoEstimado} min)</option>
                     ))}
                   </select>
-                  {errors.zona && touched.zona && (
-                    <p className="text-[10px] text-red-500 mt-0.5 flex items-center gap-0.5">
-                      <AlertCircle className="h-2.5 w-2.5" />{errors.zona}
-                    </p>
-                  )}
+                  {errors.zona && touched.zona && <p style={{ fontSize: 10, color: '#DC2626', marginTop: 2 }}>⚠ {errors.zona}</p>}
                   {selectedZone && (
-                    <div className="mt-1.5 p-2 bg-gray-50 rounded-xl text-[10px] space-y-0.5">
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Costo de envío:</span>
-                        <span className="font-semibold text-gray-900">{formatPrice(selectedZone.costoEnvio)}</span>
+                    <div style={{ marginTop: 6, padding: '8px 10px', background: '#F5F5F5', borderRadius: 8, fontSize: 11 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#999' }}>Costo de envío:</span>
+                        <span style={{ fontWeight: 700 }}>{formatPrice(selectedZone.costoEnvio)}</span>
                       </div>
-                      <div className="flex justify-between text-gray-400">
-                        <span>Tiempo estimado:</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: '#999' }}>Tiempo estimado:</span>
                         <span>{selectedZone.tiempoEstimado} minutos</span>
                       </div>
                     </div>
                   )}
                 </div>
 
-                <div>
-                  <label className="text-xs text-gray-500 block mb-1">
-                    Dirección completa <span className="text-red-500">*</span>
+                <div style={{ marginBottom: 10 }}>
+                  <label style={{ fontSize: 11, color: '#666', display: 'block', marginBottom: 4 }}>
+                    Dirección completa <span style={{ color: '#DC2626' }}>*</span>
                   </label>
-                  <textarea
-                    value={direccion}
-                    onChange={(e) => setDireccion(e.target.value)}
-                    onBlur={() => handleBlur('direccion', direccion)}
-                    placeholder="Calle, número exterior e interior, colonia..."
-                    rows={2}
-                    className={`w-full rounded-xl border px-3 py-2 text-xs bg-white text-gray-900 resize-none outline-none focus:ring-1 focus:ring-gray-300 ${errors.direccion && touched.direccion ? 'border-red-400' : 'border-gray-200'}`}
-                  />
-                  {errors.direccion && touched.direccion && (
-                    <p className="text-[10px] text-red-500 mt-0.5 flex items-center gap-0.5">
-                      <AlertCircle className="h-2.5 w-2.5" />{errors.direccion}
-                    </p>
-                  )}
+                  <textarea value={direccion} onChange={e => setDireccion(e.target.value)} onBlur={() => handleBlur('direccion', direccion)} placeholder="Calle, número exterior e interior, colonia..." rows={2} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: `1px solid ${errors.direccion && touched.direccion ? '#FCA5A5' : '#E5E5E5'}`, fontSize: 13, fontFamily: FONT, outline: 'none', resize: 'none', boxSizing: 'border-box' }} />
+                  {errors.direccion && touched.direccion && <p style={{ fontSize: 10, color: '#DC2626', marginTop: 2 }}>⚠ {errors.direccion}</p>}
                 </div>
 
                 <div>
-                  <label className="text-xs text-gray-500 block mb-1">Referencias (opcional)</label>
-                  <Input
-                    value={referencias}
-                    onChange={(e) => setReferencias(e.target.value)}
-                    placeholder="Entre calles, color de casa, etc."
-                    className="h-8 text-xs"
-                  />
+                  <label style={{ fontSize: 11, color: '#666', display: 'block', marginBottom: 4 }}>Referencias (opcional)</label>
+                  <input value={referencias} onChange={e => setReferencias(e.target.value)} placeholder="Entre calles, color de casa, etc." style={inputStyle} />
                 </div>
               </>
             )}
           </div>
 
-          {/* Menu Items */}
-          <div className="p-4">
-            <h3 className="text-xs font-semibold text-gray-900 mb-2">Agregar productos</h3>
-            <Input
-              type="search"
-              placeholder="Buscar platillo..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="mb-2 h-8 text-xs"
-            />
-            <div className="grid gap-1.5 max-h-40 overflow-y-auto">
-              {filteredItems.map((item) => {
+          {/* Menu items */}
+          <div style={{ padding: '14px 20px' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: '#333', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>Agregar productos</p>
+            <input type="search" placeholder="Buscar platillo..." value={search} onChange={e => setSearch(e.target.value)} style={{ ...inputStyle, marginBottom: 8 }} />
+            <div style={{ maxHeight: 200, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {filteredItems.map(item => {
                 const qty = getItemQuantity(item.id)
                 return (
-                  <div key={item.id} className="flex items-center justify-between p-2 bg-gray-100 rounded-xl">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-xs text-gray-900 truncate">{item.nombre}</p>
-                      <p className="text-[11px] text-gray-500 font-medium">{formatPrice(item.precio)}</p>
+                  <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', background: '#F5F5F5', borderRadius: 8 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 12, fontWeight: 600, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.nombre}</p>
+                      <p style={{ fontSize: 11, color: '#666', margin: 0, fontFamily: MONO }}>{formatPrice(item.precio)}</p>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       {qty > 0 && (
                         <>
-                          <button
-                            onClick={() => removeItem(item.id)}
-                            className="w-6 h-6 flex items-center justify-center rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
-                          >
-                            <Minus className="h-3 w-3 text-gray-600" />
-                          </button>
-                          <span className="w-5 text-center text-xs font-semibold text-gray-900">{qty}</span>
+                          <button onClick={() => removeItem(item.id)} style={{ width: 24, height: 24, borderRadius: 6, border: '1px solid #DDD', background: '#fff', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
+                          <span style={{ fontSize: 12, fontWeight: 700, width: 18, textAlign: 'center', fontFamily: MONO }}>{qty}</span>
                         </>
                       )}
-                      <button
-                        onClick={() => addItem(item)}
-                        className={`w-6 h-6 flex items-center justify-center rounded-lg transition-colors ${qty > 0 ? 'border border-gray-300 bg-white hover:bg-gray-50' : 'bg-gray-900 hover:bg-black'}`}
-                      >
-                        <Plus className={`h-3 w-3 ${qty > 0 ? 'text-gray-600' : 'text-white'}`} />
-                      </button>
+                      <button onClick={() => addItem(item)} style={{ width: 24, height: 24, borderRadius: 6, border: `1px solid ${qty > 0 ? '#DDD' : '#000'}`, background: qty > 0 ? '#fff' : '#000', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', color: qty > 0 ? '#333' : '#fff' }}>+</button>
                     </div>
                   </div>
                 )
@@ -309,28 +241,24 @@ export function CreateOrderDialog({ channel, onClose }: CreateOrderDialogProps) 
         </div>
 
         {localCart.length > 0 && (
-          <div className="border-t border-gray-100 p-4">
-            <div className="space-y-1 text-xs mb-3">
-              <div className="flex justify-between text-gray-400">
-                <span>Subtotal ({localCart.reduce((sum, c) => sum + c.cantidad, 0)} items)</span>
-                <span className="text-gray-900">{formatPrice(subtotal)}</span>
+          <div style={{ borderTop: '1px solid #F5F5F5', padding: '14px 20px', flexShrink: 0 }}>
+            <div style={{ fontSize: 12, marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: '#999' }}>
+                <span>Subtotal ({localCart.reduce((s, c) => s + c.cantidad, 0)} items)</span>
+                <span style={{ color: '#333', fontFamily: MONO }}>{formatPrice(subtotal)}</span>
               </div>
               {isDelivery && costoEnvio > 0 && (
-                <div className="flex justify-between text-gray-400">
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#999' }}>
                   <span>Envío ({zona})</span>
-                  <span className="text-gray-900">{formatPrice(costoEnvio)}</span>
+                  <span style={{ color: '#333', fontFamily: MONO }}>{formatPrice(costoEnvio)}</span>
                 </div>
               )}
-              <div className="flex justify-between font-bold text-sm pt-1 border-t border-gray-100">
-                <span className="text-gray-900">Total</span>
-                <span className="text-gray-900">{formatPrice(total)}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 14, paddingTop: 6, borderTop: '1px solid #F5F5F5' }}>
+                <span>Total</span>
+                <span style={{ fontFamily: MONO }}>{formatPrice(total)}</span>
               </div>
             </div>
-            <button
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-              className="w-full h-9 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
+            <button onClick={handleSubmit} disabled={!canSubmit} style={{ width: '100%', height: 42, borderRadius: 10, border: 'none', background: !canSubmit ? '#CCC' : '#000', color: '#fff', fontSize: 13, fontWeight: 700, cursor: !canSubmit ? 'default' : 'pointer', fontFamily: FONT }}>
               {isDelivery ? 'Crear pedido de delivery' : 'Crear pedido para llevar'}
             </button>
           </div>

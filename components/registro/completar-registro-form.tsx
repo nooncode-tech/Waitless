@@ -2,19 +2,42 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import {
-  Palette, AlertCircle, CheckCircle2, Upload, X,
-} from 'lucide-react'
-import { Spinner } from '@/components/ui/spinner'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { supabase } from '@/lib/supabase'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  height: 44,
+  padding: '0 14px',
+  border: '1px solid #E5E5E5',
+  borderRadius: 10,
+  fontSize: 14,
+  fontFamily: FONT,
+  color: '#000',
+  background: '#fff',
+  outline: 'none',
+  boxSizing: 'border-box',
+  transition: 'border-color 0.15s',
+}
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: 11,
+  fontWeight: 700,
+  color: 'rgba(0,0,0,0.5)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.1em',
+  marginBottom: 6,
+  fontFamily: MONO,
+}
 
 function slugify(text: string): string {
   return text
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 40)
@@ -118,93 +141,111 @@ export function CompletarRegistroForm() {
 
   if (success) {
     return (
-      <div className="text-center space-y-6">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-full bg-success/10 border-2 border-success/30 flex items-center justify-center">
-            <CheckCircle2 className="h-8 w-8 text-success" />
-          </div>
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-foreground">¡Tu plataforma está lista!</h2>
-          <p className="text-sm text-muted-foreground mt-1">Redirigiendo al panel...</p>
-        </div>
+      <div style={{ textAlign: 'center', fontFamily: FONT }}>
+        <div style={{
+          width: 64, height: 64, borderRadius: '50%',
+          background: 'rgba(16,185,129,0.1)',
+          border: '2px solid rgba(16,185,129,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          margin: '0 auto 24px',
+          fontSize: 28,
+        }}>✓</div>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#000', letterSpacing: '-0.02em', margin: 0 }}>
+          ¡Tu plataforma está lista!
+        </h2>
+        <p style={{ fontSize: 14, color: 'rgba(0,0,0,0.45)', marginTop: 8 }}>Redirigiendo al panel...</p>
       </div>
     )
   }
 
   if (!userId) {
     return (
-      <div className="flex justify-center py-12">
-        <Spinner className="size-6 text-muted-foreground" />
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
+        <span style={{
+          width: 24, height: 24, border: '2px solid #E5E5E5', borderTopColor: '#000',
+          borderRadius: '50%', display: 'inline-block',
+          animation: 'creg-spin 0.7s linear infinite',
+        }} />
+        <style>{`@keyframes creg-spin { to { transform: rotate(360deg) } }`}</style>
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20, fontFamily: FONT }}>
       <div>
-        <h2 className="text-xl font-bold text-foreground" style={{ letterSpacing: '-0.02em' }}>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#000', letterSpacing: '-0.02em', margin: 0 }}>
           Configurá tu negocio
         </h2>
-        <p className="text-sm text-muted-foreground mt-1">Ya casi estás. Completá los datos de tu restaurante.</p>
+        <p style={{ fontSize: 14, color: 'rgba(0,0,0,0.45)', marginTop: 6 }}>
+          Ya casi estás. Completá los datos de tu restaurante.
+        </p>
       </div>
 
       {/* Nombre */}
-      <div className="space-y-1.5">
-        <label className="text-xs font-semibold text-foreground uppercase tracking-wide">
-          Nombre del negocio
-        </label>
-        <Input
+      <div>
+        <label style={labelStyle}>Nombre del negocio</label>
+        <input
           type="text"
           placeholder="Ej: La Trattoria"
           value={nombre}
           onChange={(e) => handleNombreChange(e.target.value)}
-          className="h-11 border-border focus:border-foreground focus:ring-foreground rounded"
+          style={inputStyle}
           required
           disabled={isLoading}
         />
       </div>
 
       {/* Slug */}
-      <div className="space-y-1.5">
-        <label className="text-xs font-semibold text-foreground uppercase tracking-wide">
-          Identificador único
-        </label>
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground select-none">
+      <div>
+        <label style={labelStyle}>Identificador único</label>
+        <div style={{ position: 'relative' }}>
+          <span style={{
+            position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
+            fontSize: 13, color: 'rgba(0,0,0,0.4)', pointerEvents: 'none',
+            fontFamily: MONO, userSelect: 'none',
+          }}>
             waitless.app/
           </span>
-          <Input
+          <input
             type="text"
             placeholder="la-trattoria"
             value={slug}
             onChange={(e) => handleSlugChange(e.target.value)}
-            className="h-11 pl-[92px] border-border focus:border-foreground focus:ring-foreground rounded font-mono text-sm"
+            style={{ ...inputStyle, paddingLeft: 98, fontFamily: MONO }}
             disabled={isLoading}
           />
         </div>
-        <p className="text-[10px] text-muted-foreground">Solo minúsculas, números y guiones. No se puede cambiar después.</p>
+        <p style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)', marginTop: 5, fontFamily: MONO }}>
+          Solo minúsculas, números y guiones. No se puede cambiar después.
+        </p>
       </div>
 
       {/* Color */}
-      <div className="space-y-1.5">
-        <label className="text-xs font-semibold text-foreground uppercase tracking-wide flex items-center gap-1.5">
-          <Palette className="h-3.5 w-3.5" />
-          Color principal
+      <div>
+        <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span>◎</span> Color principal
         </label>
-        <div className="flex items-center gap-3 p-3 border border-border rounded-xl">
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: 12, border: '1px solid #E5E5E5', borderRadius: 10,
+        }}>
           <input
             type="color"
             value={primaryColor}
             onChange={(e) => setPrimaryColor(e.target.value)}
-            className="w-10 h-10 rounded-lg cursor-pointer border-0 p-0.5 bg-transparent"
+            style={{ width: 40, height: 40, borderRadius: 8, cursor: 'pointer', border: 'none', padding: 2, background: 'transparent' }}
           />
           <div>
-            <p className="text-sm font-semibold text-foreground">{primaryColor.toUpperCase()}</p>
-            <p className="text-xs text-muted-foreground">Botones, header y acentos</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: '#000', fontFamily: MONO }}>{primaryColor.toUpperCase()}</p>
+            <p style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)' }}>Botones, header y acentos</p>
           </div>
-          <div className="ml-auto">
-            <span className="px-3 py-1 rounded-full text-xs font-bold text-white" style={{ backgroundColor: primaryColor }}>
+          <div style={{ marginLeft: 'auto' }}>
+            <span style={{
+              padding: '4px 12px', borderRadius: 999,
+              fontSize: 12, fontWeight: 700, color: '#fff',
+              backgroundColor: primaryColor,
+            }}>
               Preview
             </span>
           </div>
@@ -212,31 +253,44 @@ export function CompletarRegistroForm() {
       </div>
 
       {/* Logo */}
-      <div className="space-y-1.5">
-        <label className="text-xs font-semibold text-foreground uppercase tracking-wide">
-          Logo <span className="text-muted-foreground font-normal">(opcional)</span>
+      <div>
+        <label style={labelStyle}>
+          Logo <span style={{ textTransform: 'none', fontWeight: 400, color: 'rgba(0,0,0,0.35)' }}>(opcional)</span>
         </label>
         {logoPreview ? (
-          <div className="flex items-center gap-3 p-3 border border-border rounded-xl">
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: 12, border: '1px solid #E5E5E5', borderRadius: 10,
+          }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={logoPreview} alt="Logo preview" className="w-12 h-12 object-contain rounded-lg border border-border" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">{logoFile?.name}</p>
-              <p className="text-xs text-muted-foreground">{((logoFile?.size ?? 0) / 1024).toFixed(0)} KB</p>
+            <img src={logoPreview} alt="Logo preview" style={{ width: 48, height: 48, objectFit: 'contain', borderRadius: 8, border: '1px solid #E5E5E5' }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#000', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{logoFile?.name}</p>
+              <p style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)' }}>{((logoFile?.size ?? 0) / 1024).toFixed(0)} KB</p>
             </div>
-            <button type="button" onClick={removeLogo} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
-              <X className="h-4 w-4 text-muted-foreground" />
-            </button>
+            <button
+              type="button"
+              onClick={removeLogo}
+              style={{
+                padding: 6, borderRadius: 8, border: 'none',
+                background: 'none', cursor: 'pointer', fontSize: 16, color: 'rgba(0,0,0,0.4)',
+              }}
+            >✕</button>
           </div>
         ) : (
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full flex flex-col items-center gap-2 p-6 border-2 border-dashed border-border rounded-xl hover:border-foreground hover:bg-muted transition-colors"
+            style={{
+              width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+              padding: '24px 16px', border: '2px dashed #E5E5E5', borderRadius: 10,
+              background: 'none', cursor: 'pointer',
+              transition: 'border-color 0.15s',
+            }}
           >
-            <Upload className="h-6 w-6 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Subir logo</span>
-            <span className="text-xs text-muted-foreground">PNG, JPG, WEBP · máx. 2 MB</span>
+            <span style={{ fontSize: 24, color: 'rgba(0,0,0,0.3)' }}>↑</span>
+            <span style={{ fontSize: 14, color: 'rgba(0,0,0,0.4)', fontFamily: FONT }}>Subir logo</span>
+            <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.3)', fontFamily: FONT }}>PNG, JPG, WEBP · máx. 2 MB</span>
           </button>
         )}
         <input
@@ -244,30 +298,48 @@ export function CompletarRegistroForm() {
           type="file"
           accept="image/png,image/jpeg,image/webp,image/svg+xml"
           onChange={handleLogoChange}
-          className="hidden"
+          style={{ display: 'none' }}
         />
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-destructive text-xs bg-destructive/10 border border-destructive/30 p-3 rounded">
-          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          color: '#DC2626', fontSize: 12, fontFamily: FONT,
+          background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.2)',
+          borderRadius: 8, padding: '10px 12px',
+        }}>
+          <span style={{ flexShrink: 0 }}>⚠</span>
           {error}
         </div>
       )}
 
-      <Button
+      <button
         type="submit"
-        className="w-full h-11 text-white font-semibold rounded"
-        style={{ backgroundColor: primaryColor }}
         disabled={isLoading || !nombre.trim() || !slug}
+        style={{
+          width: '100%', height: 44,
+          background: isLoading || !nombre.trim() || !slug ? '#E5E5E5' : primaryColor,
+          color: isLoading || !nombre.trim() || !slug ? 'rgba(0,0,0,0.35)' : '#fff',
+          border: 'none', borderRadius: 10,
+          fontSize: 15, fontWeight: 700, fontFamily: FONT,
+          cursor: isLoading || !nombre.trim() || !slug ? 'not-allowed' : 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+          transition: 'background 0.15s',
+        }}
       >
         {isLoading ? (
-          <span className="flex items-center gap-2">
-            <Spinner className="size-4" />
+          <>
+            <span style={{
+              width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff',
+              borderRadius: '50%', display: 'inline-block', animation: 'creg-spin 0.7s linear infinite',
+            }} />
             Creando tu plataforma...
-          </span>
+          </>
         ) : 'Crear mi plataforma'}
-      </Button>
+      </button>
+
+      <style>{`@keyframes creg-spin { to { transform: rotate(360deg) } }`}</style>
     </form>
   )
 }

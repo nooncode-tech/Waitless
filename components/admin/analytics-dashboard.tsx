@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { formatPrice } from '@/lib/store'
-import { TrendingUp, Star, ShoppingBag, Users, RefreshCw, BarChart2 } from 'lucide-react'
-import { Spinner } from '@/components/ui/spinner'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
 
 interface RevenueTrendRow {
   fecha: string
@@ -28,11 +28,11 @@ function shortDate(iso: string): string {
 function StarBar({ count, total }: { count: number; total: number }) {
   const pct = total > 0 ? Math.round((count / total) * 100) : 0
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-        <div className="h-full bg-amber-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+      <div style={{ flex: 1, height: 6, background: '#F3F4F6', borderRadius: 999, overflow: 'hidden' }}>
+        <div style={{ height: '100%', background: '#F59E0B', borderRadius: 999, width: `${pct}%`, transition: 'width .3s' }} />
       </div>
-      <span className="text-xs text-gray-500 w-8 text-right">{count}</span>
+      <span style={{ fontSize: 11, color: '#9CA3AF', width: 28, textAlign: 'right' }}>{count}</span>
     </div>
   )
 }
@@ -77,123 +77,145 @@ export function AnalyticsDashboard() {
   const avgTicket = totalSesiones > 0 ? totalVentas / totalSesiones : 0
   const maxVentas = Math.max(...trend.map(r => Number(r.total_ventas)), 1)
 
+  const kpis = [
+    { label: 'Ventas', value: formatPrice(totalVentas), symbol: '↑', color: '#BEEBBE', textColor: '#0a3a0a' },
+    { label: 'Sesiones', value: totalSesiones.toString(), symbol: '◎', color: '#DBEAFE', textColor: '#1D4ED8' },
+    { label: 'Órdenes', value: totalOrdenes.toString(), symbol: '◈', color: '#EDE9FE', textColor: '#7C3AED' },
+    { label: 'Ticket medio', value: formatPrice(avgTicket), symbol: '$', color: '#FEF3C7', textColor: '#B45309' },
+  ]
+
   return (
-    <div className="space-y-6" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, fontFamily: FONT }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <BarChart2 className="h-5 w-5 text-gray-900" />
-          <h2 className="text-base font-black text-gray-900">Analítica comercial</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 18 }}>◫</span>
+          <h2 style={{ margin: 0, fontSize: 15, fontWeight: 900, color: '#111' }}>Analítica comercial</h2>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex rounded-xl border border-gray-200 overflow-hidden text-xs">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', border: '1px solid #E5E5E5', borderRadius: 10, overflow: 'hidden' }}>
             {RANGE_OPTIONS.map(opt => (
               <button
                 key={opt.days}
                 onClick={() => setDays(opt.days)}
-                className={`px-3 py-1.5 font-semibold transition-colors ${
-                  days === opt.days ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'
-                }`}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: days === opt.days ? '#111' : '#fff',
+                  color: days === opt.days ? '#fff' : '#6B7280',
+                  fontFamily: FONT,
+                }}
               >
                 {opt.label}
               </button>
             ))}
           </div>
           <button
-            className="h-8 w-8 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-50"
             onClick={load}
             disabled={loading}
             aria-label="Actualizar analítica"
+            style={{
+              width: 32, height: 32, borderRadius: 10, border: '1px solid #E5E5E5',
+              background: '#fff', cursor: loading ? 'not-allowed' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 16, opacity: loading ? 0.5 : 1, fontFamily: FONT,
+            }}
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+            {loading ? <span style={{ fontSize: 24, color: '#CCC' }}>↻</span> : <span style={{ color: '#6B7280' }}>↺</span>}
           </button>
         </div>
       </div>
 
       {error && (
-        <p className="text-sm text-red-500 bg-red-50 rounded-xl px-4 py-2">{error}</p>
+        <p style={{ margin: 0, fontSize: 13, color: '#EF4444', background: '#FEF2F2', borderRadius: 10, padding: '8px 16px' }}>{error}</p>
       )}
 
       {/* KPI cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          { label: 'Ventas', value: formatPrice(totalVentas), icon: <TrendingUp className="h-4 w-4" />, color: 'bg-emerald-50 text-[#06C167]' },
-          { label: 'Sesiones', value: totalSesiones.toString(), icon: <Users className="h-4 w-4" />, color: 'bg-blue-50 text-blue-500' },
-          { label: 'Órdenes', value: totalOrdenes.toString(), icon: <ShoppingBag className="h-4 w-4" />, color: 'bg-purple-50 text-purple-500' },
-          { label: 'Ticket medio', value: formatPrice(avgTicket), icon: <BarChart2 className="h-4 w-4" />, color: 'bg-amber-50 text-amber-500' },
-        ].map(kpi => (
-          <div key={kpi.label} className="border border-gray-100 rounded-2xl p-3 bg-white">
-            <div className="flex items-center gap-1.5 mb-2">
-              <div className={`p-1.5 rounded-xl ${kpi.color}`}>{kpi.icon}</div>
-              <span className="text-xs text-gray-500">{kpi.label}</span>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
+        {kpis.map(kpi => (
+          <div key={kpi.label} style={{ border: '1px solid #E5E5E5', borderRadius: 14, padding: 12, background: '#fff' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+              <div style={{ padding: '4px 8px', borderRadius: 8, background: kpi.color, color: kpi.textColor, fontSize: 14, fontWeight: 700 }}>
+                {kpi.symbol}
+              </div>
+              <span style={{ fontSize: 11, color: '#6B7280' }}>{kpi.label}</span>
             </div>
             {loading ? (
-              <div className="h-5 w-16 bg-gray-100 rounded animate-pulse" />
+              <div style={{ height: 20, width: 64, background: '#F3F4F6', borderRadius: 6 }} />
             ) : (
-              <p className="text-lg font-black text-gray-900">{kpi.value}</p>
+              <p style={{ margin: 0, fontSize: 18, fontWeight: 900, color: '#111' }}>{kpi.value}</p>
             )}
           </div>
         ))}
       </div>
 
       {/* Revenue trend chart */}
-      <div className="border border-gray-100 rounded-2xl bg-white p-4">
-        <h3 className="text-sm font-black text-gray-900 mb-4">
+      <div style={{ border: '1px solid #E5E5E5', borderRadius: 14, background: '#fff', padding: 16 }}>
+        <h3 style={{ margin: '0 0 16px 0', fontSize: 13, fontWeight: 900, color: '#111' }}>
           Tendencia de ventas — últimos {days} días
         </h3>
         {loading ? (
-          <div className="flex items-center justify-center h-32">
-            <Spinner className="size-6 text-gray-400" />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 128 }}>
+            <span style={{ fontSize: 24, color: '#CCC' }}>↻</span>
           </div>
         ) : trend.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-8">Sin datos para el período</p>
+          <div style={{ textAlign: 'center', padding: '32px 0' }}>
+            <div style={{ fontSize: 48, color: '#D1D5DB' }}>Ø</div>
+            <p style={{ margin: '8px 0 0', fontSize: 13, color: '#9CA3AF' }}>Sin datos para el período</p>
+          </div>
         ) : (
-          <div className="space-y-3">
-            <div className="flex items-end gap-1 h-28">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 112 }}>
               {trend.map(row => {
                 const height = Math.max(4, Math.round((Number(row.total_ventas) / maxVentas) * 100))
                 return (
-                  <div key={row.fecha} className="flex-1 flex flex-col items-center gap-1 group relative">
+                  <div key={row.fecha} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
                     <div
-                      className="w-full bg-[#06C167]/80 hover:bg-[#06C167] rounded-t transition-all"
-                      style={{ height: `${height}%` }}
                       title={`${shortDate(row.fecha)}: ${formatPrice(Number(row.total_ventas))}`}
+                      style={{
+                        width: '100%',
+                        background: '#BEEBBE',
+                        borderRadius: '4px 4px 0 0',
+                        height: `${height}%`,
+                        transition: 'background .2s',
+                        cursor: 'default',
+                      }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#0a3a0a' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = '#BEEBBE' }}
                     />
-                    <div className="absolute bottom-full mb-1 hidden group-hover:flex flex-col items-center z-10 pointer-events-none">
-                      <div className="bg-gray-900 text-white text-xs rounded-lg px-2 py-1 whitespace-nowrap">
-                        {formatPrice(Number(row.total_ventas))}
-                      </div>
-                    </div>
                   </div>
                 )
               })}
             </div>
-            <div className="flex gap-1">
+            <div style={{ display: 'flex', gap: 3 }}>
               {trend.map(row => (
-                <div key={row.fecha} className="flex-1 text-center text-[10px] text-gray-400">
+                <div key={row.fecha} style={{ flex: 1, textAlign: 'center', fontSize: 10, color: '#9CA3AF' }}>
                   {shortDate(row.fecha)}
                 </div>
               ))}
             </div>
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full text-xs">
+            <div style={{ overflowX: 'auto', marginTop: 8 }}>
+              <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr className="text-gray-400 border-b border-gray-100">
-                    <th className="text-left py-1 font-medium">Fecha</th>
-                    <th className="text-right py-1 font-medium">Ventas</th>
-                    <th className="text-right py-1 font-medium">Sesiones</th>
-                    <th className="text-right py-1 font-medium">Órdenes</th>
-                    <th className="text-right py-1 font-medium">Ticket</th>
+                  <tr style={{ color: '#9CA3AF', borderBottom: '1px solid #F3F4F6' }}>
+                    <th style={{ textAlign: 'left', padding: '4px 0', fontWeight: 500 }}>Fecha</th>
+                    <th style={{ textAlign: 'right', padding: '4px 0', fontWeight: 500 }}>Ventas</th>
+                    <th style={{ textAlign: 'right', padding: '4px 0', fontWeight: 500 }}>Sesiones</th>
+                    <th style={{ textAlign: 'right', padding: '4px 0', fontWeight: 500 }}>Órdenes</th>
+                    <th style={{ textAlign: 'right', padding: '4px 0', fontWeight: 500 }}>Ticket</th>
                   </tr>
                 </thead>
                 <tbody>
                   {[...trend].reverse().map(row => (
-                    <tr key={row.fecha} className="border-b border-gray-100/50 last:border-0">
-                      <td className="py-1 text-gray-900">{shortDate(row.fecha)}</td>
-                      <td className="py-1 text-right text-gray-900">{formatPrice(Number(row.total_ventas))}</td>
-                      <td className="py-1 text-right text-gray-500">{row.total_sesiones}</td>
-                      <td className="py-1 text-right text-gray-500">{row.total_ordenes}</td>
-                      <td className="py-1 text-right text-gray-500">{formatPrice(Number(row.avg_ticket))}</td>
+                    <tr key={row.fecha} style={{ borderBottom: '1px solid #F9FAFB' }}>
+                      <td style={{ padding: '4px 0', color: '#111' }}>{shortDate(row.fecha)}</td>
+                      <td style={{ padding: '4px 0', textAlign: 'right', color: '#111' }}>{formatPrice(Number(row.total_ventas))}</td>
+                      <td style={{ padding: '4px 0', textAlign: 'right', color: '#6B7280' }}>{row.total_sesiones}</td>
+                      <td style={{ padding: '4px 0', textAlign: 'right', color: '#6B7280' }}>{row.total_ordenes}</td>
+                      <td style={{ padding: '4px 0', textAlign: 'right', color: '#6B7280' }}>{formatPrice(Number(row.avg_ticket))}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -204,36 +226,38 @@ export function AnalyticsDashboard() {
       </div>
 
       {/* Feedback summary */}
-      <div className="border border-gray-100 rounded-2xl bg-white p-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Star className="h-4 w-4 text-amber-400" />
-          <h3 className="text-sm font-black text-gray-900">Feedback de clientes — últimos 30 días</h3>
+      <div style={{ border: '1px solid #E5E5E5', borderRadius: 14, background: '#fff', padding: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+          <span style={{ fontSize: 16, color: '#F59E0B' }}>★</span>
+          <h3 style={{ margin: 0, fontSize: 13, fontWeight: 900, color: '#111' }}>Feedback de clientes — últimos 30 días</h3>
         </div>
         {loading ? (
-          <div className="flex items-center justify-center h-20">
-            <Spinner className="size-5 text-gray-400" />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 80 }}>
+            <span style={{ fontSize: 24, color: '#CCC' }}>↻</span>
           </div>
         ) : !feedback || feedback.total === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-4">Sin feedback en este período</p>
+          <div style={{ textAlign: 'center', padding: '16px 0' }}>
+            <div style={{ fontSize: 40, color: '#D1D5DB' }}>Ø</div>
+            <p style={{ margin: '6px 0 0', fontSize: 13, color: '#9CA3AF' }}>Sin feedback en este período</p>
+          </div>
         ) : (
-          <div className="flex gap-6">
-            <div className="text-center shrink-0">
-              <p className="text-4xl font-black text-gray-900">{Number(feedback.avg_rating).toFixed(1)}</p>
-              <div className="flex gap-0.5 mt-1 justify-center">
+          <div style={{ display: 'flex', gap: 24 }}>
+            <div style={{ textAlign: 'center', flexShrink: 0 }}>
+              <p style={{ margin: 0, fontSize: 40, fontWeight: 900, color: '#111', lineHeight: 1 }}>
+                {Number(feedback.avg_rating).toFixed(1)}
+              </p>
+              <div style={{ display: 'flex', gap: 2, marginTop: 6, justifyContent: 'center' }}>
                 {[1, 2, 3, 4, 5].map(n => (
-                  <Star
-                    key={n}
-                    className={`h-3.5 w-3.5 ${n <= Math.round(feedback.avg_rating) ? 'text-amber-400 fill-amber-400' : 'text-gray-200'}`}
-                  />
+                  <span key={n} style={{ fontSize: 13, color: n <= Math.round(feedback.avg_rating) ? '#F59E0B' : '#E5E7EB' }}>★</span>
                 ))}
               </div>
-              <p className="text-xs text-gray-400 mt-1">{feedback.total} reseñas</p>
+              <p style={{ margin: '4px 0 0', fontSize: 11, color: '#9CA3AF' }}>{feedback.total} reseñas</p>
             </div>
-            <div className="flex-1 space-y-1.5">
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
               {([5, 4, 3, 2, 1] as const).map(star => (
-                <div key={star} className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500 w-4">{star}</span>
-                  <Star className="h-3 w-3 text-amber-400 shrink-0" />
+                <div key={star} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 11, color: '#6B7280', width: 12, flexShrink: 0 }}>{star}</span>
+                  <span style={{ fontSize: 11, color: '#F59E0B', flexShrink: 0 }}>★</span>
                   <StarBar count={feedback.dist[String(star) as keyof typeof feedback.dist]} total={feedback.total} />
                 </div>
               ))}

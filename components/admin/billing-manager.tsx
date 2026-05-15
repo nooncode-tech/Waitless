@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Zap, Building2, Rocket, ExternalLink, Loader2 } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { supabase } from '@/lib/supabase'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
 
 type Plan = 'starter' | 'pro' | 'enterprise'
 
@@ -11,7 +12,7 @@ const PLANS: {
   key: Plan
   label: string
   price: string
-  icon: React.ReactNode
+  symbol: string
   description: string
   features: string[]
   cta: string
@@ -21,7 +22,7 @@ const PLANS: {
     key: 'starter',
     label: 'Starter',
     price: 'Gratis',
-    icon: <Rocket className="h-5 w-5" />,
+    symbol: '◎',
     description: 'Para empezar sin compromisos.',
     features: ['Pedidos por mesa', 'KDS (cocina)', 'Menú QR', 'Hasta 5 mesas'],
     cta: 'Plan actual',
@@ -30,7 +31,7 @@ const PLANS: {
     key: 'pro',
     label: 'Pro',
     price: '$29 / mes',
-    icon: <Zap className="h-5 w-5" />,
+    symbol: '⚡',
     description: 'Para restaurantes en crecimiento.',
     features: ['Todo de Starter', 'Analítica de ventas', 'Lista de espera', 'Notificaciones push', 'Reembolsos', 'Mesas ilimitadas'],
     cta: 'Suscribirse a Pro',
@@ -40,7 +41,7 @@ const PLANS: {
     key: 'enterprise',
     label: 'Enterprise',
     price: '$99 / mes',
-    icon: <Building2 className="h-5 w-5" />,
+    symbol: '⊞',
     description: 'Para cadenas y grupos.',
     features: ['Todo de Pro', 'Multi-sucursal', 'White label', 'Soporte prioritario', 'SLA garantizado'],
     cta: 'Suscribirse a Enterprise',
@@ -101,61 +102,81 @@ export function BillingManager() {
   }
 
   return (
-    <div className="space-y-6" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, fontFamily: FONT }}>
       <div>
-        <h2 className="text-xs font-black text-gray-900 uppercase tracking-wide">Plan & Facturación</h2>
-        <p className="text-[11px] text-gray-500 mt-0.5">
-          Plan actual: <span className="font-semibold text-gray-900 capitalize">{tenantPlan}</span>
+        <h2 style={{ margin: 0, fontSize: 11, fontWeight: 900, color: '#111', textTransform: 'uppercase', letterSpacing: '.08em' }}>
+          Plan &amp; Facturación
+        </h2>
+        <p style={{ margin: '4px 0 0', fontSize: 11, color: '#6B7280' }}>
+          Plan actual:{' '}
+          <span style={{ fontWeight: 700, color: '#111', textTransform: 'capitalize' }}>{tenantPlan}</span>
         </p>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-500">{error}</div>
+        <div style={{ padding: 12, background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, fontSize: 12, color: '#EF4444' }}>
+          {error}
+        </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
         {PLANS.map((plan) => {
           const isCurrent = tenantPlan === plan.key
           const isUpgrade = plan.key !== 'starter' && !isCurrent
 
+          const borderColor = plan.highlight ? '#111' : isCurrent ? '#BEEBBE' : '#E5E5E5'
+
           return (
             <div
               key={plan.key}
-              className={`relative rounded-2xl border-2 p-5 flex flex-col gap-4 ${
-                plan.highlight ? 'border-gray-900'
-                : isCurrent ? 'border-[#06C167]'
-                : 'border-gray-200'
-              }`}
+              style={{
+                position: 'relative', borderRadius: 14, border: `2px solid ${borderColor}`,
+                padding: 20, display: 'flex', flexDirection: 'column', gap: 16, background: '#fff',
+              }}
             >
               {plan.highlight && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold bg-gray-900 text-white px-3 py-0.5 rounded-full">
+                <span style={{
+                  position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
+                  fontSize: 10, fontWeight: 700, background: '#111', color: '#fff',
+                  padding: '2px 12px', borderRadius: 999, whiteSpace: 'nowrap',
+                }}>
                   Más popular
                 </span>
               )}
               {isCurrent && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold bg-[#06C167] text-white px-3 py-0.5 rounded-full">
+                <span style={{
+                  position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
+                  fontSize: 10, fontWeight: 700, background: '#BEEBBE', color: '#0a3a0a',
+                  padding: '2px 12px', borderRadius: 999, whiteSpace: 'nowrap',
+                }}>
                   Plan activo
                 </span>
               )}
 
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${isCurrent ? 'bg-emerald-100 text-[#06C167]' : 'bg-gray-100 text-gray-700'}`}>
-                    {plan.icon}
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: 10,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 18,
+                    background: isCurrent ? '#D1FAE5' : '#F3F4F6',
+                    color: isCurrent ? '#0a3a0a' : '#374151',
+                  }}>
+                    {plan.symbol}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-gray-900">{plan.label}</p>
-                    <p className="text-xs text-gray-500">{plan.description}</p>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#111' }}>{plan.label}</p>
+                    <p style={{ margin: 0, fontSize: 11, color: '#6B7280' }}>{plan.description}</p>
                   </div>
                 </div>
               </div>
 
-              <p className="text-2xl font-bold text-gray-900">{plan.price}</p>
+              <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: '#111' }}>{plan.price}</p>
 
-              <ul className="space-y-1.5 flex-1">
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
                 {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-xs text-gray-500">
-                    <Check className="h-3.5 w-3.5 text-[#06C167] shrink-0 mt-0.5" />
+                  <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: '#6B7280' }}>
+                    <span style={{ color: '#059669', flexShrink: 0, marginTop: 1, fontWeight: 700 }}>✓</span>
                     {f}
                   </li>
                 ))}
@@ -166,21 +187,41 @@ export function BillingManager() {
                   <button
                     onClick={handlePortal}
                     disabled={loading === 'portal'}
-                    className="w-full h-9 rounded-xl border border-gray-200 text-gray-700 text-xs font-medium hover:bg-gray-50 flex items-center justify-center gap-2 disabled:opacity-50"
+                    style={{
+                      width: '100%', height: 36, borderRadius: 10, border: '1px solid #E5E5E5',
+                      background: '#fff', color: '#374151', fontSize: 12, fontWeight: 500,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                      cursor: loading === 'portal' ? 'not-allowed' : 'pointer',
+                      opacity: loading === 'portal' ? 0.5 : 1,
+                      fontFamily: FONT,
+                    }}
                   >
-                    {loading === 'portal' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ExternalLink className="h-3.5 w-3.5" />}
-                    Gestionar suscripción
+                    {loading === 'portal'
+                      ? <><span style={{ fontSize: 24, color: '#CCC' }}>↻</span> Cargando…</>
+                      : <><span>↗</span> Gestionar suscripción</>}
                   </button>
                 ) : (
-                  <div className="py-2 text-center text-xs text-[#06C167] font-semibold">Plan activo</div>
+                  <div style={{ padding: '8px 0', textAlign: 'center', fontSize: 12, color: '#059669', fontWeight: 600 }}>
+                    Plan activo
+                  </div>
                 )
               ) : isUpgrade ? (
                 <button
                   onClick={() => handleUpgrade(plan.key as 'pro' | 'enterprise')}
                   disabled={!!loading}
-                  className={`w-full h-9 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 disabled:opacity-50 ${plan.highlight ? 'bg-gray-900 hover:bg-black text-white' : 'border border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+                  style={{
+                    width: '100%', height: 36, borderRadius: 10,
+                    border: plan.highlight ? 'none' : '1px solid #E5E5E5',
+                    background: plan.highlight ? '#111' : '#fff',
+                    color: plan.highlight ? '#fff' : '#374151',
+                    fontSize: 12, fontWeight: 600,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    cursor: loading ? 'not-allowed' : 'pointer',
+                    opacity: loading ? 0.5 : 1,
+                    fontFamily: FONT,
+                  }}
                 >
-                  {loading === plan.key && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  {loading === plan.key && <span style={{ fontSize: 24, color: '#CCC' }}>↻</span>}
                   {plan.cta}
                 </button>
               ) : null}
@@ -189,7 +230,7 @@ export function BillingManager() {
         })}
       </div>
 
-      <p className="text-[10px] text-gray-400 text-center">
+      <p style={{ margin: 0, fontSize: 10, color: '#9CA3AF', textAlign: 'center' }}>
         Los pagos son procesados de forma segura por Stripe. Podés cancelar en cualquier momento desde el portal de facturación.
       </p>
     </div>

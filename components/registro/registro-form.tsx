@@ -2,15 +2,36 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  Building2, Palette, User, Eye, EyeOff,
-  AlertCircle, CheckCircle2, Upload, X, ArrowRight, ArrowLeft,
-} from 'lucide-react'
-import { Spinner } from '@/components/ui/spinner'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { GoogleAuthButton } from '@/components/ui/google-auth-button'
-import { cn } from '@/lib/utils'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  height: 44,
+  padding: '0 14px',
+  border: '1px solid #E5E5E5',
+  borderRadius: 10,
+  fontSize: 14,
+  fontFamily: FONT,
+  color: '#000',
+  background: '#fff',
+  outline: 'none',
+  boxSizing: 'border-box',
+  transition: 'border-color 0.15s',
+}
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: 11,
+  fontWeight: 700,
+  color: 'rgba(0,0,0,0.5)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.1em',
+  marginBottom: 6,
+  fontFamily: MONO,
+}
 
 type Step = 1 | 2
 
@@ -18,7 +39,7 @@ function slugify(text: string): string {
   return text
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 40)
@@ -129,62 +150,90 @@ export function RegistroForm() {
   // ── Success screen ────────────────────────────────────────────────────────
   if (success) {
     return (
-      <div className="text-center space-y-6">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-full bg-success/10 border-2 border-success/30 flex items-center justify-center">
-            <CheckCircle2 className="h-8 w-8 text-success" />
-          </div>
-        </div>
+      <div style={{ textAlign: 'center', fontFamily: FONT }}>
+        <div style={{
+          width: 64, height: 64, borderRadius: '50%',
+          background: 'rgba(16,185,129,0.1)',
+          border: '2px solid rgba(16,185,129,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          margin: '0 auto 24px', fontSize: 28,
+        }}>✓</div>
         <div>
-          <h2 className="text-xl font-bold text-foreground">¡Todo listo!</h2>
-          <p className="text-sm text-muted-foreground mt-2">Tu negocio fue registrado correctamente.</p>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: '#000', letterSpacing: '-0.02em', margin: 0 }}>
+            ¡Todo listo!
+          </h2>
+          <p style={{ fontSize: 14, color: 'rgba(0,0,0,0.45)', marginTop: 8 }}>
+            Tu negocio fue registrado correctamente.
+          </p>
         </div>
-        <div className="bg-muted border border-border rounded-xl p-4 text-left space-y-2">
-          <p className="text-xs text-muted-foreground uppercase font-semibold tracking-wide">Tus credenciales de acceso</p>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Usuario</span>
-            <span className="text-sm font-bold text-foreground font-mono">{success.username}</span>
+        <div style={{
+          background: '#F5F5F5', border: '1px solid #E5E5E5',
+          borderRadius: 12, padding: 16, textAlign: 'left', marginTop: 24,
+        }}>
+          <p style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.1em', marginBottom: 12, fontFamily: MONO }}>
+            Tus credenciales de acceso
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+            <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)' }}>Usuario</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#000', fontFamily: MONO }}>{success.username}</span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Contraseña</span>
-            <span className="text-sm text-foreground">la que elegiste</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)' }}>Contraseña</span>
+            <span style={{ fontSize: 14, color: '#000' }}>la que elegiste</span>
           </div>
         </div>
-        <Button
-          className="w-full h-11 bg-foreground hover:bg-foreground/90 text-background font-semibold rounded"
+        <button
           onClick={() => router.push('/')}
+          style={{
+            width: '100%', height: 44, marginTop: 20,
+            background: '#000', color: '#fff',
+            border: 'none', borderRadius: 10,
+            fontSize: 15, fontWeight: 700, fontFamily: FONT,
+            cursor: 'pointer',
+          }}
         >
           Ir al login
-        </Button>
+        </button>
       </div>
     )
   }
 
   // ── Step indicators ───────────────────────────────────────────────────────
   const steps = [
-    { n: 1, label: 'Tu negocio', icon: <Building2 className="h-4 w-4" /> },
-    { n: 2, label: 'Tu cuenta', icon: <User className="h-4 w-4" /> },
+    { n: 1, label: 'Tu negocio', icon: '◫' },
+    { n: 2, label: 'Tu cuenta',  icon: '◎' },
   ]
 
   return (
-    <div className="space-y-6">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, fontFamily: FONT }}>
+      <style>{`@keyframes reg-spin { to { transform: rotate(360deg) } }`}</style>
+
       {/* Step bar */}
-      <div className="flex items-center gap-2">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         {steps.map((s, i) => (
-          <div key={s.n} className="flex items-center gap-2 flex-1">
-            <div className={cn(
-              'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors',
-              step === s.n
-                ? 'bg-foreground text-background'
-                : step > s.n
-                ? 'bg-success/15 text-success'
-                : 'bg-muted text-muted-foreground'
-            )}>
-              {step > s.n ? <CheckCircle2 className="h-3.5 w-3.5" /> : s.icon}
-              <span className="hidden sm:inline">{s.label}</span>
+          <div key={s.n} style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '6px 12px', borderRadius: 999,
+              fontSize: 12, fontWeight: 600,
+              background: step === s.n ? '#000'
+                : step > s.n ? 'rgba(16,185,129,0.12)'
+                : '#F0F0F0',
+              color: step === s.n ? '#fff'
+                : step > s.n ? '#059669'
+                : 'rgba(0,0,0,0.4)',
+              transition: 'all 0.2s',
+            }}>
+              <span>{step > s.n ? '✓' : s.icon}</span>
+              <span style={{ display: 'none' }} className="sm-inline">{s.label}</span>
+              <span>{s.label}</span>
             </div>
             {i < steps.length - 1 && (
-              <div className={cn('flex-1 h-px', step > s.n ? 'bg-success/50' : 'bg-border')} />
+              <div style={{
+                flex: 1, height: 1,
+                background: step > s.n ? 'rgba(16,185,129,0.4)' : '#E5E5E5',
+                transition: 'background 0.2s',
+              }} />
             )}
           </div>
         ))}
@@ -192,72 +241,76 @@ export function RegistroForm() {
 
       {/* ── STEP 1: Negocio ─────────────────────────────────────────────────── */}
       {step === 1 && (
-        <div className="space-y-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <h2 className="text-xl font-bold text-foreground" style={{ letterSpacing: '-0.02em' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: '#000', letterSpacing: '-0.02em', margin: 0 }}>
               Datos de tu negocio
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">Así va a aparecer en tu plataforma</p>
+            <p style={{ fontSize: 14, color: 'rgba(0,0,0,0.45)', marginTop: 6 }}>Así va a aparecer en tu plataforma</p>
           </div>
 
           {/* Nombre */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground uppercase tracking-wide">
-              Nombre del negocio
-            </label>
-            <Input
+          <div>
+            <label style={labelStyle}>Nombre del negocio</label>
+            <input
               type="text"
               placeholder="Ej: La Trattoria"
               value={nombre}
               onChange={(e) => handleNombreChange(e.target.value)}
-              className="h-11 border-border focus:border-foreground focus:ring-foreground rounded"
+              style={inputStyle}
               required
             />
           </div>
 
           {/* Slug */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground uppercase tracking-wide">
-              Identificador único
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground select-none">
+          <div>
+            <label style={labelStyle}>Identificador único</label>
+            <div style={{ position: 'relative' }}>
+              <span style={{
+                position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
+                fontSize: 13, color: 'rgba(0,0,0,0.4)', pointerEvents: 'none',
+                fontFamily: MONO, userSelect: 'none',
+              }}>
                 waitless.app/
               </span>
-              <Input
+              <input
                 type="text"
                 placeholder="la-trattoria"
                 value={slug}
                 onChange={(e) => handleSlugChange(e.target.value)}
-                className="h-11 pl-[92px] border-border focus:border-foreground focus:ring-foreground rounded font-mono text-sm"
+                style={{ ...inputStyle, paddingLeft: 98, fontFamily: MONO }}
               />
             </div>
-            <p className="text-[10px] text-muted-foreground">Solo minúsculas, números y guiones. No se puede cambiar después.</p>
+            <p style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)', marginTop: 5, fontFamily: MONO }}>
+              Solo minúsculas, números y guiones. No se puede cambiar después.
+            </p>
           </div>
 
           {/* Color */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground uppercase tracking-wide flex items-center gap-1.5">
-              <Palette className="h-3.5 w-3.5" />
-              Color principal de tu marca
+          <div>
+            <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span>◎</span> Color principal de tu marca
             </label>
-            <div className="flex items-center gap-3 p-3 border border-border rounded-xl">
-              <div className="relative">
-                <input
-                  type="color"
-                  value={primaryColor}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="w-10 h-10 rounded-lg cursor-pointer border-0 p-0.5 bg-transparent"
-                  style={{ accentColor: primaryColor }}
-                />
-              </div>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: 12, border: '1px solid #E5E5E5', borderRadius: 10,
+            }}>
+              <input
+                type="color"
+                value={primaryColor}
+                onChange={(e) => setPrimaryColor(e.target.value)}
+                style={{ width: 40, height: 40, borderRadius: 8, cursor: 'pointer', border: 'none', padding: 2, background: 'transparent' }}
+              />
               <div>
-                <p className="text-sm font-semibold text-foreground">{primaryColor.toUpperCase()}</p>
-                <p className="text-xs text-muted-foreground">Se aplica en botones, header y acentos</p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#000', fontFamily: MONO }}>{primaryColor.toUpperCase()}</p>
+                <p style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)' }}>Se aplica en botones, header y acentos</p>
               </div>
-              {/* Preview pill */}
-              <div className="ml-auto flex gap-1.5">
-                <span className="px-3 py-1 rounded-full text-xs font-bold text-white" style={{ backgroundColor: primaryColor }}>
+              <div style={{ marginLeft: 'auto' }}>
+                <span style={{
+                  padding: '4px 12px', borderRadius: 999,
+                  fontSize: 12, fontWeight: 700, color: '#fff',
+                  backgroundColor: primaryColor,
+                }}>
                   Vista previa
                 </span>
               </div>
@@ -265,31 +318,39 @@ export function RegistroForm() {
           </div>
 
           {/* Logo upload */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground uppercase tracking-wide">
-              Logo <span className="text-muted-foreground font-normal">(opcional)</span>
+          <div>
+            <label style={labelStyle}>
+              Logo <span style={{ textTransform: 'none', fontWeight: 400, color: 'rgba(0,0,0,0.35)' }}>(opcional)</span>
             </label>
             {logoPreview ? (
-              <div className="flex items-center gap-3 p-3 border border-border rounded-xl">
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: 12, border: '1px solid #E5E5E5', borderRadius: 10,
+              }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={logoPreview} alt="Logo preview" className="w-12 h-12 object-contain rounded-lg border border-border" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{logoFile?.name}</p>
-                  <p className="text-xs text-muted-foreground">{((logoFile?.size ?? 0) / 1024).toFixed(0)} KB</p>
+                <img src={logoPreview} alt="Logo preview" style={{ width: 48, height: 48, objectFit: 'contain', borderRadius: 8, border: '1px solid #E5E5E5' }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: '#000', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{logoFile?.name}</p>
+                  <p style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)' }}>{((logoFile?.size ?? 0) / 1024).toFixed(0)} KB</p>
                 </div>
-                <button onClick={removeLogo} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
-                  <X className="h-4 w-4 text-muted-foreground" />
-                </button>
+                <button
+                  onClick={removeLogo}
+                  style={{ padding: 6, borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 16, color: 'rgba(0,0,0,0.4)' }}
+                >✕</button>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full flex flex-col items-center gap-2 p-6 border-2 border-dashed border-border rounded-xl hover:border-foreground hover:bg-muted transition-colors"
+                style={{
+                  width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                  padding: '24px 16px', border: '2px dashed #E5E5E5', borderRadius: 10,
+                  background: 'none', cursor: 'pointer',
+                }}
               >
-                <Upload className="h-6 w-6 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Subir logo</span>
-                <span className="text-xs text-muted-foreground">PNG, JPG, WEBP · máx. 2 MB</span>
+                <span style={{ fontSize: 24, color: 'rgba(0,0,0,0.3)' }}>↑</span>
+                <span style={{ fontSize: 14, color: 'rgba(0,0,0,0.4)' }}>Subir logo</span>
+                <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.3)' }}>PNG, JPG, WEBP · máx. 2 MB</span>
               </button>
             )}
             <input
@@ -297,94 +358,109 @@ export function RegistroForm() {
               type="file"
               accept="image/png,image/jpeg,image/webp,image/svg+xml"
               onChange={handleLogoChange}
-              className="hidden"
+              style={{ display: 'none' }}
             />
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 text-destructive text-xs bg-destructive/10 border border-destructive/30 p-3 rounded">
-              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              color: '#DC2626', fontSize: 12,
+              background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.2)',
+              borderRadius: 8, padding: '10px 12px',
+            }}>
+              <span style={{ flexShrink: 0 }}>⚠</span>
               {error}
             </div>
           )}
 
-          <Button
+          <button
             type="button"
             onClick={handleNext}
-            className="w-full h-11 text-white font-semibold rounded"
-            style={{ backgroundColor: primaryColor }}
+            style={{
+              width: '100%', height: 44,
+              background: primaryColor, color: '#fff',
+              border: 'none', borderRadius: 10,
+              fontSize: 15, fontWeight: 700, fontFamily: FONT,
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            }}
           >
-            <span className="flex items-center gap-2">
-              Siguiente
-              <ArrowRight className="h-4 w-4" />
-            </span>
-          </Button>
+            Siguiente →
+          </button>
         </div>
       )}
 
       {/* ── STEP 2: Cuenta admin ─────────────────────────────────────────────── */}
       {step === 2 && (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <h2 className="text-xl font-bold text-foreground" style={{ letterSpacing: '-0.02em' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: '#000', letterSpacing: '-0.02em', margin: 0 }}>
               Crear cuenta de administrador
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">Con esto vas a entrar a tu plataforma</p>
+            <p style={{ fontSize: 14, color: 'rgba(0,0,0,0.45)', marginTop: 6 }}>Con esto vas a entrar a tu plataforma</p>
           </div>
 
-          {/* Google option — saves business data in sessionStorage for post-OAuth */}
+          {/* Google option */}
           <GoogleAuthButton label="Registrarme con Google" />
 
-          <div className="flex items-center gap-3">
-            <div className="flex-1 h-px bg-border" />
-            <span className="text-xs text-muted-foreground">o con email y contraseña</span>
-            <div className="flex-1 h-px bg-border" />
+          {/* Divider */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ flex: 1, height: 1, background: '#E5E5E5' }} />
+            <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)' }}>o con email y contraseña</span>
+            <div style={{ flex: 1, height: 1, background: '#E5E5E5' }} />
           </div>
 
-          {/* Resumen del negocio */}
-          <div className="flex items-center gap-3 p-3 bg-muted border border-border rounded-xl">
+          {/* Business summary */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: 12, background: '#F5F5F5', border: '1px solid #E5E5E5', borderRadius: 10,
+          }}>
             {logoPreview ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoPreview} alt="Logo" className="w-8 h-8 object-contain rounded" />
+              <img src={logoPreview} alt="Logo" style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 6 }} />
             ) : (
-              <div className="w-8 h-8 rounded flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ backgroundColor: primaryColor }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: 6,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', fontSize: 14, fontWeight: 700, flexShrink: 0,
+                backgroundColor: primaryColor,
+              }}>
                 {nombre.charAt(0).toUpperCase()}
               </div>
             )}
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">{nombre}</p>
-              <p className="text-xs text-muted-foreground font-mono">/{slug}</p>
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#000', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nombre}</p>
+              <p style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)', fontFamily: MONO }}>/{slug}</p>
             </div>
-            <div className="ml-auto w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: primaryColor }} />
+            <div style={{ marginLeft: 'auto', width: 16, height: 16, borderRadius: '50%', flexShrink: 0, backgroundColor: primaryColor }} />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground uppercase tracking-wide">
-              Email
-            </label>
-            <Input
+          {/* Email */}
+          <div>
+            <label style={labelStyle}>Email</label>
+            <input
               type="email"
               placeholder="tu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-11 border-border focus:border-foreground focus:ring-foreground rounded"
+              style={inputStyle}
               autoComplete="email"
               required
               disabled={isLoading}
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground uppercase tracking-wide">
-              Contraseña
-            </label>
-            <div className="relative">
-              <Input
+          {/* Password */}
+          <div>
+            <label style={labelStyle}>Contraseña</label>
+            <div style={{ position: 'relative' }}>
+              <input
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Mínimo 6 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-11 pr-10 border-border focus:border-foreground focus:ring-foreground rounded"
+                style={{ ...inputStyle, paddingRight: 44 }}
                 autoComplete="new-password"
                 required
                 minLength={6}
@@ -393,46 +469,69 @@ export function RegistroForm() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 tabIndex={-1}
+                style={{
+                  position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: 'rgba(0,0,0,0.35)', fontSize: 14, lineHeight: 1, padding: 4,
+                }}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? '○' : '●'}
               </button>
             </div>
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 text-destructive text-xs bg-destructive/10 border border-destructive/30 p-3 rounded">
-              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              color: '#DC2626', fontSize: 12,
+              background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.2)',
+              borderRadius: 8, padding: '10px 12px',
+            }}>
+              <span style={{ flexShrink: 0 }}>⚠</span>
               {error}
             </div>
           )}
 
-          <div className="flex gap-2">
-            <Button
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
               type="button"
-              variant="outline"
-              className="h-11 px-4"
               onClick={() => { setStep(1); setError('') }}
               disabled={isLoading}
+              style={{
+                height: 44, padding: '0 16px',
+                background: '#fff', color: '#000',
+                border: '1px solid #E5E5E5', borderRadius: 10,
+                fontSize: 16, cursor: 'pointer', fontFamily: FONT,
+              }}
             >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <Button
+              ←
+            </button>
+            <button
               type="submit"
-              className="flex-1 h-11 text-white font-semibold rounded"
-              style={{ backgroundColor: primaryColor }}
               disabled={isLoading || !email.trim() || !password}
+              style={{
+                flex: 1, height: 44,
+                background: isLoading || !email.trim() || !password ? '#E5E5E5' : primaryColor,
+                color: isLoading || !email.trim() || !password ? 'rgba(0,0,0,0.35)' : '#fff',
+                border: 'none', borderRadius: 10,
+                fontSize: 15, fontWeight: 700, fontFamily: FONT,
+                cursor: isLoading || !email.trim() || !password ? 'not-allowed' : 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              }}
             >
               {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <Spinner className="size-4" />
+                <>
+                  <span style={{
+                    width: 16, height: 16,
+                    border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff',
+                    borderRadius: '50%', display: 'inline-block',
+                    animation: 'reg-spin 0.7s linear infinite',
+                  }} />
                   Registrando...
-                </span>
-              ) : (
-                'Crear mi plataforma'
-              )}
-            </Button>
+                </>
+              ) : 'Crear mi plataforma'}
+            </button>
           </div>
         </form>
       )}

@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Search, Phone, Mail, MapPin, MessageSquare, Package, Truck, ShoppingBag, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { supabase } from '@/lib/supabase'
 import { formatPrice } from '@/lib/store'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
 
 interface HistoryOrder {
   id: string; numero: number; canal: string; mesa: number | null
@@ -26,9 +27,9 @@ const PAYMENT_LABELS: Record<string, string> = {
 }
 
 function CanalIcon({ canal }: { canal: string }) {
-  if (canal === 'delivery') return <Truck className="h-3 w-3" />
-  if (canal === 'para_llevar') return <ShoppingBag className="h-3 w-3" />
-  return <Package className="h-3 w-3" />
+  if (canal === 'delivery') return <span>↗</span>
+  if (canal === 'para_llevar') return <span>◎</span>
+  return <span>◫</span>
 }
 
 export function OrdersHistory() {
@@ -72,143 +73,239 @@ export function OrdersHistory() {
   const goPage = (p: number) => { setPage(p); fetchHistory(p) }
 
   if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) {
-    return <p className="text-sm text-gray-400 p-4">Sin acceso</p>
+    return <p style={{ fontSize: 13, color: '#aaa', padding: 16, fontFamily: FONT }}>Sin acceso</p>
   }
 
   return (
-    <div className="space-y-4" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+    <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Filters */}
-      <form onSubmit={e => { e.preventDefault(); setPage(1); fetchHistory(1) }} className="space-y-2">
-        <div className="flex gap-2">
-          <div className="flex-1 flex items-center border border-gray-200 rounded-xl px-2.5 gap-2 h-8 bg-white">
-            <Search className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+      <form
+        onSubmit={e => { e.preventDefault(); setPage(1); fetchHistory(1) }}
+        style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
+      >
+        <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{
+            flex: 1, display: 'flex', alignItems: 'center',
+            border: '1px solid #E5E5E5', borderRadius: 10,
+            padding: '0 10px', gap: 8, height: 36, background: '#fff',
+          }}>
+            <span style={{ color: '#aaa', fontSize: 13 }}>⊞</span>
             <input
               type="text"
               value={q}
               onChange={e => setQ(e.target.value)}
               placeholder="Buscar por nombre, teléfono o correo..."
-              className="flex-1 text-xs bg-transparent outline-none text-gray-900 placeholder:text-gray-400"
+              style={{
+                flex: 1, fontSize: 12, border: 'none', outline: 'none',
+                background: 'transparent', color: '#111', fontFamily: FONT,
+              }}
             />
             {q && (
-              <button type="button" onClick={() => setQ('')}><X className="h-3 w-3 text-gray-400" /></button>
+              <button
+                type="button"
+                onClick={() => setQ('')}
+                style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: '#aaa', padding: 0 }}
+              >✕</button>
             )}
           </div>
-          <button type="submit" className="h-8 px-3 rounded-xl border border-gray-200 text-gray-700 text-xs hover:bg-gray-50">Buscar</button>
+          <button
+            type="submit"
+            style={{
+              height: 36, padding: '0 14px', borderRadius: 10,
+              border: '1px solid #E5E5E5', background: '#fff',
+              color: '#444', fontSize: 12, cursor: 'pointer', fontFamily: FONT,
+            }}
+          >Buscar</button>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <select value={canal} onChange={e => setCanal(e.target.value)} className="h-7 rounded-xl border border-gray-200 px-2 text-xs bg-white text-gray-700">
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <select
+            value={canal}
+            onChange={e => setCanal(e.target.value)}
+            style={{
+              height: 30, borderRadius: 10, border: '1px solid #E5E5E5',
+              padding: '0 8px', fontSize: 11, background: '#fff',
+              color: '#444', fontFamily: FONT, outline: 'none',
+            }}
+          >
             <option value="all">Todos los canales</option>
             <option value="mesa">Mesa</option>
             <option value="para_llevar">Para llevar</option>
             <option value="delivery">Delivery</option>
           </select>
-          <input type="date" value={from} onChange={e => setFrom(e.target.value)} className="h-7 rounded-xl border border-gray-200 px-2 text-xs bg-white text-gray-700" title="Desde" />
-          <input type="date" value={to} onChange={e => setTo(e.target.value)} className="h-7 rounded-xl border border-gray-200 px-2 text-xs bg-white text-gray-700" title="Hasta" />
+          <input
+            type="date"
+            value={from}
+            onChange={e => setFrom(e.target.value)}
+            title="Desde"
+            style={{
+              height: 30, borderRadius: 10, border: '1px solid #E5E5E5',
+              padding: '0 8px', fontSize: 11, background: '#fff',
+              color: '#444', fontFamily: FONT, outline: 'none',
+            }}
+          />
+          <input
+            type="date"
+            value={to}
+            onChange={e => setTo(e.target.value)}
+            title="Hasta"
+            style={{
+              height: 30, borderRadius: 10, border: '1px solid #E5E5E5',
+              padding: '0 8px', fontSize: 11, background: '#fff',
+              color: '#444', fontFamily: FONT, outline: 'none',
+            }}
+          />
         </div>
       </form>
 
-      <p className="text-[11px] text-gray-400">{total} pedido{total !== 1 ? 's' : ''} completado{total !== 1 ? 's' : ''}</p>
+      <p style={{ fontSize: 11, color: '#aaa', margin: 0 }}>
+        {total} pedido{total !== 1 ? 's' : ''} completado{total !== 1 ? 's' : ''}
+      </p>
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p style={{ fontSize: 12, color: '#ef4444', margin: 0 }}>{error}</p>}
 
       {loading ? (
-        <div className="flex justify-center py-8">
-          <div className="w-5 h-5 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin" />
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '32px 0' }}>
+          <span style={{ fontSize: 22, color: '#aaa', animation: 'spin 1s linear infinite' }}>↻</span>
+          <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
         </div>
       ) : orders.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">
-          <Package className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">Sin pedidos en el historial</p>
+        <div style={{ textAlign: 'center', padding: '48px 0', color: '#aaa' }}>
+          <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.3 }}>◫</div>
+          <p style={{ fontSize: 13, margin: 0 }}>Sin pedidos en el historial</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {orders.map(order => (
-            <div key={order.id} className="border border-gray-100 rounded-2xl bg-white p-3 space-y-2.5">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-bold text-gray-900">#{order.numero}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 flex items-center gap-1">
+            <div
+              key={order.id}
+              style={{
+                border: '1px solid #E5E5E5', borderRadius: 14,
+                background: '#fff', padding: '12px',
+                display: 'flex', flexDirection: 'column', gap: 10,
+              }}
+            >
+              {/* Header row */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#111' }}>#{order.numero}</span>
+                  <span style={{
+                    fontSize: 10, padding: '2px 8px', borderRadius: 99,
+                    background: '#f3f3f3', color: '#555',
+                    display: 'flex', alignItems: 'center', gap: 4,
+                  }}>
                     <CanalIcon canal={order.canal} />
                     {CANAL_LABELS[order.canal] ?? order.canal}
                     {order.mesa ? ` · Mesa ${order.mesa}` : ''}
                   </span>
                   {order.cancelado
-                    ? <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-600">Cancelado</span>
-                    : <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-[#06C167]">Entregado</span>}
+                    ? <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: '#fee2e2', color: '#dc2626' }}>Cancelado</span>
+                    : <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 99, background: '#d1fae5', color: '#059669' }}>Entregado</span>
+                  }
                 </div>
-                <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                <span style={{ fontSize: 10, color: '#aaa', whiteSpace: 'nowrap', flexShrink: 0 }}>
                   {new Date(order.createdAt).toLocaleDateString('es', { day: '2-digit', month: 'short' })}
                   {' '}
                   {new Date(order.createdAt).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
 
+              {/* Customer info */}
               {(order.nombreCliente || order.telefono || order.email || order.direccion) && (
-                <div className="bg-gray-50 rounded-xl px-3 py-2 space-y-1">
-                  {order.nombreCliente && <p className="text-xs font-semibold text-gray-900">{order.nombreCliente}</p>}
-                  <div className="flex flex-wrap gap-x-4 gap-y-0.5">
+                <div style={{
+                  background: '#f9f9f9', borderRadius: 10,
+                  padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 4,
+                }}>
+                  {order.nombreCliente && (
+                    <p style={{ fontSize: 12, fontWeight: 600, color: '#111', margin: 0 }}>{order.nombreCliente}</p>
+                  )}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 16px' }}>
                     {order.telefono && (
-                      <a href={`tel:${order.telefono}`} className="flex items-center gap-1 text-[11px] text-gray-500 hover:text-gray-900">
-                        <Phone className="h-3 w-3" />{order.telefono}
+                      <a href={`tel:${order.telefono}`} style={{ fontSize: 11, color: '#666', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        ☎ {order.telefono}
                       </a>
                     )}
                     {order.email && (
-                      <a href={`mailto:${order.email}`} className="flex items-center gap-1 text-[11px] text-gray-500 hover:text-gray-900">
-                        <Mail className="h-3 w-3" />{order.email}
+                      <a href={`mailto:${order.email}`} style={{ fontSize: 11, color: '#666', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        @ {order.email}
                       </a>
                     )}
                     {order.direccion && (
-                      <span className="flex items-center gap-1 text-[11px] text-gray-500">
-                        <MapPin className="h-3 w-3" />{order.direccion}{order.zonaReparto ? ` · ${order.zonaReparto}` : ''}
+                      <span style={{ fontSize: 11, color: '#666', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        ◎ {order.direccion}{order.zonaReparto ? ` · ${order.zonaReparto}` : ''}
                       </span>
                     )}
                   </div>
                 </div>
               )}
 
-              <div className="space-y-0.5">
+              {/* Items */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {order.items.map((item, i) => (
-                  <div key={i} className="flex justify-between text-[11px]">
-                    <span className="text-gray-900">
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+                    <span style={{ color: '#111' }}>
                       {item.cantidad}× {item.menuItem?.nombre ?? '?'}
                       {item.extras && item.extras.length > 0 && (
-                        <span className="text-gray-400"> · {item.extras.map((e: { nombre: string }) => e.nombre).join(', ')}</span>
+                        <span style={{ color: '#aaa' }}> · {item.extras.map((e: { nombre: string }) => e.nombre).join(', ')}</span>
                       )}
                     </span>
                   </div>
                 ))}
               </div>
 
+              {/* Notes */}
               {order.notas && (
-                <div className="flex items-start gap-1.5 text-[11px] text-gray-400">
-                  <MessageSquare className="h-3 w-3 mt-0.5 shrink-0" />
-                  <span className="italic">{order.notas}</span>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 11, color: '#aaa' }}>
+                  <span style={{ flexShrink: 0, marginTop: 1 }}>≡</span>
+                  <span style={{ fontStyle: 'italic' }}>{order.notas}</span>
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-1 border-t border-gray-100">
-                <div className="text-[11px] text-gray-400">
+              {/* Footer */}
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                paddingTop: 8, borderTop: '1px solid #f0f0f0',
+              }}>
+                <div style={{ fontSize: 11, color: '#aaa' }}>
                   {order.paymentMethod && PAYMENT_LABELS[order.paymentMethod]
                     ? PAYMENT_LABELS[order.paymentMethod]
                     : order.paymentMethod ?? '—'}
-                  {order.cancelMotivo && <span className="ml-2 text-red-500">· {order.cancelMotivo}</span>}
+                  {order.cancelMotivo && <span style={{ marginLeft: 8, color: '#ef4444' }}>· {order.cancelMotivo}</span>}
                 </div>
-                <span className="text-sm font-bold text-gray-900">{formatPrice(order.total)}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#111' }}>{formatPrice(order.total)}</span>
               </div>
             </div>
           ))}
         </div>
       )}
 
+      {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-2">
-          <button disabled={page <= 1} onClick={() => goPage(page - 1)} className="w-7 h-7 flex items-center justify-center rounded-xl border border-gray-200 disabled:opacity-30 hover:bg-gray-50">
-            <ChevronLeft className="h-3.5 w-3.5" />
-          </button>
-          <span className="text-xs text-gray-400">Página {page} de {totalPages}</span>
-          <button disabled={page >= totalPages} onClick={() => goPage(page + 1)} className="w-7 h-7 flex items-center justify-center rounded-xl border border-gray-200 disabled:opacity-30 hover:bg-gray-50">
-            <ChevronRight className="h-3.5 w-3.5" />
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, paddingTop: 8 }}>
+          <button
+            disabled={page <= 1}
+            onClick={() => goPage(page - 1)}
+            style={{
+              width: 30, height: 30, borderRadius: 10,
+              border: '1px solid #E5E5E5', background: '#fff',
+              cursor: page <= 1 ? 'not-allowed' : 'pointer',
+              opacity: page <= 1 ? 0.3 : 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 14, color: '#444',
+            }}
+          >←</button>
+          <span style={{ fontSize: 12, color: '#aaa' }}>Página {page} de {totalPages}</span>
+          <button
+            disabled={page >= totalPages}
+            onClick={() => goPage(page + 1)}
+            style={{
+              width: 30, height: 30, borderRadius: 10,
+              border: '1px solid #E5E5E5', background: '#fff',
+              cursor: page >= totalPages ? 'not-allowed' : 'pointer',
+              opacity: page >= totalPages ? 0.3 : 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 14, color: '#444',
+            }}
+          >→</button>
         </div>
       )}
     </div>

@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { RotateCcw, Search, Calendar, DollarSign, Package, User } from 'lucide-react'
 import { useApp } from '@/lib/context'
-import { Input } from '@/components/ui/input'
 import { RefundDialog } from '@/components/shared/refund-dialog'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MINT = '#BEEBBE'
+const MINT_DEEP = '#0a3a0a'
 
 export function RefundsManager() {
   const { refunds, orders, users, currentUser } = useApp()
@@ -41,21 +43,39 @@ export function RefundsManager() {
 
   const selectedOrder = selectedOrderForRefund ? orders.find(o => o.id === selectedOrderForRefund) : null
 
+  const card: React.CSSProperties = {
+    border: '1px solid #E5E5E5',
+    borderRadius: 14,
+    background: '#fff',
+    overflow: 'hidden',
+  }
+
+  const statIconStyle = (bg: string): React.CSSProperties => ({
+    padding: '6px',
+    borderRadius: 10,
+    background: bg,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 14,
+    flexShrink: 0,
+  })
+
   return (
-    <div className="space-y-4" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+    <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
         {[
-          { icon: <RotateCcw className="h-4 w-4 text-amber-600" />, bg: 'bg-amber-100', label: 'Total Reembolsos', value: String(refunds.length) },
-          { icon: <DollarSign className="h-4 w-4 text-red-600" />, bg: 'bg-red-100', label: 'Monto Total', value: formatPrice(totalRefunded) },
-          { icon: <Calendar className="h-4 w-4 text-blue-600" />, bg: 'bg-blue-100', label: 'Hoy', value: formatPrice(refundedToday) },
+          { icon: '↺', iconColor: '#d97706', bg: '#fef3c7', label: 'Total Reembolsos', value: String(refunds.length) },
+          { icon: '$', iconColor: '#dc2626', bg: '#fee2e2', label: 'Monto Total', value: formatPrice(totalRefunded) },
+          { icon: '◎', iconColor: '#2563eb', bg: '#dbeafe', label: 'Hoy', value: formatPrice(refundedToday) },
         ].map(stat => (
-          <div key={stat.label} className={`border border-gray-100 rounded-2xl bg-white p-3 ${stat.label === 'Hoy' ? 'col-span-2 sm:col-span-1' : ''}`}>
-            <div className="flex items-center gap-2">
-              <div className={`p-1.5 ${stat.bg} rounded-xl shrink-0`}>{stat.icon}</div>
-              <div className="min-w-0">
-                <p className="text-[10px] text-gray-400 truncate">{stat.label}</p>
-                <p className="text-base font-bold text-gray-900">{stat.value}</p>
+          <div key={stat.label} style={{ ...card, padding: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ ...statIconStyle(stat.bg), color: stat.iconColor }}>{stat.icon}</div>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ fontFamily: FONT, fontSize: 10, color: '#9ca3af', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{stat.label}</p>
+                <p style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: '#111', margin: 0 }}>{stat.value}</p>
               </div>
             </div>
           </div>
@@ -63,29 +83,39 @@ export function RefundsManager() {
       </div>
 
       {!canProcessRefund && (
-        <div className="border border-amber-200 bg-amber-50 rounded-2xl p-3">
-          <p className="text-xs text-amber-700 font-medium">Solo el administrador puede procesar reembolsos.</p>
+        <div style={{ border: '1px solid #fcd34d', background: '#fffbeb', borderRadius: 14, padding: 12 }}>
+          <p style={{ fontFamily: FONT, fontSize: 12, color: '#b45309', fontWeight: 500, margin: 0 }}>Solo el administrador puede procesar reembolsos.</p>
         </div>
       )}
 
       {refundableOrders.length > 0 && canProcessRefund && (
-        <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <p className="text-xs font-black text-gray-900">Procesar Nuevo Reembolso</p>
+        <div style={card}>
+          <div style={{ padding: '10px 16px', borderBottom: '1px solid #E5E5E5' }}>
+            <p style={{ fontFamily: FONT, fontSize: 12, fontWeight: 900, color: '#111', margin: 0 }}>Procesar Nuevo Reembolso</p>
           </div>
-          <div className="px-4 py-3">
-            <div className="flex flex-wrap gap-2">
+          <div style={{ padding: '12px 16px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {refundableOrders.slice(0, 10).map(order => (
                 <button
                   key={order.id}
                   onClick={() => setSelectedOrderForRefund(order.id)}
-                  className="h-8 px-3 rounded-xl border border-gray-200 text-gray-700 text-xs hover:bg-gray-50"
+                  style={{
+                    height: 32,
+                    padding: '0 12px',
+                    borderRadius: 10,
+                    border: '1px solid #E5E5E5',
+                    background: '#fff',
+                    color: '#374151',
+                    fontFamily: FONT,
+                    fontSize: 12,
+                    cursor: 'pointer',
+                  }}
                 >
                   #{order.numero}
                 </button>
               ))}
               {refundableOrders.length > 10 && (
-                <span className="text-sm text-gray-400 self-center">+{refundableOrders.length - 10} más</span>
+                <span style={{ fontFamily: FONT, fontSize: 12, color: '#9ca3af', alignSelf: 'center' }}>+{refundableOrders.length - 10} más</span>
               )}
             </div>
           </div>
@@ -93,57 +123,76 @@ export function RefundsManager() {
       )}
 
       {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-        <Input placeholder="Buscar por número de pedido o motivo..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9" />
+      <div style={{ position: 'relative' }}>
+        <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 14, color: '#9ca3af', pointerEvents: 'none' }}>⊞</span>
+        <input
+          placeholder="Buscar por número de pedido o motivo..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            fontFamily: FONT,
+            fontSize: 13,
+            height: 38,
+            border: '1px solid #E5E5E5',
+            borderRadius: 10,
+            padding: '0 10px 0 32px',
+            outline: 'none',
+            width: '100%',
+            boxSizing: 'border-box',
+            background: '#fff',
+          }}
+        />
       </div>
 
       {/* Table */}
-      <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
+      <div style={card}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left px-4 py-3 font-semibold text-gray-500">Pedido</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-500">Tipo</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-500">Monto</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-500">Motivo</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-500">Procesado por</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-500">Fecha</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-500">Inventario</th>
+              <tr style={{ borderBottom: '1px solid #E5E5E5' }}>
+                {['Pedido', 'Tipo', 'Monto', 'Motivo', 'Procesado por', 'Fecha', 'Inventario'].map(h => (
+                  <th key={h} style={{ textAlign: 'left', padding: '10px 16px', fontFamily: FONT, fontWeight: 600, color: '#9ca3af', whiteSpace: 'nowrap' }}>{h}</th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody>
               {sortedRefunds.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-8 text-gray-400">No hay reembolsos registrados</td>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '32px 0', fontFamily: FONT, color: '#9ca3af' }}>Ø No hay reembolsos registrados</td>
                 </tr>
               ) : (
                 sortedRefunds.map(refund => (
-                  <tr key={refund.id}>
-                    <td className="px-4 py-3 font-medium text-gray-900">#{getOrderNumber(refund.orderId)}</td>
-                    <td className="px-4 py-3">
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${refund.tipo === 'total' ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'}`}>
+                  <tr key={refund.id} style={{ borderBottom: '1px solid #f9fafb' }}>
+                    <td style={{ padding: '10px 16px', fontFamily: FONT, fontWeight: 500, color: '#111' }}>#{getOrderNumber(refund.orderId)}</td>
+                    <td style={{ padding: '10px 16px' }}>
+                      <span style={{
+                        fontSize: 10,
+                        fontWeight: 600,
+                        padding: '2px 8px',
+                        borderRadius: 20,
+                        background: refund.tipo === 'total' ? '#fee2e2' : '#f3f4f6',
+                        color: refund.tipo === 'total' ? '#dc2626' : '#6b7280',
+                      }}>
                         {refund.tipo === 'total' ? 'Total' : 'Parcial'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-medium text-red-600">-{formatPrice(refund.monto)}</td>
-                    <td className="px-4 py-3 max-w-[200px]">
-                      <p className="truncate text-gray-700" title={refund.motivo}>{refund.motivo}</p>
+                    <td style={{ padding: '10px 16px', fontFamily: FONT, fontWeight: 500, color: '#dc2626' }}>-{formatPrice(refund.monto)}</td>
+                    <td style={{ padding: '10px 16px', maxWidth: 200 }}>
+                      <p style={{ fontFamily: FONT, color: '#374151', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={refund.motivo}>{refund.motivo}</p>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1 text-gray-700">
-                        <User className="h-3 w-3 text-gray-400" />{getUserName(refund.userId)}
+                    <td style={{ padding: '10px 16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontFamily: FONT, color: '#374151' }}>
+                        <span style={{ color: '#9ca3af' }}>◉</span>{getUserName(refund.userId)}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-400">{formatDate(refund.createdAt)}</td>
-                    <td className="px-4 py-3">
+                    <td style={{ padding: '10px 16px', fontFamily: FONT, color: '#9ca3af' }}>{formatDate(refund.createdAt)}</td>
+                    <td style={{ padding: '10px 16px' }}>
                       {refund.inventarioRevertido ? (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full border border-emerald-200 text-[#06C167] flex items-center gap-1 w-fit">
-                          <Package className="h-3 w-3" />Revertido
+                        <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, border: `1px solid ${MINT}`, color: MINT_DEEP, display: 'flex', alignItems: 'center', gap: 4, width: 'fit-content', background: MINT + '44' }}>
+                          ◈ Revertido
                         </span>
                       ) : (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full border border-amber-200 text-amber-600">Pendiente</span>
+                        <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 20, border: '1px solid #fcd34d', color: '#d97706' }}>Pendiente</span>
                       )}
                     </td>
                   </tr>

@@ -1,20 +1,12 @@
 'use client'
 
 import { useRef, useCallback } from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Printer } from 'lucide-react'
 import { type Order, type TableSession } from '@/lib/store'
 import { KitchenTicket } from './kitchen-ticket'
 import { CustomerReceipt } from './customer-receipt'
 import { useApp } from '@/lib/context'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
 
 interface PrintDialogProps {
   open: boolean
@@ -28,13 +20,13 @@ interface PrintDialogProps {
 export function PrintDialog({ open, onOpenChange, type, order, session, kitchen = 'all' }: PrintDialogProps) {
   const { config } = useApp()
   const printRef = useRef<HTMLDivElement>(null)
-  
+
   const handlePrint = useCallback(() => {
     if (!printRef.current) return
-    
+
     const printContents = printRef.current.innerHTML
     const printWindow = window.open('', '_blank', 'width=400,height=600')
-    
+
     if (printWindow) {
       printWindow.document.write(`
         <!DOCTYPE html>
@@ -78,21 +70,56 @@ export function PrintDialog({ open, onOpenChange, type, order, session, kitchen 
       }, 250)
     }
   }, [type, order, session])
-  
+
+  if (!open) return null
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>
+    <div
+      onClick={() => onOpenChange(false)}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 50,
+        background: 'rgba(0,0,0,0.45)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 16,
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: '#fff',
+          borderRadius: 16,
+          width: '100%',
+          maxWidth: 480,
+          boxShadow: '0 24px 64px rgba(0,0,0,0.18)',
+          fontFamily: FONT,
+          overflow: 'hidden',
+        }}
+      >
+        {/* Header */}
+        <div style={{ padding: '20px 24px 0' }}>
+          <h2 style={{
+            fontSize: 17, fontWeight: 700, color: '#000',
+            letterSpacing: '-0.02em', margin: 0,
+          }}>
             {type === 'kitchen' ? 'Comanda de Cocina' : 'Recibo del Cliente'}
-          </DialogTitle>
-          <DialogDescription>
+          </h2>
+          <p style={{ fontSize: 13, color: 'rgba(0,0,0,0.45)', marginTop: 4 }}>
             Vista previa del ticket. Haz clic en imprimir para enviar a la impresora.
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="flex justify-center py-4 bg-gray-100 rounded-lg max-h-[60vh] overflow-y-auto">
-          <div className="transform scale-90 origin-top">
+          </p>
+        </div>
+
+        {/* Ticket preview */}
+        <div style={{
+          margin: '16px 24px',
+          background: '#F5F5F5',
+          borderRadius: 10,
+          maxHeight: '60vh',
+          overflowY: 'auto',
+          display: 'flex',
+          justifyContent: 'center',
+          padding: '16px 0',
+        }}>
+          <div style={{ transform: 'scale(0.9)', transformOrigin: 'top center' }}>
             {type === 'kitchen' && order && (
               <KitchenTicket ref={printRef} order={order} />
             )}
@@ -108,17 +135,40 @@ export function PrintDialog({ open, onOpenChange, type, order, session, kitchen 
             )}
           </div>
         </div>
-        
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+
+        {/* Footer buttons */}
+        <div style={{
+          display: 'flex', gap: 10, padding: '0 24px 20px',
+          justifyContent: 'flex-end',
+        }}>
+          <button
+            onClick={() => onOpenChange(false)}
+            style={{
+              height: 40, padding: '0 18px',
+              background: '#fff', color: '#000',
+              border: '1px solid #E5E5E5', borderRadius: 10,
+              fontSize: 14, fontWeight: 600, fontFamily: FONT,
+              cursor: 'pointer',
+            }}
+          >
             Cerrar
-          </Button>
-          <Button onClick={handlePrint} className="gap-2">
-            <Printer className="h-4 w-4" />
+          </button>
+          <button
+            onClick={handlePrint}
+            style={{
+              height: 40, padding: '0 18px',
+              background: '#000', color: '#fff',
+              border: '1px solid #000', borderRadius: 10,
+              fontSize: 14, fontWeight: 600, fontFamily: FONT,
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}
+          >
+            <span style={{ fontSize: 16 }}>⎙</span>
             Imprimir
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }

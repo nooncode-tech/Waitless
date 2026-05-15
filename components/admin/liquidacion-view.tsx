@@ -1,11 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import {
-  Banknote, CalendarDays, CheckCircle2, Clock, XCircle,
-  Loader2, AlertCircle, RefreshCcw, ChevronDown, TrendingDown,
-} from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
 
 interface Liquidacion {
   id: string
@@ -22,12 +21,6 @@ interface Liquidacion {
   processed_at: string | null
 }
 
-const STATUS_META = {
-  pendiente: { label: 'Pendiente',  color: 'text-amber-600',  bg: 'bg-amber-50',   icon: <Clock className="h-4 w-4" /> },
-  procesada: { label: 'Procesada',  color: 'text-[#06C167]',  bg: 'bg-emerald-50', icon: <CheckCircle2 className="h-4 w-4" /> },
-  fallida:   { label: 'Fallida',    color: 'text-red-600',    bg: 'bg-red-50',     icon: <XCircle className="h-4 w-4" /> },
-}
-
 function cents(n: number) {
   return `$${(n / 100).toLocaleString('es', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
@@ -40,13 +33,19 @@ function getPrevWeek(): { periodStart: string; periodEnd: string } {
   const dow = now.getUTCDay() === 0 ? 7 : now.getUTCDay()
   const monday = new Date(now)
   monday.setUTCDate(now.getUTCDate() - dow + 1)
-  monday.setUTCHours(0,0,0,0)
+  monday.setUTCHours(0, 0, 0, 0)
   const prevMon = new Date(monday); prevMon.setUTCDate(monday.getUTCDate() - 7)
   const prevSun = new Date(monday); prevSun.setUTCDate(monday.getUTCDate() - 1)
   return {
     periodStart: prevMon.toISOString().split('T')[0],
     periodEnd:   prevSun.toISOString().split('T')[0],
   }
+}
+
+const STATUS_COLORS: Record<string, { bg: string; color: string; label: string }> = {
+  pendiente: { bg: '#FEF3C7', color: '#92400E', label: 'Pendiente' },
+  procesada: { bg: '#BEEBBE', color: '#0a3a0a', label: 'Procesada' },
+  fallida:   { bg: '#FEE2E2', color: '#991B1B', label: 'Fallida' },
 }
 
 export function LiquidacionView() {
@@ -61,9 +60,7 @@ export function LiquidacionView() {
   const { periodStart, periodEnd } = getPrevWeek()
 
   const fetchLiquidaciones = useCallback(async (tok: string) => {
-    const res = await fetch('/api/admin/liquidacion', {
-      headers: { Authorization: `Bearer ${tok}` },
-    })
+    const res = await fetch('/api/admin/liquidacion', { headers: { Authorization: `Bearer ${tok}` } })
     if (res.ok) {
       const data = await res.json()
       setLiquidaciones(data.liquidaciones ?? [])
@@ -81,17 +78,13 @@ export function LiquidacionView() {
 
   const handleGenerate = async () => {
     if (!token || generating) return
-    setGenerating(true)
-    setGenError('')
-    setGenSuccess(false)
-
+    setGenerating(true); setGenError(''); setGenSuccess(false)
     const res = await fetch('/api/admin/liquidacion/generate', {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ periodStart, periodEnd }),
     })
     const data = await res.json()
-
     if (res.ok) {
       setGenSuccess(true)
       fetchLiquidaciones(token)
@@ -104,146 +97,130 @@ export function LiquidacionView() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-gray-300" />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 0', fontFamily: FONT }}>
+        <span style={{ fontSize: 24, color: '#CCC' }}>↻</span>
       </div>
     )
   }
 
-  const totalBruto   = liquidaciones.filter(l => l.status === 'procesada').reduce((s, l) => s + l.bruto_cents, 0)
-  const totalNeto    = liquidaciones.filter(l => l.status === 'procesada').reduce((s, l) => s + l.neto_cents, 0)
+  const totalBruto    = liquidaciones.filter(l => l.status === 'procesada').reduce((s, l) => s + l.bruto_cents, 0)
+  const totalNeto     = liquidaciones.filter(l => l.status === 'procesada').reduce((s, l) => s + l.neto_cents, 0)
   const totalComision = liquidaciones.filter(l => l.status === 'procesada').reduce((s, l) => s + l.comision_waitless_cents, 0)
 
   return (
-    <div className="p-6 max-w-3xl space-y-6">
-      <div className="flex items-center justify-between">
+    <div style={{ padding: 24, maxWidth: 720, fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Liquidaciones semanales</h2>
-          <p className="text-sm text-gray-500 mt-0.5">Historial de transferencias de Waitless a tu cuenta bancaria.</p>
+          <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Liquidaciones semanales</h2>
+          <p style={{ fontSize: 13, color: '#666', marginTop: 4 }}>Historial de transferencias de Waitless a tu cuenta bancaria.</p>
         </div>
         <button
           onClick={() => token && fetchLiquidaciones(token)}
-          className="text-gray-400 hover:text-gray-700 transition-colors"
-        >
-          <RefreshCcw className="h-4 w-4" />
-        </button>
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: '#999', padding: 4 }}
+          title="Actualizar"
+        >↻</button>
       </div>
 
-      {/* Summary cards */}
+      {/* Summary */}
       {liquidaciones.length > 0 && (
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-white rounded-2xl border border-gray-200 p-4 text-center">
-            <p className="text-xl font-black text-gray-900">{cents(totalBruto)}</p>
-            <p className="text-xs text-gray-400 mt-0.5">Bruto total</p>
-          </div>
-          <div className="bg-white rounded-2xl border border-gray-200 p-4 text-center">
-            <p className="text-xl font-black text-red-500">-{cents(totalComision)}</p>
-            <p className="text-xs text-gray-400 mt-0.5">Comisión Waitless</p>
-          </div>
-          <div className="bg-emerald-50 rounded-2xl border border-emerald-200 p-4 text-center">
-            <p className="text-xl font-black text-[#06C167]">{cents(totalNeto)}</p>
-            <p className="text-xs text-[#06C167] mt-0.5 font-medium">Neto recibido</p>
-          </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+          {[
+            { label: 'Bruto total',       value: cents(totalBruto),    accent: false },
+            { label: 'Comisión Waitless', value: `-${cents(totalComision)}`, accent: false, red: true },
+            { label: 'Neto recibido',     value: cents(totalNeto),     accent: true },
+          ].map(({ label, value, accent, red }) => (
+            <div key={label} style={{ background: accent ? '#F0FFF0' : '#fff', border: `1px solid ${accent ? '#BEEBBE' : '#E5E5E5'}`, borderRadius: 14, padding: 16, textAlign: 'center' }}>
+              <p style={{ fontSize: 18, fontWeight: 700, margin: 0, fontFamily: MONO, color: accent ? '#0a3a0a' : red ? '#DC2626' : '#000' }}>{value}</p>
+              <p style={{ fontSize: 11, color: '#666', marginTop: 4 }}>{label}</p>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Generate for prev week */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-3">
-        <div className="flex items-center gap-2">
-          <CalendarDays className="h-4 w-4 text-gray-500" />
-          <p className="font-bold text-gray-900 text-sm">Semana anterior</p>
-          <span className="text-xs text-gray-400 ml-auto">{fmtDate(periodStart)} — {fmtDate(periodEnd)}</span>
+      {/* Generate */}
+      <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <p style={{ fontWeight: 700, fontSize: 14, margin: 0 }}>Semana anterior</p>
+          <span style={{ fontSize: 12, color: '#999', fontFamily: MONO }}>{fmtDate(periodStart)} — {fmtDate(periodEnd)}</span>
         </div>
-
         {genError && (
-          <div className="flex items-center gap-2 text-red-600 text-xs bg-red-50 rounded-xl px-3 py-2.5">
-            <AlertCircle className="h-3.5 w-3.5 shrink-0" />{genError}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#991B1B', background: '#FEE2E2', borderRadius: 10, padding: '8px 12px' }}>
+            ⚠ {genError}
           </div>
         )}
         {genSuccess && (
-          <div className="flex items-center gap-2 text-emerald-700 text-xs bg-emerald-50 rounded-xl px-3 py-2.5">
-            <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />Liquidación generada correctamente
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#0a3a0a', background: '#BEEBBE', borderRadius: 10, padding: '8px 12px' }}>
+            ✓ Liquidación generada correctamente
           </div>
         )}
-
         <button
           onClick={handleGenerate}
           disabled={generating}
-          className="w-full h-11 bg-gray-900 hover:bg-black text-white font-bold text-sm rounded-xl disabled:opacity-60 transition-colors flex items-center justify-center gap-2"
+          style={{ width: '100%', height: 44, background: generating ? '#CCC' : '#000', color: '#fff', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: generating ? 'default' : 'pointer', fontFamily: FONT }}
         >
-          {generating
-            ? <Loader2 className="h-4 w-4 animate-spin" />
-            : <><Banknote className="h-4 w-4" />Generar liquidación</>
-          }
+          {generating ? '↻ Generando...' : '$ Generar liquidación'}
         </button>
-        <p className="text-xs text-gray-400 text-center">
+        <p style={{ fontSize: 11, color: '#999', textAlign: 'center', margin: 0 }}>
           Las liquidaciones automáticas se generan cada lunes a las 3am UTC.
         </p>
       </div>
 
-      {/* Liquidaciones list */}
+      {/* List */}
       {liquidaciones.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-dashed border-gray-200 py-14 text-center">
-          <TrendingDown className="h-10 w-10 text-gray-200 mx-auto mb-3" />
-          <p className="text-sm font-medium text-gray-400">Aún no hay liquidaciones</p>
-          <p className="text-xs text-gray-300 mt-1">Aparecerán aquí una vez que generes la primera.</p>
+        <div style={{ border: '1px dashed #E5E5E5', borderRadius: 16, padding: '56px 20px', textAlign: 'center' }}>
+          <p style={{ fontSize: 32, margin: '0 0 8px' }}>Ø</p>
+          <p style={{ fontSize: 14, fontWeight: 600, color: '#666', margin: 0 }}>Aún no hay liquidaciones</p>
+          <p style={{ fontSize: 12, color: '#999', marginTop: 6 }}>Aparecerán aquí una vez que generes la primera.</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {liquidaciones.map(liq => {
-            const meta = STATUS_META[liq.status]
+            const meta = STATUS_COLORS[liq.status] ?? STATUS_COLORS.pendiente
             const isOpen = expanded === liq.id
             return (
-              <div key={liq.id} className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+              <div key={liq.id} style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 14, overflow: 'hidden' }}>
                 <button
-                  className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-gray-50 transition-colors"
                   onClick={() => setExpanded(isOpen ? null : liq.id)}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: FONT }}
                 >
-                  <div className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${meta.bg} ${meta.color}`}>
-                    {meta.icon}
-                    {meta.label}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">
+                  <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: meta.bg, color: meta.color, flexShrink: 0 }}>{meta.label}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {fmtDate(liq.period_start)} — {fmtDate(liq.period_end)}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p style={{ fontSize: 11, color: '#999', margin: '2px 0 0' }}>
                       {liq.transaction_count} transacción{liq.transaction_count !== 1 ? 'es' : ''}
                     </p>
                   </div>
-                  <span className="text-sm font-bold text-[#06C167] shrink-0">{cents(liq.neto_cents)}</span>
-                  <ChevronDown className={`h-4 w-4 text-gray-400 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#0a3a0a', fontFamily: MONO, flexShrink: 0 }}>{cents(liq.neto_cents)}</span>
+                  <span style={{ fontSize: 14, color: '#999', transition: 'transform 0.2s', display: 'inline-block', transform: isOpen ? 'rotate(180deg)' : 'none' }}>▾</span>
                 </button>
 
                 {isOpen && (
-                  <div className="px-5 pb-4 border-t border-gray-50 space-y-3 pt-4">
-                    <div className="grid grid-cols-3 gap-3 text-center">
-                      <div>
-                        <p className="text-xs text-gray-400">Bruto</p>
-                        <p className="text-sm font-bold text-gray-900">{cents(liq.bruto_cents)}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Comisión (5%)</p>
-                        <p className="text-sm font-bold text-red-500">-{cents(liq.comision_waitless_cents)}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-400">Neto transferido</p>
-                        <p className="text-sm font-bold text-[#06C167]">{cents(liq.neto_cents)}</p>
-                      </div>
+                  <div style={{ borderTop: '1px solid #F5F5F5', padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, textAlign: 'center' }}>
+                      {[
+                        { label: 'Bruto', value: cents(liq.bruto_cents), color: '#000' },
+                        { label: 'Comisión (5%)', value: `-${cents(liq.comision_waitless_cents)}`, color: '#DC2626' },
+                        { label: 'Neto transferido', value: cents(liq.neto_cents), color: '#0a3a0a' },
+                      ].map(({ label, value, color }) => (
+                        <div key={label}>
+                          <p style={{ fontSize: 11, color: '#999', margin: 0 }}>{label}</p>
+                          <p style={{ fontSize: 13, fontWeight: 700, color, margin: '2px 0 0', fontFamily: MONO }}>{value}</p>
+                        </div>
+                      ))}
                     </div>
                     {liq.stripe_transfer_id && (
-                      <p className="text-[11px] text-gray-400 font-mono">Transfer: {liq.stripe_transfer_id}</p>
+                      <p style={{ fontSize: 10, color: '#999', fontFamily: MONO, margin: 0 }}>Transfer: {liq.stripe_transfer_id}</p>
                     )}
                     {liq.error_message && (
-                      <div className="flex items-start gap-2 text-xs text-red-600 bg-red-50 rounded-xl px-3 py-2">
-                        <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-                        {liq.error_message}
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: '#991B1B', background: '#FEE2E2', borderRadius: 10, padding: '8px 12px' }}>
+                        ⚠ {liq.error_message}
                       </div>
                     )}
                     {liq.processed_at && (
-                      <p className="text-[11px] text-gray-400">
-                        Procesada: {new Date(liq.processed_at).toLocaleString('es')}
-                      </p>
+                      <p style={{ fontSize: 11, color: '#999', margin: 0 }}>Procesada: {new Date(liq.processed_at).toLocaleString('es')}</p>
                     )}
                   </div>
                 )}

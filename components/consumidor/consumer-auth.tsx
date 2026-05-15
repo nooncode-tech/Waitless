@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { GoogleAuthButton } from '@/components/ui/google-auth-button'
 import '@/app/consumidor/auth.css'
@@ -212,9 +211,7 @@ export function ConsumerAuth() {
                 className="ath-eye-btn"
                 onClick={() => setShowPassword(s => !s)}
               >
-                {showPassword
-                  ? <EyeOff style={{ width: 16, height: 16 }} />
-                  : <Eye style={{ width: 16, height: 16 }} />}
+                {showPassword ? '○' : '●'}
               </button>
             </div>
             {mode === 'register' && form.password.length > 0 && (
@@ -248,7 +245,7 @@ export function ConsumerAuth() {
           {/* Error */}
           {error && (
             <div className="ath-error">
-              <AlertCircle style={{ width: 16, height: 16, flexShrink: 0 }} />
+              <span style={{ flexShrink: 0 }}>⚠</span>
               {error}
             </div>
           )}

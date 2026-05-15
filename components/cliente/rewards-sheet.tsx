@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Gift, Instagram, Star, Users, Cake, Check, ExternalLink } from 'lucide-react'
 import { useApp } from '@/lib/context'
-import { Button } from '@/components/ui/button'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MINT = '#BEEBBE'
+const MINT_DEEP = '#0a3a0a'
 
 interface RewardsSheetProps {
   sessionId: string
@@ -14,57 +16,67 @@ export function RewardsSheet({ sessionId, onClose }: RewardsSheetProps) {
   const { rewards, applyReward, getAvailableRewards, appliedRewards } = useApp()
   const [appliedId, setAppliedId] = useState<string | null>(null)
   const [isApplying, setIsApplying] = useState(false)
-  
+
   const availableRewards = getAvailableRewards(sessionId)
   const sessionApplied = appliedRewards.filter(ar => ar.sessionId === sessionId)
-  
-  const getRewardIcon = (accion: string) => {
+
+  const getRewardSymbol = (accion: string) => {
     switch (accion) {
-      case 'seguir_instagram': return Instagram
-      case 'primera_visita': return Star
-      case 'referido': return Users
-      case 'cumpleanos': return Cake
-      default: return Gift
+      case 'seguir_instagram': return '◈'
+      case 'primera_visita': return '★'
+      case 'referido': return '⊞'
+      case 'cumpleanos': return '◫'
+      default: return '◈'
     }
   }
-  
+
   const handleApplyReward = async (rewardId: string, accion: string) => {
     setIsApplying(true)
-    
-    // For Instagram follow, simulate opening Instagram
     if (accion === 'seguir_instagram') {
-      // In production, would verify follow via API
       window.open('https://instagram.com', '_blank')
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
-    
     const success = applyReward(sessionId, rewardId)
-    
     if (success) {
       setAppliedId(rewardId)
       setTimeout(onClose, 1500)
     }
-    
     setIsApplying(false)
   }
-  
-  const isAlreadyApplied = (rewardId: string) => {
-    return sessionApplied.some(ar => ar.rewardId === rewardId)
+
+  const isAlreadyApplied = (rewardId: string) =>
+    sessionApplied.some(ar => ar.rewardId === rewardId)
+
+  const overlayStyle: React.CSSProperties = {
+    position: 'fixed', inset: 0, zIndex: 50,
+    display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
   }
-  
+
+  const sheetStyle: React.CSSProperties = {
+    position: 'relative', background: '#fff',
+    width: '100%', maxWidth: 480,
+    borderRadius: '24px 24px 0 0',
+    fontFamily: FONT,
+    paddingBottom: 'env(safe-area-inset-bottom)',
+  }
+
   if (appliedId) {
     return (
-      <div className="fixed inset-0 z-50 flex items-end justify-center">
-        <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-        <div className="relative bg-background w-full max-w-md rounded-t-2xl p-6 animate-in slide-in-from-bottom">
-          <div className="text-center py-8">
-            <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check className="h-8 w-8 text-success" />
+      <div style={overlayStyle}>
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} onClick={onClose} />
+        <div style={sheetStyle}>
+          <div style={{ textAlign: 'center', padding: '48px 24px' }}>
+            <div style={{
+              width: 64, height: 64, background: MINT, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 16px',
+            }}>
+              <span style={{ fontSize: 32, color: MINT_DEEP }}>✓</span>
             </div>
-            <h2 className="text-lg font-semibold text-foreground mb-2">
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#000', margin: '0 0 6px' }}>
               Descuento aplicado
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p style={{ fontSize: 14, color: '#888', margin: 0 }}>
               Tu descuento ha sido agregado a tu cuenta
             </p>
           </div>
@@ -72,91 +84,106 @@ export function RewardsSheet({ sessionId, onClose }: RewardsSheetProps) {
       </div>
     )
   }
-  
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-background w-full max-w-md rounded-t-2xl animate-in slide-in-from-bottom">
+    <div style={overlayStyle}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} onClick={onClose} />
+      <div style={sheetStyle}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <div className="flex items-center gap-2">
-            <Gift className="h-5 w-5 text-primary" />
-            <h2 className="text-base font-semibold text-foreground">Descuentos disponibles</h2>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '16px', borderBottom: '1px solid #f0f0f0',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 20, color: MINT_DEEP }}>◈</span>
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#000', margin: 0 }}>Descuentos disponibles</h2>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary"
+            style={{
+              width: 32, height: 32, background: '#f0f0f0', border: 'none',
+              borderRadius: '50%', cursor: 'pointer', fontSize: 16,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#666', fontFamily: FONT,
+            }}
           >
-            <X className="h-4 w-4" />
+            ✕
           </button>
         </div>
-        
-        {/* Rewards List */}
-        <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
+
+        {/* Rewards list */}
+        <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10, maxHeight: '60vh', overflowY: 'auto' }}>
           {availableRewards.length === 0 ? (
-            <div className="text-center py-8">
-              <Gift className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">
+            <div style={{ textAlign: 'center', padding: '32px 0' }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>Ø</div>
+              <p style={{ fontSize: 14, color: '#888', margin: 0 }}>
                 No hay descuentos disponibles en este momento
               </p>
             </div>
           ) : (
             availableRewards.map((reward) => {
-              const Icon = getRewardIcon(reward.accion)
+              const symbol = getRewardSymbol(reward.accion)
               const applied = isAlreadyApplied(reward.id)
-              
+
               return (
                 <div
                   key={reward.id}
-                  className={`p-4 rounded-xl border-2 ${
-                    applied
-                      ? 'border-success/30 bg-success/10'
-                      : 'border-border'
-                  }`}
+                  style={{
+                    padding: 16, borderRadius: 18,
+                    border: applied ? `2px solid ${MINT}` : '2px solid #f0f0f0',
+                    background: applied ? '#f0fff0' : '#fff',
+                  }}
                 >
-                  <div className="flex items-start gap-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      applied ? 'bg-success/10 text-success' : 'bg-primary/10 text-primary'
-                    }`}>
-                      <Icon className="h-5 w-5" />
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: applied ? MINT : '#f0f0f0',
+                      fontSize: 20, color: applied ? MINT_DEEP : '#666',
+                    }}>
+                      {symbol}
                     </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-[13px] text-foreground">
+
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <h3 style={{ fontSize: 14, fontWeight: 700, color: '#000', margin: 0 }}>
                           {reward.nombre}
                         </h3>
-                        <span className="text-xs font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                        <span style={{
+                          fontSize: 12, fontWeight: 700, color: MINT_DEEP,
+                          background: MINT, padding: '2px 8px', borderRadius: 8,
+                        }}>
                           {reward.tipo === 'porcentaje' ? `${reward.valor}%` : `$${reward.valor}`}
                         </span>
                       </div>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                      <p style={{ fontSize: 12, color: '#888', marginTop: 3, marginBottom: 0 }}>
                         {reward.descripcion}
                       </p>
-                      
+
                       {!applied && (
-                        <Button
-                          size="sm"
-                          className="mt-2 h-8 text-xs bg-foreground hover:bg-foreground/90"
+                        <button
+                          style={{
+                            marginTop: 10, height: 34, padding: '0 14px',
+                            background: '#000', color: '#fff', border: 'none',
+                            borderRadius: 10, fontSize: 12, fontWeight: 700,
+                            cursor: isApplying ? 'not-allowed' : 'pointer', fontFamily: FONT,
+                            opacity: isApplying ? 0.6 : 1,
+                            display: 'flex', alignItems: 'center', gap: 6,
+                          }}
                           disabled={isApplying}
                           onClick={() => handleApplyReward(reward.id, reward.accion)}
                         >
                           {reward.accion === 'seguir_instagram' && (
-                            <>
-                              <ExternalLink className="h-3 w-3 mr-1" />
-                              Seguir y aplicar
-                            </>
+                            <><span>↗</span> Seguir y aplicar</>
                           )}
-                          {reward.accion === 'primera_visita' && 'Aplicar descuento'}
-                          {reward.accion === 'referido' && 'Aplicar descuento'}
-                          {reward.accion === 'cumpleanos' && 'Aplicar descuento'}
-                        </Button>
+                          {reward.accion !== 'seguir_instagram' && 'Aplicar descuento'}
+                        </button>
                       )}
-                      
+
                       {applied && (
-                        <div className="flex items-center gap-1 mt-2 text-success">
-                          <Check className="h-3.5 w-3.5" />
-                          <span className="text-xs font-medium">Aplicado</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                          <span style={{ fontSize: 14, color: MINT_DEEP }}>✓</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: MINT_DEEP }}>Aplicado</span>
                         </div>
                       )}
                     </div>
@@ -166,16 +193,13 @@ export function RewardsSheet({ sessionId, onClose }: RewardsSheetProps) {
             })
           )}
         </div>
-        
-        {/* Info */}
-        <div className="p-4 border-t border-border">
-          <p className="text-[10px] text-muted-foreground text-center">
+
+        {/* Footer */}
+        <div style={{ padding: '12px 16px', borderTop: '1px solid #f0f0f0' }}>
+          <p style={{ fontSize: 10, color: '#ccc', textAlign: 'center', margin: 0 }}>
             Los descuentos se aplican sobre el subtotal y son controlados por sesión
           </p>
         </div>
-        
-        {/* Safe area */}
-        <div className="h-6" />
       </div>
     </div>
   )

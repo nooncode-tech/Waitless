@@ -1,11 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ArrowLeft, CheckCircle2, Upload, Hash, ChevronRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
 
 interface PaymentMethodPublic {
   id: string
@@ -103,25 +102,47 @@ export function PaymentSubmitView({
     }
   }
 
+  const headerStyle: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: 12,
+    padding: '12px 16px', borderBottom: '1px solid #f0f0f0',
+  }
+
+  const backBtnStyle: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    width: 40, height: 40, marginLeft: -8,
+    background: 'none', border: 'none', cursor: 'pointer',
+    fontSize: 20, color: '#000', fontFamily: FONT, borderRadius: 12,
+  }
+
   // ─── Submitted ───
   if (step === 'submitted') {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-6">
-        <div className="w-full max-w-sm text-center space-y-5">
-          <div className="flex items-center justify-center">
-            <div className="h-16 w-16 rounded-full bg-success/10 flex items-center justify-center">
-              <CheckCircle2 className="h-8 w-8 text-success" />
-            </div>
+      <div style={{
+        minHeight: '100svh', background: '#fff', display: 'flex',
+        alignItems: 'center', justifyContent: 'center', padding: '0 24px', fontFamily: FONT,
+      }}>
+        <div style={{ width: '100%', maxWidth: 360, textAlign: 'center' }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%', background: '#f0fdf0',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 20px',
+          }}>
+            <span style={{ fontSize: 32, color: '#166534' }}>✓</span>
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-foreground">¡Comprobante enviado!</h2>
-            <p className="text-sm text-muted-foreground mt-2">
-              El restaurante revisará tu pago y te confirmará en breve.
-            </p>
-          </div>
-          <Button className="w-full h-11 bg-foreground hover:bg-foreground/90 text-background" onClick={onSubmitted}>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#000', margin: '0 0 8px' }}>¡Comprobante enviado!</h2>
+          <p style={{ fontSize: 14, color: '#888', marginBottom: 24 }}>
+            El restaurante revisará tu pago y te confirmará en breve.
+          </p>
+          <button
+            style={{
+              width: '100%', height: 50, background: '#000', color: '#fff',
+              border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700,
+              cursor: 'pointer', fontFamily: FONT,
+            }}
+            onClick={onSubmitted}
+          >
             Volver al menú
-          </Button>
+          </button>
         </div>
       </div>
     )
@@ -132,84 +153,94 @@ export function PaymentSubmitView({
     const datos = Object.entries(selected.datosPago ?? {}).filter(([, v]) => v)
 
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
-          <button
-            onClick={() => setStep('select')}
-            className="flex items-center justify-center h-10 w-10 -ml-2 rounded-xl hover:bg-muted/50"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <span className="text-base font-bold text-foreground">{selected.nombre}</span>
+      <div style={{ minHeight: '100svh', background: '#fff', display: 'flex', flexDirection: 'column', fontFamily: FONT }}>
+        <div style={headerStyle}>
+          <button onClick={() => setStep('select')} style={backBtnStyle}>←</button>
+          <span style={{ fontSize: 16, fontWeight: 700, color: '#000' }}>{selected.nombre}</span>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-5">
-          {/* Datos de pago del restaurante */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {/* Payment data */}
           {datos.length > 0 && (
-            <div className="p-4 bg-muted/40 rounded-2xl space-y-2.5">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Datos de pago</p>
+            <div style={{ padding: '16px', background: '#f7f7f7', borderRadius: 20 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>
+                Datos de pago
+              </p>
               {datos.map(([key, value]) => (
-                <div key={key} className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">{DATO_LABELS[key] ?? key}</span>
-                  <span className="text-sm font-semibold text-foreground font-mono">{value}</span>
+                <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: 14, color: '#666' }}>{DATO_LABELS[key] ?? key}</span>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#000', fontFamily: MONO }}>{value}</span>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Instrucciones */}
+          {/* Instructions */}
           {selected.instrucciones && (
-            <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl">
-              <p className="text-sm text-foreground">{selected.instrucciones}</p>
+            <div style={{ padding: '14px 16px', background: '#fafff5', border: '1px solid #d1f7d6', borderRadius: 18 }}>
+              <p style={{ fontSize: 14, color: '#000', margin: 0 }}>{selected.instrucciones}</p>
             </div>
           )}
 
-          {/* Monto a pagar */}
+          {/* Amount */}
           <div>
-            <Label className="text-xs text-muted-foreground">Monto pagado ({selected.moneda})</Label>
-            <Input
-              type="number"
-              min="0"
-              step="0.01"
-              value={monto}
-              onChange={e => setMonto(e.target.value)}
-              className="mt-1.5 h-12 text-lg font-bold"
+            <label style={{ display: 'block', fontSize: 12, color: '#888', marginBottom: 6 }}>
+              Monto pagado ({selected.moneda})
+            </label>
+            <input
+              type="number" min="0" step="0.01"
+              value={monto} onChange={e => setMonto(e.target.value)}
+              style={{
+                width: '100%', height: 52, padding: '0 14px',
+                border: '1.5px solid #e5e5e5', borderRadius: 12,
+                fontSize: 20, fontWeight: 700, fontFamily: MONO,
+                outline: 'none', color: '#000', boxSizing: 'border-box', background: '#fff',
+              }}
             />
           </div>
 
-          {/* Referencia / número de operación */}
+          {/* Reference */}
           {selected.requiereComprobante && (
             <div>
-              <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
-                <Hash className="h-3 w-3" />
-                Número de referencia / operación
-              </Label>
-              <Input
-                value={referencia}
-                onChange={e => setReferencia(e.target.value)}
+              <label style={{ display: 'block', fontSize: 12, color: '#888', marginBottom: 6 }}>
+                # Número de referencia / operación
+              </label>
+              <input
+                value={referencia} onChange={e => setReferencia(e.target.value)}
                 placeholder="ej. 012345678"
-                className="mt-1.5 h-11"
+                style={{
+                  width: '100%', height: 44, padding: '0 12px',
+                  border: '1.5px solid #e5e5e5', borderRadius: 12,
+                  fontSize: 14, fontFamily: MONO, outline: 'none',
+                  color: '#000', boxSizing: 'border-box', background: '#fff',
+                }}
               />
-              <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
-                <Upload className="h-3 w-3" />
-                Puedes enviar la captura de pantalla al mesero si lo prefieres.
+              <p style={{ fontSize: 12, color: '#aaa', marginTop: 6 }}>
+                ↑ Puedes enviar la captura de pantalla al mesero si lo prefieres.
               </p>
             </div>
           )}
 
           {submitError && (
-            <p className="text-sm text-destructive">{submitError}</p>
+            <p style={{ fontSize: 14, color: '#dc2626' }}>{submitError}</p>
           )}
         </div>
 
-        <div className="p-4 border-t border-border" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}>
-          <Button
-            className="w-full h-12 bg-foreground hover:bg-foreground/90 text-background text-sm font-bold rounded-xl"
+        <div style={{
+          padding: '12px 16px', borderTop: '1px solid #f0f0f0',
+          paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
+        }}>
+          <button
+            style={{
+              width: '100%', height: 52, background: submitting ? '#ccc' : '#000',
+              color: '#fff', border: 'none', borderRadius: 14,
+              fontSize: 15, fontWeight: 700, cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: FONT,
+            }}
             onClick={handleSubmit}
             disabled={submitting}
           >
             {submitting ? 'Enviando…' : 'Confirmar pago'}
-          </Button>
+          </button>
         </div>
       </div>
     )
@@ -217,28 +248,26 @@ export function PaymentSubmitView({
 
   // ─── Select method ───
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
-        <button
-          onClick={onBack}
-          className="flex items-center justify-center h-10 w-10 -ml-2 rounded-xl hover:bg-muted/50"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
+    <div style={{ minHeight: '100svh', background: '#fff', display: 'flex', flexDirection: 'column', fontFamily: FONT }}>
+      <div style={headerStyle}>
+        <button onClick={onBack} style={backBtnStyle}>←</button>
         <div>
-          <span className="text-base font-bold text-foreground">Pagar cuenta</span>
-          <p className="text-xs text-muted-foreground">Total: ${totalMonto.toFixed(2)}</p>
+          <span style={{ fontSize: 16, fontWeight: 700, color: '#000', display: 'block' }}>Pagar cuenta</span>
+          <span style={{ fontSize: 12, color: '#888' }}>Total: ${totalMonto.toFixed(2)}</span>
         </div>
       </div>
 
-      <div className="flex-1 p-4 space-y-3">
-        <p className="text-sm text-muted-foreground">Selecciona cómo quieres pagar:</p>
+      <div style={{ flex: 1, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <p style={{ fontSize: 14, color: '#888', margin: 0 }}>Selecciona cómo quieres pagar:</p>
 
         {loading ? (
-          <div className="text-sm text-muted-foreground py-8 text-center">Cargando opciones…</div>
+          <div style={{ fontSize: 14, color: '#aaa', padding: '32px 0', textAlign: 'center' }}>
+            Cargando opciones…
+          </div>
         ) : methods.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-sm text-muted-foreground">
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>Ø</div>
+            <p style={{ fontSize: 14, color: '#888' }}>
               No hay métodos de pago configurados.<br />Por favor llama al mesero.
             </p>
           </div>
@@ -247,18 +276,27 @@ export function PaymentSubmitView({
             <button
               key={m.id}
               onClick={() => handleSelectMethod(m)}
-              className={cn(
-                'w-full flex items-center justify-between p-4 border border-border rounded-2xl',
-                'hover:bg-muted/30 active:scale-[0.98] transition-all text-left'
-              )}
+              className={cn()}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '16px', border: '1.5px solid #e5e5e5', borderRadius: 20,
+                background: '#fff', cursor: 'pointer', textAlign: 'left', fontFamily: FONT,
+                transition: 'background 0.12s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#f7f7f7')}
+              onMouseLeave={e => (e.currentTarget.style.background = '#fff')}
             >
               <div>
-                <p className="text-sm font-semibold text-foreground">{m.nombre}</p>
+                <p style={{ fontSize: 15, fontWeight: 700, color: '#000', margin: 0 }}>{m.nombre}</p>
                 {m.instrucciones && (
-                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{m.instrucciones}</p>
+                  <p style={{
+                    fontSize: 12, color: '#888', marginTop: 3,
+                    overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
+                    maxWidth: 260,
+                  }}>{m.instrucciones}</p>
                 )}
               </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span style={{ fontSize: 18, color: '#aaa', flexShrink: 0 }}>›</span>
             </button>
           ))
         )}

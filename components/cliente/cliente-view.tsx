@@ -17,17 +17,11 @@ import { RewardsSheet } from './rewards-sheet'
 
 import type { MenuItem } from '@/lib/store'
 import type { ClienteUser } from '@/lib/cliente-auth'
-import { ExternalLink, Star } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { WaitlessLogo } from '@/components/ui/waitless-logo'
-import { cn } from '@/lib/utils'
 
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
 const GOOGLE_REVIEW_URL_FALLBACK = 'https://g.page/r/review/write'
 
-/* =======================
-   TYPES
-======================= */
 type ClienteScreen = 'menu' | 'item' | 'cart' | 'status' | 'bill' | 'payment' | 'feedback'
 
 interface ClienteViewProps {
@@ -69,110 +63,137 @@ function FeedbackScreen({ onFinish, sessionId, mesa }: { onFinish: () => void; s
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-6">
-        <div className="w-full max-w-sm text-center space-y-6">
+      <div style={{
+        minHeight: '100svh',
+        background: '#fff',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '0 24px',
+        fontFamily: FONT,
+      }}>
+        <div style={{ width: '100%', maxWidth: 360, textAlign: 'center' }}>
           <WaitlessLogo size={48} color="dark" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
-          <div>
-            <h2 className="text-xl font-bold text-foreground">¡Gracias!</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Tu opinión nos ayuda a mejorar cada día.
-            </p>
+          <div style={{ marginTop: 24 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 700, color: '#000', margin: 0 }}>¡Gracias!</h2>
+            <p style={{ fontSize: 14, color: '#666', marginTop: 6 }}>Tu opinión nos ayuda a mejorar cada día.</p>
           </div>
           {rating >= 4 && (
-            <div className="space-y-3">
-              <p className="text-xs text-muted-foreground">
-                ¿Te animás a dejarnos una reseña en Google?
-              </p>
-              <Button
-                className="w-full bg-foreground hover:bg-foreground/90 text-background h-11 text-sm font-bold rounded-xl gap-2"
+            <div style={{ marginTop: 24 }}>
+              <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>¿Te animás a dejarnos una reseña en Google?</p>
+              <button
+                style={{
+                  width: '100%', height: 52, background: '#000', color: '#fff',
+                  border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', gap: 8, fontFamily: FONT,
+                }}
                 onClick={() => window.open(googleReviewUrl, '_blank')}
               >
-                <ExternalLink className="h-4 w-4" />
-                Reseñar en Google
-              </Button>
+                <span>↗</span> Reseñar en Google
+              </button>
             </div>
           )}
-          <Button
-            variant="ghost"
-            className="w-full text-muted-foreground text-sm"
+          <button
+            style={{
+              marginTop: 16, width: '100%', background: 'none', border: 'none',
+              color: '#888', fontSize: 14, cursor: 'pointer', padding: '8px 0', fontFamily: FONT,
+            }}
             onClick={onFinish}
           >
             Finalizar
-          </Button>
+          </button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-6">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="text-center">
+    <div style={{
+      minHeight: '100svh',
+      background: '#fff',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '0 24px',
+      fontFamily: FONT,
+    }}>
+      <div style={{ width: '100%', maxWidth: 360 }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <WaitlessLogo size={48} color="dark" imageUrl={config.logoUrl} imageAlt={config.restaurantName ?? 'Logo'} />
-          <h2 className="text-xl font-bold text-foreground mt-4">¿Cómo estuvo tu experiencia?</h2>
-          <p className="text-sm text-muted-foreground mt-1">Tu opinión es muy importante para nosotros</p>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: '#000', marginTop: 16, marginBottom: 4 }}>
+            ¿Cómo estuvo tu experiencia?
+          </h2>
+          <p style={{ fontSize: 14, color: '#666' }}>Tu opinión es muy importante para nosotros</p>
         </div>
 
-        <div className="flex justify-center gap-3">
+        {/* Stars */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 16 }}>
           {[1, 2, 3, 4, 5].map(star => (
             <button
               key={star}
               onClick={() => setRating(star)}
               onMouseEnter={() => setHovered(star)}
               onMouseLeave={() => setHovered(0)}
-              className="transition-transform hover:scale-110 active:scale-95"
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontSize: 36, lineHeight: 1, padding: 4,
+                color: (hovered || rating) >= star ? '#000' : '#ddd',
+                transition: 'color 0.15s, transform 0.1s',
+                transform: (hovered || rating) >= star ? 'scale(1.1)' : 'scale(1)',
+              }}
+              aria-label={`${star} estrella${star !== 1 ? 's' : ''}`}
             >
-              <Star
-                className={cn(
-                  'h-10 w-10 transition-colors',
-                  (hovered || rating) >= star
-                    ? 'fill-foreground text-foreground'
-                    : 'text-border'
-                )}
-              />
+              ★
             </button>
           ))}
         </div>
 
-        <div className="text-center h-5">
+        <div style={{ textAlign: 'center', height: 20, marginBottom: 20 }}>
           {(hovered || rating) > 0 && (
-            <p className="text-sm font-semibold text-foreground">
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#000' }}>
               {labels[hovered || rating]}
             </p>
           )}
         </div>
 
         {rating > 0 && (
-          <div>
-            <Textarea
+          <div style={{ marginBottom: 20 }}>
+            <textarea
               value={comment}
               onChange={e => setComment(e.target.value)}
-              placeholder={
-                rating >= 4
-                  ? '¿Qué fue lo que más te gustó?'
-                  : '¿Qué podríamos mejorar?'
-              }
+              placeholder={rating >= 4 ? '¿Qué fue lo que más te gustó?' : '¿Qué podríamos mejorar?'}
               rows={3}
-              className="text-sm p-3"
+              style={{
+                width: '100%', border: '1.5px solid #e5e5e5', borderRadius: 12,
+                padding: '12px', fontSize: 14, fontFamily: FONT, resize: 'none',
+                outline: 'none', boxSizing: 'border-box', color: '#000',
+              }}
             />
           </div>
         )}
 
-        <div className="space-y-2">
-          <Button
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <button
             disabled={rating === 0 || isSubmitting}
-            className="w-full bg-foreground hover:bg-foreground/90 text-background h-11 text-sm font-bold rounded-xl disabled:opacity-40"
+            style={{
+              width: '100%', height: 52, background: rating === 0 || isSubmitting ? '#ccc' : '#000',
+              color: '#fff', border: 'none', borderRadius: 14, fontSize: 14, fontWeight: 700,
+              cursor: rating === 0 || isSubmitting ? 'not-allowed' : 'pointer', fontFamily: FONT,
+            }}
             onClick={handleSubmit}
           >
             {isSubmitting ? 'Enviando...' : 'Enviar opinión'}
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full text-muted-foreground text-sm"
+          </button>
+          <button
+            style={{
+              background: 'none', border: 'none', color: '#888', fontSize: 14,
+              cursor: 'pointer', padding: '8px 0', fontFamily: FONT,
+            }}
             onClick={onFinish}
           >
             Omitir
-          </Button>
+          </button>
         </div>
       </div>
     </div>
@@ -201,9 +222,6 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
   const [showRewards, setShowRewards] = useState(false)
   const [loyaltyPhone, setLoyaltyPhone] = useState('')
 
-  /* =======================
-     SESSION
-  ======================= */
   useEffect(() => {
     const existingSession = getTableSession(mesa)
     if (!existingSession) {
@@ -214,16 +232,13 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
   const session = tableSessions.find(s => s.mesa === mesa && s.activa)
   const sessionId = session?.id ?? ''
 
-  /* =======================
-     DETECT SESSION CLOSED BY MESERO
-  ======================= */
   useEffect(() => {
     if (!session && screen !== 'feedback') {
       const closedSession = tableSessions.find(
         s => s.mesa === mesa && !s.activa && s.billStatus === 'cerrada'
       )
       if (closedSession) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- auto-navigating to feedback when session closes, intentional reactive navigation
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setScreen('feedback')
       }
     }
@@ -235,15 +250,12 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
         o => o.status !== 'entregado' && o.status !== 'cancelado'
       )
       if (activeOrders.length === 0) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect -- auto-navigating to feedback after payment, intentional reactive navigation
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setScreen('feedback')
       }
     }
   }, [session])
 
-  /* =======================
-     DERIVED STATE
-  ======================= */
   const tableOrders = orders.filter(
     o => o.mesa === mesa && o.status !== 'entregado' && o.status !== 'cancelado'
   )
@@ -259,14 +271,9 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
     c => c.mesa === mesa && !c.atendido
   )
 
-  // Screens that show the persistent bar + bottom nav
   const showChrome = ['menu', 'status', 'bill'].includes(screen)
-  // Only menu + status get the bottom nav tabs; bill has its own bottom action
   const showBottomNav = ['menu', 'status'].includes(screen)
 
-  /* =======================
-     NAV HANDLERS
-  ======================= */
   const goMenu = () => setScreen('menu')
 
   const handleSelectItem = (item: MenuItem) => {
@@ -279,9 +286,6 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
     onBack()
   }
 
-  /* =======================
-     RENDER SCREEN
-  ======================= */
   const renderScreen = () => {
     switch (screen) {
       case 'feedback':
@@ -361,12 +365,8 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
     }
   }
 
-  /* =======================
-     JSX
-  ======================= */
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Persistent session context bar — visible on menu/status/bill */}
+    <div style={{ minHeight: '100svh', background: '#fff', display: 'flex', flexDirection: 'column', fontFamily: FONT }}>
       {showChrome && (
         <TableSessionBar
           mesa={mesa}
@@ -379,20 +379,21 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
         />
       )}
 
-      {/* User greeting strip — shown when logged in */}
       {clienteUser && showChrome && (
-        <div className="flex items-center gap-2 px-4 py-1.5 bg-muted/50 border-b border-border">
-          <span className="text-xs text-muted-foreground">
-            Hola, <span className="font-semibold text-foreground">{clienteUser.nombre}</span>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '6px 16px', background: '#f5f5f5', borderBottom: '1px solid #eee',
+        }}>
+          <span style={{ fontSize: 12, color: '#666' }}>
+            Hola, <strong style={{ color: '#000' }}>{clienteUser.nombre}</strong>
           </span>
         </div>
       )}
 
-      <div className={showBottomNav ? 'pb-24' : ''}>
+      <div style={{ paddingBottom: showBottomNav ? 96 : 0 }}>
         {renderScreen()}
       </div>
 
-      {/* Persistent bottom action bar — menu and status screens */}
       {showBottomNav && (
         <PersistentOrderBar
           cartCount={cart.length}
@@ -406,7 +407,6 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
         />
       )}
 
-      {/* Bottom nav tabs */}
       {showBottomNav && (
         <ClienteBottomNav
           activeScreen={screen}
@@ -436,7 +436,7 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
       )}
 
       {config.poweredByWaitless === true && (
-        <div className="text-center py-2 text-[10px] text-muted-foreground">
+        <div style={{ textAlign: 'center', padding: '8px 0', fontSize: 10, color: '#bbb', fontFamily: FONT }}>
           Powered by WAITLESS
         </div>
       )}

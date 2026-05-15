@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Wifi, WifiOff, AlertTriangle, RefreshCw, Check } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { offlineQueue, pendingCount, failedCount } from '@/lib/offline-queue'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
 
 export function OfflineIndicator() {
   const [isOnline, setIsOnline] = useState(true)
@@ -35,7 +35,6 @@ export function OfflineIndicator() {
     setIsOnline(navigator.onLine)
     refreshCounts()
 
-    // Auto-retry failed ops on mount if online
     if (navigator.onLine && failedCount() > 0) {
       offlineQueue.retryFailedOps().then(() => refreshCounts())
     }
@@ -64,30 +63,28 @@ export function OfflineIndicator() {
     setRetrying(false)
   }
 
-  // Mostrar banner de operaciones fallidas incluso cuando está online
   if (isOnline && !showReconnected && failed === 0) return null
 
+  const pillStyle: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: 8,
+    padding: '8px 16px', borderRadius: 999,
+    boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
+    fontSize: 13, fontWeight: 600, fontFamily: FONT,
+    color: '#fff',
+  }
+
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 items-center">
-      {/* Banner de sin conexión / reconectado */}
+    <div style={{ position: 'fixed', bottom: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 100, display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'center' }}>
       {(!isOnline || showReconnected) && (
-        <div
-          className={cn(
-            'flex items-center gap-2 px-4 py-2 rounded-full shadow-lg text-sm font-medium',
-            isOnline ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
-          )}
-        >
+        <div style={{ ...pillStyle, background: isOnline ? '#16a34a' : '#dc2626' }}>
+          <span>{isOnline ? '✓' : '✕'}</span>
           {isOnline ? (
-            <>
-              <Wifi className="h-4 w-4" />
-              Reconectado
-            </>
+            <span>Reconectado</span>
           ) : (
             <>
-              <WifiOff className="h-4 w-4" />
-              Sin conexión — los cambios se guardarán al reconectar
+              <span>Sin conexión — los cambios se guardarán al reconectar</span>
               {pending > 0 && (
-                <span className="ml-1 bg-white/20 rounded-full px-2 py-0.5 text-xs">
+                <span style={{ background: 'rgba(255,255,255,0.2)', borderRadius: 999, padding: '2px 8px', fontSize: 11 }}>
                   {pending} pendiente{pending !== 1 ? 's' : ''}
                 </span>
               )}
@@ -96,33 +93,36 @@ export function OfflineIndicator() {
         </div>
       )}
 
-      {/* Banner de operaciones fallidas */}
       {failed > 0 && (
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full shadow-lg text-sm font-medium bg-amber-600 text-white">
-          <AlertTriangle className="h-4 w-4 shrink-0" />
-          {failed} operación{failed !== 1 ? 'es' : ''} no sincronizada{failed !== 1 ? 's' : ''}
+        <div style={{ ...pillStyle, background: '#d97706' }}>
+          <span>⚠</span>
+          <span>{failed} operación{failed !== 1 ? 'es' : ''} no sincronizada{failed !== 1 ? 's' : ''}</span>
           <button
             onClick={handleRetry}
             disabled={retrying}
-            className="ml-1 flex items-center gap-1 bg-white/20 hover:bg-white/30 transition-colors rounded-full px-2.5 py-0.5 text-xs font-semibold disabled:opacity-60"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+              background: 'rgba(255,255,255,0.2)', borderRadius: 999,
+              padding: '2px 10px', fontSize: 11, fontWeight: 700,
+              border: 'none', cursor: retrying ? 'default' : 'pointer', color: '#fff',
+              opacity: retrying ? 0.6 : 1, fontFamily: FONT,
+            }}
           >
-            <RefreshCw className={cn('h-3 w-3', retrying && 'animate-spin')} />
-            {retrying ? 'Sincronizando...' : 'Reintentar'}
+            {retrying ? '↻ Sincronizando...' : '↻ Reintentar'}
           </button>
           <button
             onClick={() => { offlineQueue.clearFailedOps(); setFailed(0) }}
-            className="text-white/60 hover:text-white text-xs underline underline-offset-2 transition-colors"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.7)', fontSize: 12, fontFamily: FONT, textDecoration: 'underline' }}
           >
             Descartar
           </button>
         </div>
       )}
 
-      {/* Confirmación de sync exitoso */}
       {retrySuccess && failed === 0 && (
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full shadow-lg text-sm font-medium bg-green-600 text-white">
-          <Check className="h-4 w-4" />
-          Operaciones sincronizadas correctamente
+        <div style={{ ...pillStyle, background: '#16a34a' }}>
+          <span>✓</span>
+          <span>Operaciones sincronizadas correctamente</span>
         </div>
       )}
     </div>

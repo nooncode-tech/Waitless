@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Wallet, CreditCard, Banknote, Landmark, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
 
 type DateRange = 'hoy' | '7d' | '30d'
 
@@ -12,14 +14,14 @@ const RANGE_LABELS: Record<DateRange, string> = {
   '30d': '30 días',
 }
 
-const METHOD_META: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  efectivo:           { label: 'Efectivo',           icon: <Banknote className="h-4 w-4" />,   color: 'bg-emerald-100 text-emerald-700' },
-  tarjeta:            { label: 'Tarjeta',             icon: <CreditCard className="h-4 w-4" />,  color: 'bg-blue-100 text-blue-700' },
-  transferencia:      { label: 'Transferencia',       icon: <Landmark className="h-4 w-4" />,    color: 'bg-violet-100 text-violet-700' },
-  paypal:             { label: 'PayPal',              icon: <span className="font-black text-[13px] leading-none">P</span>, color: 'bg-sky-100 text-sky-700' },
-  waitless_creditos:  { label: 'Waitless Créditos',  icon: <Wallet className="h-4 w-4" />,      color: 'bg-zinc-900 text-white' },
-  apple_pay:          { label: 'Apple Pay',           icon: <span className="text-xs font-bold"></span>, color: 'bg-gray-100 text-gray-700' },
-  sin_especificar:    { label: 'Sin especificar',     icon: <CreditCard className="h-4 w-4" />,  color: 'bg-gray-100 text-gray-500' },
+const METHOD_META: Record<string, { label: string; icon: string; bg: string; color: string }> = {
+  efectivo:          { label: 'Efectivo',           icon: '$',  bg: '#d1fae5', color: '#059669' },
+  tarjeta:           { label: 'Tarjeta',             icon: '▤',  bg: '#dbeafe', color: '#1d4ed8' },
+  transferencia:     { label: 'Transferencia',       icon: '↔',  bg: '#ede9fe', color: '#7c3aed' },
+  paypal:            { label: 'PayPal',              icon: 'P',  bg: '#e0f2fe', color: '#0369a1' },
+  waitless_creditos: { label: 'Waitless Créditos',  icon: '◉',  bg: '#111',   color: '#BEEBBE' },
+  apple_pay:         { label: 'Apple Pay',           icon: '',  bg: '#f3f3f3', color: '#444' },
+  sin_especificar:   { label: 'Sin especificar',     icon: '?',  bg: '#f3f3f3', color: '#888' },
 }
 
 function fmt(n: number) {
@@ -52,21 +54,35 @@ export function PaymentBreakdownWidget() {
     : []
 
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm">
+    <div style={{
+      background: '#fff', borderRadius: 14, border: '1px solid #E5E5E5',
+      padding: 20, fontFamily: FONT,
+    }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Wallet className="h-4 w-4 text-zinc-500" />
-          <h3 className="font-bold text-zinc-900 text-sm">Ingresos por método de pago</h3>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 16, color: '#888' }}>$</span>
+          <h3 style={{ fontSize: 13, fontWeight: 700, color: '#111', margin: 0 }}>
+            Ingresos por método de pago
+          </h3>
         </div>
-        <div className="flex gap-1 bg-zinc-100 rounded-lg p-0.5">
+        {/* Range tabs */}
+        <div style={{
+          display: 'flex', gap: 2, background: '#f3f3f3',
+          borderRadius: 8, padding: 3,
+        }}>
           {(Object.keys(RANGE_LABELS) as DateRange[]).map(r => (
             <button
               key={r}
               onClick={() => setRange(r)}
-              className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
-                range === r ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500'
-              }`}
+              style={{
+                padding: '4px 10px', borderRadius: 6, border: 'none',
+                fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: FONT,
+                background: range === r ? '#fff' : 'transparent',
+                color: range === r ? '#111' : '#888',
+                boxShadow: range === r ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                transition: 'all 0.15s',
+              }}
             >
               {RANGE_LABELS[r]}
             </button>
@@ -75,43 +91,60 @@ export function PaymentBreakdownWidget() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-5 w-5 animate-spin text-zinc-300" />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 0' }}>
+          <span style={{ fontSize: 22, color: '#ccc', display: 'inline-block', animation: 'spin 1s linear infinite' }}>↻</span>
+          <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
         </div>
       ) : entries.length === 0 ? (
-        <p className="text-sm text-zinc-400 py-4 text-center">Sin pagos registrados en este período.</p>
+        <p style={{ fontSize: 13, color: '#aaa', textAlign: 'center', padding: '16px 0', margin: 0 }}>
+          Sin pagos registrados en este período.
+        </p>
       ) : (
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {entries.map(([method, amount]) => {
             const meta = METHOD_META[method] ?? METHOD_META['sin_especificar']
             const pct = data!.total > 0 ? (amount / data!.total) * 100 : 0
             return (
               <div key={method}>
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${meta.color}`}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{
+                      width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: meta.bg, color: meta.color,
+                      fontSize: 13, fontWeight: 700,
+                    }}>
                       {meta.icon}
                     </span>
-                    <span className="text-sm font-medium text-zinc-800">{meta.label}</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: '#333' }}>{meta.label}</span>
                   </div>
-                  <div className="text-right">
-                    <span className="text-sm font-bold text-zinc-900">{fmt(amount)}</span>
-                    <span className="text-[11px] text-zinc-400 ml-1.5">{pct.toFixed(0)}%</span>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#111', fontFamily: MONO }}>{fmt(amount)}</span>
+                    <span style={{ fontSize: 11, color: '#aaa', marginLeft: 6 }}>{pct.toFixed(0)}%</span>
                   </div>
                 </div>
-                <div className="h-1.5 bg-zinc-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-zinc-900 rounded-full transition-all duration-500"
-                    style={{ width: `${pct}%` }}
-                  />
+                {/* Progress bar */}
+                <div style={{ height: 6, background: '#f3f3f3', borderRadius: 99, overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%', background: '#BEEBBE', borderRadius: 99,
+                    width: `${pct}%`, transition: 'width 0.5s ease',
+                  }} />
                 </div>
               </div>
             )
           })}
 
-          <div className="pt-2 border-t border-zinc-100 flex justify-between items-center">
-            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Total</span>
-            <span className="text-base font-black text-zinc-900">{fmt(data!.total)}</span>
+          {/* Total row */}
+          <div style={{
+            paddingTop: 12, borderTop: '1px solid #f0f0f0',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Total
+            </span>
+            <span style={{ fontSize: 16, fontWeight: 900, color: '#111', fontFamily: MONO }}>
+              {fmt(data!.total)}
+            </span>
           </div>
         </div>
       )}

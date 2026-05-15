@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Plus, Edit2, Trash2, Check, X, Package, Tag } from 'lucide-react'
 import { useApp } from '@/lib/context'
-import { Input } from '@/components/ui/input'
 import { DEFAULT_INGREDIENT_CATEGORIES } from '@/lib/store'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
 
 export function IngredientCategoryManager() {
   const { ingredients, updateIngredient } = useApp()
@@ -67,130 +67,187 @@ export function IngredientCategoryManager() {
   }
 
   return (
-    <div className="space-y-4" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+    <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div>
-        <h3 className="text-sm font-black text-gray-900">Categorías de Ingredientes</h3>
-        <p className="text-xs text-gray-400">Organiza y administra las categorías de tus ingredientes</p>
+        <h3 style={{ fontSize: 13, fontWeight: 900, color: '#111', margin: 0 }}>Categorías de Ingredientes</h3>
+        <p style={{ fontSize: 11, color: '#aaa', margin: '2px 0 0 0' }}>Organiza y administra las categorías de tus ingredientes</p>
       </div>
 
-      <div className="flex gap-2">
-        <Input
+      {/* Add category row */}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input
+          type="text"
           value={newCategoryName}
-          onChange={(e) => setNewCategoryName(e.target.value)}
+          onChange={e => setNewCategoryName(e.target.value)}
           placeholder="Nueva categoría..."
-          className="h-8 text-xs"
-          onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+          onKeyDown={e => e.key === 'Enter' && handleAddCategory()}
+          style={{
+            flex: 1, height: 36, borderRadius: 10, border: '1px solid #E5E5E5',
+            padding: '0 10px', fontSize: 12, fontFamily: FONT, outline: 'none',
+            background: '#fff', color: '#111',
+          }}
         />
         <button
           onClick={handleAddCategory}
           disabled={!newCategoryName.trim() || allCategories.includes(newCategoryName.trim())}
-          className="h-8 px-3 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          style={{
+            height: 36, padding: '0 14px', borderRadius: 10, border: 'none',
+            background: '#111', color: '#fff', fontSize: 12, fontWeight: 600,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5,
+            opacity: (!newCategoryName.trim() || allCategories.includes(newCategoryName.trim())) ? 0.4 : 1,
+            fontFamily: FONT,
+          }}
         >
-          <Plus className="h-3 w-3" />
-          Agregar
+          + Agregar
         </button>
       </div>
 
+      {/* List */}
       {allCategories.length === 0 ? (
-        <div className="border border-dashed border-gray-200 rounded-2xl py-8 text-center">
-          <Tag className="h-6 w-6 mx-auto text-gray-300 mb-2" />
-          <p className="text-xs text-gray-400">No hay categorías. Agregá una para comenzar.</p>
+        <div style={{
+          border: '1px dashed #E5E5E5', borderRadius: 14,
+          padding: '32px 16px', textAlign: 'center',
+        }}>
+          <div style={{ fontSize: 22, color: '#ccc', marginBottom: 8 }}>◈</div>
+          <p style={{ fontSize: 11, color: '#aaa', margin: 0 }}>No hay categorías. Agregá una para comenzar.</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {allCategories.map((category) => {
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {allCategories.map(category => {
             const ingredientCount = getCategoryIngredientCount(category)
             const isEditing = editingCategory === category
             const isDefault = DEFAULT_INGREDIENT_CATEGORIES.includes(category)
 
             return (
-              <div key={category} className="border border-gray-100 rounded-2xl bg-white p-2.5">
-                <div className="flex items-center gap-2">
-                  <Package className="h-4 w-4 text-gray-400 shrink-0" />
+              <div
+                key={category}
+                style={{
+                  border: '1px solid #E5E5E5', borderRadius: 14,
+                  background: '#fff', padding: '8px 10px',
+                  display: 'flex', alignItems: 'center', gap: 10,
+                }}
+              >
+                <span style={{ fontSize: 14, color: '#bbb', flexShrink: 0 }}>◫</span>
 
-                  <div className="flex-1 min-w-0">
-                    {isEditing ? (
-                      <div className="flex items-center gap-1">
-                        <Input
-                          value={editingName}
-                          onChange={(e) => setEditingName(e.target.value)}
-                          className="h-7 text-xs"
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleSaveEdit()
-                            if (e.key === 'Escape') handleCancelEdit()
-                          }}
-                        />
-                        <button onClick={handleSaveEdit} className="h-6 w-6 flex items-center justify-center rounded-lg hover:bg-gray-100 text-[#06C167]">
-                          <Check className="h-3 w-3" />
-                        </button>
-                        <button onClick={handleCancelEdit} className="h-6 w-6 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400">
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium text-gray-900 truncate">{category}</span>
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-full border border-gray-200 text-gray-500">
-                          {ingredientCount} ingrediente{ingredientCount !== 1 ? 's' : ''}
-                        </span>
-                        {isDefault && (
-                          <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-400">
-                            predeterminado
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {!isEditing && (
-                    <div className="flex items-center gap-1">
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  {isEditing ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <input
+                        value={editingName}
+                        onChange={e => setEditingName(e.target.value)}
+                        autoFocus
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') handleSaveEdit()
+                          if (e.key === 'Escape') handleCancelEdit()
+                        }}
+                        style={{
+                          flex: 1, height: 28, borderRadius: 8, border: '1px solid #E5E5E5',
+                          padding: '0 8px', fontSize: 12, fontFamily: FONT, outline: 'none', color: '#111',
+                        }}
+                      />
                       <button
-                        onClick={() => handleStartEdit(category)}
-                        className="h-6 w-6 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400"
-                      >
-                        <Edit2 className="h-3 w-3" />
-                      </button>
+                        onClick={handleSaveEdit}
+                        style={{
+                          width: 26, height: 26, borderRadius: 8, border: 'none',
+                          background: 'none', cursor: 'pointer', fontSize: 14,
+                          color: '#BEEBBE', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                        title="Guardar"
+                      >✓</button>
                       <button
-                        onClick={() => setDeleteConfirm(category)}
-                        className="h-6 w-6 flex items-center justify-center rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"
-                        title={ingredientCount > 0 ? 'Los ingredientes se moverán a "Otros"' : 'Eliminar categoría'}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
+                        onClick={handleCancelEdit}
+                        style={{
+                          width: 26, height: 26, borderRadius: 8, border: 'none',
+                          background: 'none', cursor: 'pointer', fontSize: 14,
+                          color: '#aaa', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                        title="Cancelar"
+                      >✕</button>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 13, fontWeight: 500, color: '#111' }}>{category}</span>
+                      <span style={{
+                        fontSize: 9, padding: '1px 6px', borderRadius: 99,
+                        border: '1px solid #E5E5E5', color: '#777',
+                      }}>
+                        {ingredientCount} ingrediente{ingredientCount !== 1 ? 's' : ''}
+                      </span>
+                      {isDefault && (
+                        <span style={{
+                          fontSize: 8, padding: '1px 6px', borderRadius: 99,
+                          background: '#f3f3f3', color: '#aaa',
+                        }}>predeterminado</span>
+                      )}
                     </div>
                   )}
                 </div>
+
+                {!isEditing && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                    <button
+                      onClick={() => handleStartEdit(category)}
+                      style={{
+                        width: 26, height: 26, borderRadius: 8, border: 'none',
+                        background: 'none', cursor: 'pointer', fontSize: 13,
+                        color: '#aaa', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}
+                      title="Editar"
+                    >✎</button>
+                    <button
+                      onClick={() => setDeleteConfirm(category)}
+                      style={{
+                        width: 26, height: 26, borderRadius: 8, border: 'none',
+                        background: 'none', cursor: 'pointer', fontSize: 13,
+                        color: '#aaa', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}
+                      title={ingredientCount > 0 ? 'Los ingredientes se moverán a "Otros"' : 'Eliminar categoría'}
+                    >✕</button>
+                  </div>
+                )}
               </div>
             )
           })}
         </div>
       )}
 
+      {/* Delete confirm modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl p-5 w-full max-w-sm space-y-3 shadow-xl">
-            <h3 className="text-sm font-black text-gray-900">Eliminar Categoría</h3>
-            <p className="text-xs text-gray-500">
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 50,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(0,0,0,0.5)', padding: 16,
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: 16, padding: 20,
+            width: '100%', maxWidth: 360, boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+            display: 'flex', flexDirection: 'column', gap: 12,
+          }}>
+            <h3 style={{ fontSize: 13, fontWeight: 900, color: '#111', margin: 0 }}>Eliminar Categoría</h3>
+            <p style={{ fontSize: 12, color: '#666', margin: 0 }}>
               {getCategoryIngredientCount(deleteConfirm) > 0 ? (
                 <>Esta categoría tiene <strong>{getCategoryIngredientCount(deleteConfirm)}</strong> ingrediente(s). Los ingredientes serán movidos a la categoría &quot;Otros&quot;.</>
               ) : (
                 'Esta acción eliminará la categoría. ¿Estás seguro?'
               )}
             </p>
-            <div className="flex gap-2 pt-1">
+            <div style={{ display: 'flex', gap: 8 }}>
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="flex-1 h-9 rounded-xl border border-gray-200 text-gray-700 text-xs font-semibold hover:bg-gray-50 transition-colors"
-              >
-                Cancelar
-              </button>
+                style={{
+                  flex: 1, height: 36, borderRadius: 10, border: '1px solid #E5E5E5',
+                  background: '#fff', color: '#444', fontSize: 12, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: FONT,
+                }}
+              >Cancelar</button>
               <button
                 onClick={() => handleDeleteCategory(deleteConfirm)}
-                className="flex-1 h-9 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-semibold transition-colors"
-              >
-                {getCategoryIngredientCount(deleteConfirm) > 0 ? 'Mover y Eliminar' : 'Eliminar'}
-              </button>
+                style={{
+                  flex: 1, height: 36, borderRadius: 10, border: 'none',
+                  background: '#ef4444', color: '#fff', fontSize: 12, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: FONT,
+                }}
+              >{getCategoryIngredientCount(deleteConfirm) > 0 ? 'Mover y Eliminar' : 'Eliminar'}</button>
             </div>
           </div>
         </div>

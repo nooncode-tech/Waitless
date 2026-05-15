@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronLeft, Minus, Plus, Trash2, ShoppingBag, Phone, Gift, Armchair, User, Mail, MessageSquare } from 'lucide-react'
 import { useApp } from '@/lib/context'
-import { Button } from '@/components/ui/button'
 import { formatPrice } from '@/lib/store'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
 
 interface CartViewProps {
   mesa: number
@@ -20,7 +20,6 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
   const [showPhoneInput, setShowPhoneInput] = useState(false)
   const [seatNumber, setSeatNumber] = useState<number | null>(null)
 
-  // Datos del cliente
   const [nombre, setNombre] = useState('')
   const [telefono, setTelefono] = useState('')
   const [email, setEmail] = useState('')
@@ -53,116 +52,123 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
     createOrder('mesa', mesa, clienteInfo, seatNumber ?? undefined)
     onOrderConfirmed(subtotal)
   }
-  
+
+  const inputStyle: React.CSSProperties = {
+    flex: 1, fontSize: 13, background: 'transparent',
+    outline: 'none', border: 'none', color: '#000', fontFamily: FONT,
+  }
+
+  const inputRowStyle: React.CSSProperties = {
+    display: 'flex', alignItems: 'center',
+    border: '1.5px solid #e5e5e5', borderRadius: 12,
+    padding: '0 12px', gap: 8, height: 44,
+  }
+
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen bg-background flex flex-col max-w-md mx-auto">
-        {/* Header */}
-        <header className="px-4 pt-3 pb-2">
-          <div className="flex items-center justify-between">
-            <button 
-              onClick={onBack}
-              className="w-8 h-8 flex items-center justify-center"
-            >
-              <ChevronLeft className="h-5 w-5 text-foreground" />
+      <div style={{ minHeight: '100svh', background: '#fff', display: 'flex', flexDirection: 'column', maxWidth: 480, margin: '0 auto', fontFamily: FONT }}>
+        <header style={{ padding: '12px 16px 8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <button onClick={onBack} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#000' }}>
+              ←
             </button>
-            <span className="text-sm font-semibold text-foreground">Tu pedido</span>
-            <div className="w-8" />
+            <span style={{ fontSize: 15, fontWeight: 600, color: '#000' }}>Tu pedido</span>
+            <div style={{ width: 36 }} />
           </div>
         </header>
-        
-        <main className="flex-1 flex items-center justify-center px-4">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
-              <ShoppingBag className="w-7 h-7 text-muted-foreground" />
-            </div>
-            <h2 className="text-base font-semibold text-foreground">Tu carrito está vacío</h2>
-            <p className="text-sm text-muted-foreground mt-1">Agrega platillos del menú</p>
-            <Button
-              className="mt-5 bg-foreground text-background h-10 px-6 text-sm rounded-xl"
+        <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 16px' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>Ø</div>
+            <h2 style={{ fontSize: 16, fontWeight: 600, color: '#000', margin: 0 }}>Tu carrito está vacío</h2>
+            <p style={{ fontSize: 14, color: '#888', marginTop: 4 }}>Agrega platillos del menú</p>
+            <button
+              style={{
+                marginTop: 20, height: 44, padding: '0 24px',
+                background: '#000', color: '#fff', border: 'none', borderRadius: 12,
+                fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: FONT,
+              }}
               onClick={onBack}
             >
               Ver menú
-            </Button>
+            </button>
           </div>
         </main>
       </div>
     )
   }
-  
+
   return (
-    <div className="min-h-screen bg-background flex flex-col max-w-md mx-auto">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background px-4 pt-3 pb-3 border-b border-border">
-        <div className="flex items-center justify-between">
-          <button 
-            onClick={onBack}
-            className="w-8 h-8 flex items-center justify-center"
-          >
-            <ChevronLeft className="h-5 w-5 text-foreground" />
+    <div style={{ minHeight: '100svh', background: '#fff', display: 'flex', flexDirection: 'column', maxWidth: 480, margin: '0 auto', fontFamily: FONT }}>
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        background: '#fff', padding: '12px 16px', borderBottom: '1px solid #f0f0f0',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <button onClick={onBack} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#000' }}>
+            ←
           </button>
-          <div className="text-center">
-            <span className="text-sm font-semibold text-foreground">Tu pedido</span>
-            <p className="text-[11px] text-muted-foreground">Mesa {mesa}</p>
+          <div style={{ textAlign: 'center' }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: '#000', display: 'block' }}>Tu pedido</span>
+            <span style={{ fontSize: 11, color: '#888' }}>Mesa {mesa}</span>
           </div>
-          <div className="w-8" />
+          <div style={{ width: 36 }} />
         </div>
       </header>
 
       {/* Cart Items */}
-      <main className="flex-1 px-4 py-4 pb-48">
-        <div className="space-y-3">
+      <main style={{ flex: 1, padding: '16px 16px 192px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           {cart.map((item) => {
             const extrasTotal = item.extras?.reduce((e, ex) => e + ex.precio, 0) || 0
             const itemTotal = (item.menuItem.precio + extrasTotal) * item.cantidad
-            
+
             return (
-              <div key={item.id} className="flex gap-3 py-2">
+              <div key={item.id} style={{ display: 'flex', gap: 12, paddingTop: 12, paddingBottom: 12, borderBottom: '1px solid #f0f0f0' }}>
                 {/* Image */}
-                <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-secondary">
-  {/* eslint-disable-next-line @next/next/no-img-element */}
-  <img
-    src={item.menuItem.imagen || "/placeholder-food.png"}
-    alt={item.menuItem.nombre}
-    className="w-full h-full object-cover"
-  />
-</div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-medium text-[13px] text-foreground leading-tight">
+                <div style={{ width: 64, height: 64, borderRadius: 14, overflow: 'hidden', flexShrink: 0, background: '#f0f0f0' }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.menuItem.imagen || '/placeholder-food.png'}
+                    alt={item.menuItem.nombre}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </div>
+
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ fontSize: 13, fontWeight: 600, color: '#000', margin: 0, lineHeight: 1.3 }}>
                         {item.menuItem.nombre}
                       </h3>
-                      
-                      {/* Extras */}
                       {item.extras && item.extras.length > 0 && (
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                        <p style={{ fontSize: 11, color: '#888', marginTop: 2 }}>
                           + {item.extras.map(e => e.nombre).join(', ')}
                         </p>
                       )}
-                      
-                      {/* Notes */}
                       {item.notas && (
-                        <p className="text-[11px] text-muted-foreground mt-0.5 italic">
+                        <p style={{ fontSize: 11, color: '#888', marginTop: 2, fontStyle: 'italic' }}>
                           &quot;{item.notas}&quot;
                         </p>
                       )}
                     </div>
-                    
                     <button
-                      className="p-1.5 text-muted-foreground hover:text-destructive transition-colors"
+                      style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: '#ccc', fontSize: 16, lineHeight: 1 }}
                       onClick={() => removeFromCart(item.id)}
+                      aria-label="Eliminar"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      ✕
                     </button>
                   </div>
-                  
-                  <div className="flex items-center justify-between mt-2">
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
                     {/* Quantity controls */}
-                    <div className="flex items-center gap-2">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <button
-                        className="w-7 h-7 flex items-center justify-center border border-border rounded-lg"
+                        style={{
+                          width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          border: '1.5px solid #e5e5e5', borderRadius: 8, background: 'none',
+                          cursor: 'pointer', fontSize: 16, color: '#000', fontFamily: FONT,
+                        }}
                         onClick={() => {
                           if (item.cantidad > 1) {
                             updateCartItem(item.id, item.cantidad - 1)
@@ -171,20 +177,23 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
                           }
                         }}
                       >
-                        <Minus className="h-3 w-3" />
+                        −
                       </button>
-                      <span className="text-[13px] font-semibold text-foreground w-5 text-center">
+                      <span style={{ fontSize: 13, fontWeight: 700, color: '#000', minWidth: 16, textAlign: 'center' }}>
                         {item.cantidad}
                       </span>
                       <button
-                        className="w-7 h-7 flex items-center justify-center border border-border rounded-lg"
+                        style={{
+                          width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          border: '1.5px solid #e5e5e5', borderRadius: 8, background: 'none',
+                          cursor: 'pointer', fontSize: 16, color: '#000', fontFamily: FONT,
+                        }}
                         onClick={() => updateCartItem(item.id, item.cantidad + 1)}
                       >
-                        <Plus className="h-3 w-3" />
+                        +
                       </button>
                     </div>
-                    
-                    <p className="font-semibold text-[13px] text-foreground">
+                    <p style={{ fontSize: 13, fontWeight: 700, color: '#000', margin: 0 }}>
                       {formatPrice(itemTotal)}
                     </p>
                   </div>
@@ -195,30 +204,42 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
         </div>
       </main>
 
-      {/* Bottom Summary */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 space-y-3 max-w-md mx-auto">
+      {/* Bottom summary */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+        width: '100%', maxWidth: 480, background: '#fff',
+        borderTop: '1px solid #f0f0f0', padding: '12px 16px',
+        paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
+        display: 'flex', flexDirection: 'column', gap: 10, boxSizing: 'border-box',
+      }}>
 
         {/* Loyalty widget */}
         {!loyaltyPhone && !showPhoneInput && (
           <button
             onClick={() => setShowPhoneInput(true)}
-            className="w-full flex items-center gap-2 px-3 py-2 border border-border rounded-xl text-xs text-muted-foreground hover:border-foreground transition-colors"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '8px 12px', border: '1.5px solid #e5e5e5',
+              borderRadius: 12, fontSize: 12, color: '#888', background: 'none',
+              cursor: 'pointer', fontFamily: FONT, textAlign: 'left',
+              transition: 'border-color 0.15s',
+            }}
           >
-            <Gift className="h-3.5 w-3.5 shrink-0" />
+            <span style={{ fontSize: 14 }}>◈</span>
             <span>Acumula puntos — identifícate con tu teléfono</span>
           </button>
         )}
 
         {showPhoneInput && (
-          <div className="flex gap-2">
-            <div className="flex-1 flex items-center border border-border rounded-xl px-3 gap-2">
-              <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ ...inputRowStyle, flex: 1 }}>
+              <span style={{ fontSize: 14, color: '#aaa' }}>✆</span>
               <input
                 type="tel"
                 value={phoneInput}
                 onChange={e => setPhoneInput(e.target.value)}
                 placeholder="Número de teléfono"
-                className="flex-1 text-xs py-2 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
+                style={inputStyle}
                 onKeyDown={e => e.key === 'Enter' && handleIdentify()}
                 autoFocus
               />
@@ -226,105 +247,99 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
             <button
               onClick={handleIdentify}
               disabled={phoneInput.trim().length < 8}
-              className="px-3 h-9 bg-foreground text-background text-xs font-semibold rounded-xl disabled:opacity-40"
+              style={{
+                padding: '0 14px', height: 44, background: phoneInput.trim().length >= 8 ? '#000' : '#ccc',
+                color: '#fff', border: 'none', borderRadius: 12, fontSize: 12,
+                fontWeight: 700, cursor: 'pointer', fontFamily: FONT,
+              }}
             >
               OK
             </button>
             <button
               onClick={() => setShowPhoneInput(false)}
-              className="px-3 h-9 border border-border text-xs text-muted-foreground rounded-xl"
+              style={{
+                padding: '0 12px', height: 44, border: '1.5px solid #e5e5e5',
+                borderRadius: 12, fontSize: 14, color: '#888', background: 'none',
+                cursor: 'pointer', fontFamily: FONT,
+              }}
             >
-              ×
+              ✕
             </button>
           </div>
         )}
 
         {customer && (
-          <div className="flex items-center justify-between px-3 py-2 bg-success/10 border border-success/20 rounded-xl">
-            <div className="flex items-center gap-2">
-              <Gift className="h-3.5 w-3.5 text-success" />
-              <span className="text-xs font-semibold text-success">
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '8px 12px', background: '#f0fdf0', border: '1px solid #bbf7b0',
+            borderRadius: 12,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 14 }}>◈</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#166534' }}>
                 {customer.puntos} puntos acumulados
               </span>
             </div>
             {puntosGanados > 0 && (
-              <span className="text-[10px] text-success">+{puntosGanados} con este pedido</span>
+              <span style={{ fontSize: 11, color: '#166534' }}>+{puntosGanados} con este pedido</span>
             )}
           </div>
         )}
 
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>Subtotal</span>
-            <span>{formatPrice(subtotal)}</span>
+        {/* Totals */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 14, color: '#888' }}>Subtotal</span>
+            <span style={{ fontSize: 14, color: '#888' }}>{formatPrice(subtotal)}</span>
           </div>
-          <div className="flex justify-between text-base font-semibold text-foreground">
-            <span>Total</span>
-            <span>{formatPrice(subtotal)}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: '#000' }}>Total</span>
+            <span style={{ fontSize: 16, fontWeight: 700, color: '#000' }}>{formatPrice(subtotal)}</span>
           </div>
         </div>
 
-        {/* Datos del cliente */}
-        <div className="space-y-2">
-          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Tus datos <span className="normal-case font-normal opacity-60">(opcional)</span></p>
-          <div className="flex items-center border border-border rounded-xl px-3 gap-2 h-10">
-            <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <input
-              type="text"
-              value={nombre}
-              onChange={e => setNombre(e.target.value)}
-              placeholder="Nombre"
-              className="flex-1 text-xs bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
-            />
+        {/* Client data */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
+            Tus datos <span style={{ fontWeight: 400, textTransform: 'none' }}>(opcional)</span>
+          </p>
+          <div style={inputRowStyle}>
+            <span style={{ fontSize: 14, color: '#ccc' }}>◉</span>
+            <input type="text" value={nombre} onChange={e => setNombre(e.target.value)} placeholder="Nombre" style={inputStyle} />
           </div>
-          <div className="flex items-center border border-border rounded-xl px-3 gap-2 h-10">
-            <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <input
-              type="tel"
-              value={telefono}
-              onChange={e => setTelefono(e.target.value)}
-              placeholder="Teléfono"
-              className="flex-1 text-xs bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
-            />
+          <div style={inputRowStyle}>
+            <span style={{ fontSize: 14, color: '#ccc' }}>✆</span>
+            <input type="tel" value={telefono} onChange={e => setTelefono(e.target.value)} placeholder="Teléfono" style={inputStyle} />
           </div>
-          <div className="flex items-center border border-border rounded-xl px-3 gap-2 h-10">
-            <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="Correo electrónico"
-              className="flex-1 text-xs bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
-            />
+          <div style={inputRowStyle}>
+            <span style={{ fontSize: 14, color: '#ccc' }}>@</span>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Correo electrónico" style={inputStyle} />
           </div>
-          <div className="flex items-center border border-border rounded-xl px-3 gap-2 h-10">
-            <MessageSquare className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <input
-              type="text"
-              value={notas}
-              onChange={e => setNotas(e.target.value)}
-              placeholder="Notas para el restaurante"
-              className="flex-1 text-xs bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
-            />
+          <div style={inputRowStyle}>
+            <span style={{ fontSize: 14, color: '#ccc' }}>≡</span>
+            <input type="text" value={notas} onChange={e => setNotas(e.target.value)} placeholder="Notas para el restaurante" style={inputStyle} />
           </div>
         </div>
 
         {/* Seat selector */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Armchair className="h-3.5 w-3.5" />
-            <span>¿En qué asiento estás? El mesero te lo lleva ahí. <span className="opacity-60">(opcional)</span></span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#888' }}>
+            <span>⊞</span>
+            <span>¿En qué asiento estás? El mesero te lo lleva ahí. <span style={{ opacity: 0.6 }}>(opcional)</span></span>
           </div>
-          <div className="flex gap-1.5 flex-wrap">
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {[1,2,3,4,5,6,7,8].map(n => (
               <button
                 key={n}
                 onClick={() => setSeatNumber(seatNumber === n ? null : n)}
-                className={`w-9 h-9 rounded-xl text-sm font-semibold border transition-colors ${
-                  seatNumber === n
-                    ? 'bg-foreground text-background border-foreground'
-                    : 'bg-background text-foreground border-border hover:border-foreground'
-                }`}
+                style={{
+                  width: 36, height: 36, borderRadius: 12, fontSize: 14, fontWeight: 700,
+                  border: '1.5px solid', cursor: 'pointer', fontFamily: FONT,
+                  background: seatNumber === n ? '#000' : '#fff',
+                  color: seatNumber === n ? '#fff' : '#000',
+                  borderColor: seatNumber === n ? '#000' : '#e5e5e5',
+                  transition: 'background 0.12s, border-color 0.12s',
+                }}
               >
                 {n}
               </button>
@@ -332,15 +347,22 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
           </div>
         </div>
 
-        <Button
-          className="w-full bg-foreground hover:bg-foreground/90 text-background h-12 text-sm font-semibold rounded-xl"
+        <button
+          style={{
+            width: '100%', height: 52, background: '#000', color: '#fff',
+            border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700,
+            cursor: 'pointer', fontFamily: FONT,
+          }}
           onClick={handleConfirm}
         >
           Confirmar pedido
-        </Button>
+        </button>
 
         <button
-          className="w-full text-sm text-muted-foreground py-1"
+          style={{
+            background: 'none', border: 'none', color: '#888', fontSize: 14,
+            cursor: 'pointer', padding: '6px 0', fontFamily: FONT,
+          }}
           onClick={onBack}
         >
           Seguir agregando

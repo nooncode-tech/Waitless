@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Check, Phone, ChevronLeft, Copy, User, Truck, ShoppingBag, MapPin } from 'lucide-react'
 import { ReviewSection } from '@/components/consumidor/review-section'
 import { supabase } from '@/lib/supabase'
 
@@ -332,7 +331,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
         {/* Seal */}
         <div className="mnu-receipt-seal">
           <div className="mnu-receipt-seal-inner">
-            <Check size={28} color="#0a3a0a" strokeWidth={2.5} />
+            <span style={{ fontSize: 24, color: '#0a3a0a', fontWeight: 900 }}>✓</span>
           </div>
         </div>
 
@@ -392,8 +391,8 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
               className={`mnu-receipt-btn ${copiedTracking ? 'mnu-receipt-btn-copied' : ''}`}
             >
               {copiedTracking
-                ? <><Check size={16} />Link copiado</>
-                : <><Copy size={16} />Copiar link de seguimiento</>
+                ? <>✓ Link copiado</>
+                : <>⧉ Copiar link de seguimiento</>
               }
             </button>
           )}
@@ -405,8 +404,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
               className="mnu-receipt-btn"
               style={{ background: '#25D366', borderColor: '#25D366', color: '#fff' }}
             >
-              <Phone size={16} />
-              Contactar por WhatsApp
+              📱 Contactar por WhatsApp
             </a>
           )}
           <button
@@ -439,7 +437,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       <div className="mnu-root" style={{ display: 'flex', flexDirection: 'column' }}>
         <header className="mnu-screen-header">
           <button className="mnu-screen-header-back" onClick={() => setScreen('menu')}>
-            <ChevronLeft size={18} />
+            ←
           </button>
           <h1>Enviar mensaje</h1>
         </header>
@@ -448,7 +446,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
           {msgSent ? (
             <div className="mnu-msg-sent">
               <div className="mnu-msg-sent-icon">
-                <Check size={24} color="#0a3a0a" strokeWidth={2.5} />
+                <span style={{ fontSize: 20, color: '#0a3a0a', fontWeight: 900 }}>✓</span>
               </div>
               <div>
                 <p className="mnu-msg-sent-title">Mensaje enviado</p>
@@ -524,7 +522,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       <div className="mnu-root" style={{ display: 'flex', flexDirection: 'column' }}>
         <header className="mnu-screen-header">
           <button className="mnu-screen-header-back" onClick={() => setScreen('cart')}>
-            <ChevronLeft size={18} />
+            ←
           </button>
           <h1>Confirmar pedido</h1>
         </header>
@@ -540,13 +538,13 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
                   className={`mnu-entrega-btn ${!isDeliveryMode ? 'mnu-entrega-btn-on' : ''}`}
                   onClick={() => setModoEntrega('para_llevar')}
                 >
-                  <ShoppingBag size={16} />Para llevar
+                  <span style={{ fontSize: 14 }}>⊞</span> Para llevar
                 </button>
                 <button
                   className={`mnu-entrega-btn ${isDeliveryMode ? 'mnu-entrega-btn-on' : ''}`}
                   onClick={() => setModoEntrega('delivery')}
                 >
-                  <Truck size={16} />Delivery
+                  <span style={{ fontSize: 14 }}>→</span> Delivery
                 </button>
               </div>
             </div>
@@ -561,7 +559,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ position: 'relative' }}>
-                  <MapPin size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgba(0,0,0,0.25)', pointerEvents: 'none' }} />
+                  <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'rgba(0,0,0,0.25)', pointerEvents: 'none', fontSize: 14 }}>◈</span>
                   <input
                     value={direccion}
                     onChange={e => setDireccion(e.target.value)}
@@ -583,7 +581,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
                   </select>
                 )}
                 <p style={{ fontSize: 10, color: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <Truck size={12} />El costo de envío será confirmado por el restaurante.
+                  <span style={{ fontSize: 11 }}>→</span> El costo de envío será confirmado por el restaurante.
                 </p>
               </div>
             </div>
@@ -716,7 +714,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
       <div className="mnu-root" style={{ display: 'flex', flexDirection: 'column' }}>
         <header className="mnu-screen-header">
           <button className="mnu-screen-header-back" onClick={() => setScreen('menu')}>
-            <ChevronLeft size={18} />
+            ←
           </button>
           <h1>Tu carrito</h1>
           {cartCount > 0 && (
@@ -798,7 +796,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
                         onClick={() => setModoEntrega('para_llevar')}
                         style={{ flexDirection: 'column', gap: 2, height: 52 }}
                       >
-                        <ShoppingBag size={16} />
+                        <span style={{ fontSize: 14 }}>⊞</span>
                         <span style={{ fontSize: 11 }}>Recoger en tienda</span>
                       </button>
                       <button
@@ -806,7 +804,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
                         onClick={() => setModoEntrega('delivery')}
                         style={{ flexDirection: 'column', gap: 2, height: 52 }}
                       >
-                        <Truck size={16} />
+                        <span style={{ fontSize: 14 }}>→</span>
                         <span style={{ fontSize: 11 }}>Envío a domicilio</span>
                       </button>
                     </div>
@@ -1054,7 +1052,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
               rel="noopener noreferrer"
               className="mnu-wa-btn"
             >
-              <Phone size={14} />WhatsApp
+              📱 WhatsApp
             </a>
           )}
         </div>
@@ -1220,7 +1218,7 @@ export function MenuDigitalPage({ slug }: { slug: string }) {
         <div className="mnu-auth-overlay" onClick={() => setShowAuthGate(false)}>
           <div className="mnu-auth-card" onClick={e => e.stopPropagation()}>
             <div className="mnu-auth-icon">
-              <User size={24} color="#fff" />
+              <span style={{ fontSize: 22, color: '#fff' }}>◎</span>
             </div>
             <p className="mnu-auth-title">Iniciá sesión para pedir</p>
             <p className="mnu-auth-sub">

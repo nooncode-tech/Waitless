@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Star, Send, LogIn, X, AlertCircle, CheckCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
 
 interface Review {
   id: string
@@ -22,7 +24,7 @@ interface Props {
 function StarPicker({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   const [hover, setHover] = useState(0)
   return (
-    <div className="flex gap-1">
+    <div style={{ display: 'flex', gap: 4 }}>
       {Array.from({ length: 5 }, (_, i) => i + 1).map(n => (
         <button
           key={n}
@@ -30,12 +32,17 @@ function StarPicker({ value, onChange }: { value: number; onChange: (n: number) 
           onClick={() => onChange(n)}
           onMouseEnter={() => setHover(n)}
           onMouseLeave={() => setHover(0)}
-          className="transition-transform hover:scale-110 active:scale-95"
-        >
-          <Star
-            className={`h-8 w-8 transition-colors ${n <= (hover || value) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`}
-          />
-        </button>
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 2,
+            fontSize: 28,
+            color: n <= (hover || value) ? '#F59E0B' : '#E5E7EB',
+            lineHeight: 1,
+            transition: 'color 0.12s',
+          }}
+        >★</button>
       ))}
     </div>
   )
@@ -106,18 +113,32 @@ export function ReviewSection({ slug }: Props) {
     ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
     : 0
 
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    height: 44,
+    padding: '0 14px',
+    border: '1px solid #E5E5E5',
+    borderRadius: 10,
+    fontSize: 14,
+    fontFamily: FONT,
+    color: '#000',
+    background: '#fff',
+    outline: 'none',
+    boxSizing: 'border-box',
+  }
+
   return (
-    <section className="mt-8 px-4 pb-10">
+    <section style={{ marginTop: 32, padding: '0 16px 40px', fontFamily: FONT }}>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
-          <h2 className="font-black text-gray-900 text-lg" style={{ letterSpacing: '-0.02em' }}>Reseñas</h2>
+          <h2 style={{ fontWeight: 900, color: '#000', fontSize: 18, letterSpacing: '-0.02em', margin: 0 }}>Reseñas</h2>
           {reviews.length > 0 && (
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-              <span className="text-sm font-bold text-gray-900">{avgRating.toFixed(1)}</span>
-              <span className="text-sm text-gray-400">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+              <span style={{ fontSize: 14, color: '#F59E0B' }}>★</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#000' }}>{avgRating.toFixed(1)}</span>
+              <span style={{ fontSize: 14, color: 'rgba(0,0,0,0.4)' }}>
                 ({reviews.length} reseña{reviews.length !== 1 ? 's' : ''})
               </span>
             </div>
@@ -127,49 +148,72 @@ export function ReviewSection({ slug }: Props) {
         {isConsumer && !submitSuccess && (
           <button
             onClick={() => setShowForm(f => !f)}
-            className="flex items-center gap-1.5 text-xs font-bold bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition-colors"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 12, fontWeight: 700, fontFamily: FONT,
+              background: '#000', color: '#fff',
+              padding: '7px 16px', borderRadius: 999,
+              border: 'none', cursor: 'pointer',
+            }}
           >
-            <Star className="h-3.5 w-3.5" />
-            Dejar reseña
+            <span>★</span> Dejar reseña
           </button>
         )}
 
         {!isConsumer && (
           <a
             href="/consumidor"
-            className="flex items-center gap-1.5 text-xs font-semibold border border-gray-200 text-gray-600 px-4 py-2 rounded-full hover:border-gray-400 transition-colors"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 12, fontWeight: 600, fontFamily: FONT,
+              color: 'rgba(0,0,0,0.6)', textDecoration: 'none',
+              border: '1px solid #E5E5E5', padding: '7px 16px', borderRadius: 999,
+            }}
           >
-            <LogIn className="h-3.5 w-3.5" />
-            Iniciar sesión
+            → Iniciar sesión
           </a>
         )}
       </div>
 
       {/* Success banner */}
       {submitSuccess && (
-        <div className="flex items-center gap-2 bg-[#E8F9F1] border border-[#06C167]/20 rounded-2xl px-4 py-3 mb-4 text-sm text-[#1A7A47] font-medium">
-          <CheckCircle className="h-4 w-4 shrink-0" />
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          background: '#E8F9F1', border: '1px solid rgba(6,193,103,0.2)',
+          borderRadius: 16, padding: '12px 16px', marginBottom: 16,
+          fontSize: 14, color: '#1A7A47', fontWeight: 500,
+        }}>
+          <span style={{ flexShrink: 0 }}>✓</span>
           ¡Gracias por tu reseña! Ya aparece en la lista.
         </div>
       )}
 
       {/* Review form */}
       {showForm && (
-        <div className="bg-white rounded-2xl p-5 mb-4 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <p className="font-bold text-gray-900 text-sm">Tu opinión</p>
+        <div style={{
+          background: '#fff', borderRadius: 16, padding: 20, marginBottom: 16,
+          boxShadow: '0 1px 8px rgba(0,0,0,0.06)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <p style={{ fontWeight: 700, color: '#000', fontSize: 14, margin: 0 }}>Tu opinión</p>
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </button>
+              style={{
+                width: 28, height: 28, borderRadius: 8,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'rgba(0,0,0,0.4)', fontSize: 16,
+              }}
+            >✕</button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              <p style={{
+                fontSize: 11, fontWeight: 600, color: 'rgba(0,0,0,0.4)',
+                textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8, fontFamily: MONO,
+              }}>
                 Calificación *
               </p>
               <StarPicker value={rating} onChange={setRating} />
@@ -180,7 +224,7 @@ export function ReviewSection({ slug }: Props) {
               placeholder="Título (opcional)"
               value={titulo}
               onChange={e => setTitulo(e.target.value)}
-              className="w-full h-12 px-4 bg-gray-100 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10"
+              style={inputStyle}
             />
 
             <textarea
@@ -188,12 +232,22 @@ export function ReviewSection({ slug }: Props) {
               value={comentario}
               onChange={e => setComentario(e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 bg-gray-100 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10 resize-none"
+              style={{
+                ...inputStyle,
+                height: 'auto',
+                padding: '12px 14px',
+                resize: 'none',
+                lineHeight: 1.5,
+              }}
             />
 
             {submitError && (
-              <div className="flex items-center gap-2 text-red-600 text-xs bg-red-50 rounded-xl px-3 py-2.5">
-                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                color: '#DC2626', fontSize: 12,
+                background: '#FEF2F2', borderRadius: 10, padding: '10px 12px',
+              }}>
+                <span style={{ flexShrink: 0 }}>⚠</span>
                 {submitError}
               </div>
             )}
@@ -201,56 +255,74 @@ export function ReviewSection({ slug }: Props) {
             <button
               type="submit"
               disabled={submitting || rating === 0 || !comentario.trim()}
-              className="w-full h-12 bg-black hover:bg-gray-900 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold text-sm rounded-xl transition-colors flex items-center justify-center gap-2"
+              style={{
+                width: '100%', height: 44,
+                background: submitting || rating === 0 || !comentario.trim() ? '#E5E5E5' : '#000',
+                color: submitting || rating === 0 || !comentario.trim() ? 'rgba(0,0,0,0.35)' : '#fff',
+                fontWeight: 700, fontSize: 14, fontFamily: FONT,
+                border: 'none', borderRadius: 10, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                transition: 'background 0.15s',
+              }}
             >
               {submitting
-                ? <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                : <><Send className="h-3.5 w-3.5" />Publicar reseña</>
+                ? <span style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'rev-spin 0.7s linear infinite' }} />
+                : <><span>→</span> Publicar reseña</>
               }
             </button>
           </form>
+
+          <style>{`@keyframes rev-spin { to { transform: rotate(360deg) } }`}</style>
         </div>
       )}
 
       {/* Review list */}
       {loadingReviews ? (
-        <div className="flex justify-center py-8">
-          <div className="h-6 w-6 border-2 border-gray-200 border-t-gray-500 rounded-full animate-spin" />
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '32px 0' }}>
+          <div style={{ width: 24, height: 24, border: '2px solid #E5E5E5', borderTopColor: '#666', borderRadius: '50%', animation: 'rev-spin 0.7s linear infinite' }} />
         </div>
       ) : reviews.length === 0 ? (
-        <div className="bg-white rounded-2xl p-10 text-center">
-          <Star className="h-8 w-8 text-gray-200 mx-auto mb-3" />
-          <p className="text-sm font-semibold text-gray-500">Todavía no hay reseñas</p>
-          <p className="text-xs text-gray-400 mt-1">¡Sé el primero en dejar una opinión!</p>
+        <div style={{
+          background: '#fff', borderRadius: 16, padding: '40px 16px',
+          textAlign: 'center',
+        }}>
+          <div style={{ fontSize: 32, color: '#E5E5E5', marginBottom: 12 }}>★</div>
+          <p style={{ fontSize: 14, fontWeight: 600, color: 'rgba(0,0,0,0.4)', margin: 0 }}>Todavía no hay reseñas</p>
+          <p style={{ fontSize: 12, color: 'rgba(0,0,0,0.3)', marginTop: 4 }}>¡Sé el primero en dejar una opinión!</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {reviews.map(r => (
-            <div key={r.id} className="bg-white rounded-2xl p-4 shadow-sm">
-              <div className="flex items-start justify-between gap-2 mb-2">
+            <div key={r.id} style={{
+              background: '#fff', borderRadius: 16, padding: 16,
+              boxShadow: '0 1px 6px rgba(0,0,0,0.05)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
                 <div>
-                  <p className="font-bold text-sm text-gray-900">{r.consumer_nombre}</p>
-                  <div className="flex items-center gap-0.5 mt-0.5">
+                  <p style={{ fontWeight: 700, fontSize: 14, color: '#000', margin: 0 }}>{r.consumer_nombre}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginTop: 2 }}>
                     {Array.from({ length: 5 }, (_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-3 w-3 ${i < r.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`}
-                      />
+                      <span key={i} style={{ fontSize: 12, color: i < r.rating ? '#F59E0B' : '#E5E7EB' }}>★</span>
                     ))}
                   </div>
                 </div>
-                <span className="text-xs text-gray-400 shrink-0">
+                <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.35)', flexShrink: 0, fontFamily: MONO }}>
                   {new Date(r.created_at).toLocaleDateString('es', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
               </div>
               {r.titulo && (
-                <p className="font-semibold text-sm text-gray-800 mb-1">{r.titulo}</p>
+                <p style={{ fontWeight: 600, fontSize: 14, color: '#111', marginBottom: 4 }}>{r.titulo}</p>
               )}
-              <p className="text-sm text-gray-600 leading-relaxed">{r.comentario}</p>
+              <p style={{ fontSize: 14, color: 'rgba(0,0,0,0.65)', lineHeight: 1.6, margin: 0 }}>{r.comentario}</p>
               {r.respuesta_restaurante && (
-                <div className="mt-3 bg-gray-50 rounded-xl p-3 border-l-2 border-gray-300">
-                  <p className="text-xs font-bold text-gray-500 mb-1">Respuesta del restaurante</p>
-                  <p className="text-sm text-gray-700 leading-relaxed">{r.respuesta_restaurante}</p>
+                <div style={{
+                  marginTop: 12, background: '#F9FAFB', borderRadius: 10, padding: 12,
+                  borderLeft: '2px solid #D1D5DB',
+                }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(0,0,0,0.4)', marginBottom: 4, fontFamily: MONO, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    Respuesta del restaurante
+                  </p>
+                  <p style={{ fontSize: 14, color: 'rgba(0,0,0,0.7)', lineHeight: 1.6, margin: 0 }}>{r.respuesta_restaurante}</p>
                 </div>
               )}
             </div>

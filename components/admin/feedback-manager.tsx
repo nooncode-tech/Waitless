@@ -1,10 +1,25 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Star, MessageSquare, TrendingUp } from 'lucide-react'
-import { Spinner } from '@/components/ui/spinner'
 import { supabase } from '@/lib/supabase'
 import type { Feedback } from '@/lib/store'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+
+function StarRow({ rating, total }: { rating: number; total: number }) {
+  const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating)
+  return stars
+}
+
+function StarDisplay({ filled, total = 5 }: { filled: number; total?: number }) {
+  return (
+    <span style={{ fontSize: 11, letterSpacing: 1 }}>
+      {Array.from({ length: total }).map((_, i) => (
+        <span key={i} style={{ color: i < filled ? '#F59E0B' : '#E5E7EB' }}>★</span>
+      ))}
+    </span>
+  )
+}
 
 export function FeedbackManager() {
   const [feedbackList, setFeedbackList] = useState<Feedback[]>([])
@@ -48,84 +63,106 @@ export function FeedbackManager() {
     ? Math.round((promoters / feedbackList.length) * 100)
     : 0
 
+  const cardStyle: React.CSSProperties = {
+    border: '1px solid #E5E5E5',
+    borderRadius: 14,
+    background: '#fff',
+    padding: 16,
+    textAlign: 'center',
+  }
+
   return (
-    <div className="space-y-5 max-w-3xl" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 720, fontFamily: FONT }}>
       <div>
-        <h2 className="text-lg font-black text-gray-900">Feedback de clientes</h2>
-        <p className="text-xs text-gray-500 mt-0.5">{feedbackList.length} respuestas recibidas</p>
+        <h2 style={{ fontSize: 17, fontWeight: 900, color: '#111', margin: 0 }}>Feedback de clientes</h2>
+        <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 4 }}>
+          {feedbackList.length} respuestas recibidas
+        </p>
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="border border-gray-100 rounded-2xl p-4 bg-white text-center">
-          <Star className="h-5 w-5 mx-auto mb-1 text-yellow-500 fill-yellow-500" />
-          <p className="text-2xl font-black text-gray-900">{avgRating}</p>
-          <p className="text-[10px] text-gray-400 uppercase tracking-wide">Promedio</p>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        <div style={cardStyle}>
+          <div style={{ fontSize: 20, color: '#F59E0B', marginBottom: 4 }}>★</div>
+          <p style={{ fontSize: 26, fontWeight: 900, color: '#111', margin: 0 }}>{avgRating}</p>
+          <p style={{ fontSize: 10, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>Promedio</p>
         </div>
-        <div className="border border-gray-100 rounded-2xl p-4 bg-white text-center">
-          <TrendingUp className="h-5 w-5 mx-auto mb-1 text-[#06C167]" />
-          <p className="text-2xl font-black text-gray-900">{nps}%</p>
-          <p className="text-[10px] text-gray-400 uppercase tracking-wide">Satisfechos (≥4★)</p>
+        <div style={cardStyle}>
+          <div style={{ fontSize: 20, color: '#0a3a0a', marginBottom: 4 }}>↑</div>
+          <p style={{ fontSize: 26, fontWeight: 900, color: '#111', margin: 0 }}>{nps}%</p>
+          <p style={{ fontSize: 10, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>Satisfechos (≥4★)</p>
         </div>
-        <div className="border border-gray-100 rounded-2xl p-4 bg-white text-center">
-          <MessageSquare className="h-5 w-5 mx-auto mb-1 text-gray-400" />
-          <p className="text-2xl font-black text-gray-900">{feedbackList.filter(f => f.comentario).length}</p>
-          <p className="text-[10px] text-gray-400 uppercase tracking-wide">Con comentario</p>
+        <div style={cardStyle}>
+          <div style={{ fontSize: 20, color: '#9CA3AF', marginBottom: 4 }}>◫</div>
+          <p style={{ fontSize: 26, fontWeight: 900, color: '#111', margin: 0 }}>
+            {feedbackList.filter(f => f.comentario).length}
+          </p>
+          <p style={{ fontSize: 10, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 2 }}>Con comentario</p>
         </div>
       </div>
 
       {/* Distribution */}
-      <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100">
-          <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Distribución</p>
+      <div style={{ border: '1px solid #E5E5E5', borderRadius: 14, background: '#fff', overflow: 'hidden' }}>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid #F3F4F6' }}>
+          <p style={{ fontSize: 11, fontWeight: 900, color: '#111', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>
+            Distribución
+          </p>
         </div>
-        <div className="p-4 space-y-2">
+        <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
           {distribution.map(d => (
-            <div key={d.star} className="flex items-center gap-3">
-              <div className="flex items-center gap-0.5 w-16 shrink-0">
-                {Array.from({ length: d.star }).map((_, i) => (
-                  <Star key={i} className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                ))}
+            <div key={d.star} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 64, flexShrink: 0 }}>
+                <StarDisplay filled={d.star} />
               </div>
-              <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-gray-900 rounded-full" style={{ width: `${d.pct}%` }} />
+              <div style={{ flex: 1, height: 8, background: '#F3F4F6', borderRadius: 99, overflow: 'hidden' }}>
+                <div
+                  style={{
+                    height: '100%', background: '#111',
+                    borderRadius: 99, width: `${d.pct}%`,
+                    transition: 'width 0.4s ease',
+                  }}
+                />
               </div>
-              <span className="text-xs text-gray-500 w-8 text-right">{d.count}</span>
+              <span style={{ fontSize: 11, color: '#9CA3AF', width: 28, textAlign: 'right' }}>{d.count}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Comments */}
-      <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100">
-          <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Últimos comentarios</p>
+      <div style={{ border: '1px solid #E5E5E5', borderRadius: 14, background: '#fff', overflow: 'hidden' }}>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid #F3F4F6' }}>
+          <p style={{ fontSize: 11, fontWeight: 900, color: '#111', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>
+            Últimos comentarios
+          </p>
         </div>
-        <div className="divide-y divide-gray-100">
+        <div>
           {loading ? (
-            <div className="flex items-center justify-center gap-2 py-8">
-              <Spinner className="size-3.5 text-gray-400" />
-              <p className="text-xs text-gray-400">Cargando...</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '32px 0' }}>
+              <span style={{ fontSize: 24, color: '#CCC' }}>↻</span>
+              <p style={{ fontSize: 12, color: '#9CA3AF', margin: 0 }}>Cargando...</p>
             </div>
           ) : feedbackList.filter(f => f.comentario).length === 0 ? (
-            <p className="text-xs text-gray-400 text-center py-8">Sin comentarios aún</p>
+            <div style={{ textAlign: 'center', padding: '32px 16px' }}>
+              <div style={{ fontSize: 36, color: '#D1D5DB' }}>Ø</div>
+              <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 8 }}>Sin comentarios aún</p>
+            </div>
           ) : (
-            feedbackList.filter(f => f.comentario).slice(0, 20).map(f => (
-              <div key={f.id} className="px-4 py-3">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-3 w-3 ${i < f.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-[10px] text-gray-400">
+            feedbackList.filter(f => f.comentario).slice(0, 20).map((f, idx) => (
+              <div
+                key={f.id}
+                style={{
+                  padding: '12px 16px',
+                  borderTop: idx > 0 ? '1px solid #F3F4F6' : undefined,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <StarDisplay filled={f.rating} />
+                  <span style={{ fontSize: 10, color: '#9CA3AF' }}>
                     Mesa {f.mesa} · {new Date(f.createdAt).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}
                   </span>
                 </div>
-                <p className="text-xs text-gray-900">{f.comentario}</p>
+                <p style={{ fontSize: 12, color: '#111', margin: 0 }}>{f.comentario}</p>
               </div>
             ))
           )}

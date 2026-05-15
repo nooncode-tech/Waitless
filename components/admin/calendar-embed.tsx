@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { CalendarDays, ExternalLink, ChevronDown } from 'lucide-react'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
 
 const PRESETS = [
   { label: 'Onboarding Waitless', url: 'https://cal.com/waitless/onboarding' },
@@ -17,39 +18,53 @@ export function CalendarEmbed() {
   const activeUrl = customUrl.trim() || selected.url
 
   return (
-    <div className="p-6 max-w-3xl space-y-5">
+    <div style={{ padding: 24, maxWidth: 768, display: 'flex', flexDirection: 'column', gap: 20, fontFamily: FONT }}>
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Calendario</h2>
-        <p className="text-sm text-gray-500 mt-0.5">
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: '#111' }}>Calendario</h2>
+        <p style={{ margin: '4px 0 0', fontSize: 13, color: '#6B7280' }}>
           Agenda una reunión de onboarding, soporte o demo con el equipo de Waitless.
         </p>
       </div>
 
       {/* Preset selector */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-3">
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Tipo de reunión</p>
-        <div className="flex flex-wrap gap-2">
-          {PRESETS.map(p => (
-            <button
-              key={p.url}
-              onClick={() => { setSelected(p); setCustomUrl(''); setShowCustom(false) }}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
-                selected.url === p.url && !customUrl
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
+      <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 14, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '.08em' }}>
+          Tipo de reunión
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {PRESETS.map(p => {
+            const isActive = selected.url === p.url && !customUrl
+            return (
+              <button
+                key={p.url}
+                onClick={() => { setSelected(p); setCustomUrl(''); setShowCustom(false) }}
+                style={{
+                  padding: '8px 16px', borderRadius: 10, fontSize: 13, fontWeight: 600,
+                  border: 'none', cursor: 'pointer', fontFamily: FONT,
+                  background: isActive ? '#111' : '#F3F4F6',
+                  color: isActive ? '#fff' : '#374151',
+                  transition: 'background .15s, color .15s',
+                }}
+              >
+                {p.label}
+              </button>
+            )
+          })}
           <button
             onClick={() => setShowCustom(s => !s)}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-1 ${
-              showCustom ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
+            style={{
+              padding: '8px 16px', borderRadius: 10, fontSize: 13, fontWeight: 600,
+              border: 'none', cursor: 'pointer', fontFamily: FONT,
+              background: showCustom ? '#111' : '#F3F4F6',
+              color: showCustom ? '#fff' : '#374151',
+              display: 'flex', alignItems: 'center', gap: 6,
+              transition: 'background .15s, color .15s',
+            }}
           >
             URL personalizada
-            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showCustom ? 'rotate-180' : ''}`} />
+            <span style={{ fontSize: 11, display: 'inline-block', transform: showCustom ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}>
+              ↓
+            </span>
           </button>
         </div>
 
@@ -59,7 +74,12 @@ export function CalendarEmbed() {
             placeholder="https://cal.com/..."
             value={customUrl}
             onChange={e => setCustomUrl(e.target.value)}
-            className="w-full h-11 bg-gray-100 rounded-xl px-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-black/10"
+            style={{
+              width: '100%', height: 44, background: '#F3F4F6', borderRadius: 10,
+              padding: '0 16px', fontSize: 13, color: '#111',
+              border: '1px solid #E5E5E5', outline: 'none', boxSizing: 'border-box',
+              fontFamily: FONT,
+            }}
           />
         )}
 
@@ -67,24 +87,27 @@ export function CalendarEmbed() {
           href={activeUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#9CA3AF', textDecoration: 'none' }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#374151')}
+          onMouseLeave={e => (e.currentTarget.style.color = '#9CA3AF')}
         >
-          <ExternalLink className="h-3.5 w-3.5" />
+          <span>↗</span>
           Abrir en nueva pestaña
         </a>
       </div>
 
       {/* Calendar iframe */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden" style={{ height: 700 }}>
-        <div className="flex items-center gap-2 px-5 py-3.5 border-b border-gray-100">
-          <CalendarDays className="h-4 w-4 text-gray-400" />
-          <p className="text-sm font-semibold text-gray-700">{customUrl || selected.label}</p>
+      <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 14, overflow: 'hidden', height: 700 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 20px', borderBottom: '1px solid #F3F4F6' }}>
+          <span style={{ fontSize: 16, color: '#9CA3AF' }}>⏱</span>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#374151' }}>
+            {customUrl || selected.label}
+          </p>
         </div>
         <iframe
           key={activeUrl}
           src={activeUrl}
-          className="w-full"
-          style={{ height: 'calc(700px - 53px)', border: 'none' }}
+          style={{ width: '100%', height: 'calc(700px - 53px)', border: 'none', display: 'block' }}
           title="Calendario Waitless"
           allow="camera; microphone"
         />

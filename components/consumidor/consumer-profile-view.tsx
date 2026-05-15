@@ -2,11 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  User, MapPin, CreditCard, Star, Plus, Trash2, Home, Briefcase,
-  Check, X, LogOut, ChevronRight, AlertCircle, ArrowLeft, Lock,
-  ShoppingBag, Wallet, Bell, BellOff,
-} from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { ConsumerPaymentTab } from './consumer-payment-tab'
 import { ConsumerOrdersTab } from './consumer-orders-tab'
@@ -50,12 +45,12 @@ function urlBase64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
 }
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  { id: 'perfil',      label: 'Perfil',      icon: <User style={{ width: 14, height: 14 }} /> },
-  { id: 'pedidos',     label: 'Pedidos',     icon: <ShoppingBag style={{ width: 14, height: 14 }} /> },
-  { id: 'monedero',    label: 'Monedero',    icon: <Wallet style={{ width: 14, height: 14 }} /> },
-  { id: 'direcciones', label: 'Direcciones', icon: <MapPin style={{ width: 14, height: 14 }} /> },
-  { id: 'tarjetas',    label: 'Pagos',       icon: <CreditCard style={{ width: 14, height: 14 }} /> },
-  { id: 'resenas',     label: 'Reseñas',     icon: <Star style={{ width: 14, height: 14 }} /> },
+  { id: 'perfil',      label: 'Perfil',      icon: <span style={{ fontSize: 13 }}>◎</span> },
+  { id: 'pedidos',     label: 'Pedidos',     icon: <span style={{ fontSize: 13 }}>⊞</span> },
+  { id: 'monedero',    label: 'Monedero',    icon: <span style={{ fontSize: 13 }}>$</span> },
+  { id: 'direcciones', label: 'Direcciones', icon: <span style={{ fontSize: 13 }}>◈</span> },
+  { id: 'tarjetas',    label: 'Pagos',       icon: <span style={{ fontSize: 13 }}>▣</span> },
+  { id: 'resenas',     label: 'Reseñas',     icon: <span style={{ fontSize: 13 }}>★</span> },
 ]
 
 export function ConsumerProfileView() {
@@ -236,12 +231,12 @@ export function ConsumerProfileView() {
       <header className="con-header">
         <div className="con-header-inner">
           <button className="con-back-btn" onClick={() => router.push('/consumidor/explorar')}>
-            <ArrowLeft style={{ width: 16, height: 16 }} />
+            <span>←</span>
             <span>Explorar</span>
           </button>
           <span className="con-header-title">Mi cuenta</span>
           <button className="con-logout-btn" onClick={handleLogout}>
-            <LogOut style={{ width: 16, height: 16 }} />
+            <span>↩</span>
             <span>Salir</span>
           </button>
         </div>
@@ -278,7 +273,7 @@ export function ConsumerProfileView() {
             ))}
             <div className="con-nav-divider" />
             <button className="con-nav-item con-nav-item--danger" onClick={handleLogout}>
-              <LogOut style={{ width: 14, height: 14 }} />
+              <span style={{ fontSize: 13 }}>↩</span>
               Cerrar sesión
             </button>
           </nav>
@@ -346,7 +341,7 @@ export function ConsumerProfileView() {
 
                 <div className="con-field" style={{ marginTop: 16 }}>
                   <label className="con-label">
-                    <Lock style={{ width: 11, height: 11 }} />
+                    <span style={{ fontSize: 10 }}>🔒</span>
                     Email
                   </label>
                   <input className="con-input con-input--readonly" value={profile?.email ?? ''} readOnly />
@@ -365,13 +360,13 @@ export function ConsumerProfileView() {
 
                 {saveError && (
                   <div className="con-alert-error">
-                    <AlertCircle style={{ width: 16, height: 16, flexShrink: 0 }} />
+                    <span style={{ flexShrink: 0 }}>⚠</span>
                     {saveError}
                   </div>
                 )}
                 {saveSuccess && (
                   <div className="con-alert-success">
-                    <Check style={{ width: 16, height: 16, flexShrink: 0 }} />
+                    <span style={{ flexShrink: 0 }}>✓</span>
                     Cambios guardados
                   </div>
                 )}
@@ -395,7 +390,7 @@ export function ConsumerProfileView() {
 
                   {pushStatus === 'denied' ? (
                     <div className="con-push-denied">
-                      <BellOff style={{ width: 18, height: 18, color: '#b45309', flexShrink: 0, marginTop: 2 }} />
+                      <span style={{ fontSize: 16, color: '#b45309', flexShrink: 0, marginTop: 2 }}>🔕</span>
                       <div>
                         <p style={{ fontSize: 13, fontWeight: 700, color: '#92400e', letterSpacing: '-0.01em' }}>
                           Notificaciones bloqueadas
@@ -410,8 +405,8 @@ export function ConsumerProfileView() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <div className={`con-notif-icon${pushStatus === 'subscribed' ? ' con-notif-icon--active' : ''}`}>
                           {pushStatus === 'subscribed'
-                            ? <Bell style={{ width: 18, height: 18, color: '#0a3a0a' }} />
-                            : <BellOff style={{ width: 18, height: 18, color: 'rgba(0,0,0,0.4)' }} />}
+                            ? <span style={{ fontSize: 16, color: '#0a3a0a' }}>🔔</span>
+                            : <span style={{ fontSize: 16, color: 'rgba(0,0,0,0.4)' }}>🔕</span>}
                         </div>
                         <div>
                           <div className="con-notif-title">
@@ -451,7 +446,7 @@ export function ConsumerProfileView() {
               <ul className="con-menu-list" style={{ marginTop: 16, background: '#fff' }}>
                 <li className="con-menu-item" onClick={() => setTab('direcciones')}>
                   <div className="con-menu-icon">
-                    <MapPin style={{ width: 16, height: 16 }} />
+                    <span style={{ fontSize: 14 }}>◈</span>
                   </div>
                   <span className="con-menu-label">Direcciones</span>
                   <span className="con-menu-meta">{addresses.length}</span>
@@ -459,14 +454,14 @@ export function ConsumerProfileView() {
                 </li>
                 <li className="con-menu-item" onClick={() => setTab('tarjetas')}>
                   <div className="con-menu-icon">
-                    <CreditCard style={{ width: 16, height: 16 }} />
+                    <span style={{ fontSize: 14 }}>▣</span>
                   </div>
                   <span className="con-menu-label">Métodos de pago</span>
                   <ChevronSmall />
                 </li>
                 <li className="con-menu-item" onClick={() => setTab('resenas')}>
                   <div className="con-menu-icon">
-                    <Star style={{ width: 16, height: 16 }} />
+                    <span style={{ fontSize: 14 }}>★</span>
                   </div>
                   <span className="con-menu-label">Mis reseñas</span>
                   <span className="con-menu-meta">{reviews.length}</span>
@@ -493,8 +488,8 @@ export function ConsumerProfileView() {
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, flex: 1 }}>
                     <div className="con-addr-icon">
                       {addr.alias === 'Trabajo'
-                        ? <Briefcase style={{ width: 16, height: 16 }} />
-                        : <Home style={{ width: 16, height: 16 }} />}
+                        ? <span style={{ fontSize: 14 }}>◫</span>
+                        : <span style={{ fontSize: 14 }}>⌂</span>}
                     </div>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -509,7 +504,7 @@ export function ConsumerProfileView() {
                     </div>
                   </div>
                   <button className="con-addr-delete" onClick={() => handleDeleteAddress(addr.id)}>
-                    <Trash2 style={{ width: 16, height: 16 }} />
+                    <span style={{ fontSize: 14 }}>✕</span>
                   </button>
                 </div>
               ))}
@@ -550,7 +545,7 @@ export function ConsumerProfileView() {
                         : 'Guardar'}
                     </button>
                     <button className="con-addr-cancel-btn" onClick={() => setShowAddressForm(false)}>
-                      <X style={{ width: 16, height: 16 }} />
+                      <span style={{ fontSize: 14 }}>✕</span>
                     </button>
                   </div>
                 </div>
@@ -558,11 +553,11 @@ export function ConsumerProfileView() {
                 <button className="con-add-addr-btn" onClick={() => setShowAddressForm(true)}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <span className="con-add-addr-icon">
-                      <Plus style={{ width: 16, height: 16 }} />
+                      <span style={{ fontSize: 14 }}>+</span>
                     </span>
                     Agregar dirección
                   </span>
-                  <ChevronRight style={{ width: 16, height: 16, color: 'rgba(0,0,0,0.3)' }} />
+                  <span style={{ fontSize: 12, color: 'rgba(0,0,0,0.3)' }}>›</span>
                 </button>
               )}
             </div>
@@ -574,7 +569,7 @@ export function ConsumerProfileView() {
               {reviews.length === 0 ? (
                 <div className="con-empty">
                   <div className="con-empty-icon">
-                    <Star style={{ width: 22, height: 22, color: 'rgba(0,0,0,0.2)' }} />
+                    <span style={{ fontSize: 22, color: 'rgba(0,0,0,0.2)' }}>★</span>
                   </div>
                   <div className="con-empty-title">Sin reseñas aún</div>
                   <div className="con-empty-sub">Tus reseñas aparecerán aquí.</div>
@@ -584,14 +579,13 @@ export function ConsumerProfileView() {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginBottom: 8 }}>
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
+                        <span
                           key={i}
                           style={{
-                            width: 14, height: 14,
-                            fill: i < r.rating ? '#000' : 'transparent',
+                            fontSize: 14,
                             color: i < r.rating ? '#000' : 'rgba(0,0,0,0.15)',
                           }}
-                        />
+                        >★</span>
                       ))}
                     </div>
                     {r.titulo && (
@@ -605,7 +599,7 @@ export function ConsumerProfileView() {
                     </p>
                   </div>
                   <button className="con-addr-delete" onClick={() => handleDeleteReview(r.id)}>
-                    <Trash2 style={{ width: 16, height: 16 }} />
+                    <span style={{ fontSize: 14 }}>✕</span>
                   </button>
                 </div>
               ))}
@@ -620,9 +614,9 @@ export function ConsumerProfileView() {
           { id: 'explorar', label: 'Inicio', href: '/consumidor/explorar',
             icon: <svg viewBox="0 0 24 24" fill="none" style={{ width: 22, height: 22 }}><path d="M3 12L12 3l9 9v9h-7v-6h-4v6H3v-9Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" /></svg> },
           { id: 'pedidos', label: 'Pedidos', action: () => setTab('pedidos'),
-            icon: <ShoppingBag style={{ width: 22, height: 22 }} />, active: tab === 'pedidos' },
+            icon: <span style={{ fontSize: 20 }}>⊞</span>, active: tab === 'pedidos' },
           { id: 'cuenta', label: 'Cuenta',
-            icon: <User style={{ width: 22, height: 22 }} />, active: true },
+            icon: <span style={{ fontSize: 20 }}>◎</span>, active: true },
         ].map(item => (
           <button
             key={item.id}

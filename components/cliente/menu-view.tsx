@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Plus, AlertCircle } from 'lucide-react'
 import { useApp } from '@/lib/context'
-import { Input } from '@/components/ui/input'
 import { formatPrice, type MenuItem, canPrepareItem } from '@/lib/store'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MINT = '#BEEBBE'
 
 interface MenuViewProps {
   mesa: number
@@ -66,85 +67,109 @@ export function MenuView({
     activeCategories.find(c => c.id === categoriaId)?.nombre ?? categoriaId
 
   return (
-    <div className="min-h-screen bg-background flex flex-col max-w-md mx-auto">
+    <div style={{ minHeight: '100svh', background: '#fff', display: 'flex', flexDirection: 'column', maxWidth: 480, margin: '0 auto', fontFamily: FONT }}>
       {/* Sticky header */}
-      <header className="sticky top-0 z-50 bg-background border-b border-border/50">
-        <div className="px-4 pt-4 pb-3 space-y-3">
-          {/* Restaurant hero text */}
-          <div>
-            <h1 className="text-xl font-bold text-foreground leading-tight">
-              {config.restaurantName ?? `Mesa ${mesa}`}
-            </h1>
-            {config.descripcion && (
-              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">
-                {config.descripcion}
-              </p>
-            )}
-          </div>
-
-          {/* Ordering blocked banner */}
-          {!canOrder && (
-            <div className="flex items-center gap-2 p-2.5 bg-warning/10 border border-warning/30 rounded-xl">
-              <AlertCircle className="h-4 w-4 text-warning flex-shrink-0" />
-              <p className="text-xs text-warning font-medium">
-                Pago en proceso — no puedes agregar más platillos.
-              </p>
-            </div>
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        background: '#fff', borderBottom: '1px solid #f0f0f0',
+        padding: '16px 16px 12px',
+      }}>
+        {/* Restaurant name */}
+        <div style={{ marginBottom: 12 }}>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#000', margin: 0, lineHeight: 1.2 }}>
+            {config.restaurantName ?? `Mesa ${mesa}`}
+          </h1>
+          {config.descripcion && (
+            <p style={{ fontSize: 12, color: '#888', marginTop: 3, lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+              {config.descripcion}
+            </p>
           )}
+        </div>
 
-          {/* Category chips */}
-          <div className="flex gap-2 overflow-x-auto scrollbar-none -mx-4 px-4">
+        {/* Ordering blocked banner */}
+        {!canOrder && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '10px 12px', background: '#fff8e1',
+            border: '1px solid #ffe082', borderRadius: 12, marginBottom: 12,
+          }}>
+            <span style={{ fontSize: 15 }}>⚠</span>
+            <p style={{ fontSize: 12, color: '#b45309', fontWeight: 600, margin: 0 }}>
+              Pago en proceso — no puedes agregar más platillos.
+            </p>
+          </div>
+        )}
+
+        {/* Category chips */}
+        <div style={{
+          display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none',
+          marginLeft: -16, marginRight: -16, paddingLeft: 16, paddingRight: 16, marginBottom: 12,
+        }}>
+          <button
+            onClick={() => setSelectedCategory(null)}
+            style={{
+              padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+              border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: FONT,
+              background: !selectedCategory ? '#000' : '#f0f0f0',
+              color: !selectedCategory ? '#fff' : '#666',
+              transition: 'background 0.15s',
+            }}
+          >
+            Todo
+          </button>
+          {activeCategories.map((cat) => (
             <button
-              onClick={() => setSelectedCategory(null)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap shrink-0 ${
-                !selectedCategory
-                  ? 'bg-foreground text-background'
-                  : 'bg-secondary text-muted-foreground hover:text-foreground'
-              }`}
+              key={cat.id}
+              onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+              style={{
+                padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: FONT,
+                background: selectedCategory === cat.id ? '#000' : '#f0f0f0',
+                color: selectedCategory === cat.id ? '#fff' : '#666',
+                transition: 'background 0.15s',
+              }}
             >
-              Todo
+              {cat.nombre}
             </button>
-            {activeCategories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap shrink-0 ${
-                  selectedCategory === cat.id
-                    ? 'bg-foreground text-background'
-                    : 'bg-secondary text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {cat.nombre}
-              </button>
-            ))}
-          </div>
+          ))}
+        </div>
 
-          {/* Search */}
-          <div className="relative">
-            <label htmlFor="menu-search" className="sr-only">Buscar platillos</label>
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
-            <Input
-              id="menu-search"
-              type="search"
-              placeholder="Buscar en el menú..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 h-10 text-sm bg-secondary border-0 rounded-xl"
-            />
-          </div>
+        {/* Search */}
+        <div style={{ position: 'relative' }}>
+          <label htmlFor="menu-search" style={{ position: 'absolute', left: -9999 }}>Buscar platillos</label>
+          <span style={{
+            position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+            fontSize: 16, color: '#aaa', pointerEvents: 'none',
+          }} aria-hidden="true">⌕</span>
+          <input
+            id="menu-search"
+            type="search"
+            placeholder="Buscar en el menú..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              width: '100%', height: 40, paddingLeft: 36, paddingRight: 12,
+              background: '#f5f5f5', border: 'none', borderRadius: 12,
+              fontSize: 14, fontFamily: FONT, outline: 'none',
+              color: '#000', boxSizing: 'border-box',
+            }}
+          />
         </div>
       </header>
 
       {/* Menu content */}
-      <main className="flex-1 px-4 py-4 pb-36">
+      <main style={{ flex: 1, padding: '16px 16px 144px' }}>
         {Object.entries(itemsByCategory).map(([category, items]) => (
-          <section key={category} className="mb-8">
-            <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+          <section key={category} style={{ marginBottom: 32 }}>
+            <h2 style={{
+              fontSize: 15, fontWeight: 700, color: '#000',
+              marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8,
+            }}>
               <span aria-hidden="true">{getCategoryEmoji(category)}</span>
               {getCategoryName(category)}
             </h2>
 
-            <div className="space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {items.map((item) => {
                 const availability = getItemAvailability(item)
                 const isAvailable = availability.canPrepare
@@ -162,11 +187,16 @@ export function MenuView({
                         ? `${item.nombre}, ${formatPrice(item.precio)}`
                         : `${item.nombre}, ${unavailableLabel}`
                     }
-                    className={`flex items-center gap-4 p-3 rounded-2xl transition-colors ${
-                      isAvailable && canOrder
-                        ? 'cursor-pointer hover:bg-secondary/60 active:bg-secondary'
-                        : 'opacity-50'
-                    }`}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 16,
+                      padding: 12, borderRadius: 18,
+                      cursor: isAvailable && canOrder ? 'pointer' : 'default',
+                      opacity: !isAvailable ? 0.5 : 1,
+                      transition: 'background 0.12s',
+                      background: 'transparent',
+                    }}
+                    onMouseEnter={e => { if (isAvailable && canOrder) (e.currentTarget as HTMLDivElement).style.background = '#f5f5f5' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
                     onClick={() => isAvailable && canOrder && onSelectItem(item)}
                     onKeyDown={(e) => {
                       if ((e.key === 'Enter' || e.key === ' ') && isAvailable && canOrder) {
@@ -175,65 +205,83 @@ export function MenuView({
                       }
                     }}
                   >
-                    {/* Image — bigger and more prominent */}
-                    <div className={`w-24 h-24 rounded-2xl flex-shrink-0 overflow-hidden bg-secondary flex items-center justify-center relative ${
-                      !isAvailable ? 'grayscale' : ''
-                    }`}>
+                    {/* Image */}
+                    <div style={{
+                      width: 96, height: 96, borderRadius: 18, flexShrink: 0,
+                      overflow: 'hidden', background: '#f0f0f0',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      position: 'relative', filter: !isAvailable ? 'grayscale(1)' : 'none',
+                    }}>
                       {item.imagen ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={item.imagen}
                           alt={item.nombre}
-                          className="w-full h-full object-cover"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                           loading="lazy"
                         />
                       ) : (
-                        <span className="text-4xl" aria-hidden="true">{getCategoryEmoji(item.categoria)}</span>
+                        <span style={{ fontSize: 36 }} aria-hidden="true">{getCategoryEmoji(item.categoria)}</span>
                       )}
                       {!isAvailable && (
-                        <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-2xl">
-                          <span className="text-[10px] font-bold text-destructive bg-destructive/10 px-2 py-1 rounded-lg text-center leading-tight">
+                        <div style={{
+                          position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.8)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 18,
+                        }}>
+                          <span style={{
+                            fontSize: 10, fontWeight: 700, color: '#dc2626',
+                            background: '#fef2f2', padding: '4px 8px', borderRadius: 8,
+                            textAlign: 'center', lineHeight: 1.3,
+                          }}>
                             {unavailableLabel}
                           </span>
                         </div>
                       )}
                       {showLowStock && (
-                        <div className="absolute bottom-1 left-1 right-1">
-                          <span className="block text-center text-[9px] font-bold text-warning bg-warning/10 rounded px-1 py-0.5 leading-tight">
+                        <div style={{ position: 'absolute', bottom: 4, left: 4, right: 4 }}>
+                          <span style={{
+                            display: 'block', textAlign: 'center', fontSize: 9, fontWeight: 700,
+                            color: '#b45309', background: '#fef3c7', borderRadius: 6,
+                            padding: '2px 4px', lineHeight: 1.3,
+                          }}>
                             ¡Últimos {availability.maxPortions}!
                           </span>
                         </div>
                       )}
                     </div>
 
-                    {/* Content — stronger hierarchy */}
-                    <div className="flex-1 min-w-0 py-1">
-                      <h3 className="font-semibold text-[16px] text-foreground leading-tight">
+                    {/* Content */}
+                    <div style={{ flex: 1, minWidth: 0, paddingTop: 4, paddingBottom: 4 }}>
+                      <h3 style={{ fontSize: 16, fontWeight: 600, color: '#000', margin: 0, lineHeight: 1.2 }}>
                         {item.nombre}
                       </h3>
                       {item.descripcion && (
-                        <p className="text-[13px] text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
+                        <p style={{
+                          fontSize: 13, color: '#888', marginTop: 4, lineHeight: 1.5,
+                          overflow: 'hidden', display: '-webkit-box',
+                          WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                        }}>
                           {item.descripcion}
                         </p>
                       )}
-                      <div className="flex items-center justify-between mt-2">
-                        <p className={`text-[16px] font-bold ${
-                          isAvailable ? 'text-foreground' : 'text-muted-foreground'
-                        }`}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+                        <p style={{ fontSize: 16, fontWeight: 700, color: isAvailable ? '#000' : '#aaa', margin: 0 }}>
                           {formatPrice(item.precio)}
                         </p>
-
-                        {/* Add button — 44px touch target */}
                         {isAvailable && canOrder && (
                           <button
-                            className="w-9 h-9 flex items-center justify-center bg-foreground text-background rounded-xl hover:bg-foreground/90 active:scale-95 transition-all"
+                            style={{
+                              width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              background: '#000', color: '#fff', border: 'none', borderRadius: 12,
+                              fontSize: 20, cursor: 'pointer', transition: 'opacity 0.15s', fontFamily: FONT,
+                            }}
                             aria-label={`Agregar ${item.nombre}`}
                             onClick={(e) => {
                               e.stopPropagation()
                               onSelectItem(item)
                             }}
                           >
-                            <Plus className="h-5 w-5" aria-hidden="true" />
+                            +
                           </button>
                         )}
                       </div>
@@ -246,9 +294,9 @@ export function MenuView({
         ))}
 
         {filteredItems.length === 0 && (
-          <div className="text-center py-16">
-            <span className="text-5xl" aria-hidden="true">🔍</span>
-            <p className="text-sm text-muted-foreground mt-3">No se encontraron platillos</p>
+          <div style={{ textAlign: 'center', padding: '64px 0' }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>Ø</div>
+            <p style={{ fontSize: 14, color: '#888' }}>No se encontraron platillos</p>
           </div>
         )}
       </main>

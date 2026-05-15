@@ -1,8 +1,10 @@
 'use client'
 
-import { ShoppingBag, ClipboardList, Receipt, CheckCircle2 } from 'lucide-react'
 import { formatPrice } from '@/lib/store'
 import type { TableSession } from '@/lib/store'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MINT = '#BEEBBE'
 
 interface PersistentOrderBarProps {
   cartCount: number
@@ -25,18 +27,26 @@ export function PersistentOrderBar({
   onViewStatus,
   onViewBill,
 }: PersistentOrderBarProps) {
-  const barStyle = { bottom: 'calc(52px + env(safe-area-inset-bottom))' }
+  const barStyle: React.CSSProperties = {
+    position: 'fixed', left: 0, right: 0,
+    bottom: 'calc(52px + env(safe-area-inset-bottom))',
+    padding: '0 16px 12px', zIndex: 40, pointerEvents: 'none',
+  }
+
   const billStatus = session?.billStatus
   const isPaid = billStatus === 'pagada'
   const isBillRequested = session?.paymentStatus === 'pendiente' && activeOrderCount === 0
 
-  // Determine which action to show
   if (isPaid) {
     return (
-      <div className="fixed left-0 right-0 px-4 pb-3 z-40 pointer-events-none" style={barStyle}>
-        <div className="flex items-center justify-center gap-2 py-3 px-4 bg-success/10 border border-success/30 rounded-2xl pointer-events-auto">
-          <CheckCircle2 className="h-4 w-4 text-success" />
-          <span className="text-sm font-semibold text-success">Cuenta pagada — ¡Gracias!</span>
+      <div style={barStyle}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          padding: '12px 16px', background: '#f0fdf0', border: '1px solid #bbf7b0',
+          borderRadius: 20, pointerEvents: 'auto', fontFamily: FONT,
+        }}>
+          <span style={{ fontSize: 16, color: '#166534' }}>✓</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: '#166534' }}>Cuenta pagada — ¡Gracias!</span>
         </div>
       </div>
     )
@@ -44,16 +54,20 @@ export function PersistentOrderBar({
 
   if (isBillRequested) {
     return (
-      <div className="fixed left-0 right-0 px-4 pb-3 z-40 pointer-events-none" style={barStyle}>
+      <div style={barStyle}>
         <button
           onClick={onViewBill}
-          className="w-full flex items-center justify-between py-3 px-4 bg-warning/10 border border-warning/30 rounded-2xl pointer-events-auto"
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '12px 16px', background: '#fff8e1', border: '1px solid #ffe082',
+            borderRadius: 20, cursor: 'pointer', pointerEvents: 'auto', fontFamily: FONT,
+          }}
         >
-          <div className="flex items-center gap-2">
-            <Receipt className="h-4 w-4 text-warning" />
-            <span className="text-sm font-semibold text-warning">Cuenta solicitada</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 16, color: '#b45309' }}>$</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#b45309' }}>Cuenta solicitada</span>
           </div>
-          <span className="text-xs text-warning/70">El mesero viene a cobrarte →</span>
+          <span style={{ fontSize: 12, color: '#b45309', opacity: 0.7 }}>El mesero viene a cobrarte →</span>
         </button>
       </div>
     )
@@ -61,20 +75,25 @@ export function PersistentOrderBar({
 
   if (cartCount > 0 && canOrder) {
     return (
-      <div className="fixed left-0 right-0 px-4 pb-3 z-40 pointer-events-none" style={barStyle}>
+      <div style={barStyle}>
         <button
           onClick={onViewCart}
-          className="w-full flex items-center justify-between py-3 px-5 bg-foreground text-background rounded-2xl shadow-lg pointer-events-auto"
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '12px 20px', background: '#000', color: '#fff',
+            borderRadius: 20, cursor: 'pointer', pointerEvents: 'auto',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.18)', border: 'none', fontFamily: FONT,
+          }}
         >
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5" />
-            <span className="text-sm font-semibold">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 18 }}>⊞</span>
+            <span style={{ fontSize: 14, fontWeight: 700 }}>
               {cartCount} item{cartCount !== 1 ? 's' : ''}
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-bold">{formatPrice(cartSubtotal)}</span>
-            <span className="text-xs opacity-70">Ver pedido →</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 14, fontWeight: 700 }}>{formatPrice(cartSubtotal)}</span>
+            <span style={{ fontSize: 12, opacity: 0.65 }}>Ver pedido →</span>
           </div>
         </button>
       </div>
@@ -83,18 +102,23 @@ export function PersistentOrderBar({
 
   if (activeOrderCount > 0) {
     return (
-      <div className="fixed left-0 right-0 px-4 pb-3 z-40 pointer-events-none" style={barStyle}>
+      <div style={barStyle}>
         <button
           onClick={onViewStatus}
-          className="w-full flex items-center justify-between py-3 px-5 bg-foreground/90 text-background rounded-2xl shadow-md pointer-events-auto"
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '12px 20px', background: '#111', color: '#fff',
+            borderRadius: 20, cursor: 'pointer', pointerEvents: 'auto',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.12)', border: 'none', fontFamily: FONT,
+          }}
         >
-          <div className="flex items-center gap-2">
-            <ClipboardList className="h-5 w-5" />
-            <span className="text-sm font-semibold">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 18 }}>≡</span>
+            <span style={{ fontSize: 14, fontWeight: 700 }}>
               {activeOrderCount} pedido{activeOrderCount !== 1 ? 's' : ''} activo{activeOrderCount !== 1 ? 's' : ''}
             </span>
           </div>
-          <span className="text-xs opacity-70">Ver estado →</span>
+          <span style={{ fontSize: 12, opacity: 0.65 }}>Ver estado →</span>
         </button>
       </div>
     )

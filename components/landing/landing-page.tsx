@@ -1,11 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import {
-  ChevronRight, Star, ArrowRight,
-  Menu, X, Check, LayoutGrid, ChefHat, BarChart2,
-  CreditCard, Bell, Building2, Minus, Shield, Smartphone, Utensils,
-} from 'lucide-react'
 
 interface ExploreRestaurant {
   slug: string
@@ -88,19 +83,19 @@ const PLANS = [
 ]
 
 const STEPS = [
-  { n: '01', icon: <Shield className="h-5 w-5" />,     title: 'Configura tu restaurante',     body: 'Agrega tus mesas, carga el menú y personaliza tu marca. Listo en menos de 30 minutos.' },
-  { n: '02', icon: <Smartphone className="h-5 w-5" />, title: 'Tus clientes escanean el QR',  body: 'Cada mesa tiene su código único. El cliente ve el menú, hace su pedido y paga — sin app.' },
-  { n: '03', icon: <ChefHat className="h-5 w-5" />,    title: 'Cocina recibe en pantalla',     body: 'Los pedidos llegan instantáneamente. Sin gritos, sin papel, sin errores de transcripción.' },
-  { n: '04', icon: <BarChart2 className="h-5 w-5" />,  title: 'Cierra el día con claridad',    body: 'Dashboard con ventas, propinas, productos top y reporte listo para exportar.' },
+  { n: '01', icon: <span style={{ fontSize: 18 }}>◎</span>,     title: 'Configura tu restaurante',     body: 'Agrega tus mesas, carga el menú y personaliza tu marca. Listo en menos de 30 minutos.' },
+  { n: '02', icon: <span style={{ fontSize: 18 }}>⊞</span>, title: 'Tus clientes escanean el QR',  body: 'Cada mesa tiene su código único. El cliente ve el menú, hace su pedido y paga — sin app.' },
+  { n: '03', icon: <span style={{ fontSize: 18 }}>◈</span>,    title: 'Cocina recibe en pantalla',     body: 'Los pedidos llegan instantáneamente. Sin gritos, sin papel, sin errores de transcripción.' },
+  { n: '04', icon: <span style={{ fontSize: 18 }}>≡</span>,  title: 'Cierra el día con claridad',    body: 'Dashboard con ventas, propinas, productos top y reporte listo para exportar.' },
 ]
 
 const FEATURES = [
-  { icon: <LayoutGrid className="h-5 w-5" />, title: 'Mesas en tiempo real',        body: 'Vista completa del salón. Libre, ocupada, en cocina, lista para cobrar. Todo en un vistazo.' },
-  { icon: <ChefHat className="h-5 w-5" />,    title: 'Pantalla de cocina',           body: 'Sin papel, sin gritos. Los pedidos llegan en tiempo real directo al equipo de cocina.' },
-  { icon: <BarChart2 className="h-5 w-5" />,  title: 'Analítica en tiempo real',     body: 'Ventas, propinas, ticket promedio y ranking de productos. Todo al instante.' },
-  { icon: <CreditCard className="h-5 w-5" />, title: 'Cobro en mesa',                body: 'Efectivo, tarjeta, transferencia o Apple Pay. División de cuenta incluida.' },
-  { icon: <Bell className="h-5 w-5" />,       title: 'Notificaciones al instante',   body: 'El mesero sabe exactamente cuándo el pedido está listo. Sin llamadas, sin confusión.' },
-  { icon: <Building2 className="h-5 w-5" />,  title: 'Multi-sucursal',               body: 'Un solo panel para todos tus restaurantes. Compara rendimiento entre locales.' },
+  { icon: <span style={{ fontSize: 18 }}>◫</span>, title: 'Mesas en tiempo real',        body: 'Vista completa del salón. Libre, ocupada, en cocina, lista para cobrar. Todo en un vistazo.' },
+  { icon: <span style={{ fontSize: 18 }}>◈</span>,    title: 'Pantalla de cocina',           body: 'Sin papel, sin gritos. Los pedidos llegan en tiempo real directo al equipo de cocina.' },
+  { icon: <span style={{ fontSize: 18 }}>≡</span>,  title: 'Analítica en tiempo real',     body: 'Ventas, propinas, ticket promedio y ranking de productos. Todo al instante.' },
+  { icon: <span style={{ fontSize: 18 }}>▣</span>, title: 'Cobro en mesa',                body: 'Efectivo, tarjeta, transferencia o Apple Pay. División de cuenta incluida.' },
+  { icon: <span style={{ fontSize: 18 }}>⏱</span>,       title: 'Notificaciones al instante',   body: 'El mesero sabe exactamente cuándo el pedido está listo. Sin llamadas, sin confusión.' },
+  { icon: <span style={{ fontSize: 18 }}>⊞</span>,  title: 'Multi-sucursal',               body: 'Un solo panel para todos tus restaurantes. Compara rendimiento entre locales.' },
 ]
 
 // ── Hooks ─────────────────────────────────────────────────────────────────────
@@ -410,7 +405,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           {/* Mobile hamburger */}
           <button className={`md:hidden p-1 transition-colors ${navMuted}`}
             onClick={() => setMenuOpen(!menuOpen)} aria-label="Menú">
-            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {menuOpen ? '✕' : '≡'}
           </button>
         </div>
 
@@ -427,7 +422,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               <a href="/explore"
                 className="flex items-center gap-1.5 w-full text-zinc-600 text-sm py-2 font-medium cursor-pointer">
                 Explorar restaurantes
-                <ChevronRight className="h-3.5 w-3.5" />
+                ›
               </a>
 
               {/* Mobile login options */}
@@ -507,7 +502,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               <button onClick={() => goTo('pricing')}
                 className="inline-flex items-center justify-center gap-2 font-medium px-6 py-3 rounded-full text-sm text-foreground bg-white hover:bg-zinc-100 transition-all group active:scale-[0.98] cursor-pointer">
                 Comenzar gratis
-                <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                →
               </button>
               <button onClick={() => goTo('how')}
                 className="inline-flex items-center justify-center gap-2 font-medium px-6 py-3 rounded-full text-sm text-white/40 hover:text-white border border-white/10 hover:border-white/20 transition-all cursor-pointer">
@@ -588,7 +583,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             <div className="absolute -bottom-4 -left-6 rounded-xl p-3 border border-white/[0.09] flex items-center gap-2.5"
               style={{ background: '#1c1c1e', minWidth: '172px' }}>
               <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(52,211,153,0.12)' }}>
-                <Bell className="h-3.5 w-3.5 text-emerald-400" />
+                <span style={{ color: '#34d399', fontSize: 14 }}>⏱</span>
               </div>
               <div>
                 <p className="text-white text-[11px] font-medium leading-tight">Mesa 3 lista</p>
@@ -744,11 +739,11 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                       }`}>
                         {f.ok
                           ? <div className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
-                              <Check className="h-2.5 w-2.5 text-white" />
+                              <span style={{ color: '#fff', fontSize: 9, fontWeight: 900 }}>✓</span>
                             </div>
                           : <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
                               style={{ background: plan.highlight ? 'rgba(255,255,255,0.07)' : '#f4f4f5' }}>
-                              <Minus className="h-2.5 w-2.5" style={{ color: plan.highlight ? 'rgba(255,255,255,0.2)' : '#d4d4d8' }} />
+                              <span style={{ color: plan.highlight ? 'rgba(255,255,255,0.2)' : '#d4d4d8', fontSize: 10 }}>—</span>
                             </div>
                         }
                         {f.text}
@@ -786,8 +781,8 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                       ? <span className="h-4 w-4 border-2 rounded-full animate-spin"
                         style={{ borderColor: plan.highlight ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.2)', borderTopColor: 'currentColor' }} />
                       : showEmailFor === plan.id
-                        ? <>Continuar al pago <ChevronRight className="h-4 w-4" /></>
-                        : <>Elegir {plan.name} <ChevronRight className="h-4 w-4" /></>
+                        ? <>Continuar al pago ›</>
+                        : <>Elegir {plan.name} ›</>
                     }
                   </button>
                 </div>
@@ -818,7 +813,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               style={{ width: '272px' }}>
               <div className="flex gap-0.5 mb-3">
                 {Array.from({ length: 5 }).map((_, s) => (
-                  <Star key={s} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  <span key={s} style={{ color: '#F59E0B', fontSize: 11 }}>★</span>
                 ))}
               </div>
               <p className="text-zinc-500 text-sm leading-relaxed mb-4">"{t.text}"</p>
@@ -857,7 +852,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                     {r.coverUrl
                       ? <img src={r.coverUrl} alt={r.nombre} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       : <div className="w-full h-full flex items-center justify-center opacity-20">
-                          <Utensils className="w-12 h-12 text-white" />
+                          <span style={{ fontSize: 40, color: 'rgba(255,255,255,0.5)' }}>◈</span>
                         </div>
                     }
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -871,7 +866,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
                     {/* Rating */}
                     <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-white/95 backdrop-blur-sm rounded-full px-2.5 py-1 shadow">
-                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                      <span style={{ color: '#F59E0B', fontSize: 12 }}>★</span>
                       <span className="text-xs font-bold text-black">{r.rating > 0 ? r.rating.toFixed(1) : 'Nuevo'}</span>
                     </div>
                   </div>
@@ -890,7 +885,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                         {r.totalRatings > 0 ? `${r.totalRatings} reseña${r.totalRatings !== 1 ? 's' : ''}` : 'Sin reseñas aún'}
                       </span>
                       <span className="text-[11px] font-semibold text-foreground flex items-center gap-1 group-hover:gap-2 transition-all">
-                        Ver menú <ChevronRight className="w-3 h-3" />
+                        Ver menú ›
                       </span>
                     </div>
                   </div>
@@ -903,8 +898,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                 href="/explore"
                 className="inline-flex items-center gap-2 text-sm font-medium text-foreground border border-zinc-200 rounded-full px-6 py-3 hover:bg-zinc-900 hover:text-white hover:border-zinc-900 transition-all duration-200"
               >
-                Ver todos los restaurantes
-                <ChevronRight className="h-4 w-4" />
+                Ver todos los restaurantes ›
               </a>
             </div>
           </div>
@@ -924,8 +918,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           <div className="rv d3 flex flex-col sm:flex-row gap-3 justify-center">
             <button onClick={() => goTo('pricing')}
               className="inline-flex items-center justify-center gap-2 font-medium px-8 py-3 rounded-full text-sm text-foreground bg-white hover:bg-zinc-100 transition-all group active:scale-[0.98] cursor-pointer">
-              Ver planes y precios
-              <ChevronRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+              Ver planes y precios →
             </button>
             <button onClick={goRestaurantLogin}
               className="inline-flex items-center justify-center gap-2 font-medium px-8 py-3 rounded-full text-sm text-white/40 hover:text-white border border-white/10 hover:border-white/20 transition-all cursor-pointer">
@@ -990,11 +983,11 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             <div className="flex items-center gap-3">
               <a href="/consumidor"
                 className="text-white/20 text-xs hover:text-white/45 transition-colors flex items-center gap-1 cursor-pointer font-light">
-                Consumidores <ChevronRight className="h-3 w-3" />
+                Consumidores ›
               </a>
               <button onClick={goRestaurantLogin}
                 className="text-white/20 text-xs hover:text-white/45 transition-colors flex items-center gap-1 cursor-pointer font-light">
-                Restaurantes <ChevronRight className="h-3 w-3" />
+                Restaurantes ›
               </button>
             </div>
           </div>

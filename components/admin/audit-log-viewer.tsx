@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Search, ClipboardList, ChevronDown, ChevronRight } from 'lucide-react'
 import { useApp } from '@/lib/context'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
 
 const ACTION_LABELS: Record<string, string> = {
   crear_pedido: 'Pedido creado',
@@ -27,21 +27,25 @@ const ACTION_LABELS: Record<string, string> = {
   imprimir_cierre: 'Cierre impreso',
 }
 
-const ACTION_COLORS: Record<string, string> = {
-  crear_pedido: 'bg-emerald-100 text-[#06C167]',
-  cancelar_pedido: 'bg-red-100 text-red-700',
-  cancelar_orden: 'bg-red-100 text-red-700',
-  confirmar_pago: 'bg-blue-100 text-blue-700',
-  cerrar_sesion: 'bg-gray-100 text-gray-700',
-  aplicar_descuento: 'bg-amber-100 text-amber-700',
-  reembolso: 'bg-gray-100 text-gray-700',
-  eliminar_platillo: 'bg-red-100 text-red-700',
-  eliminar_categoria: 'bg-red-100 text-red-700',
-  eliminar_mesa: 'bg-red-100 text-red-700',
-  ajuste_inventario: 'bg-purple-100 text-purple-700',
-  imprimir_cuenta: 'bg-slate-100 text-slate-700',
-  imprimir_cierre: 'bg-slate-100 text-slate-700',
+type BadgeStyle = { background: string; color: string }
+
+const ACTION_BADGE_STYLES: Record<string, BadgeStyle> = {
+  crear_pedido:      { background: '#D1FAE5', color: '#065F46' },
+  cancelar_pedido:   { background: '#FEE2E2', color: '#B91C1C' },
+  cancelar_orden:    { background: '#FEE2E2', color: '#B91C1C' },
+  confirmar_pago:    { background: '#DBEAFE', color: '#1E40AF' },
+  cerrar_sesion:     { background: '#F3F4F6', color: '#374151' },
+  aplicar_descuento: { background: '#FEF3C7', color: '#92400E' },
+  reembolso:         { background: '#F3F4F6', color: '#374151' },
+  eliminar_platillo: { background: '#FEE2E2', color: '#B91C1C' },
+  eliminar_categoria:{ background: '#FEE2E2', color: '#B91C1C' },
+  eliminar_mesa:     { background: '#FEE2E2', color: '#B91C1C' },
+  ajuste_inventario: { background: '#EDE9FE', color: '#5B21B6' },
+  imprimir_cuenta:   { background: '#F1F5F9', color: '#475569' },
+  imprimir_cierre:   { background: '#F1F5F9', color: '#475569' },
 }
+
+const DEFAULT_BADGE: BadgeStyle = { background: '#F3F4F6', color: '#374151' }
 
 export function AuditLogViewer() {
   const { auditLogs, users } = useApp()
@@ -94,89 +98,128 @@ export function AuditLogViewer() {
   }
 
   return (
-    <div className="space-y-4" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
-      <div className="flex items-center gap-3">
-        <ClipboardList className="h-5 w-5 text-gray-500" />
-        <h2 className="text-sm font-black text-gray-900">Bitácora de Actividad</h2>
-        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{auditLogs.length} registros</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, fontFamily: FONT }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ fontSize: 18 }}>≡</span>
+        <h2 style={{ margin: 0, fontSize: 14, fontWeight: 900, color: '#111' }}>Bitácora de Actividad</h2>
+        <span style={{
+          fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+          background: '#F3F4F6', color: '#6B7280',
+        }}>
+          {auditLogs.length} registros
+        </span>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por detalle, acción o usuario..." className="pl-8 h-9 text-sm" />
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
+          <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#9CA3AF', fontSize: 14, pointerEvents: 'none' }}>
+            ◎
+          </span>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar por detalle, acción o usuario..."
+            style={{
+              width: '100%', height: 36, paddingLeft: 32, paddingRight: 12,
+              border: '1px solid #E5E5E5', borderRadius: 10, fontSize: 13,
+              fontFamily: FONT, outline: 'none', boxSizing: 'border-box',
+              color: '#111', background: '#fff',
+            }}
+          />
         </div>
-        <Select value={filterAccion} onValueChange={setFilterAccion}>
-          <SelectTrigger className="h-9 w-full sm:w-52 text-sm">
-            <SelectValue placeholder="Filtrar por acción" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas las acciones</SelectItem>
-            {uniqueAcciones.map(a => (
-              <SelectItem key={a} value={a}>{ACTION_LABELS[a] || a}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <select
+          value={filterAccion}
+          onChange={e => setFilterAccion(e.target.value)}
+          style={{
+            height: 36, padding: '0 12px', border: '1px solid #E5E5E5', borderRadius: 10,
+            fontSize: 13, fontFamily: FONT, color: '#111', background: '#fff',
+            outline: 'none', cursor: 'pointer', minWidth: 180,
+          }}
+        >
+          <option value="all">Todas las acciones</option>
+          {uniqueAcciones.map(a => (
+            <option key={a} value={a}>{ACTION_LABELS[a] || a}</option>
+          ))}
+        </select>
       </div>
 
       {/* Log list */}
       {filtered.length === 0 ? (
-        <div className="border border-dashed border-gray-200 rounded-2xl py-10 text-center">
-          <ClipboardList className="h-8 w-8 mx-auto text-gray-300 mb-2" />
-          <p className="text-xs text-gray-400">
+        <div style={{
+          border: '1px dashed #E5E5E5', borderRadius: 14, padding: '40px 0',
+          textAlign: 'center',
+        }}>
+          <div style={{ fontSize: 48, color: '#D1D5DB' }}>Ø</div>
+          <p style={{ margin: '8px 0 0', fontSize: 12, color: '#9CA3AF' }}>
             {auditLogs.length === 0 ? 'No hay registros aún' : 'No se encontraron resultados'}
           </p>
         </div>
       ) : (
-        <div className="overflow-y-auto max-h-[calc(100vh-240px)] space-y-1.5">
+        <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 240px)', display: 'flex', flexDirection: 'column', gap: 6 }}>
           {filtered.map(log => {
-            const color = ACTION_COLORS[log.accion] || 'bg-gray-100 text-gray-700'
+            const badge = ACTION_BADGE_STYLES[log.accion] || DEFAULT_BADGE
             const hasDetail = !!(log.razon || log.antes || log.despues)
             const isExpanded = expanded.has(log.id)
             return (
-              <div key={log.id} className="rounded-xl bg-white border border-gray-100 hover:bg-gray-50 transition-colors">
+              <div
+                key={log.id}
+                style={{ border: '1px solid #E5E5E5', borderRadius: 14, background: '#fff', overflow: 'hidden' }}
+              >
                 <div
-                  className={`flex flex-col sm:flex-row sm:items-center gap-2 p-3 ${hasDetail ? 'cursor-pointer' : ''}`}
                   onClick={() => hasDetail && toggleExpand(log.id)}
+                  style={{
+                    display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, padding: '10px 12px',
+                    cursor: hasDetail ? 'pointer' : 'default',
+                  }}
                 >
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
                     {hasDetail && (
-                      isExpanded
-                        ? <ChevronDown className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
-                        : <ChevronRight className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                      <span style={{ fontSize: 12, color: '#9CA3AF', flexShrink: 0 }}>
+                        {isExpanded ? '↓' : '→'}
+                      </span>
                     )}
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0 ${color}`}>
+                    <span style={{
+                      fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+                      whiteSpace: 'nowrap', flexShrink: 0,
+                      background: badge.background, color: badge.color,
+                    }}>
                       {ACTION_LABELS[log.accion] || log.accion}
                     </span>
-                    <span className="text-sm text-gray-900 truncate">{log.detalles}</span>
+                    <span style={{ fontSize: 13, color: '#111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {log.detalles}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-gray-400 flex-shrink-0">
-                    <span className="font-medium text-gray-900">{getUserName(log.userId)}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, fontSize: 12, color: '#9CA3AF' }}>
+                    <span style={{ fontWeight: 600, color: '#111' }}>{getUserName(log.userId)}</span>
                     <span>{formatTime(log.createdAt)}</span>
                   </div>
                 </div>
 
                 {hasDetail && isExpanded && (
-                  <div className="px-3 pb-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs border-t border-gray-100 pt-2">
+                  <div style={{
+                    padding: '8px 12px 12px', borderTop: '1px solid #F3F4F6',
+                    display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10,
+                  }}>
                     {log.razon && (
-                      <div className="space-y-0.5">
-                        <p className="font-semibold text-gray-400 uppercase tracking-wide text-[10px]">Razón</p>
-                        <p className="text-gray-900 bg-gray-50 rounded-lg px-2 py-1">{log.razon}</p>
+                      <div>
+                        <p style={{ margin: '0 0 4px', fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '.05em' }}>Razón</p>
+                        <p style={{ margin: 0, fontSize: 12, color: '#111', background: '#F9FAFB', borderRadius: 8, padding: '4px 8px' }}>{log.razon}</p>
                       </div>
                     )}
                     {log.antes && (
-                      <div className="space-y-0.5">
-                        <p className="font-semibold text-gray-400 uppercase tracking-wide text-[10px]">Antes</p>
-                        <pre className="text-gray-900 bg-gray-50 rounded-lg px-2 py-1 overflow-x-auto whitespace-pre-wrap">
+                      <div>
+                        <p style={{ margin: '0 0 4px', fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '.05em' }}>Antes</p>
+                        <pre style={{ margin: 0, fontSize: 11, color: '#111', background: '#F9FAFB', borderRadius: 8, padding: '4px 8px', overflowX: 'auto', whiteSpace: 'pre-wrap', fontFamily: MONO }}>
                           {JSON.stringify(log.antes, null, 2)}
                         </pre>
                       </div>
                     )}
                     {log.despues && (
-                      <div className="space-y-0.5">
-                        <p className="font-semibold text-gray-400 uppercase tracking-wide text-[10px]">Después</p>
-                        <pre className="text-gray-900 bg-gray-50 rounded-lg px-2 py-1 overflow-x-auto whitespace-pre-wrap">
+                      <div>
+                        <p style={{ margin: '0 0 4px', fontSize: 10, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '.05em' }}>Después</p>
+                        <pre style={{ margin: 0, fontSize: 11, color: '#111', background: '#F9FAFB', borderRadius: 8, padding: '4px 8px', overflowX: 'auto', whiteSpace: 'pre-wrap', fontFamily: MONO }}>
                           {JSON.stringify(log.despues, null, 2)}
                         </pre>
                       </div>

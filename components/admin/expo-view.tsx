@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useApp } from '@/lib/context'
-import { Check, Clock, ChefHat, Utensils } from 'lucide-react'
 import { getTimeDiffMinutes } from '@/lib/store'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
 
 export function ExpoView() {
   const { orders, markOrderDelivered } = useApp()
@@ -29,67 +31,64 @@ export function ExpoView() {
   }, {})
 
   const tableKeys = Object.keys(byTable).sort()
-
   const getElapsed = (order: (typeof readyOrders)[0]) => getTimeDiffMinutes(order.createdAt)
-
   const elapsedColor = (min: number) =>
-    min >= 15 ? 'text-red-600' : min >= 10 ? 'text-amber-600' : 'text-[#06C167]'
+    min >= 15 ? '#DC2626' : min >= 10 ? '#D97706' : '#0a3a0a'
 
   return (
-    <div className="space-y-4" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-xl border border-emerald-200">
-          <ChefHat className="h-4 w-4 text-[#06C167]" />
-          <span className="text-sm font-semibold text-[#06C167]">
+    <div style={{ fontFamily: FONT }}>
+      {/* Status bar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', background: '#BEEBBE', borderRadius: 999 }}>
+          <span style={{ fontSize: 14 }}>◎</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#0a3a0a' }}>
             {readyOrders.length} pedido{readyOrders.length !== 1 ? 's' : ''} listos para entregar
           </span>
         </div>
-        <span className="text-xs text-gray-400">
+        <span style={{ fontFamily: MONO, fontSize: 12, color: '#999' }}>
           {now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}
         </span>
       </div>
 
       {tableKeys.length === 0 && (
-        <div className="border border-dashed border-gray-200 rounded-2xl py-10 text-center">
-          <Utensils className="h-10 w-10 mx-auto text-gray-300 mb-3" />
-          <p className="text-sm font-medium text-gray-500">Sin pedidos listos para entregar</p>
-          <p className="text-xs text-gray-400 mt-1">Los pedidos aparecerán aquí cuando la cocina los marque como listos</p>
+        <div style={{ border: '1px dashed #E5E5E5', borderRadius: 16, padding: '48px 20px', textAlign: 'center' }}>
+          <p style={{ fontSize: 32, margin: '0 0 8px' }}>Ø</p>
+          <p style={{ fontSize: 14, fontWeight: 600, color: '#666', margin: 0 }}>Sin pedidos listos para entregar</p>
+          <p style={{ fontSize: 12, color: '#999', marginTop: 6 }}>Los pedidos aparecerán aquí cuando la cocina los marque como listos</p>
         </div>
       )}
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
         {tableKeys.map(tableKey => (
-          <div key={tableKey} className="border border-emerald-200 bg-emerald-50/30 rounded-2xl overflow-hidden">
-            <div className="px-3 pt-3 pb-2 flex items-center justify-between">
-              <span className="text-sm font-bold text-gray-900">{tableKey}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#06C167] text-white font-semibold">
+          <div key={tableKey} style={{ border: '1px solid #BEEBBE', background: '#F6FFF6', borderRadius: 16, overflow: 'hidden' }}>
+            <div style={{ padding: '12px 14px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 14, fontWeight: 700 }}>{tableKey}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: '#BEEBBE', color: '#0a3a0a' }}>
                 {byTable[tableKey].length} pedido{byTable[tableKey].length !== 1 ? 's' : ''}
               </span>
             </div>
-            <div className="px-3 pb-3 space-y-2">
+            <div style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
               {byTable[tableKey].map(order => {
                 const elapsed = getElapsed(order)
                 return (
-                  <div key={order.id} className="bg-white rounded-xl border border-emerald-100 p-2.5 space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-gray-900">#{order.numero}</span>
-                      <div className={`flex items-center gap-1 text-[10px] font-medium ${elapsedColor(elapsed)}`}>
-                        <Clock className="h-3 w-3" />
-                        {elapsed}min
-                      </div>
+                  <div key={order.id} style={{ background: '#fff', borderRadius: 12, border: '1px solid #E5E5E5', padding: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, fontFamily: MONO }}>#{order.numero}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: elapsedColor(elapsed), fontFamily: MONO }}>
+                        ⏱ {elapsed}min
+                      </span>
                     </div>
-
-                    <div className="space-y-0.5">
+                    <div style={{ marginBottom: 10 }}>
                       {order.items.map(item => (
-                        <div key={item.id} className="flex items-start gap-1 text-[11px] text-gray-900">
-                          <span className="shrink-0 font-semibold">{item.cantidad}x</span>
-                          <div className="min-w-0">
-                            <span className="font-medium">{item.menuItem.nombre}</span>
+                        <div key={item.id} style={{ display: 'flex', gap: 6, fontSize: 12, lineHeight: '1.5' }}>
+                          <span style={{ fontWeight: 700, flexShrink: 0, fontFamily: MONO }}>{item.cantidad}×</span>
+                          <div style={{ minWidth: 0 }}>
+                            <span style={{ fontWeight: 600 }}>{item.menuItem.nombre}</span>
                             {item.notas && (
-                              <p className="text-amber-600 italic truncate">{item.notas}</p>
+                              <p style={{ color: '#D97706', fontSize: 11, margin: '1px 0 0', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.notas}</p>
                             )}
                             {item.extras && item.extras.length > 0 && (
-                              <p className="text-gray-400 truncate">
+                              <p style={{ color: '#999', fontSize: 11, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 + {item.extras.map(e => e.nombre).join(', ')}
                               </p>
                             )}
@@ -97,13 +96,11 @@ export function ExpoView() {
                         </div>
                       ))}
                     </div>
-
                     <button
                       onClick={() => markOrderDelivered(order.id)}
-                      className="w-full h-7 rounded-xl bg-[#06C167] hover:bg-[#05a857] text-white text-[11px] font-semibold flex items-center justify-center gap-1 transition-colors"
+                      style={{ width: '100%', height: 32, borderRadius: 8, border: 'none', background: '#BEEBBE', color: '#0a3a0a', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}
                     >
-                      <Check className="h-3 w-3" />
-                      Marcar entregado
+                      ✓ Marcar entregado
                     </button>
                   </div>
                 )

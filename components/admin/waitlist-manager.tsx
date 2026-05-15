@@ -3,23 +3,23 @@
 import { useState } from 'react'
 import { useApp } from '@/lib/context'
 import type { WaitlistEntry } from '@/lib/store'
-import { EmptyState } from '@/components/shared/empty-state'
-import { Input } from '@/components/ui/input'
 import { S } from '@/lib/strings'
-import { Plus, X } from 'lucide-react'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
 
 const ESTADO_LABELS: Record<WaitlistEntry['estado'], string> = {
   esperando: 'Esperando',
-  asignada: 'Asignada',
+  asignada:  'Asignada',
   cancelada: 'Cancelada',
-  expirada: 'Expirada',
+  expirada:  'Expirada',
 }
 
-const ESTADO_COLORS: Record<WaitlistEntry['estado'], string> = {
-  esperando: 'bg-amber-100 text-amber-800',
-  asignada:  'bg-emerald-100 text-[#06C167]',
-  cancelada: 'bg-red-100 text-red-700',
-  expirada:  'bg-gray-100 text-gray-500',
+const ESTADO_COLORS: Record<WaitlistEntry['estado'], { bg: string; color: string }> = {
+  esperando: { bg: '#FEF3C7', color: '#92400E' },
+  asignada:  { bg: '#BEEBBE', color: '#0a3a0a' },
+  cancelada: { bg: '#FEE2E2', color: '#991B1B' },
+  expirada:  { bg: '#F5F5F5', color: '#666' },
 }
 
 function formatMinutesAgo(date: Date): string {
@@ -31,6 +31,12 @@ function formatMinutesAgo(date: Date): string {
 
 interface AddFormState { nombre: string; telefono: string; personas: string; notas: string }
 const EMPTY_FORM: AddFormState = { nombre: '', telefono: '', personas: '2', notas: '' }
+
+const inputStyle: React.CSSProperties = {
+  width: '100%', height: 36, padding: '0 10px', borderRadius: 8,
+  border: '1px solid #E5E5E5', fontSize: 13, fontFamily: FONT,
+  outline: 'none', boxSizing: 'border-box', background: '#fff',
+}
 
 export function WaitlistManager() {
   const { waitlist, addToWaitlist, updateWaitlistEntry, removeWaitlistEntry, tables, updateTable } = useApp()
@@ -72,44 +78,49 @@ export function WaitlistManager() {
   }
 
   return (
-    <section aria-label={S.waitlistTitle} className="space-y-4" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-black text-gray-900">{S.waitlistTitle}</h2>
+    <section aria-label={S.waitlistTitle} style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h2 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>{S.waitlistTitle}</h2>
         <button
           onClick={() => setShowForm(v => !v)}
-          className={`h-8 px-3 rounded-xl text-xs font-semibold flex items-center gap-1.5 ${showForm ? 'border border-gray-200 text-gray-700 hover:bg-gray-50' : 'bg-gray-900 hover:bg-black text-white'}`}
+          style={{
+            height: 32, padding: '0 14px', borderRadius: 10, border: showForm ? '1px solid #E5E5E5' : 'none',
+            background: showForm ? '#fff' : '#000', color: showForm ? '#333' : '#fff',
+            fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: FONT,
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}
         >
-          <Plus className="h-3 w-3" />{showForm ? S.cancel : S.waitlistAdd}
+          {showForm ? `× ${S.cancel}` : `＋ ${S.waitlistAdd}`}
         </button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleAdd} className="border border-gray-100 rounded-2xl p-4 space-y-3 bg-gray-50" aria-label="Formulario agregar a lista de espera">
-          <div className="grid grid-cols-2 gap-3">
-            <label className="space-y-1">
-              <span className="text-xs text-gray-500">{S.waitlistName} *</span>
-              <Input required value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} className="h-9 text-sm" placeholder="Ej: García" />
+        <form onSubmit={handleAdd} style={{ border: '1px solid #E5E5E5', borderRadius: 14, padding: 14, background: '#FAFAFA', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span style={{ fontSize: 11, color: '#666' }}>{S.waitlistName} *</span>
+              <input required value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} placeholder="Ej: García" style={inputStyle} />
             </label>
-            <label className="space-y-1">
-              <span className="text-xs text-gray-500">{S.waitlistPhone}</span>
-              <Input value={form.telefono} onChange={e => setForm(p => ({ ...p, telefono: e.target.value }))} type="tel" className="h-9 text-sm" placeholder="Ej: 11 1234-5678" />
-            </label>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <label className="space-y-1">
-              <span className="text-xs text-gray-500">{S.waitlistGuests}</span>
-              <Input type="number" min={1} max={20} value={form.personas} onChange={e => setForm(p => ({ ...p, personas: e.target.value }))} className="h-9 text-sm" />
-            </label>
-            <label className="space-y-1">
-              <span className="text-xs text-gray-500">{S.waitlistNotes}</span>
-              <Input value={form.notas} onChange={e => setForm(p => ({ ...p, notas: e.target.value }))} className="h-9 text-sm" placeholder="Ej: cumpleaños, silla de bebé" />
+            <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span style={{ fontSize: 11, color: '#666' }}>{S.waitlistPhone}</span>
+              <input value={form.telefono} onChange={e => setForm(p => ({ ...p, telefono: e.target.value }))} type="tel" placeholder="Ej: 11 1234-5678" style={inputStyle} />
             </label>
           </div>
-          <div className="flex gap-2 justify-end">
-            <button type="button" onClick={() => { setShowForm(false); setForm(EMPTY_FORM) }} className="h-8 px-3 rounded-xl border border-gray-200 text-gray-700 text-xs hover:bg-gray-50">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span style={{ fontSize: 11, color: '#666' }}>{S.waitlistGuests}</span>
+              <input type="number" min={1} max={20} value={form.personas} onChange={e => setForm(p => ({ ...p, personas: e.target.value }))} style={inputStyle} />
+            </label>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span style={{ fontSize: 11, color: '#666' }}>{S.waitlistNotes}</span>
+              <input value={form.notas} onChange={e => setForm(p => ({ ...p, notas: e.target.value }))} placeholder="Ej: cumpleaños, silla de bebé" style={inputStyle} />
+            </label>
+          </div>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <button type="button" onClick={() => { setShowForm(false); setForm(EMPTY_FORM) }} style={{ height: 32, padding: '0 14px', borderRadius: 8, border: '1px solid #E5E5E5', background: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: '#333' }}>
               {S.cancel}
             </button>
-            <button type="submit" disabled={submitting} className="h-8 px-3 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold disabled:opacity-50">
+            <button type="submit" disabled={submitting} style={{ height: 32, padding: '0 14px', borderRadius: 8, border: 'none', background: submitting ? '#CCC' : '#000', color: '#fff', fontSize: 12, fontWeight: 700, cursor: submitting ? 'default' : 'pointer', fontFamily: FONT }}>
               {submitting ? S.loading : S.add}
             </button>
           </div>
@@ -117,9 +128,13 @@ export function WaitlistManager() {
       )}
 
       {activeEntries.length === 0 ? (
-        <EmptyState icon="⏳" title={S.emptyWaitlist} description={S.emptyWaitlistDesc} />
+        <div style={{ border: '1px dashed #E5E5E5', borderRadius: 12, padding: '32px 20px', textAlign: 'center' }}>
+          <p style={{ fontSize: 24, margin: '0 0 6px' }}>⏳</p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#666', margin: 0 }}>{S.emptyWaitlist}</p>
+          <p style={{ fontSize: 12, color: '#999', marginTop: 4 }}>{S.emptyWaitlistDesc}</p>
+        </div>
       ) : (
-        <ul className="space-y-2" aria-label="Clientes en espera">
+        <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
           {activeEntries.map(entry => (
             <WaitlistCard key={entry.id} entry={entry} onAssign={handleAssign} onCancel={handleCancel} onRemove={removeWaitlistEntry} />
           ))}
@@ -127,18 +142,19 @@ export function WaitlistManager() {
       )}
 
       {pastEntries.length > 0 && (
-        <details className="text-xs text-gray-400">
-          <summary className="cursor-pointer select-none">{pastEntries.length} entradas anteriores</summary>
-          <ul className="mt-2 space-y-1">
-            {pastEntries.map(entry => (
-              <li key={entry.id} className="flex items-center gap-2 py-1 px-2 rounded-xl bg-gray-50">
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${ESTADO_COLORS[entry.estado]}`}>
-                  {ESTADO_LABELS[entry.estado]}
-                </span>
-                <span className="font-medium text-gray-900">{entry.nombre}</span>
-                <span className="text-gray-400">{entry.personas} pers.</span>
-              </li>
-            ))}
+        <details style={{ fontSize: 12, color: '#999' }}>
+          <summary style={{ cursor: 'pointer', userSelect: 'none' }}>{pastEntries.length} entradas anteriores</summary>
+          <ul style={{ listStyle: 'none', margin: '8px 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {pastEntries.map(entry => {
+              const ec = ESTADO_COLORS[entry.estado]
+              return (
+                <li key={entry.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 8, background: '#FAFAFA' }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: ec.bg, color: ec.color }}>{ESTADO_LABELS[entry.estado]}</span>
+                  <span style={{ fontWeight: 600, color: '#333' }}>{entry.nombre}</span>
+                  <span style={{ color: '#999' }}>{entry.personas} pers.</span>
+                </li>
+              )
+            })}
           </ul>
         </details>
       )}
@@ -156,6 +172,7 @@ interface WaitlistCardProps {
 function WaitlistCard({ entry, onAssign, onCancel, onRemove }: WaitlistCardProps) {
   const [assigningMesa, setAssigningMesa] = useState(false)
   const [mesaValue, setMesaValue] = useState('')
+  const ec = ESTADO_COLORS[entry.estado]
 
   function submitAssign(e: React.FormEvent) {
     e.preventDefault()
@@ -164,48 +181,46 @@ function WaitlistCard({ entry, onAssign, onCancel, onRemove }: WaitlistCardProps
   }
 
   return (
-    <li className="border border-gray-100 rounded-2xl p-3 bg-white space-y-2" aria-label={`Entrada lista de espera: ${entry.nombre}`}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="space-y-0.5 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-sm text-gray-900 truncate">{entry.nombre}</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${ESTADO_COLORS[entry.estado]}`}>
-              {ESTADO_LABELS[entry.estado]}
-            </span>
+    <li style={{ border: '1px solid #E5E5E5', borderRadius: 14, padding: 12, background: '#fff' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+            <span style={{ fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.nombre}</span>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: ec.bg, color: ec.color, flexShrink: 0 }}>{ESTADO_LABELS[entry.estado]}</span>
           </div>
-          <p className="text-xs text-gray-500">
+          <p style={{ fontSize: 12, color: '#666', margin: 0 }}>
             {entry.personas} {entry.personas === 1 ? 'persona' : 'personas'}
             {entry.telefono && ` · ${entry.telefono}`}
             {entry.mesaAsignada && ` · Mesa ${entry.mesaAsignada}`}
           </p>
-          {entry.notas && <p className="text-xs text-gray-400 italic">{entry.notas}</p>}
-          <p className="text-[10px] text-gray-400">{formatMinutesAgo(entry.createdAt)}</p>
+          {entry.notas && <p style={{ fontSize: 12, color: '#999', fontStyle: 'italic', margin: '2px 0 0' }}>{entry.notas}</p>}
+          <p style={{ fontSize: 10, color: '#999', margin: '2px 0 0', fontFamily: MONO }}>{formatMinutesAgo(entry.createdAt)}</p>
         </div>
 
         {entry.estado === 'esperando' && (
-          <div className="flex gap-1 shrink-0">
-            <button onClick={() => setAssigningMesa(v => !v)} aria-label="Asignar mesa" className="h-7 px-2.5 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold">
+          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+            <button onClick={() => setAssigningMesa(v => !v)} style={{ height: 30, padding: '0 12px', borderRadius: 8, border: 'none', background: '#000', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
               Mesa
             </button>
-            <button onClick={() => onCancel(entry)} aria-label="Cancelar entrada" className="h-7 w-7 rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-100 flex items-center justify-center">
-              <X className="h-3 w-3" />
+            <button onClick={() => onCancel(entry)} style={{ width: 30, height: 30, borderRadius: 8, border: '1px solid #E5E5E5', background: '#fff', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>
+              ×
             </button>
           </div>
         )}
         {(entry.estado === 'cancelada' || entry.estado === 'expirada') && (
-          <button onClick={() => onRemove(entry.id)} aria-label="Eliminar entrada" className="h-7 px-2.5 rounded-xl text-xs text-gray-400 hover:text-red-500 hover:bg-red-50">
+          <button onClick={() => onRemove(entry.id)} style={{ height: 28, padding: '0 10px', borderRadius: 8, border: 'none', background: 'transparent', fontSize: 12, color: '#999', cursor: 'pointer', fontFamily: FONT }}>
             Eliminar
           </button>
         )}
       </div>
 
       {assigningMesa && (
-        <form onSubmit={submitAssign} className="flex gap-2 items-center">
-          <Input type="number" min={1} value={mesaValue} onChange={e => setMesaValue(e.target.value)} placeholder="Nro. de mesa" className="h-8 text-xs w-28" autoFocus />
-          <button type="submit" className="h-8 px-3 rounded-xl bg-[#06C167] hover:bg-[#05a857] text-white text-xs font-semibold">
+        <form onSubmit={submitAssign} style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 10 }}>
+          <input type="number" min={1} value={mesaValue} onChange={e => setMesaValue(e.target.value)} placeholder="Nro. de mesa" autoFocus style={{ width: 100, height: 32, padding: '0 10px', borderRadius: 8, border: '1px solid #E5E5E5', fontSize: 13, fontFamily: MONO, outline: 'none' }} />
+          <button type="submit" style={{ height: 32, padding: '0 12px', borderRadius: 8, border: 'none', background: '#BEEBBE', color: '#0a3a0a', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}>
             Asignar
           </button>
-          <button type="button" onClick={() => setAssigningMesa(false)} className="h-8 px-2 rounded-xl text-xs text-gray-400 hover:bg-gray-100">
+          <button type="button" onClick={() => setAssigningMesa(false)} style={{ height: 32, padding: '0 10px', borderRadius: 8, border: 'none', background: 'transparent', fontSize: 12, color: '#999', cursor: 'pointer', fontFamily: FONT }}>
             {S.cancel}
           </button>
         </form>

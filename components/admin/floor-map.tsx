@@ -4,7 +4,10 @@ import { useRef, useState, useCallback, useEffect, useMemo } from 'react'
 import { useApp } from '@/lib/context'
 import { getTimeDiffMinutes } from '@/lib/store'
 import type { TableConfig } from '@/lib/store'
-import { Save, Clock } from 'lucide-react'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MINT = '#BEEBBE'
+const MINT_DEEP = '#0a3a0a'
 
 type TableStatus = 'libre' | 'ocupada' | 'preparando' | 'listo' | 'pagada'
 
@@ -27,18 +30,18 @@ interface FloorMapProps {
   onSelectTable?: (tableId: string | null) => void
 }
 
-function getStatusColors(status: TableStatus) {
+function getStatusColors(status: TableStatus): { bg: string; border: string; dot: string; text: string; label: string } {
   switch (status) {
     case 'libre':
-      return { bg: 'bg-gray-200', border: 'border-gray-300', dot: 'bg-gray-400', text: 'text-gray-500', label: 'Libre' }
+      return { bg: '#e5e7eb', border: '#d1d5db', dot: '#9ca3af', text: '#9ca3af', label: 'Libre' }
     case 'ocupada':
-      return { bg: 'bg-gray-800', border: 'border-gray-900', dot: 'bg-white', text: 'text-gray-200', label: 'Ocupada' }
+      return { bg: '#1f2937', border: '#111827', dot: '#fff', text: '#e5e7eb', label: 'Ocupada' }
     case 'preparando':
-      return { bg: 'bg-amber-100', border: 'border-amber-500', dot: 'bg-amber-500', text: 'text-amber-700', label: 'En cocina' }
+      return { bg: '#fef3c7', border: '#f59e0b', dot: '#f59e0b', text: '#d97706', label: 'En cocina' }
     case 'listo':
-      return { bg: 'bg-emerald-100', border: 'border-emerald-500', dot: 'bg-emerald-500', text: 'text-[#06C167]', label: 'Listo' }
+      return { bg: MINT + '88', border: MINT_DEEP, dot: MINT_DEEP, text: MINT_DEEP, label: 'Listo' }
     case 'pagada':
-      return { bg: 'bg-emerald-50', border: 'border-emerald-400', dot: 'bg-emerald-400', text: 'text-[#06C167]', label: 'Pagada' }
+      return { bg: MINT + '44', border: MINT, dot: MINT_DEEP, text: MINT_DEEP, label: 'Pagada' }
   }
 }
 
@@ -165,43 +168,68 @@ export function FloorMap({ onSelectTable }: FloorMapProps) {
   void now
 
   const LEGEND = [
-    { dot: 'bg-gray-400', label: 'Libre' },
-    { dot: 'bg-gray-800', label: 'Ocupada' },
-    { dot: 'bg-amber-500', label: 'En cocina' },
-    { dot: 'bg-emerald-500', label: 'Listo' },
-    { dot: 'bg-emerald-400', label: 'Pagada' },
+    { dot: '#9ca3af', label: 'Libre' },
+    { dot: '#1f2937', label: 'Ocupada' },
+    { dot: '#f59e0b', label: 'En cocina' },
+    { dot: MINT_DEEP, label: 'Listo' },
+    { dot: MINT, label: 'Pagada' },
   ]
 
   return (
-    <div className="flex flex-col h-full gap-3 p-3 overflow-auto" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-3 flex-wrap">
+    <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 12, padding: 12, height: '100%', overflow: 'auto' }}>
+      {/* Toolbar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           {LEGEND.map(l => (
-            <div key={l.label} className="flex items-center gap-1">
-              <div className={`w-2.5 h-2.5 rounded-full ${l.dot}`} />
-              <span className="text-[11px] text-gray-500">{l.label}</span>
+            <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: l.dot, flexShrink: 0 }} />
+              <span style={{ fontFamily: FONT, fontSize: 11, color: '#6b7280' }}>{l.label}</span>
             </div>
           ))}
         </div>
         <button
           onClick={handleSave}
           disabled={movedTables.size === 0}
-          className="h-8 px-3 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          style={{
+            fontFamily: FONT,
+            height: 32,
+            padding: '0 12px',
+            borderRadius: 10,
+            background: '#111',
+            color: '#fff',
+            fontSize: 12,
+            fontWeight: 600,
+            border: 'none',
+            cursor: movedTables.size === 0 ? 'not-allowed' : 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            opacity: movedTables.size === 0 ? 0.4 : 1,
+            transition: 'opacity 0.15s',
+          }}
         >
-          <Save className="h-3.5 w-3.5" />
-          Guardar posiciones
+          ✓ Guardar posiciones
           {movedTables.size > 0 && (
-            <span className="ml-1 bg-white/20 text-white rounded-full px-1.5 text-[10px] font-bold">{movedTables.size}</span>
+            <span style={{ background: 'rgba(255,255,255,0.2)', borderRadius: 10, padding: '1px 6px', fontSize: 10, fontWeight: 700 }}>{movedTables.size}</span>
           )}
         </button>
       </div>
 
-      <p className="text-[11px] text-gray-400 -mt-1">Arrastrá las mesas para reposicionarlas. Hacé clic para seleccionar.</p>
+      <p style={{ fontFamily: FONT, fontSize: 11, color: '#9ca3af', margin: '-4px 0 0' }}>Arrastrá las mesas para reposicionarlas. Hacé clic para seleccionar.</p>
 
+      {/* Canvas */}
       <div
         ref={canvasRef}
-        className="relative bg-gray-100 rounded-xl border border-dashed border-gray-300 w-full"
-        style={{ minHeight: '500px', userSelect: 'none', cursor: isDragging ? 'grabbing' : 'default' }}
+        style={{
+          position: 'relative',
+          background: '#f3f4f6',
+          borderRadius: 10,
+          border: '1px dashed #d1d5db',
+          width: '100%',
+          minHeight: 500,
+          userSelect: 'none',
+          cursor: isDragging ? 'grabbing' : 'default',
+        }}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
@@ -215,23 +243,44 @@ export function FloorMap({ onSelectTable }: FloorMapProps) {
           return (
             <div
               key={table.id}
-              className={`absolute flex flex-col items-center justify-between w-16 h-16 rounded-xl border-2 p-1.5 shadow-sm transition-shadow duration-150 cursor-grab active:cursor-grabbing ${colors.bg} ${colors.border} ${isSelected ? 'ring-2 ring-gray-900 ring-offset-1' : ''} ${hasMoved ? 'ring-2 ring-blue-400 ring-offset-1' : ''}`}
-              style={{ left: `${posX}%`, top: `${posY}%`, transform: 'translate(-50%, -50%)', touchAction: 'none' }}
+              style={{
+                position: 'absolute',
+                left: `${posX}%`,
+                top: `${posY}%`,
+                transform: 'translate(-50%, -50%)',
+                width: 64,
+                height: 64,
+                borderRadius: 10,
+                border: `2px solid ${colors.border}`,
+                background: colors.bg,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: 6,
+                boxShadow: isSelected
+                  ? '0 0 0 3px #111, 0 0 0 5px rgba(0,0,0,0.1)'
+                  : hasMoved
+                    ? '0 0 0 3px #60a5fa, 0 0 0 5px rgba(96,165,250,0.2)'
+                    : '0 1px 3px rgba(0,0,0,0.1)',
+                touchAction: 'none',
+                cursor: 'grab',
+                boxSizing: 'border-box',
+              }}
               onMouseDown={e => handleMouseDown(e, table.id, posX, posY)}
             >
-              <div className="w-full flex justify-end">
-                <div className={`w-2 h-2 rounded-full ${colors.dot}`} />
+              <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: colors.dot }} />
               </div>
-              <span className={`text-base font-bold leading-none ${status === 'ocupada' ? 'text-white' : 'text-gray-800'}`}>
+              <span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1, color: status === 'ocupada' ? '#fff' : '#1f2937' }}>
                 {table.numero}
               </span>
-              <div className="w-full flex justify-center">
+              <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 {status === 'libre' ? (
-                  <span className={`text-[8px] font-medium ${colors.text}`}>Libre</span>
+                  <span style={{ fontSize: 8, fontWeight: 500, color: colors.text }}>Libre</span>
                 ) : elapsedMin > 0 ? (
-                  <span className={`text-[8px] font-semibold flex items-center gap-0.5 ${status === 'ocupada' ? 'text-gray-300' : colors.text}`}>
-                    <Clock className="h-2 w-2" />
-                    {formatElapsed(elapsedMin)}
+                  <span style={{ fontSize: 8, fontWeight: 600, color: status === 'ocupada' ? '#d1d5db' : colors.text, display: 'flex', alignItems: 'center', gap: 2 }}>
+                    ⏱ {formatElapsed(elapsedMin)}
                   </span>
                 ) : null}
               </div>
@@ -240,8 +289,8 @@ export function FloorMap({ onSelectTable }: FloorMapProps) {
         })}
 
         {activeTables.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-sm text-gray-400">No hay mesas configuradas</p>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <p style={{ fontFamily: FONT, fontSize: 13, color: '#9ca3af' }}>Ø No hay mesas configuradas</p>
           </div>
         )}
       </div>

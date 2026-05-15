@@ -3,10 +3,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useApp } from '@/lib/context'
 import { supabase } from '@/lib/supabase'
-import {
-  FileText, Printer, RefreshCw, ChevronDown, ChevronUp,
-  CheckCircle2, XCircle, Download,
-} from 'lucide-react'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
+const MINT = '#BEEBBE'
+const MINT_DEEP = '#0a3a0a'
 
 interface SalesNoteRow {
   id: string
@@ -38,12 +39,14 @@ const STATUS_LABELS: Record<string, string> = {
   EXPORTADA: 'Exportada',
 }
 
-const STATUS_STYLE: Record<string, string> = {
-  BORRADOR: 'bg-gray-100 text-gray-600',
-  EMITIDA_INTERNAMENTE: 'bg-emerald-100 text-[#06C167] border border-emerald-200',
-  ANULADA: 'bg-red-100 text-red-600 border border-red-200',
-  CORREGIDA: 'bg-amber-100 text-amber-700 border border-amber-200',
-  EXPORTADA: 'bg-blue-100 text-blue-700 border border-blue-200',
+type StatusKey = 'BORRADOR' | 'EMITIDA_INTERNAMENTE' | 'ANULADA' | 'CORREGIDA' | 'EXPORTADA'
+
+const STATUS_STYLE: Record<StatusKey, React.CSSProperties> = {
+  BORRADOR: { background: '#f3f4f6', color: '#6b7280' },
+  EMITIDA_INTERNAMENTE: { background: MINT + '66', color: MINT_DEEP, border: `1px solid ${MINT}` },
+  ANULADA: { background: '#fee2e2', color: '#dc2626', border: '1px solid #fca5a5' },
+  CORREGIDA: { background: '#fef3c7', color: '#d97706', border: '1px solid #fcd34d' },
+  EXPORTADA: { background: '#dbeafe', color: '#2563eb', border: '1px solid #93c5fd' },
 }
 
 async function getToken(): Promise<string | null> {
@@ -88,33 +91,88 @@ export function SalesNotesManager() {
     setTimeout(() => { win.print() }, 300)
   }
 
+  const card: React.CSSProperties = {
+    border: '1px solid #E5E5E5',
+    borderRadius: 14,
+    background: '#fff',
+    overflow: 'hidden',
+  }
+
+  const btnPrimary: React.CSSProperties = {
+    fontFamily: FONT,
+    height: 36,
+    padding: '0 14px',
+    borderRadius: 10,
+    background: '#111',
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 600,
+    border: 'none',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+  }
+
+  const btnSecondary: React.CSSProperties = {
+    fontFamily: FONT,
+    height: 36,
+    padding: '0 14px',
+    borderRadius: 10,
+    background: '#fff',
+    color: '#374151',
+    fontSize: 12,
+    fontWeight: 500,
+    border: '1px solid #E5E5E5',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+  }
+
   return (
-    <div className="space-y-4" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
-      <div className="flex items-center justify-between">
+    <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 className="text-sm font-black text-gray-900 flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Notas de venta
+          <h2 style={{ fontFamily: FONT, fontSize: 13, fontWeight: 900, color: '#111', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>≡</span> Notas de venta
           </h2>
-          <p className="text-[10px] text-gray-400 mt-0.5">Registro de ventas validadas — generadas al aprobar cada comprobante</p>
+          <p style={{ fontFamily: FONT, fontSize: 10, color: '#9ca3af', margin: '2px 0 0' }}>Registro de ventas validadas — generadas al aprobar cada comprobante</p>
         </div>
-        <button onClick={fetchNotes} className="h-9 w-9 rounded-xl hover:bg-gray-100 flex items-center justify-center text-gray-500">
-          <RefreshCw className="h-4 w-4" />
+        <button
+          onClick={fetchNotes}
+          style={{ ...btnSecondary, height: 36, width: 36, padding: 0, justifyContent: 'center', fontSize: 16 }}
+          title="Actualizar"
+        >
+          ↺
         </button>
       </div>
 
-      <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-xl border border-gray-100 text-xs text-gray-500">
-        <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 text-[#06C167] shrink-0" />
+      {/* Info banner */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: 12, background: '#f9fafb', borderRadius: 10, border: '1px solid #E5E5E5', fontSize: 12, color: '#6b7280' }}>
+        <span style={{ color: MINT_DEEP, flexShrink: 0, marginTop: 1 }}>✓</span>
         Cada nota se genera automáticamente al aprobar un comprobante de pago. Son inmutables y quedan en el historial permanentemente.
       </div>
 
       {/* Filter pills */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 no-scrollbar">
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
         {(['EMITIDA_INTERNAMENTE', 'ANULADA', 'EXPORTADA', ''] as const).map(s => (
           <button
             key={s}
             onClick={() => setFilterStatus(s)}
-            className={`shrink-0 text-xs px-3 py-1.5 rounded-full border transition-colors ${filterStatus === s ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'}`}
+            style={{
+              flexShrink: 0,
+              fontFamily: FONT,
+              fontSize: 12,
+              padding: '6px 12px',
+              borderRadius: 20,
+              border: filterStatus === s ? '1px solid #111' : '1px solid #E5E5E5',
+              background: filterStatus === s ? '#111' : '#fff',
+              color: filterStatus === s ? '#fff' : '#9ca3af',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
           >
             {s ? STATUS_LABELS[s] : 'Todas'}
           </button>
@@ -122,96 +180,136 @@ export function SalesNotesManager() {
       </div>
 
       {loading ? (
-        <div className="text-sm text-gray-400 text-center py-10">Cargando…</div>
+        <div style={{ fontFamily: FONT, fontSize: 13, color: '#9ca3af', textAlign: 'center', padding: '40px 0' }}>
+          ↻ Cargando…
+        </div>
       ) : notes.length === 0 ? (
-        <div className="text-center py-12 border border-dashed border-gray-200 rounded-2xl">
-          <FileText className="h-8 w-8 text-gray-200 mx-auto mb-2" />
-          <p className="text-sm text-gray-400">No hay notas de venta en este estado</p>
-          <p className="text-xs text-gray-300 mt-1">Se generan automáticamente al aprobar un comprobante</p>
+        <div style={{ textAlign: 'center', padding: '48px 0', border: '1px dashed #E5E5E5', borderRadius: 14 }}>
+          <div style={{ fontSize: 32, color: '#E5E5E5', marginBottom: 8 }}>≡</div>
+          <p style={{ fontFamily: FONT, fontSize: 13, color: '#9ca3af', margin: 0 }}>No hay notas de venta en este estado</p>
+          <p style={{ fontFamily: FONT, fontSize: 11, color: '#d1d5db', margin: '4px 0 0' }}>Se generan automáticamente al aprobar un comprobante</p>
         </div>
       ) : (
-        <div className="space-y-2" ref={printRef}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }} ref={printRef}>
           {notes.map(note => {
             const isExpanded = expandedId === note.id
             const items = (note.snapshot_items ?? []) as Array<{ nombre?: string; cantidad?: number; precio?: number; total?: number }>
+            const statusStyle = STATUS_STYLE[note.status as StatusKey] ?? { background: '#f3f4f6', color: '#6b7280' }
 
             return (
-              <div key={note.id} className="border border-gray-100 rounded-2xl overflow-hidden bg-white">
+              <div key={note.id} style={card}>
                 <button
-                  className="w-full flex items-start gap-3 p-3 text-left hover:bg-gray-50 transition-colors"
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 12,
+                    padding: 12,
+                    textAlign: 'left',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontFamily: FONT,
+                  }}
                   onClick={() => setExpandedId(isExpanded ? null : note.id)}
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-mono font-semibold text-gray-900 truncate">{note.numero_interno}</span>
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${STATUS_STYLE[note.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontFamily: MONO, fontSize: 13, fontWeight: 600, color: '#111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{note.numero_interno}</span>
+                      <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 8px', borderRadius: 20, ...statusStyle }}>
                         {STATUS_LABELS[note.status] ?? note.status}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, fontSize: 12, color: '#9ca3af' }}>
                       <span>Mesa {note.table_sessions?.mesa ?? '—'}</span>
                       <span>·</span>
-                      <span className="font-medium text-gray-900">{note.moneda} {note.total.toFixed(2)}</span>
+                      <span style={{ fontWeight: 500, color: '#111' }}>{note.moneda} {note.total.toFixed(2)}</span>
                       <span>·</span>
                       <span>{new Date(note.generated_at).toLocaleDateString('es-VE')}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                     <button
-                      className="h-8 w-8 rounded-xl hover:bg-gray-100 flex items-center justify-center text-gray-400"
+                      style={{
+                        height: 32,
+                        width: 32,
+                        borderRadius: 10,
+                        border: '1px solid #E5E5E5',
+                        background: '#fff',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 14,
+                        color: '#9ca3af',
+                      }}
                       onClick={e => { e.stopPropagation(); handlePrint(note) }}
                       title="Imprimir nota"
                     >
-                      <Printer className="h-3.5 w-3.5" />
+                      ⎙
                     </button>
-                    {isExpanded
-                      ? <ChevronUp className="h-4 w-4 text-gray-400" />
-                      : <ChevronDown className="h-4 w-4 text-gray-400" />}
+                    <span style={{ fontSize: 14, color: '#9ca3af' }}>{isExpanded ? '↑' : '↓'}</span>
                   </div>
                 </button>
 
                 {isExpanded && (
-                  <div className="px-3 pb-3 border-t border-gray-100 space-y-3">
+                  <div style={{ padding: '0 12px 12px', borderTop: '1px solid #E5E5E5', display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 12 }}>
                     {note.payments?.payment_methods && (
-                      <div className="mt-3 flex items-center gap-2 text-xs text-gray-500">
-                        <Download className="h-3 w-3" />
-                        Pagado con: <span className="font-medium text-gray-900">{note.payments.payment_methods.nombre}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#6b7280' }}>
+                        <span>↓</span>
+                        Pagado con: <span style={{ fontWeight: 500, color: '#111' }}>{note.payments.payment_methods.nombre}</span>
                       </div>
                     )}
                     {items.length > 0 ? (
-                      <div className="space-y-1">
-                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Ítems</p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        <p style={{ fontFamily: FONT, fontSize: 11, fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Ítems</p>
                         {items.map((item, idx) => (
-                          <div key={idx} className="flex justify-between text-xs">
-                            <span className="text-gray-900">{item.cantidad ?? 1}× {item.nombre ?? 'Ítem'}</span>
-                            <span className="text-gray-900 font-medium">{note.moneda} {(item.total ?? item.precio ?? 0).toFixed(2)}</span>
+                          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                            <span style={{ color: '#111' }}>{item.cantidad ?? 1}× {item.nombre ?? 'Ítem'}</span>
+                            <span style={{ color: '#111', fontWeight: 500 }}>{note.moneda} {(item.total ?? item.precio ?? 0).toFixed(2)}</span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-400 italic">Sin detalle de ítems disponible</p>
+                      <p style={{ fontFamily: FONT, fontSize: 12, color: '#9ca3af', fontStyle: 'italic', margin: 0 }}>Sin detalle de ítems disponible</p>
                     )}
-                    <div className="pt-2 border-t border-dashed border-gray-100 space-y-1">
-                      <div className="flex justify-between text-xs text-gray-500"><span>Subtotal</span><span>{note.moneda} {note.subtotal.toFixed(2)}</span></div>
+                    <div style={{ paddingTop: 8, borderTop: '1px dashed #E5E5E5', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#6b7280' }}>
+                        <span>Subtotal</span><span>{note.moneda} {note.subtotal.toFixed(2)}</span>
+                      </div>
                       {note.descuentos_total > 0 && (
-                        <div className="flex justify-between text-xs text-[#06C167]"><span>Descuento</span><span>– {note.moneda} {note.descuentos_total.toFixed(2)}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: MINT_DEEP }}>
+                          <span>Descuento</span><span>– {note.moneda} {note.descuentos_total.toFixed(2)}</span>
+                        </div>
                       )}
                       {note.impuestos_total > 0 && (
-                        <div className="flex justify-between text-xs text-gray-500"><span>Impuesto</span><span>{note.moneda} {note.impuestos_total.toFixed(2)}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#6b7280' }}>
+                          <span>Impuesto</span><span>{note.moneda} {note.impuestos_total.toFixed(2)}</span>
+                        </div>
                       )}
-                      <div className="flex justify-between text-sm font-bold text-gray-900 pt-1"><span>Total</span><span>{note.moneda} {note.total.toFixed(2)}</span></div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: 700, color: '#111', paddingTop: 4, borderTop: '1px solid #E5E5E5' }}>
+                        <span>Total</span><span>{note.moneda} {note.total.toFixed(2)}</span>
+                      </div>
                     </div>
                     {note.voided_at && (
-                      <div className="p-2 bg-red-50 border border-red-200 rounded-xl">
-                        <div className="flex items-center gap-1.5 text-xs text-red-600 font-medium">
-                          <XCircle className="h-3.5 w-3.5" />
+                      <div style={{ padding: 8, background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 10 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#dc2626', fontWeight: 500 }}>
+                          <span>✕</span>
                           Anulada el {new Date(note.voided_at).toLocaleDateString('es-VE')}
                         </div>
-                        {note.void_reason && <p className="text-xs text-red-500/70 mt-0.5">{note.void_reason}</p>}
+                        {note.void_reason && <p style={{ fontFamily: FONT, fontSize: 12, color: '#ef4444', opacity: 0.7, margin: '2px 0 0' }}>{note.void_reason}</p>}
                       </div>
                     )}
-                    <button onClick={() => handlePrint(note)} className="w-full h-9 rounded-xl border border-gray-200 text-gray-700 text-xs hover:bg-gray-50 flex items-center justify-center gap-2 mt-1">
-                      <Printer className="h-4 w-4" />Imprimir / Guardar PDF
+                    <button
+                      onClick={() => handlePrint(note)}
+                      style={{
+                        ...btnSecondary,
+                        width: '100%',
+                        justifyContent: 'center',
+                        marginTop: 4,
+                      }}
+                    >
+                      ⎙ Imprimir / Guardar PDF
                     </button>
                   </div>
                 )}

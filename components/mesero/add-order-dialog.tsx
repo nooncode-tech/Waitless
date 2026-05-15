@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { X, Plus, Minus } from 'lucide-react'
 import { useApp } from '@/lib/context'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { formatPrice, type MenuItem } from '@/lib/store'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
 
 interface AddOrderDialogProps {
   mesa: number
@@ -28,7 +28,6 @@ export function AddOrderDialog({ mesa, menuItems, onClose }: AddOrderDialogProps
 
   const tableCapacity = getActiveTables().find(t => t.numero === mesa)?.capacidad ?? 4
 
-  // Watch for cart to be populated after adding items, then create the order
   useEffect(() => {
     if (pendingOrder && cart.length >= pendingItemCount.current && pendingItemCount.current > 0) {
       createOrder('mesero', mesa, undefined, seatNumber || undefined)
@@ -37,175 +36,157 @@ export function AddOrderDialog({ mesa, menuItems, onClose }: AddOrderDialogProps
       onClose()
     }
   }, [pendingOrder, cart, createOrder, mesa, seatNumber, onClose])
-  
+
   const filteredItems = menuItems.filter((item) =>
     item.nombre.toLowerCase().includes(search.toLowerCase())
   )
-  
+
   const addItem = (item: MenuItem) => {
     setLocalCart(prev => {
       const existing = prev.find(c => c.item.id === item.id)
-      if (existing) {
-        return prev.map(c => 
-          c.item.id === item.id ? { ...c, cantidad: c.cantidad + 1 } : c
-        )
-      }
+      if (existing) return prev.map(c => c.item.id === item.id ? { ...c, cantidad: c.cantidad + 1 } : c)
       return [...prev, { item, cantidad: 1 }]
     })
   }
-  
+
   const removeItem = (itemId: string) => {
     setLocalCart(prev => {
       const existing = prev.find(c => c.item.id === itemId)
-      if (existing && existing.cantidad > 1) {
-        return prev.map(c =>
-          c.item.id === itemId ? { ...c, cantidad: c.cantidad - 1 } : c
-        )
-      }
+      if (existing && existing.cantidad > 1) return prev.map(c => c.item.id === itemId ? { ...c, cantidad: c.cantidad - 1 } : c)
       return prev.filter(c => c.item.id !== itemId)
     })
   }
-  
-  const getItemQuantity = (itemId: string) => {
-    return localCart.find(c => c.item.id === itemId)?.cantidad || 0
-  }
-  
+
+  const getItemQuantity = (itemId: string) => localCart.find(c => c.item.id === itemId)?.cantidad || 0
+
   const total = localCart.reduce((sum, c) => sum + c.item.precio * c.cantidad, 0)
-  
+
   const handleConfirm = () => {
     if (localCart.length === 0) return
-    // Track how many distinct cart entries we expect
     pendingItemCount.current = localCart.length
-    // Add items to global cart
-    localCart.forEach(({ item, cantidad }) => {
-      addToCart(item, cantidad)
-    })
-    // Set flag so the useEffect picks up when cart is ready
+    localCart.forEach(({ item, cantidad }) => { addToCart(item, cantidad) })
     setPendingOrder(true)
   }
-  
+
   return (
-    <div className="fixed inset-0 z-50 bg-foreground/50 flex items-center justify-center p-4">
-      <div className="bg-background rounded-xl w-full max-w-lg max-h-[85vh] flex flex-col">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', fontFamily: FONT }}>
+      <div style={{ background: '#fff', borderRadius: '20px 20px 0 0', width: '100%', maxWidth: 520, maxHeight: '88vh', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
-        <div className="flex items-center justify-between p-3 border-b border-border">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 14px', borderBottom: '1px solid #E5E5E5', flexShrink: 0 }}>
           <div>
-            <h2 className="text-sm font-bold text-foreground">Agregar pedido</h2>
-            <p className="text-xs text-muted-foreground">Mesa {mesa}</p>
+            <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>Agregar pedido</h2>
+            <p style={{ fontSize: 12, color: '#666', margin: '2px 0 0', fontFamily: MONO }}>Mesa {mesa}</p>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
-            <X className="h-4 w-4" />
-          </Button>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 999, border: '1px solid #E5E5E5', background: '#FAFAFA', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333' }}>×</button>
         </div>
-        
-        {/* Seat Selector */}
-        <div className="p-3 border-b border-border">
-          <p className="text-xs text-muted-foreground mb-2">Asiento (opcional)</p>
-          <div className="flex flex-wrap gap-1.5">
+
+        {/* Seat selector */}
+        <div style={{ padding: '12px 20px', borderBottom: '1px solid #E5E5E5', flexShrink: 0 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: '#999', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>Asiento (opcional)</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {Array.from({ length: tableCapacity }, (_, i) => i + 1).map((seat) => (
-              <Button
+              <button
                 key={seat}
-                variant={seatNumber === seat ? 'default' : 'outline'}
-                size="sm"
-                className={`h-8 w-8 p-0 text-xs font-semibold ${seatNumber === seat ? 'bg-primary text-primary-foreground' : 'bg-transparent'}`}
                 onClick={() => setSeatNumber(prev => prev === seat ? null : seat)}
+                style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  border: `1px solid ${seatNumber === seat ? '#000' : '#E5E5E5'}`,
+                  background: seatNumber === seat ? '#000' : '#FAFAFA',
+                  color: seatNumber === seat ? '#fff' : '#333',
+                  fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: MONO,
+                }}
               >
                 {seat}
-              </Button>
+              </button>
             ))}
           </div>
         </div>
 
         {/* Search */}
-        <div className="p-3 border-b border-border">
-          <Input
+        <div style={{ padding: '10px 20px', borderBottom: '1px solid #E5E5E5', flexShrink: 0 }}>
+          <input
             type="search"
             placeholder="Buscar platillo..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-8 text-sm"
+            style={{ width: '100%', height: 36, padding: '0 12px', borderRadius: 8, border: '1px solid #E5E5E5', fontSize: 13, fontFamily: FONT, outline: 'none', boxSizing: 'border-box' }}
           />
         </div>
-        
-        {/* Menu Items */}
-        <div className="flex-1 overflow-y-auto p-3">
-          <div className="grid gap-1.5">
+
+        {/* Menu items */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '10px 20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {filteredItems.map((item) => {
               const qty = getItemQuantity(item.id)
               const is86d = !item.disponible
               return (
                 <div
                   key={item.id}
-                  className={`flex items-center justify-between p-2 rounded-lg ${
-                    is86d ? 'bg-secondary/50 opacity-60' : 'bg-secondary'
-                  }`}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '10px 12px', borderRadius: 10,
+                    background: is86d ? '#F5F5F5' : '#FAFAFA',
+                    opacity: is86d ? 0.55 : 1,
+                  }}
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <h3 className={`font-medium text-sm truncate ${is86d ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#000', textDecoration: is86d ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {item.nombre}
-                      </h3>
-                      {is86d && (
-                        <span className="text-[9px] font-bold text-destructive bg-destructive/10 px-1 py-0.5 rounded shrink-0">
-                          86
-                        </span>
-                      )}
+                      </span>
+                      {is86d && <span style={{ fontSize: 9, fontWeight: 700, color: '#991B1B', background: '#FEE2E2', padding: '1px 4px', borderRadius: 4, flexShrink: 0 }}>86</span>}
                     </div>
-                    <p className="text-xs text-primary font-medium">
+                    <p style={{ fontSize: 12, color: '#666', margin: '2px 0 0', fontFamily: MONO }}>
                       {formatPrice(item.precio)}
                     </p>
                   </div>
-
-                  <div className="flex items-center gap-1.5">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     {qty > 0 && !is86d && (
                       <>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-6 w-6 bg-transparent"
+                        <button
                           onClick={() => removeItem(item.id)}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="w-5 text-center text-xs font-medium text-foreground">
-                          {qty}
-                        </span>
+                          style={{ width: 26, height: 26, borderRadius: 7, border: '1px solid #E5E5E5', background: '#fff', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#333' }}
+                        >−</button>
+                        <span style={{ width: 20, textAlign: 'center', fontSize: 13, fontWeight: 700, fontFamily: MONO }}>{qty}</span>
                       </>
                     )}
-                    <Button
-                      variant={qty > 0 ? 'outline' : 'default'}
-                      size="icon"
-                      className={`h-6 w-6 ${qty === 0 ? 'bg-primary text-primary-foreground' : ''}`}
+                    <button
                       onClick={() => !is86d && addItem(item)}
                       disabled={is86d}
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
+                      style={{
+                        width: 26, height: 26, borderRadius: 7,
+                        border: `1px solid ${qty > 0 ? '#E5E5E5' : '#000'}`,
+                        background: qty > 0 ? '#fff' : '#000',
+                        cursor: is86d ? 'default' : 'pointer',
+                        fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: qty > 0 ? '#333' : '#fff',
+                      }}
+                    >+</button>
                   </div>
                 </div>
               )
             })}
           </div>
         </div>
-        
+
         {/* Footer */}
         {localCart.length > 0 && (
-          <div className="border-t border-border p-3">
-            <div className="flex items-center justify-between">
+          <div style={{ borderTop: '1px solid #E5E5E5', padding: '14px 20px', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <p className="text-xs text-muted-foreground">
+                <p style={{ fontSize: 12, color: '#666', margin: 0 }}>
                   {localCart.reduce((sum, c) => sum + c.cantidad, 0)} artículos
                 </p>
-                <p className="text-sm font-bold text-foreground">
+                <p style={{ fontSize: 15, fontWeight: 700, margin: '2px 0 0', fontFamily: MONO }}>
                   Total: {formatPrice(total)}
                 </p>
               </div>
-              <Button
-                className="bg-primary text-primary-foreground h-8 text-xs px-4"
+              <button
                 onClick={handleConfirm}
+                style={{ height: 42, padding: '0 20px', borderRadius: 10, border: 'none', background: '#000', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}
               >
                 Confirmar pedido
-              </Button>
+              </button>
             </div>
           </div>
         )}

@@ -1,7 +1,6 @@
 'use client'
 
-import { ChevronLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
 
 interface BackButtonProps {
   onClick: () => void
@@ -11,17 +10,18 @@ interface BackButtonProps {
 
 export function BackButton({ onClick, label = 'Volver', variant = 'default' }: BackButtonProps) {
   return (
-    <Button
-      variant="ghost"
+    <button
       onClick={onClick}
-      className={`gap-1 -ml-2 ${
-        variant === 'light'
-          ? 'text-background hover:text-background/80 hover:bg-background/10'
-          : 'text-foreground hover:text-primary hover:bg-primary/5'
-      }`}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        padding: '0 12px', height: 36, borderRadius: 999,
+        border: 'none', cursor: 'pointer', fontFamily: FONT,
+        fontSize: 13, fontWeight: 700,
+        background: variant === 'light' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+        color: variant === 'light' ? '#fff' : '#000',
+      }}
     >
-      <ChevronLeft className="h-5 w-5" />
-      <span>{label}</span>
-    </Button>
+      ← {label}
+    </button>
   )
 }

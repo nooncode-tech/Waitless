@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Download, ShieldAlert, CheckCircle2, XCircle, DatabaseBackup, KeyRound } from 'lucide-react'
-import { Spinner } from '@/components/ui/spinner'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
 
 type ExportStatus = 'idle' | 'loading' | 'ok' | 'error'
 
@@ -47,92 +48,112 @@ export function BackupManager() {
   }
 
   return (
-    <div className="space-y-4 max-w-2xl" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 640, fontFamily: FONT }}>
       <div>
-        <h2 className="text-sm font-black text-gray-900">Backup y Recuperación</h2>
-        <p className="text-xs text-gray-500 mt-0.5">
+        <h2 style={{ margin: 0, fontSize: 14, fontWeight: 900, color: '#111' }}>Backup y Recuperación</h2>
+        <p style={{ margin: '4px 0 0', fontSize: 12, color: '#6B7280' }}>
           Exportá la configuración del sistema y accedé a los procedimientos de recuperación de emergencia.
         </p>
       </div>
 
       {/* Backup */}
-      <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100">
-          <p className="text-xs font-black text-gray-900 flex items-center gap-1.5">
-            <DatabaseBackup className="h-4 w-4 text-blue-500" />
+      <div style={{ border: '1px solid #E5E5E5', borderRadius: 14, background: '#fff', overflow: 'hidden' }}>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid #E5E5E5' }}>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 900, color: '#111', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 16 }}>◫</span>
             Exportar backup de configuración
           </p>
-          <p className="text-[10px] text-gray-400 mt-0.5">
+          <p style={{ margin: '4px 0 0', fontSize: 10, color: '#9CA3AF' }}>
             Descarga un archivo JSON con el menú, categorías, configuración del restaurante y distribución de mesas. No incluye pedidos ni datos de sesión.
           </p>
         </div>
-        <div className="px-4 py-3 space-y-3">
+        <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <button
             onClick={handleExport}
             disabled={exportStatus === 'loading'}
-            className="h-9 px-4 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold flex items-center gap-2 disabled:opacity-50"
+            style={{
+              height: 36, padding: '0 16px', borderRadius: 10, border: 'none',
+              background: exportStatus === 'loading' ? '#6B7280' : '#111',
+              color: '#fff', fontSize: 12, fontWeight: 600,
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              cursor: exportStatus === 'loading' ? 'not-allowed' : 'pointer',
+              opacity: exportStatus === 'loading' ? 0.7 : 1,
+              fontFamily: FONT,
+            }}
           >
             {exportStatus === 'loading'
-              ? <Spinner className="size-4" aria-hidden="true" />
-              : <Download className="h-4 w-4" aria-hidden="true" />}
-            {exportStatus === 'loading' ? 'Generando backup…' : 'Descargar backup'}
+              ? <><span style={{ fontSize: 24, color: '#CCC' }}>↻</span> Generando backup…</>
+              : <><span>↓</span> Descargar backup</>}
           </button>
           {exportStatus === 'ok' && (
-            <p className="flex items-center gap-2 text-sm text-[#06C167]" role="status">
-              <CheckCircle2 className="h-4 w-4" />Backup descargado correctamente.
+            <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#059669' }} role="status">
+              <span>✓</span> Backup descargado correctamente.
             </p>
           )}
           {exportStatus === 'error' && (
-            <p className="flex items-center gap-2 text-sm text-red-500" role="alert">
-              <XCircle className="h-4 w-4" />{exportError}
+            <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#EF4444' }} role="alert">
+              <span>✕</span> {exportError}
             </p>
           )}
         </div>
       </div>
 
       {/* Emergency access recovery */}
-      <div className="border border-amber-200 rounded-2xl bg-amber-50 overflow-hidden">
-        <div className="px-4 py-3 border-b border-amber-200">
-          <p className="text-xs font-black text-amber-800 flex items-center gap-1.5">
-            <ShieldAlert className="h-4 w-4" />
+      <div style={{ border: '1px solid #FCD34D', borderRadius: 14, background: '#FFFBEB', overflow: 'hidden' }}>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid #FDE68A' }}>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 900, color: '#92400E', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span>⚠</span>
             Recuperación de acceso de emergencia
           </p>
-          <p className="text-[10px] text-amber-700 mt-0.5">
+          <p style={{ margin: '4px 0 0', fontSize: 10, color: '#B45309' }}>
             Si el único administrador quedó bloqueado o desactivado, seguí este procedimiento desde el Dashboard de Supabase.
           </p>
         </div>
-        <div className="px-4 py-3">
-          <ol className="space-y-2 text-sm text-amber-800 list-decimal list-inside">
+        <div style={{ padding: '12px 16px' }}>
+          <ol style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13, color: '#92400E' }}>
             <li>Ingresá a <strong>Supabase Dashboard → SQL Editor</strong>.</li>
-            <li>Encontrá el <code className="bg-amber-100 px-1 rounded text-xs">user_id</code> del usuario en la tabla <code className="bg-amber-100 px-1 rounded text-xs">profiles</code> o en Authentication → Users.</li>
+            <li>
+              Encontrá el{' '}
+              <code style={{ background: '#FEF3C7', padding: '1px 4px', borderRadius: 4, fontSize: 11, fontFamily: MONO }}>user_id</code>
+              {' '}del usuario en la tabla{' '}
+              <code style={{ background: '#FEF3C7', padding: '1px 4px', borderRadius: 4, fontSize: 11, fontFamily: MONO }}>profiles</code>
+              {' '}o en Authentication → Users.
+            </li>
             <li>
               Ejecutá el siguiente comando (reemplazando el UUID):
-              <pre className="mt-1 p-2 rounded bg-amber-100 text-xs overflow-x-auto">
+              <pre style={{ marginTop: 6, padding: 8, borderRadius: 8, background: '#FEF3C7', fontSize: 11, overflowX: 'auto', fontFamily: MONO }}>
                 {`SELECT ensure_admin('uuid-del-usuario-aqui');`}
               </pre>
             </li>
             <li>Luego restablecé la contraseña desde <strong>Authentication → Users → Send recovery email</strong>.</li>
           </ol>
-          <p className="text-xs text-amber-600 mt-2">
-            La función <code>ensure_admin()</code> está definida en <code>supabase/028_admin_recovery.sql</code>. Solo es accesible con el rol <code>service_role</code>.
+          <p style={{ margin: '10px 0 0', fontSize: 11, color: '#B45309' }}>
+            La función{' '}
+            <code style={{ fontFamily: MONO }}>ensure_admin()</code>
+            {' '}está definida en{' '}
+            <code style={{ fontFamily: MONO }}>supabase/028_admin_recovery.sql</code>.
+            {' '}Solo es accesible con el rol{' '}
+            <code style={{ fontFamily: MONO }}>service_role</code>.
           </p>
         </div>
       </div>
 
       {/* Password reset */}
-      <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100">
-          <p className="text-xs font-black text-gray-900 flex items-center gap-1.5">
-            <KeyRound className="h-4 w-4 text-gray-500" />
+      <div style={{ border: '1px solid #E5E5E5', borderRadius: 14, background: '#fff', overflow: 'hidden' }}>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid #E5E5E5' }}>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 900, color: '#111', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span>◉</span>
             Resetear contraseña de un usuario
           </p>
-          <p className="text-[10px] text-gray-400 mt-0.5">
+          <p style={{ margin: '4px 0 0', fontSize: 10, color: '#9CA3AF' }}>
             Para resetear la contraseña de cualquier usuario del staff, usá el panel de Usuarios.
           </p>
         </div>
-        <div className="px-4 py-3">
-          <p className="text-xs text-gray-500">
-            Los resets de contraseña se gestionan desde <strong>Supabase Dashboard → Authentication → Users → Send recovery email</strong>, o mediante la opción de editar usuario en el panel de Usuarios de esta aplicación.
+        <div style={{ padding: '12px 16px' }}>
+          <p style={{ margin: 0, fontSize: 12, color: '#6B7280' }}>
+            Los resets de contraseña se gestionan desde{' '}
+            <strong>Supabase Dashboard → Authentication → Users → Send recovery email</strong>,
+            {' '}o mediante la opción de editar usuario en el panel de Usuarios de esta aplicación.
           </p>
         </div>
       </div>

@@ -1,8 +1,10 @@
 'use client'
 
-import { Receipt, ChefHat, CheckCircle2, Clock } from 'lucide-react'
 import { WaitlessLogo } from '@/components/ui/waitless-logo'
 import type { TableSession } from '@/lib/store'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MINT = '#BEEBBE'
 
 interface TableSessionBarProps {
   mesa: number
@@ -28,44 +30,57 @@ export function TableSessionBar({
   const isBillRequested = session?.paymentStatus === 'pendiente' && activeOrderCount === 0
   const hasActivity = activeOrderCount > 0 || cartCount > 0
 
-  const statusLabel = () => {
-    if (isPaid) return { text: 'Cuenta pagada', icon: <CheckCircle2 className="h-3 w-3" />, color: 'text-success' }
-    if (isBillRequested) return { text: 'Cuenta solicitada', icon: <Clock className="h-3 w-3 animate-pulse" />, color: 'text-warning' }
-    if (activeOrderCount > 0) return { text: `${activeOrderCount} pedido${activeOrderCount !== 1 ? 's' : ''} activo${activeOrderCount !== 1 ? 's' : ''}`, icon: <ChefHat className="h-3 w-3" />, color: 'text-foreground' }
-    if (cartCount > 0) return { text: `${cartCount} item${cartCount !== 1 ? 's' : ''} en carrito`, icon: null, color: 'text-muted-foreground' }
+  const statusLabel = (): { text: string; symbol: string; color: string } | null => {
+    if (isPaid) return { text: 'Cuenta pagada', symbol: '✓', color: '#166534' }
+    if (isBillRequested) return { text: 'Cuenta solicitada', symbol: '⏱', color: '#b45309' }
+    if (activeOrderCount > 0) return { text: `${activeOrderCount} pedido${activeOrderCount !== 1 ? 's' : ''} activo${activeOrderCount !== 1 ? 's' : ''}`, symbol: '≡', color: '#000' }
+    if (cartCount > 0) return { text: `${cartCount} item${cartCount !== 1 ? 's' : ''} en carrito`, symbol: '⊞', color: '#888' }
     return null
   }
 
   const status = statusLabel()
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-secondary/60 border-b border-border">
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '8px 16px', background: '#f7f7f7', borderBottom: '1px solid #eee',
+      fontFamily: FONT,
+    }}>
       {/* Identity */}
-      <div className="flex items-center gap-2 min-w-0">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
         <WaitlessLogo size={20} color="dark" imageUrl={logoUrl ?? undefined} imageAlt={restaurantName ?? 'Logo'} />
-        <div className="min-w-0">
+        <div style={{ minWidth: 0 }}>
           {restaurantName && (
-            <p className="text-[11px] font-semibold text-foreground truncate leading-none">{restaurantName}</p>
+            <p style={{
+              fontSize: 11, fontWeight: 700, color: '#000', margin: 0,
+              lineHeight: 1.1, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
+            }}>{restaurantName}</p>
           )}
-          <p className="text-[10px] text-muted-foreground leading-none mt-0.5">Mesa {mesa}</p>
+          <p style={{ fontSize: 10, color: '#999', margin: 0, lineHeight: 1.2, marginTop: 1 }}>
+            Mesa {mesa}
+          </p>
         </div>
       </div>
 
       {/* Status + bill action */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         {status && (
-          <div className={`flex items-center gap-1 text-[10px] font-medium ${status.color}`}>
-            {status.icon}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 500, color: status.color }}>
+            <span>{status.symbol}</span>
             <span>{status.text}</span>
           </div>
         )}
         {!isPaid && hasActivity && onViewBill && (
           <button
             onClick={onViewBill}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-foreground text-background text-[10px] font-semibold"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+              padding: '4px 10px', borderRadius: 8,
+              background: '#000', color: '#fff',
+              fontSize: 10, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: FONT,
+            }}
           >
-            <Receipt className="h-3 w-3" />
-            Cuenta
+            $ Cuenta
           </button>
         )}
       </div>

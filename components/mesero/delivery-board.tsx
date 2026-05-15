@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Clock, Package, MapPin, Phone, Truck, ShoppingBag, AlertCircle, User, Copy, ChevronDown } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { formatPrice, getChannelLabel, getStatusLabel, getTimeDiff } from '@/lib/store'
 import { notifyConsumerDelivery } from '@/lib/push-triggers'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
 
 export function DeliveryBoard() {
   const { orders, users, updateOrderStatus, assignRepartidor } = useApp()
@@ -42,7 +44,6 @@ export function DeliveryBoard() {
     updateOrderStatus(orderId, 'en_camino')
     notifyConsumerDelivery(orderId, 'en_camino')
   }
-
   const handleConfirmRepartidor = (orderId: string) => {
     if (!selectedRepartidor) return
     assignRepartidor(orderId, selectedRepartidor)
@@ -51,255 +52,223 @@ export function DeliveryBoard() {
     setSelectedRepartidor('')
   }
 
-  const readyCount    = pendingOrders.filter(o => o.status === 'listo').length
+  const readyCount     = pendingOrders.filter(o => o.status === 'listo').length
   const preparingCount = pendingOrders.filter(o => o.status === 'preparando').length
-  const enCaminoCount = pendingOrders.filter(o => o.status === 'en_camino').length
+  const enCaminoCount  = pendingOrders.filter(o => o.status === 'en_camino').length
 
   return (
-    <div className="p-4">
+    <div style={{ padding: 16, fontFamily: FONT }}>
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-2 mb-4">
-        <div className="border border-emerald-200 bg-emerald-50 rounded-2xl p-2 text-center">
-          <p className="text-xl font-bold text-[#06C167]">{readyCount}</p>
-          <p className="text-[9px] text-[#06C167] font-medium">Listos</p>
-        </div>
-        <div className="border border-gray-200 bg-gray-50 rounded-2xl p-2 text-center">
-          <p className="text-xl font-bold text-gray-900">{enCaminoCount}</p>
-          <p className="text-[9px] text-gray-500 font-medium">En camino</p>
-        </div>
-        <div className="border border-amber-200 bg-amber-50 rounded-2xl p-2 text-center">
-          <p className="text-xl font-bold text-amber-600">{preparingCount}</p>
-          <p className="text-[9px] text-amber-600 font-medium">Preparando</p>
-        </div>
-        <div className="border border-gray-200 bg-white rounded-2xl p-2 text-center">
-          <p className="text-xl font-bold text-gray-900">{pendingOrders.length}</p>
-          <p className="text-[9px] text-gray-500 font-medium">Total</p>
-        </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 16 }}>
+        {[
+          { label: 'Listos',     value: readyCount,     color: '#BEEBBE', textColor: '#0a3a0a' },
+          { label: 'En camino',  value: enCaminoCount,  color: '#000', textColor: '#fff' },
+          { label: 'Preparando', value: preparingCount, color: '#FEF3C7', textColor: '#92400E' },
+          { label: 'Total',      value: pendingOrders.length, color: '#FAFAFA', textColor: '#333' },
+        ].map(({ label, value, color, textColor }) => (
+          <div key={label} style={{ background: color, borderRadius: 12, padding: '10px 6px', textAlign: 'center' }}>
+            <p style={{ fontSize: 22, fontWeight: 700, color: textColor, margin: 0, fontFamily: MONO, lineHeight: 1 }}>{value}</p>
+            <p style={{ fontSize: 10, fontWeight: 600, color: textColor, margin: '4px 0 0', opacity: 0.8 }}>{label}</p>
+          </div>
+        ))}
       </div>
 
-      {/* Orders List */}
-      <div className="space-y-3">
-        <h3 className="font-semibold text-sm text-gray-900">Tablero de entregas</h3>
+      {/* Title */}
+      <p style={{ fontSize: 12, fontWeight: 700, color: '#333', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 12 }}>
+        Tablero de entregas
+      </p>
 
-        {pendingOrders.length === 0 ? (
-          <div className="border border-dashed border-gray-200 rounded-2xl py-10 text-center">
-            <Package className="h-8 w-8 mx-auto text-gray-300 mb-2" />
-            <p className="text-sm text-gray-400">Sin órdenes pendientes</p>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-            {pendingOrders.map((order) => {
-              const isReady    = order.status === 'listo'
-              const isEnCamino = order.status === 'en_camino'
-              const allKitchensReady = order.cocinaStatus === 'listo'
-              const isDelivery = order.canal === 'delivery'
-              const isAssigning = assigningId === order.id
-              const repartidorUser = order.repartidorId
-                ? users.find(u => u.id === order.repartidorId)
-                : null
+      {pendingOrders.length === 0 ? (
+        <div style={{ border: '1px dashed #E5E5E5', borderRadius: 16, padding: '48px 20px', textAlign: 'center' }}>
+          <p style={{ fontSize: 32, margin: '0 0 8px' }}>Ø</p>
+          <p style={{ fontSize: 14, color: '#999', fontWeight: 600, margin: 0 }}>Sin órdenes pendientes</p>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
+          {pendingOrders.map((order) => {
+            const isReady     = order.status === 'listo'
+            const isEnCamino  = order.status === 'en_camino'
+            const allKitchensReady = order.cocinaStatus === 'listo'
+            const isDelivery  = order.canal === 'delivery'
+            const isAssigning = assigningId === order.id
+            const repartidorUser = order.repartidorId ? users.find(u => u.id === order.repartidorId) : null
 
-              const total = order.items.reduce((sum, item) => {
-                const extrasTotal = item.extras?.reduce((e, ex) => e + ex.precio, 0) || 0
-                return sum + (item.menuItem.precio + extrasTotal) * item.cantidad
-              }, 0)
+            const total = order.items.reduce((sum, item) => {
+              const extrasTotal = item.extras?.reduce((e, ex) => e + ex.precio, 0) || 0
+              return sum + (item.menuItem.precio + extrasTotal) * item.cantidad
+            }, 0)
 
-              return (
-                <div
-                  key={order.id}
-                  className={`border rounded-2xl transition-all ${
-                    isReady    ? 'border-emerald-200 bg-emerald-50/50' :
-                    isEnCamino ? 'border-gray-300 bg-gray-50' :
-                    'border-gray-200 bg-white'
-                  }`}
-                >
-                  <div className="p-3 pb-2">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="text-sm font-bold text-gray-900">#{order.numero}</p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className={`inline-flex items-center text-[10px] h-4 px-1.5 rounded-full border font-medium ${
-                            order.canal === 'delivery'    ? 'border-gray-300 text-gray-500' :
-                            order.canal === 'para_llevar' ? 'border-amber-300 text-amber-600' :
-                            'border-gray-200 text-gray-400'
-                          }`}>
-                            {order.canal === 'delivery'    && <Truck       className="h-2.5 w-2.5 mr-0.5" />}
-                            {order.canal === 'para_llevar' && <ShoppingBag className="h-2.5 w-2.5 mr-0.5" />}
-                            {getChannelLabel(order.canal)}
-                          </span>
-                          {order.mesa && (
-                            <span className="text-[10px] text-gray-400">Mesa {order.mesa}</span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className={`inline-flex items-center text-[10px] h-5 px-1.5 rounded-full font-semibold ${
-                          isReady    ? 'bg-[#06C167] text-white' :
-                          isEnCamino ? 'bg-gray-900 text-white' :
-                          order.status === 'preparando' ? 'bg-amber-100 text-amber-700' :
-                          'bg-gray-100 text-gray-500'
-                        }`}>
-                          {isEnCamino ? 'En camino' : getStatusLabel(order.status)}
+            const cardBg =
+              isReady     ? '#F0FFF0' :
+              isEnCamino  ? '#FAFAFA' :
+              '#fff'
+            const cardBorder =
+              isReady     ? '#BEEBBE' :
+              isEnCamino  ? '#CCC' :
+              '#E5E5E5'
+
+            return (
+              <div key={order.id} style={{ border: `1px solid ${cardBorder}`, borderRadius: 16, background: cardBg, overflow: 'hidden' }}>
+                {/* Card header */}
+                <div style={{ padding: '12px 14px 8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                    <div>
+                      <p style={{ fontSize: 14, fontWeight: 700, margin: 0, fontFamily: MONO }}>#{order.numero}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                        <span style={{
+                          fontSize: 10, padding: '2px 7px', borderRadius: 999,
+                          border: `1px solid ${order.canal === 'delivery' ? '#CCC' : order.canal === 'para_llevar' ? '#FCD34D' : '#E5E5E5'}`,
+                          color: order.canal === 'para_llevar' ? '#92400E' : '#666',
+                        }}>
+                          {order.canal === 'delivery' ? '↑ ' : order.canal === 'para_llevar' ? '◫ ' : ''}{getChannelLabel(order.canal)}
                         </span>
-                        <p className="text-[10px] text-gray-400 mt-0.5 flex items-center justify-end gap-0.5">
-                          <Clock className="h-2.5 w-2.5" />
-                          {getTimeDiff(order.createdAt)}
-                        </p>
+                        {order.mesa && (
+                          <span style={{ fontSize: 10, color: '#999' }}>Mesa {order.mesa}</span>
+                        )}
                       </div>
                     </div>
-                  </div>
-
-                  <div className="px-3 pb-3">
-                    {/* Customer Info */}
-                    {(isDelivery || order.canal === 'para_llevar') && order.nombreCliente && (
-                      <div className="mb-2 p-2 bg-gray-50 rounded-xl text-xs">
-                        <p className="font-semibold text-gray-900">{order.nombreCliente}</p>
-                        {order.telefono && (
-                          <p className="text-gray-500 flex items-center gap-1 mt-0.5">
-                            <Phone className="h-2.5 w-2.5" />{order.telefono}
-                          </p>
-                        )}
-                        {order.direccion && (
-                          <p className="text-gray-500 flex items-center gap-1 mt-0.5">
-                            <MapPin className="h-2.5 w-2.5" />{order.direccion}
-                          </p>
-                        )}
-                        {order.zonaReparto && (
-                          <span className="mt-1 inline-block text-[9px] bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full">
-                            {order.zonaReparto}
-                          </span>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Repartidor asignado */}
-                    {isEnCamino && repartidorUser && (
-                      <div className="mb-2 flex items-center gap-1.5 text-[10px] text-gray-500">
-                        <User className="h-3 w-3 shrink-0" />
-                        <span>{repartidorUser.nombre}</span>
-                      </div>
-                    )}
-
-                    {/* Items */}
-                    <ul className="space-y-0.5 mb-2">
-                      {order.items.map(item => (
-                        <li key={item.id} className="text-xs text-gray-700">
-                          {item.cantidad}x {item.menuItem.nombre}
-                        </li>
-                      ))}
-                    </ul>
-
-                    {/* Total */}
-                    <div className="flex justify-between text-xs mb-2 pt-1 border-t border-gray-100">
-                      <span className="text-gray-400">Total</span>
-                      <span className="font-semibold text-gray-900">{formatPrice(total)}</span>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{
+                        fontSize: 10, padding: '3px 8px', borderRadius: 999, fontWeight: 700,
+                        background: isReady ? '#BEEBBE' : isEnCamino ? '#000' : order.status === 'preparando' ? '#FEF3C7' : '#F5F5F5',
+                        color: isReady ? '#0a3a0a' : isEnCamino ? '#fff' : order.status === 'preparando' ? '#92400E' : '#666',
+                      }}>
+                        {isEnCamino ? 'En camino' : getStatusLabel(order.status)}
+                      </span>
+                      <p style={{ fontSize: 10, color: '#999', margin: '4px 0 0', fontFamily: MONO }}>
+                        ⏱ {getTimeDiff(order.createdAt)}
+                      </p>
                     </div>
-
-                    {/* Kitchen Status */}
-                    {!isEnCamino && (
-                      <div className="flex gap-1 text-[10px] mb-2">
-                        <span className={`px-1.5 py-0.5 rounded-lg ${
-                          order.cocinaStatus === 'listo'      ? 'bg-emerald-50 text-[#06C167]' :
-                          order.cocinaStatus === 'preparando' ? 'bg-amber-50 text-amber-600' :
-                          'bg-gray-100 text-gray-500'
-                        }`}>
-                          Cocina: {order.cocinaStatus === 'listo' ? 'Listo' :
-                                   order.cocinaStatus === 'preparando' ? 'Prep.' : 'Cola'}
-                        </span>
-                        {!allKitchensReady && (
-                          <span className="text-[9px] text-gray-400 flex items-center gap-0.5">
-                            <AlertCircle className="h-2.5 w-2.5" />Esperando
-                          </span>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    {allKitchensReady && isReady && !isAssigning && (
-                      <div className="flex gap-1">
-                        {isDelivery ? (
-                          <button
-                            className="flex-1 h-8 text-xs rounded-xl bg-gray-900 text-white font-semibold flex items-center justify-center gap-1 active:opacity-80"
-                            onClick={() => { setAssigningId(order.id); setSelectedRepartidor('') }}
-                          >
-                            <Truck className="h-3 w-3" />En camino
-                          </button>
-                        ) : (
-                          <button
-                            className="w-full h-8 text-xs rounded-xl bg-[#06C167] text-white font-semibold flex items-center justify-center gap-1 active:opacity-80"
-                            onClick={() => handleMarkDelivered(order.id)}
-                          >
-                            <Check className="h-3 w-3" />
-                            {order.canal === 'para_llevar' ? 'Entregar' : 'Entregado'}
-                          </button>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Assign repartidor panel */}
-                    {isAssigning && (
-                      <div className="space-y-2">
-                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-                          Asignar repartidor
-                        </p>
-                        <div className="relative">
-                          <select
-                            className="w-full h-8 text-xs rounded-xl border border-gray-200 bg-white px-2 pr-7 appearance-none text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
-                            value={selectedRepartidor}
-                            onChange={e => setSelectedRepartidor(e.target.value)}
-                          >
-                            <option value="">Seleccioná quién lleva</option>
-                            {deliveryStaff.map(u => (
-                              <option key={u.id} value={u.id}>{u.nombre}</option>
-                            ))}
-                          </select>
-                          <ChevronDown className="absolute right-2 top-2 h-4 w-4 text-gray-400 pointer-events-none" />
-                        </div>
-                        <div className="flex gap-1">
-                          <button
-                            className="flex-1 h-8 text-xs rounded-xl border border-gray-200 text-gray-700 font-medium active:bg-gray-50"
-                            onClick={() => { setAssigningId(null); setSelectedRepartidor('') }}
-                          >
-                            Cancelar
-                          </button>
-                          <button
-                            className="flex-1 h-8 text-xs rounded-xl bg-gray-900 text-white font-semibold flex items-center justify-center gap-1 disabled:opacity-40 active:opacity-80"
-                            disabled={!selectedRepartidor}
-                            onClick={() => handleConfirmRepartidor(order.id)}
-                          >
-                            <Truck className="h-3 w-3" />Salir
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {isEnCamino && (
-                      <div className="space-y-1.5">
-                        {isDelivery && (
-                          <button
-                            onClick={() => copyTrackingLink(order.id)}
-                            className="w-full flex items-center justify-center gap-1.5 text-[10px] text-gray-400 hover:text-gray-700 border border-dashed border-gray-200 rounded-xl py-1.5 transition-colors"
-                          >
-                            {copiedId === order.id
-                              ? <><Check className="h-3 w-3 text-[#06C167]" /><span className="text-[#06C167]">Link copiado</span></>
-                              : <><Copy className="h-3 w-3" />Copiar link de tracking</>
-                            }
-                          </button>
-                        )}
-                        <button
-                          className="w-full h-8 text-xs rounded-xl bg-[#06C167] text-white font-semibold flex items-center justify-center gap-1 active:opacity-80"
-                          onClick={() => handleMarkDelivered(order.id)}
-                        >
-                          <Check className="h-3 w-3" />Entregado
-                        </button>
-                      </div>
-                    )}
                   </div>
                 </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
+
+                <div style={{ padding: '0 14px 14px' }}>
+                  {/* Customer info */}
+                  {(isDelivery || order.canal === 'para_llevar') && order.nombreCliente && (
+                    <div style={{ background: '#F5F5F5', borderRadius: 8, padding: '8px 10px', marginBottom: 8, fontSize: 12 }}>
+                      <p style={{ fontWeight: 700, margin: 0 }}>{order.nombreCliente}</p>
+                      {order.telefono && <p style={{ color: '#666', margin: '2px 0 0' }}>☎ {order.telefono}</p>}
+                      {order.direccion && <p style={{ color: '#666', margin: '2px 0 0' }}>⊙ {order.direccion}</p>}
+                      {order.zonaReparto && (
+                        <span style={{ display: 'inline-block', marginTop: 4, fontSize: 10, background: '#E5E5E5', color: '#555', padding: '2px 7px', borderRadius: 999 }}>{order.zonaReparto}</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Repartidor */}
+                  {isEnCamino && repartidorUser && (
+                    <p style={{ fontSize: 11, color: '#666', marginBottom: 6 }}>◎ {repartidorUser.nombre}</p>
+                  )}
+
+                  {/* Items */}
+                  <ul style={{ margin: '0 0 8px', padding: 0, listStyle: 'none' }}>
+                    {order.items.map(item => (
+                      <li key={item.id} style={{ fontSize: 12, color: '#333', lineHeight: '1.5' }}>
+                        {item.cantidad}× {item.menuItem.nombre}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Total */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, paddingTop: 8, borderTop: '1px solid rgba(0,0,0,0.06)', marginBottom: 8 }}>
+                    <span style={{ color: '#999' }}>Total</span>
+                    <span style={{ fontWeight: 700, fontFamily: MONO }}>{formatPrice(total)}</span>
+                  </div>
+
+                  {/* Kitchen status */}
+                  {!isEnCamino && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                      <span style={{
+                        fontSize: 10, padding: '2px 8px', borderRadius: 6,
+                        background: order.cocinaStatus === 'listo' ? '#BEEBBE' : order.cocinaStatus === 'preparando' ? '#FEF3C7' : '#F5F5F5',
+                        color: order.cocinaStatus === 'listo' ? '#0a3a0a' : order.cocinaStatus === 'preparando' ? '#92400E' : '#666',
+                      }}>
+                        Cocina: {order.cocinaStatus === 'listo' ? 'Listo' : order.cocinaStatus === 'preparando' ? 'Prep.' : 'Cola'}
+                      </span>
+                      {!allKitchensReady && (
+                        <span style={{ fontSize: 10, color: '#999' }}>⚠ Esperando</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* CTA: mark en camino / delivered */}
+                  {allKitchensReady && isReady && !isAssigning && (
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {isDelivery ? (
+                        <button
+                          onClick={() => { setAssigningId(order.id); setSelectedRepartidor('') }}
+                          style={{ flex: 1, height: 36, borderRadius: 8, border: 'none', background: '#000', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}
+                        >
+                          ↑ En camino
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleMarkDelivered(order.id)}
+                          style={{ width: '100%', height: 36, borderRadius: 8, border: 'none', background: '#BEEBBE', color: '#0a3a0a', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}
+                        >
+                          ✓ {order.canal === 'para_llevar' ? 'Entregar' : 'Entregado'}
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Assign repartidor panel */}
+                  {isAssigning && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <p style={{ fontSize: 10, fontWeight: 700, color: '#999', letterSpacing: '0.06em', textTransform: 'uppercase', margin: 0 }}>Asignar repartidor</p>
+                      <select
+                        value={selectedRepartidor}
+                        onChange={e => setSelectedRepartidor(e.target.value)}
+                        style={{ width: '100%', height: 34, borderRadius: 8, border: '1px solid #E5E5E5', background: '#fff', fontSize: 13, fontFamily: FONT, padding: '0 8px', outline: 'none' }}
+                      >
+                        <option value="">Seleccioná quién lleva</option>
+                        {deliveryStaff.map(u => (
+                          <option key={u.id} value={u.id}>{u.nombre}</option>
+                        ))}
+                      </select>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button
+                          onClick={() => { setAssigningId(null); setSelectedRepartidor('') }}
+                          style={{ flex: 1, height: 34, borderRadius: 8, border: '1px solid #E5E5E5', background: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: FONT, color: '#333' }}
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          disabled={!selectedRepartidor}
+                          onClick={() => handleConfirmRepartidor(order.id)}
+                          style={{ flex: 1, height: 34, borderRadius: 8, border: 'none', background: !selectedRepartidor ? '#CCC' : '#000', color: '#fff', fontSize: 12, fontWeight: 700, cursor: !selectedRepartidor ? 'default' : 'pointer', fontFamily: FONT }}
+                        >
+                          ↑ Salir
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* En camino actions */}
+                  {isEnCamino && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {isDelivery && (
+                        <button
+                          onClick={() => copyTrackingLink(order.id)}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: '100%', padding: '6px 0', border: '1px dashed #CCC', borderRadius: 8, background: 'transparent', fontSize: 11, cursor: 'pointer', fontFamily: FONT, color: copiedId === order.id ? '#0a3a0a' : '#999' }}
+                        >
+                          {copiedId === order.id ? '✓ Link copiado' : '⎘ Copiar link de tracking'}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleMarkDelivered(order.id)}
+                        style={{ width: '100%', height: 36, borderRadius: 8, border: 'none', background: '#BEEBBE', color: '#0a3a0a', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: FONT }}
+                      >
+                        ✓ Entregado
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

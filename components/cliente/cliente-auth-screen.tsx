@@ -1,19 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { Eye, EyeOff, AlertCircle, UserPlus, LogIn, ArrowRight, ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { WaitlessLogo } from '@/components/ui/waitless-logo'
 import { useApp } from '@/lib/context'
 import { clienteLogin, clienteRegister } from '@/lib/cliente-auth'
 import type { ClienteUser } from '@/lib/cliente-auth'
 import type { TenantBranding } from '@/lib/tenant-server'
 
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+
 type Screen = 'landing' | 'login' | 'register'
 
 interface ClienteAuthScreenProps {
-  /** Llamado cuando el cliente se autentica (user) o elige continuar sin cuenta (null) */
   onSuccess: (user: ClienteUser | null) => void
   initialBranding?: TenantBranding
 }
@@ -24,15 +22,18 @@ export function ClienteAuthScreen({ onSuccess, initialBranding }: ClienteAuthScr
   const logoUrl = config.logoUrl ?? initialBranding?.logoUrl
   const restaurantName = config.restaurantName ?? initialBranding?.restaurantName
   const primaryColor = config.primaryColor ?? initialBranding?.primaryColor ?? '#000000'
-  const fontFamily = config.fontFamily ?? initialBranding?.fontFamily ?? "'Helvetica Neue', Helvetica, Arial, sans-serif"
+  const fontFamily = config.fontFamily ?? initialBranding?.fontFamily ?? FONT
 
   const [screen, setScreen] = useState<Screen>('landing')
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-12">
-      <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
+    <div style={{
+      minHeight: '100svh', background: '#fff', display: 'flex',
+      flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      padding: '48px 24px', fontFamily: FONT,
+    }}>
+      <div style={{ width: '100%', maxWidth: 360 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
           <WaitlessLogo size={48} variant="full" color="dark" imageUrl={logoUrl} imageAlt={restaurantName ?? 'Logo'} />
         </div>
 
@@ -82,69 +83,88 @@ interface LandingProps {
 }
 
 function LandingScreen({ restaurantName, primaryColor, fontFamily, onLogin, onRegister, onGuest }: LandingProps) {
+  const btnBase: React.CSSProperties = {
+    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    padding: '16px 20px', borderRadius: 16, border: '2px solid #e5e5e5',
+    cursor: 'pointer', background: '#fff', fontFamily, transition: 'border-color 0.15s',
+    marginBottom: 12,
+  }
+
   return (
-    <div className="space-y-4">
-      <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily, letterSpacing: '-0.02em' }}>
+    <div>
+      <div style={{ marginBottom: 32, textAlign: 'center' }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#000', margin: 0, letterSpacing: '-0.02em', fontFamily }}>
           ¡Bienvenido{restaurantName ? ` a ${restaurantName}` : ''}!
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          ¿Cómo querés continuar?
-        </p>
+        <p style={{ fontSize: 14, color: '#888', marginTop: 6 }}>¿Cómo querés continuar?</p>
       </div>
 
       {/* Ya tengo cuenta */}
-      <button
-        onClick={onLogin}
-        className="w-full flex items-center justify-between px-5 py-4 rounded-xl border-2 border-border hover:border-foreground transition-colors group"
-      >
-        <div className="flex items-center gap-3">
-          <div
-            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-            style={{ backgroundColor: `${primaryColor}18` }}
-          >
-            <LogIn className="h-4 w-4" style={{ color: primaryColor }} />
+      <button onClick={onLogin} style={btnBase}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+            background: `${primaryColor}18`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <span style={{ fontSize: 18, color: primaryColor }}>→</span>
           </div>
-          <div className="text-left">
-            <p className="text-sm font-semibold text-foreground">Ya tengo cuenta</p>
-            <p className="text-xs text-muted-foreground">Ingresá con tu email y contraseña</p>
+          <div style={{ textAlign: 'left' }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#000', margin: 0 }}>Ya tengo cuenta</p>
+            <p style={{ fontSize: 12, color: '#888', marginTop: 2 }}>Ingresá con tu email y contraseña</p>
           </div>
         </div>
-        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+        <span style={{ fontSize: 16, color: '#aaa' }}>›</span>
       </button>
 
       {/* Soy nuevo */}
       <button
         onClick={onRegister}
-        className="w-full flex items-center justify-between px-5 py-4 rounded-xl border-2 hover:border-foreground transition-colors group"
-        style={{ borderColor: primaryColor, backgroundColor: `${primaryColor}08` }}
+        style={{ ...btnBase, borderColor: primaryColor, background: `${primaryColor}08` }}
       >
-        <div className="flex items-center gap-3">
-          <div
-            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-            style={{ backgroundColor: primaryColor }}
-          >
-            <UserPlus className="h-4 w-4 text-white" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+            background: primaryColor,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <span style={{ fontSize: 18, color: '#fff' }}>+</span>
           </div>
-          <div className="text-left">
-            <p className="text-sm font-semibold text-foreground">Soy nuevo</p>
-            <p className="text-xs text-muted-foreground">Creá tu cuenta en segundos</p>
+          <div style={{ textAlign: 'left' }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#000', margin: 0 }}>Soy nuevo</p>
+            <p style={{ fontSize: 12, color: '#888', marginTop: 2 }}>Creá tu cuenta en segundos</p>
           </div>
         </div>
-        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+        <span style={{ fontSize: 16, color: '#aaa' }}>›</span>
       </button>
 
-      {/* Continuar sin cuenta */}
-      <div className="pt-2 text-center">
+      <div style={{ paddingTop: 8, textAlign: 'center' }}>
         <button
           onClick={onGuest}
-          className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
+          style={{
+            background: 'none', border: 'none', fontSize: 14, color: '#888',
+            cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3, fontFamily,
+          }}
         >
           Continuar sin cuenta
         </button>
       </div>
     </div>
   )
+}
+
+/* ============================================================
+   SHARED STYLES
+============================================================ */
+const inputStyle: React.CSSProperties = {
+  width: '100%', height: 44, padding: '0 12px', border: '1.5px solid #e5e5e5',
+  borderRadius: 10, fontSize: 14, fontFamily: FONT, outline: 'none',
+  color: '#000', background: '#fff', boxSizing: 'border-box',
+}
+
+const labelStyle: React.CSSProperties = {
+  display: 'block', fontSize: 11, fontWeight: 700, color: '#000',
+  textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6,
 }
 
 /* ============================================================
@@ -184,88 +204,92 @@ function LoginForm({ primaryColor, fontFamily, onSuccess, onBack }: LoginFormPro
 
   return (
     <div>
-      <button onClick={onBack} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
-        <ArrowLeft className="h-3.5 w-3.5" />
-        Volver
+      <button
+        onClick={onBack}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          fontSize: 14, color: '#888', background: 'none', border: 'none',
+          cursor: 'pointer', marginBottom: 24, fontFamily,
+        }}
+      >
+        ← Volver
       </button>
 
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-foreground" style={{ fontFamily, letterSpacing: '-0.02em' }}>
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: '#000', margin: 0, letterSpacing: '-0.02em', fontFamily }}>
           Ingresá a tu cuenta
         </h2>
-        <p className="text-sm text-muted-foreground mt-1">Usá el email con el que te registraste</p>
+        <p style={{ fontSize: 14, color: '#888', marginTop: 6 }}>Usá el email con el que te registraste</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1.5">
-          <label htmlFor="cl-email" className="text-xs font-semibold text-foreground uppercase tracking-wide">
-            Email
-          </label>
-          <Input
-            id="cl-email"
-            type="email"
-            placeholder="tu@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="h-11 border-border focus:border-foreground focus:ring-foreground rounded"
-            autoComplete="email"
-            required
-            disabled={isLoading}
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div>
+          <label htmlFor="cl-email" style={labelStyle}>Email</label>
+          <input
+            id="cl-email" type="email" placeholder="tu@email.com"
+            value={email} onChange={(e) => setEmail(e.target.value)}
+            style={inputStyle} autoComplete="email" required disabled={isLoading}
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor="cl-password" className="text-xs font-semibold text-foreground uppercase tracking-wide">
-            Contraseña
-          </label>
-          <div className="relative">
-            <Input
-              id="cl-password"
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Contraseña"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="h-11 pr-10 border-border focus:border-foreground focus:ring-foreground rounded"
-              autoComplete="current-password"
-              required
-              disabled={isLoading}
+        <div>
+          <label htmlFor="cl-password" style={labelStyle}>Contraseña</label>
+          <div style={{ position: 'relative' }}>
+            <input
+              id="cl-password" type={showPassword ? 'text' : 'password'} placeholder="Contraseña"
+              value={password} onChange={(e) => setPassword(e.target.value)}
+              style={{ ...inputStyle, paddingRight: 44 }}
+              autoComplete="current-password" required disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              style={{
+                position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontSize: 16, color: '#aaa',
+              }}
               tabIndex={-1}
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? '●' : '○'}
             </button>
           </div>
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 text-destructive text-xs bg-destructive/10 border border-destructive/30 p-3 rounded">
-            <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-            {error}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            color: '#dc2626', fontSize: 12, background: '#fef2f2',
+            border: '1px solid #fecaca', padding: '10px 12px', borderRadius: 10,
+          }}>
+            <span>⚠</span> {error}
           </div>
         )}
 
-        <Button
+        <button
           type="submit"
-          className="w-full h-11 text-white rounded font-semibold text-sm tracking-wide"
-          style={{ backgroundColor: primaryColor }}
+          style={{
+            width: '100%', height: 50, color: '#fff', border: 'none',
+            borderRadius: 14, fontSize: 15, fontWeight: 700,
+            cursor: isLoading || !email.trim() || !password ? 'not-allowed' : 'pointer',
+            opacity: isLoading || !email.trim() || !password ? 0.6 : 1,
+            background: primaryColor, fontFamily, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}
           disabled={isLoading || !email.trim() || !password}
         >
           {isLoading ? (
-            <span className="flex items-center gap-2">
-              <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <>
+              <span style={{
+                width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)',
+                borderTopColor: '#fff', borderRadius: '50%',
+                display: 'inline-block', animation: 'spin 0.7s linear infinite',
+              }} />
               Verificando...
-            </span>
+            </>
           ) : (
-            <span className="flex items-center gap-2">
-              <LogIn className="h-4 w-4" />
-              Ingresar
-            </span>
+            <>→ Ingresar</>
           )}
-        </Button>
+        </button>
       </form>
     </div>
   )
@@ -311,122 +335,111 @@ function RegisterForm({ primaryColor, fontFamily, onSuccess, onBack }: RegisterF
 
   return (
     <div>
-      <button onClick={onBack} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
-        <ArrowLeft className="h-3.5 w-3.5" />
-        Volver
+      <button
+        onClick={onBack}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          fontSize: 14, color: '#888', background: 'none', border: 'none',
+          cursor: 'pointer', marginBottom: 24, fontFamily,
+        }}
+      >
+        ← Volver
       </button>
 
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-foreground" style={{ fontFamily, letterSpacing: '-0.02em' }}>
+      <div style={{ marginBottom: 24 }}>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: '#000', margin: 0, letterSpacing: '-0.02em', fontFamily }}>
           Crear cuenta
         </h2>
-        <p className="text-sm text-muted-foreground mt-1">Tus pedidos quedan guardados para la próxima</p>
+        <p style={{ fontSize: 14, color: '#888', marginTop: 6 }}>Tus pedidos quedan guardados para la próxima</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1.5">
-          <label htmlFor="reg-nombre" className="text-xs font-semibold text-foreground uppercase tracking-wide">
-            Nombre
-          </label>
-          <Input
-            id="reg-nombre"
-            type="text"
-            placeholder="Tu nombre"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            className="h-11 border-border focus:border-foreground focus:ring-foreground rounded"
-            autoComplete="given-name"
-            required
-            disabled={isLoading}
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div>
+          <label htmlFor="reg-nombre" style={labelStyle}>Nombre</label>
+          <input
+            id="reg-nombre" type="text" placeholder="Tu nombre"
+            value={nombre} onChange={(e) => setNombre(e.target.value)}
+            style={inputStyle} autoComplete="given-name" required disabled={isLoading}
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor="reg-email" className="text-xs font-semibold text-foreground uppercase tracking-wide">
-            Email
-          </label>
-          <Input
-            id="reg-email"
-            type="email"
-            placeholder="tu@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="h-11 border-border focus:border-foreground focus:ring-foreground rounded"
-            autoComplete="email"
-            required
-            disabled={isLoading}
+        <div>
+          <label htmlFor="reg-email" style={labelStyle}>Email</label>
+          <input
+            id="reg-email" type="email" placeholder="tu@email.com"
+            value={email} onChange={(e) => setEmail(e.target.value)}
+            style={inputStyle} autoComplete="email" required disabled={isLoading}
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor="reg-tel" className="text-xs font-semibold text-foreground uppercase tracking-wide">
-            Teléfono <span className="text-muted-foreground font-normal">(opcional)</span>
+        <div>
+          <label htmlFor="reg-tel" style={labelStyle}>
+            Teléfono <span style={{ fontWeight: 400, textTransform: 'none', color: '#aaa' }}>(opcional)</span>
           </label>
-          <Input
-            id="reg-tel"
-            type="tel"
-            placeholder="+54 9 11 1234-5678"
-            value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
-            className="h-11 border-border focus:border-foreground focus:ring-foreground rounded"
-            autoComplete="tel"
-            disabled={isLoading}
+          <input
+            id="reg-tel" type="tel" placeholder="+54 9 11 1234-5678"
+            value={telefono} onChange={(e) => setTelefono(e.target.value)}
+            style={inputStyle} autoComplete="tel" disabled={isLoading}
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor="reg-password" className="text-xs font-semibold text-foreground uppercase tracking-wide">
-            Contraseña
-          </label>
-          <div className="relative">
-            <Input
-              id="reg-password"
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Mínimo 6 caracteres"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="h-11 pr-10 border-border focus:border-foreground focus:ring-foreground rounded"
-              autoComplete="new-password"
-              required
-              minLength={6}
-              disabled={isLoading}
+        <div>
+          <label htmlFor="reg-password" style={labelStyle}>Contraseña</label>
+          <div style={{ position: 'relative' }}>
+            <input
+              id="reg-password" type={showPassword ? 'text' : 'password'} placeholder="Mínimo 6 caracteres"
+              value={password} onChange={(e) => setPassword(e.target.value)}
+              style={{ ...inputStyle, paddingRight: 44 }}
+              autoComplete="new-password" required minLength={6} disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              style={{
+                position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: '#aaa',
+              }}
               tabIndex={-1}
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? '●' : '○'}
             </button>
           </div>
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 text-destructive text-xs bg-destructive/10 border border-destructive/30 p-3 rounded">
-            <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-            {error}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            color: '#dc2626', fontSize: 12, background: '#fef2f2',
+            border: '1px solid #fecaca', padding: '10px 12px', borderRadius: 10,
+          }}>
+            <span>⚠</span> {error}
           </div>
         )}
 
-        <Button
+        <button
           type="submit"
-          className="w-full h-11 text-white rounded font-semibold text-sm tracking-wide"
-          style={{ backgroundColor: primaryColor }}
+          style={{
+            width: '100%', height: 50, color: '#fff', border: 'none',
+            borderRadius: 14, fontSize: 15, fontWeight: 700,
+            cursor: isLoading || !nombre.trim() || !email.trim() || !password ? 'not-allowed' : 'pointer',
+            opacity: isLoading || !nombre.trim() || !email.trim() || !password ? 0.6 : 1,
+            background: primaryColor, fontFamily, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}
           disabled={isLoading || !nombre.trim() || !email.trim() || !password}
         >
           {isLoading ? (
-            <span className="flex items-center gap-2">
-              <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <>
+              <span style={{
+                width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)',
+                borderTopColor: '#fff', borderRadius: '50%',
+                display: 'inline-block', animation: 'spin 0.7s linear infinite',
+              }} />
               Creando cuenta...
-            </span>
+            </>
           ) : (
-            <span className="flex items-center gap-2">
-              <UserPlus className="h-4 w-4" />
-              Crear cuenta
-            </span>
+            <>+ Crear cuenta</>
           )}
-        </Button>
+        </button>
       </form>
     </div>
   )
