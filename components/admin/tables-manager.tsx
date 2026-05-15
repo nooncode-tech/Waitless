@@ -3,37 +3,20 @@
 import { useState, useEffect } from 'react'
 import { useApp } from '@/lib/context'
 import { formatPrice, formatTime, getTimeDiffMinutes } from '@/lib/store'
-import {
-  ArrowLeftRight,
-  Merge,
-  Scissors,
-  DoorOpen,
-  Clock,
-  Receipt,
-  Bell,
-  LayoutGrid,
-  List,
-  Map,
-  X,
-  AlertTriangle,
-} from 'lucide-react'
 import { FloorMap } from './floor-map'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
 
 export function TablesManager() {
   const {
-    tableSessions,
-    getActiveTables,
-    getPendingCalls,
-    moveTableSession,
-    mergeTableSessions,
-    splitTableSession,
-    closeTableSession,
+    tableSessions, getActiveTables, getPendingCalls,
+    moveTableSession, mergeTableSessions, splitTableSession, closeTableSession,
   } = useApp()
 
   const [now, setNow] = useState(new Date())
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('grid')
   const [selectedMesa, setSelectedMesa] = useState<number | null>(null)
-
   const [showMoveDialog, setShowMoveDialog] = useState(false)
   const [showMergeDialog, setShowMergeDialog] = useState(false)
   const [showSplitDialog, setShowSplitDialog] = useState(false)
@@ -68,9 +51,7 @@ export function TablesManager() {
     const isPaid = session.billStatus === 'pagada'
     const hasReady = activeOrders.some(o => o.status === 'listo')
     const hasPreparing = activeOrders.some(o => o.status === 'preparando')
-
     const status = isPaid ? 'pagada' as const : hasReady ? 'listo' as const : hasPreparing ? 'preparando' as const : 'ocupada' as const
-
     const label = isPaid ? 'Pagada'
       : paymentRequested ? 'Solicita cuenta'
       : hasReady ? 'Listo — Entregar'
@@ -81,179 +62,159 @@ export function TablesManager() {
   }
 
   const tableInfos = activeTables.map(t => ({ ...t, ...getTableInfo(t.numero) }))
-
   const selectedInfo = selectedMesa !== null ? getTableInfo(selectedMesa) : null
   const selectedSession = selectedInfo?.session ?? null
 
   const formatElapsed = (min: number) => {
     if (min < 1) return '< 1 min'
     if (min < 60) return `${min} min`
-    const h = Math.floor(min / 60)
-    const m = min % 60
-    return `${h}h ${m > 0 ? `${m}m` : ''}`
+    const h = Math.floor(min / 60), m = min % 60
+    return `${h}h${m > 0 ? ` ${m}m` : ''}`
   }
 
-  const getStatusStyle = (status: string, hasCall: boolean, hasBillRequest: boolean) => {
-    if (status === 'libre') return { bg: 'bg-gray-50', border: 'border-gray-200', dot: 'bg-gray-300', text: 'text-gray-400' }
-    if (status === 'pagada') return { bg: 'bg-emerald-50', border: 'border-emerald-200', dot: 'bg-[#06C167]', text: 'text-[#06C167]' }
-    if (status === 'listo') return { bg: 'bg-emerald-50', border: 'border-[#06C167] border-2', dot: 'bg-[#06C167] animate-pulse', text: 'text-[#06C167]' }
-    if (status === 'preparando') return { bg: 'bg-amber-50', border: 'border-amber-300', dot: 'bg-amber-400 animate-pulse', text: 'text-amber-600' }
-    if (hasBillRequest) return { bg: 'bg-amber-50', border: 'border-amber-400 border-2', dot: 'bg-amber-400 animate-pulse', text: 'text-amber-600' }
-    return { bg: 'bg-white', border: 'border-gray-200', dot: 'bg-gray-900', text: 'text-gray-900' }
+  const getCellStyle = (status: string, hasCall: boolean, hasBillRequest: boolean, isSelected: boolean): React.CSSProperties => {
+    const base: React.CSSProperties = { border: '1px solid #E5E5E5', borderRadius: 14, aspectRatio: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', padding: '10px 8px', cursor: 'pointer', transition: 'all 0.15s', position: 'relative', background: '#fff' }
+    if (isSelected) return { ...base, outline: '2px solid #000', outlineOffset: 1 }
+    if (hasCall || hasBillRequest) return { ...base, outline: '2px solid #DC2626', outlineOffset: 1 }
+    if (status === 'libre') return { ...base, background: '#FAFAFA' }
+    if (status === 'listo') return { ...base, background: '#BEEBBE', borderColor: '#BEEBBE' }
+    if (status === 'pagada') return { ...base, background: '#BEEBBE', borderColor: '#BEEBBE' }
+    if (status === 'preparando') return { ...base, background: '#FEF3C7', borderColor: '#FBBF24' }
+    return { ...base, background: '#000' }
   }
 
-  const freeTables = activeTables.filter(
-    t => t.numero !== selectedMesa && !tableSessions.some(s => s.mesa === t.numero && s.activa)
-  )
+  const getDotColor = (status: string) => {
+    if (status === 'libre') return 'rgba(0,0,0,0.15)'
+    if (status === 'listo' || status === 'pagada') return '#0a3a0a'
+    if (status === 'preparando') return '#92400E'
+    return '#fff'
+  }
+
+  const getTextColor = (status: string) => {
+    if (status === 'listo' || status === 'pagada') return '#0a3a0a'
+    if (status === 'preparando') return '#92400E'
+    if (status === 'ocupada') return '#fff'
+    return 'rgba(0,0,0,0.35)'
+  }
+
+  const freeTables = activeTables.filter(t => t.numero !== selectedMesa && !tableSessions.some(s => s.mesa === t.numero && s.activa))
   const otherActiveSessions = tableSessions.filter(s => s.activa && s.mesa !== selectedMesa)
 
   const isPaid = selectedSession?.billStatus === 'pagada'
-  const canClose =
-    selectedSession &&
-    ((isPaid && (selectedInfo?.activeOrders.length ?? 0) === 0) ||
-      (selectedInfo?.tableOrders.length ?? 0) === 0)
+  const canClose = selectedSession && ((isPaid && (selectedInfo?.activeOrders.length ?? 0) === 0) || (selectedInfo?.tableOrders.length ?? 0) === 0)
 
   const freeCount = tableInfos.filter(t => t.status === 'libre').length
   const readyCount = tableInfos.filter(t => t.status === 'listo').length
   const preparingCount = tableInfos.filter(t => t.status === 'preparando').length
   const occupiedCount = tableInfos.filter(t => t.status === 'ocupada' || t.status === 'pagada').length
 
-  const statusOrderBadge = (status: string) => {
-    if (status === 'entregado' || status === 'listo') return 'bg-emerald-50 text-[#06C167]'
-    if (status === 'cancelado') return 'bg-red-50 text-red-500'
-    if (status === 'preparando') return 'bg-amber-50 text-amber-600'
-    return 'bg-gray-100 text-gray-500'
-  }
-  const statusOrderLabel = (status: string) => {
-    if (status === 'entregado') return 'Entregado'
-    if (status === 'listo') return 'Listo'
-    if (status === 'cancelado') return 'Cancelado'
-    if (status === 'preparando') return 'Preparando'
-    return 'Cola'
+  const getOrderChip = (status: string) => {
+    if (status === 'entregado' || status === 'listo') return { bg: '#BEEBBE', color: '#0a3a0a', label: status === 'listo' ? 'Listo' : 'Entregado' }
+    if (status === 'cancelado') return { bg: '#FEE2E2', color: '#991B1B', label: 'Cancelado' }
+    if (status === 'preparando') return { bg: '#FEF3C7', color: '#92400E', label: 'Preparando' }
+    return { bg: 'rgba(0,0,0,0.07)', color: 'rgba(0,0,0,0.55)', label: 'Cola' }
   }
 
+  const modal: React.CSSProperties = {
+    position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: 'rgba(0,0,0,0.5)', padding: 16,
+  }
+  const modalBox: React.CSSProperties = {
+    background: '#fff', borderRadius: 20, padding: 20, width: '100%', maxWidth: 320, display: 'flex', flexDirection: 'column', gap: 14,
+    boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+  }
+  const btn: React.CSSProperties = {
+    height: 36, padding: '0 14px', border: '1px solid #E5E5E5', borderRadius: 10,
+    fontSize: 13, fontFamily: FONT, background: '#fff', cursor: 'pointer',
+  }
+  const btnPrimary: React.CSSProperties = { ...btn, border: 'none', background: '#000', color: '#fff', fontWeight: 700 }
+
   return (
-    <div className="flex h-full overflow-hidden" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+    <div style={{ display: 'flex', height: '100%', overflow: 'hidden', fontFamily: FONT }}>
+      <style>{`.adm-tm-cell:hover{filter:brightness(0.96)!important}.adm-tm-list-row:hover{background:#FAFAFA!important}`}</style>
+
       {/* Left — table grid */}
-      <div className="flex-1 overflow-auto p-3">
+      <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-2 mb-4">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
           {[
-            { label: 'Libres', value: freeCount, color: 'text-gray-400', bg: 'bg-gray-50', border: 'border-gray-200' },
-            { label: 'En cocina', value: preparingCount, color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
-            { label: 'Listos', value: readyCount, color: 'text-[#06C167]', bg: 'bg-emerald-50', border: 'border-emerald-200' },
-            { label: 'Ocupadas', value: occupiedCount, color: 'text-gray-900', bg: 'bg-white', border: 'border-gray-200' },
+            { label: 'Libres', value: freeCount, dot: 'rgba(0,0,0,0.15)' },
+            { label: 'En cocina', value: preparingCount, dot: '#FBBF24' },
+            { label: 'Listos', value: readyCount, dot: '#BEEBBE' },
+            { label: 'Ocupadas', value: occupiedCount, dot: '#000' },
           ].map(stat => (
-            <div key={stat.label} className={`rounded-2xl p-3 border ${stat.bg} ${stat.border}`}>
-              <p className={`text-2xl font-black leading-none ${stat.color}`} style={{ letterSpacing: '-0.03em' }}>{stat.value}</p>
-              <p className={`text-[11px] font-semibold mt-1 ${stat.color}`}>{stat.label}</p>
+            <div key={stat.label} style={{ border: '1px solid #E5E5E5', borderRadius: 14, padding: '12px 14px', background: '#fff' }}>
+              <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1 }}>{stat.value}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
+                <span style={{ width: 7, height: 7, borderRadius: 999, background: stat.dot, flexShrink: 0, display: 'inline-block', border: stat.dot === 'rgba(0,0,0,0.15)' ? '1px solid #E5E5E5' : 'none' }} />
+                <span style={{ fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.55)', fontWeight: 600 }}>{stat.label}</span>
+              </div>
             </div>
           ))}
         </div>
 
-        {/* View toggle + legend */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3 flex-wrap">
-            {[
-              { color: 'bg-gray-300', label: 'Libre' },
-              { color: 'bg-gray-900', label: 'Ocupada' },
-              { color: 'bg-amber-400', label: 'En cocina' },
-              { color: 'bg-[#06C167]', label: 'Listo' },
-            ].map(l => (
-              <div key={l.label} className="flex items-center gap-1.5">
-                <div className={`w-2 h-2 rounded-full ${l.color}`} />
-                <span className="text-[11px] text-gray-500 font-medium">{l.label}</span>
-              </div>
-            ))}
+        {/* View toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', gap: 16, fontFamily: MONO, fontSize: 11 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 8, height: 8, borderRadius: 999, background: '#FAFAFA', border: '1px solid #E5E5E5', display: 'inline-block' }} />Libre · {freeCount}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 8, height: 8, borderRadius: 999, background: '#000', display: 'inline-block' }} />Ocupada · {occupiedCount}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 8, height: 8, borderRadius: 999, background: '#BEEBBE', display: 'inline-block' }} />Lista · {readyCount}</span>
           </div>
-          <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
-            {[
-              { mode: 'grid', icon: <LayoutGrid className="h-3.5 w-3.5" />, title: 'Grilla' },
-              { mode: 'list', icon: <List className="h-3.5 w-3.5" />, title: 'Lista' },
-              { mode: 'map', icon: <Map className="h-3.5 w-3.5" />, title: 'Plano' },
-            ].map(v => (
-              <button key={v.mode} onClick={() => setViewMode(v.mode as typeof viewMode)} title={v.title}
-                className={`p-1.5 rounded-lg transition-all ${viewMode === v.mode ? 'bg-white shadow-sm text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}>
-                {v.icon}
+          <div style={{ display: 'flex', gap: 2, background: 'rgba(0,0,0,0.05)', borderRadius: 10, padding: 3 }}>
+            {([['grid', '⊞'], ['list', '≡'], ['map', '⊡']] as const).map(([mode, icon]) => (
+              <button key={mode} onClick={() => setViewMode(mode)}
+                style={{ width: 30, height: 26, border: 'none', borderRadius: 7, fontSize: 14, cursor: 'pointer', background: viewMode === mode ? '#fff' : 'transparent', fontWeight: viewMode === mode ? 700 : 400, color: viewMode === mode ? '#000' : 'rgba(0,0,0,0.45)', transition: 'all 0.15s' }}>
+                {icon}
               </button>
             ))}
           </div>
         </div>
 
+        {/* Views */}
         {viewMode === 'map' ? (
           <FloorMap />
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))', gap: 10 }}>
             {tableInfos.map(info => {
-              const style = getStatusStyle(info.status, info.hasCall, info.hasBillRequest)
               const isSelected = selectedMesa === info.numero
+              const cellStyle = getCellStyle(info.status, info.hasCall, info.hasBillRequest, isSelected)
               return (
-                <button
-                  key={info.id}
-                  onClick={() => setSelectedMesa(isSelected ? null : info.numero)}
-                  className={`relative flex flex-col items-center justify-between rounded-2xl border transition-all duration-150 hover:shadow-md hover:-translate-y-0.5 active:scale-95 p-3 aspect-square ${style.bg} ${style.border} ${(info.hasCall || info.hasBillRequest) ? 'ring-2 ring-red-400 ring-offset-1' : ''} ${isSelected ? 'ring-2 ring-black ring-offset-1' : ''}`}
-                >
+                <button key={info.id} onClick={() => setSelectedMesa(isSelected ? null : info.numero)}
+                  className="adm-tm-cell" style={cellStyle}>
                   {(info.hasCall || info.hasBillRequest) && (
-                    <div className="absolute -top-1.5 -right-1.5 flex gap-0.5 z-10">
-                      {info.hasCall && (
-                        <span className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-sm">
-                          <Bell className="h-2.5 w-2.5 text-white" />
-                        </span>
-                      )}
-                      {info.hasBillRequest && !info.hasCall && (
-                        <span className="w-5 h-5 bg-amber-400 rounded-full flex items-center justify-center shadow-sm">
-                          <Receipt className="h-2.5 w-2.5 text-white" />
-                        </span>
-                      )}
-                    </div>
+                    <span style={{ position: 'absolute', top: -6, right: -6, width: 18, height: 18, borderRadius: 999, background: info.hasCall ? '#DC2626' : '#FBBF24', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#fff', fontWeight: 700, fontFamily: MONO }}>
+                      {info.hasCall ? '!' : '$'}
+                    </span>
                   )}
-                  <div className="w-full flex justify-end">
-                    <div className={`w-2 h-2 rounded-full ${style.dot}`} />
+                  <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
+                    <span style={{ width: 7, height: 7, borderRadius: 999, background: getDotColor(info.status), display: 'inline-block' }} />
                   </div>
-                  <div className="flex-1 flex items-center justify-center">
-                    <span className="text-xl font-black text-gray-900" style={{ letterSpacing: '-0.03em' }}>{info.numero}</span>
-                  </div>
-                  <div className="w-full">
-                    {info.status === 'libre' ? (
-                      <p className="text-[10px] text-gray-400 text-center font-semibold">Libre</p>
-                    ) : info.elapsedMin > 0 ? (
-                      <p className={`text-[9px] font-bold text-center flex items-center justify-center gap-0.5 ${style.text}`}>
-                        <Clock className="h-2 w-2" />{formatElapsed(info.elapsedMin)}
-                      </p>
-                    ) : null}
+                  <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.04em', color: info.status === 'ocupada' ? '#fff' : info.status === 'libre' ? 'rgba(0,0,0,0.3)' : '#0a3a0a' }}>{info.numero}</div>
+                  <div style={{ fontSize: 9.5, fontFamily: MONO, color: getTextColor(info.status), textAlign: 'center', width: '100%', fontWeight: 600 }}>
+                    {info.status === 'libre' ? 'Libre' : info.elapsedMin > 0 ? formatElapsed(info.elapsedMin) : null}
                   </div>
                 </button>
               )
             })}
           </div>
         ) : (
-          <div className="space-y-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {tableInfos.map(info => {
-              const style = getStatusStyle(info.status, info.hasCall, info.hasBillRequest)
               const isSelected = selectedMesa === info.numero
               return (
-                <button
-                  key={info.id}
-                  onClick={() => setSelectedMesa(isSelected ? null : info.numero)}
-                  className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border transition-all hover:shadow-sm active:scale-[0.99] text-left ${style.bg} ${style.border} ${(info.hasCall || info.hasBillRequest) ? 'ring-1 ring-red-400' : ''} ${isSelected ? 'ring-2 ring-black' : ''}`}
-                >
-                  <div className={`w-3 h-3 rounded-full shrink-0 ${style.dot}`} />
-                  <span className="text-sm font-black text-gray-900 w-14 shrink-0">Mesa {info.numero}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-xs font-bold ${style.text}`}>{info.label}</p>
-                    {info.activeOrders.length > 0 && (
-                      <p className="text-[11px] text-gray-400">{info.activeOrders.length} pedido{info.activeOrders.length !== 1 ? 's' : ''}</p>
-                    )}
+                <button key={info.id} onClick={() => setSelectedMesa(isSelected ? null : info.numero)}
+                  className="adm-tm-list-row"
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', border: `1px solid ${isSelected ? '#000' : '#E5E5E5'}`, borderRadius: 12, background: '#fff', cursor: 'pointer', textAlign: 'left', outline: isSelected ? '2px solid #000' : 'none', outlineOffset: 1 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 999, background: info.status === 'libre' ? 'rgba(0,0,0,0.15)' : info.status === 'listo' || info.status === 'pagada' ? '#BEEBBE' : info.status === 'preparando' ? '#FBBF24' : '#000', flexShrink: 0, display: 'inline-block' }} />
+                  <span style={{ fontSize: 13.5, fontWeight: 800, letterSpacing: '-0.02em', width: 70, flexShrink: 0 }}>Mesa {info.numero}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: info.status === 'libre' ? 'rgba(0,0,0,0.35)' : '#000', letterSpacing: '-0.01em' }}>{info.label}</div>
+                    {info.activeOrders.length > 0 && <div style={{ fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.45)' }}>{info.activeOrders.length} pedido{info.activeOrders.length !== 1 ? 's' : ''}</div>}
                   </div>
-                  {info.elapsedMin > 0 && (
-                    <div className={`flex items-center gap-1 text-xs font-semibold shrink-0 ${style.text}`}>
-                      <Clock className="h-3.5 w-3.5" />{formatElapsed(info.elapsedMin)}
-                    </div>
-                  )}
-                  <div className="flex items-center gap-1 shrink-0">
-                    {info.hasCall && <Bell className="h-4 w-4 text-red-500" />}
-                    {info.hasBillRequest && <Receipt className="h-4 w-4 text-amber-500" />}
-                  </div>
+                  {info.elapsedMin > 0 && <span style={{ fontSize: 12, fontFamily: MONO, color: 'rgba(0,0,0,0.5)', flexShrink: 0 }}>{formatElapsed(info.elapsedMin)}</span>}
+                  {info.hasCall && <span style={{ width: 20, height: 20, borderRadius: 999, background: '#DC2626', color: '#fff', fontSize: 10, fontWeight: 700, fontFamily: MONO, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>!</span>}
+                  {info.hasBillRequest && !info.hasCall && <span style={{ width: 20, height: 20, borderRadius: 999, background: '#FBBF24', color: '#000', fontSize: 10, fontWeight: 700, fontFamily: MONO, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>$</span>}
                 </button>
               )
             })}
@@ -261,89 +222,84 @@ export function TablesManager() {
         )}
       </div>
 
-      {/* Right — selected table detail panel */}
+      {/* Right — detail panel */}
       {selectedMesa !== null && selectedInfo && (
-        <div className="w-72 shrink-0 border-l border-gray-100 bg-white overflow-y-auto flex flex-col">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+        <div style={{ width: 272, flexShrink: 0, borderLeft: '1px solid #E5E5E5', background: '#fff', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px', borderBottom: '1px solid #E5E5E5' }}>
             <div>
-              <h2 className="text-base font-black text-gray-900" style={{ letterSpacing: '-0.02em' }}>Mesa {selectedMesa}</h2>
-              <p className={`text-xs font-bold mt-0.5 ${getStatusStyle(selectedInfo.status, selectedInfo.hasCall, selectedInfo.hasBillRequest).text}`}>
-                {selectedInfo.label}
-              </p>
+              <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em' }}>Mesa {selectedMesa}</div>
+              <div style={{ fontSize: 12, fontFamily: MONO, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>{selectedInfo.label}</div>
             </div>
-            <button onClick={() => setSelectedMesa(null)} className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
-              <X className="h-4 w-4" />
-            </button>
+            <button onClick={() => setSelectedMesa(null)} style={{ width: 28, height: 28, border: '1px solid #E5E5E5', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>×</button>
           </div>
 
           {selectedSession ? (
             <>
-              <div className="px-5 py-4 space-y-2 border-b border-gray-100">
+              <div style={{ padding: '14px 18px', borderBottom: '1px solid #E5E5E5', display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {[
                   { label: 'Abierta', value: formatTime(selectedSession.createdAt) },
                   { label: 'Pedidos activos', value: String(selectedInfo.activeOrders.length) },
-                ].map(row => (
-                  <div key={row.label} className="flex justify-between items-center">
-                    <span className="text-xs text-gray-400 font-medium">{row.label}</span>
-                    <span className="text-xs font-semibold text-gray-900">{row.value}</span>
+                ].map(r => (
+                  <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 12.5, fontFamily: MONO, color: 'rgba(0,0,0,0.5)' }}>{r.label}</span>
+                    <span style={{ fontSize: 12.5, fontFamily: MONO, fontWeight: 700 }}>{r.value}</span>
                   </div>
                 ))}
-                <div className="flex justify-between items-center pt-1 border-t border-gray-100 mt-1">
-                  <span className="text-sm font-bold text-gray-900">Total</span>
-                  <span className="text-sm font-black text-gray-900" style={{ letterSpacing: '-0.02em' }}>{formatPrice(selectedInfo.total)}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 8, borderTop: '1px solid #E5E5E5', marginTop: 2 }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.02em' }}>Total</span>
+                  <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.03em', fontFamily: MONO }}>{formatPrice(selectedInfo.total)}</span>
                 </div>
               </div>
 
               {selectedInfo.tableOrders.length > 0 && (
-                <div className="px-5 py-4 border-b border-gray-100">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Pedidos</p>
-                  <div className="space-y-2">
-                    {selectedInfo.tableOrders.map(order => (
-                      <div key={order.id} className="flex items-center justify-between gap-2">
-                        <span className="text-xs text-gray-700 truncate flex-1">
-                          #{order.numero} — {order.items.map(i => `${i.cantidad}x ${i.menuItem.nombre}`).join(', ').slice(0, 25)}{order.items.map(i => i.menuItem.nombre).join('').length > 25 ? '…' : ''}
-                        </span>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${statusOrderBadge(order.status)}`}>
-                          {statusOrderLabel(order.status)}
-                        </span>
-                      </div>
-                    ))}
+                <div style={{ padding: '14px 18px', borderBottom: '1px solid #E5E5E5' }}>
+                  <div style={{ fontSize: 10.5, fontFamily: MONO, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', marginBottom: 10 }}>PEDIDOS</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    {selectedInfo.tableOrders.map(order => {
+                      const chip = getOrderChip(order.status)
+                      return (
+                        <div key={order.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                          <span style={{ fontSize: 12.5, color: '#000', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            #{order.numero} — {order.items.map(i => `${i.cantidad}x ${i.menuItem.nombre}`).join(', ').slice(0, 24)}
+                          </span>
+                          <span style={{ background: chip.bg, color: chip.color, padding: '2px 8px', borderRadius: 999, fontSize: 10.5, fontFamily: MONO, fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0 }}>{chip.label}</span>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
 
-              <div className="px-5 py-4 space-y-2 flex-1">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Acciones</p>
+              <div style={{ padding: '14px 18px', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ fontSize: 10.5, fontFamily: MONO, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(0,0,0,0.4)', textTransform: 'uppercase', marginBottom: 4 }}>ACCIONES</div>
                 {!isPaid && (
-                  <button onClick={() => setShowMoveDialog(true)}
-                    className="w-full h-10 flex items-center gap-2.5 px-3.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-                    <ArrowLeftRight className="h-4 w-4 text-gray-400 shrink-0" />Mover mesa a...
+                  <button onClick={() => setShowMoveDialog(true)} style={{ ...btn, width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8, height: 40 }}>
+                    <span style={{ fontSize: 15 }}>⇄</span> Mover mesa a...
                   </button>
                 )}
                 {!isPaid && (
-                  <button onClick={() => setShowMergeDialog(true)}
-                    disabled={otherActiveSessions.length === 0}
-                    className="w-full h-10 flex items-center gap-2.5 px-3.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                    <Merge className="h-4 w-4 text-gray-400 shrink-0" />Unir con mesa...
+                  <button onClick={() => setShowMergeDialog(true)} disabled={otherActiveSessions.length === 0}
+                    style={{ ...btn, width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8, height: 40, opacity: otherActiveSessions.length === 0 ? 0.4 : 1, cursor: otherActiveSessions.length === 0 ? 'not-allowed' : 'pointer' }}>
+                    <span style={{ fontSize: 15 }}>⊕</span> Unir con mesa...
                   </button>
                 )}
                 {!isPaid && selectedInfo.activeOrders.length > 1 && (
                   <button onClick={() => { setSplitSelectedOrders([]); setSplitTargetMesa(null); setShowSplitDialog(true) }}
-                    className="w-full h-10 flex items-center gap-2.5 px-3.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-                    <Scissors className="h-4 w-4 text-gray-400 shrink-0" />Separar pedidos...
+                    style={{ ...btn, width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8, height: 40 }}>
+                    <span style={{ fontSize: 15 }}>✂</span> Separar pedidos...
                   </button>
                 )}
                 {canClose && (
                   <button onClick={() => setShowCloseConfirm(true)}
-                    className="w-full h-10 flex items-center gap-2.5 px-3.5 rounded-xl border border-red-200 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors mt-2">
-                    <DoorOpen className="h-4 w-4 shrink-0" />Cerrar mesa
+                    style={{ ...btn, width: '100%', border: '1px solid #FCA5A5', color: '#DC2626', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8, height: 40, marginTop: 4 }}>
+                    <span style={{ fontSize: 15 }}>⬡</span> Cerrar mesa
                   </button>
                 )}
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center p-6 text-center">
-              <p className="text-sm text-gray-400">Mesa libre — sin sesión activa</p>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center' }}>
+              <span style={{ fontSize: 12.5, fontFamily: MONO, color: 'rgba(0,0,0,0.35)' }}>Mesa libre — sin sesión activa</span>
             </div>
           )}
         </div>
@@ -351,101 +307,87 @@ export function TablesManager() {
 
       {/* Move Modal */}
       {showMoveDialog && selectedMesa !== null && selectedSession && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl p-5 w-full max-w-xs shadow-xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black text-gray-900">Mover Mesa {selectedMesa}</h3>
-              <button onClick={() => setShowMoveDialog(false)} className="w-7 h-7 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400">
-                <X className="h-3.5 w-3.5" />
-              </button>
+        <div style={modal}>
+          <div style={modalBox}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em' }}>Mover Mesa {selectedMesa}</div>
+              <button onClick={() => setShowMoveDialog(false)} style={{ ...btn, width: 28, height: 28, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>×</button>
             </div>
-            <p className="text-xs text-gray-500">Selecciona la mesa destino (solo libres)</p>
-            <div className="grid grid-cols-4 gap-2">
+            <div style={{ fontSize: 12.5, fontFamily: MONO, color: 'rgba(0,0,0,0.5)' }}>Selecciona la mesa destino (solo libres)</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
               {freeTables.map(t => (
-                <button key={t.numero}
-                  className="h-11 rounded-xl border border-gray-200 text-sm font-black text-gray-900 hover:bg-gray-50 transition-colors"
-                  onClick={() => { moveTableSession(selectedSession.id, t.numero); setShowMoveDialog(false); setSelectedMesa(t.numero) }}>
+                <button key={t.numero} onClick={() => { moveTableSession(selectedSession.id, t.numero); setShowMoveDialog(false); setSelectedMesa(t.numero) }}
+                  style={{ height: 44, border: '1px solid #E5E5E5', borderRadius: 10, fontSize: 15, fontWeight: 800, fontFamily: MONO, background: '#fff', cursor: 'pointer', letterSpacing: '-0.02em' }}>
                   {t.numero}
                 </button>
               ))}
             </div>
-            {freeTables.length === 0 && <p className="text-sm text-center text-gray-400 py-2">No hay mesas libres</p>}
+            {freeTables.length === 0 && <div style={{ textAlign: 'center', fontSize: 12.5, fontFamily: MONO, color: 'rgba(0,0,0,0.35)' }}>No hay mesas libres</div>}
           </div>
         </div>
       )}
 
       {/* Merge Modal */}
       {showMergeDialog && selectedMesa !== null && selectedSession && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl p-5 w-full max-w-xs shadow-xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black text-gray-900">Unir con Mesa {selectedMesa}</h3>
-              <button onClick={() => setShowMergeDialog(false)} className="w-7 h-7 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400">
-                <X className="h-3.5 w-3.5" />
-              </button>
+        <div style={modal}>
+          <div style={modalBox}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em' }}>Unir con Mesa {selectedMesa}</div>
+              <button onClick={() => setShowMergeDialog(false)} style={{ ...btn, width: 28, height: 28, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>×</button>
             </div>
-            <p className="text-xs text-gray-500">Los pedidos se traen a Mesa {selectedMesa}.</p>
-            <div className="grid grid-cols-4 gap-2">
+            <div style={{ fontSize: 12.5, fontFamily: MONO, color: 'rgba(0,0,0,0.5)' }}>Los pedidos se traen a Mesa {selectedMesa}.</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
               {otherActiveSessions.map(s => (
-                <button key={s.id}
-                  className="h-11 rounded-xl border border-gray-200 text-sm font-black text-gray-900 hover:bg-gray-50 transition-colors"
-                  onClick={() => { mergeTableSessions(selectedSession.id, s.id); setShowMergeDialog(false) }}>
+                <button key={s.id} onClick={() => { mergeTableSessions(selectedSession.id, s.id); setShowMergeDialog(false) }}
+                  style={{ height: 44, border: '1px solid #E5E5E5', borderRadius: 10, fontSize: 15, fontWeight: 800, fontFamily: MONO, background: '#fff', cursor: 'pointer', letterSpacing: '-0.02em' }}>
                   {s.mesa}
                 </button>
               ))}
             </div>
-            {otherActiveSessions.length === 0 && <p className="text-sm text-center text-gray-400 py-2">No hay otras mesas activas</p>}
+            {otherActiveSessions.length === 0 && <div style={{ textAlign: 'center', fontSize: 12.5, fontFamily: MONO, color: 'rgba(0,0,0,0.35)' }}>No hay otras mesas activas</div>}
           </div>
         </div>
       )}
 
       {/* Split Modal */}
       {showSplitDialog && selectedMesa !== null && selectedSession && selectedInfo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl p-5 w-full max-w-sm shadow-xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black text-gray-900">Separar pedidos — Mesa {selectedMesa}</h3>
-              <button onClick={() => setShowSplitDialog(false)} className="w-7 h-7 flex items-center justify-center rounded-xl hover:bg-gray-100 text-gray-400">
-                <X className="h-3.5 w-3.5" />
-              </button>
+        <div style={modal}>
+          <div style={{ ...modalBox, maxWidth: 380 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em' }}>Separar — Mesa {selectedMesa}</div>
+              <button onClick={() => setShowSplitDialog(false)} style={{ ...btn, width: 28, height: 28, padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>×</button>
             </div>
-            <p className="text-xs text-gray-500">Selecciona pedidos a mover y la mesa destino (libre).</p>
-            <div className="space-y-2 max-h-52 overflow-y-auto">
+            <div style={{ fontSize: 12.5, fontFamily: MONO, color: 'rgba(0,0,0,0.5)' }}>Selecciona pedidos a mover y la mesa destino (libre).</div>
+            <div style={{ maxHeight: 200, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
               {selectedInfo.activeOrders.map(order => (
-                <label key={order.id} className="flex items-start gap-2.5 cursor-pointer p-2 rounded-xl hover:bg-gray-50">
-                  <input
-                    type="checkbox"
-                    className="mt-0.5 h-4 w-4 rounded accent-gray-900"
-                    checked={splitSelectedOrders.includes(order.id)}
-                    onChange={(e) => {
-                      setSplitSelectedOrders(prev => e.target.checked ? [...prev, order.id] : prev.filter(id => id !== order.id))
-                    }}
-                  />
-                  <div className="text-xs">
-                    <p className="font-bold text-gray-900">Pedido #{order.numero}</p>
-                    <p className="text-gray-400 mt-0.5">{order.items.map(i => `${i.cantidad}x ${i.menuItem.nombre}`).join(', ')}</p>
+                <label key={order.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', padding: '8px 10px', borderRadius: 8, background: splitSelectedOrders.includes(order.id) ? '#FAFAFA' : 'transparent' }}>
+                  <input type="checkbox" checked={splitSelectedOrders.includes(order.id)}
+                    onChange={e => setSplitSelectedOrders(prev => e.target.checked ? [...prev, order.id] : prev.filter(id => id !== order.id))}
+                    style={{ marginTop: 2, accentColor: '#000' }} />
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '-0.02em' }}>Pedido #{order.numero}</div>
+                    <div style={{ fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.45)' }}>{order.items.map(i => `${i.cantidad}x ${i.menuItem.nombre}`).join(', ')}</div>
                   </div>
                 </label>
               ))}
             </div>
             <div>
-              <p className="text-xs font-bold text-gray-500 mb-2">Mesa destino:</p>
-              <div className="grid grid-cols-5 gap-1.5">
+              <div style={{ fontSize: 12, fontFamily: MONO, fontWeight: 700, color: 'rgba(0,0,0,0.5)', marginBottom: 8 }}>Mesa destino:</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 6 }}>
                 {freeTables.map(t => (
                   <button key={t.numero} onClick={() => setSplitTargetMesa(t.numero)}
-                    className={`h-10 rounded-xl text-sm font-black transition-all ${splitTargetMesa === t.numero ? 'bg-gray-900 text-white' : 'border border-gray-200 text-gray-900 hover:bg-gray-50'}`}>
+                    style={{ height: 38, border: '1px solid #E5E5E5', borderRadius: 8, fontSize: 14, fontWeight: 800, fontFamily: MONO, background: splitTargetMesa === t.numero ? '#000' : '#fff', color: splitTargetMesa === t.numero ? '#fff' : '#000', cursor: 'pointer', transition: 'all 0.15s' }}>
                     {t.numero}
                   </button>
                 ))}
-                {freeTables.length === 0 && <p className="col-span-5 text-xs text-center text-gray-400 py-2">No hay mesas libres</p>}
+                {freeTables.length === 0 && <div style={{ gridColumn: '1/-1', textAlign: 'center', fontSize: 12.5, fontFamily: MONO, color: 'rgba(0,0,0,0.35)' }}>No hay mesas libres</div>}
               </div>
             </div>
-            <div className="flex gap-2">
-              <button onClick={() => setShowSplitDialog(false)} className="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">Cancelar</button>
-              <button
-                disabled={splitSelectedOrders.length === 0 || splitTargetMesa === null}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setShowSplitDialog(false)} style={{ ...btn, flex: 1, height: 42 }}>Cancelar</button>
+              <button disabled={splitSelectedOrders.length === 0 || splitTargetMesa === null}
                 onClick={() => { if (splitTargetMesa !== null) { splitTableSession(selectedSession.id, splitSelectedOrders, splitTargetMesa); setShowSplitDialog(false); setSplitSelectedOrders([]) } }}
-                className="flex-1 h-11 rounded-xl bg-gray-900 hover:bg-black text-white text-sm font-bold disabled:opacity-40 transition-colors">
+                style={{ ...btnPrimary, flex: 1, height: 42, opacity: splitSelectedOrders.length === 0 || splitTargetMesa === null ? 0.4 : 1, cursor: splitSelectedOrders.length === 0 || splitTargetMesa === null ? 'not-allowed' : 'pointer' }}>
                 Separar
               </button>
             </div>
@@ -455,17 +397,15 @@ export function TablesManager() {
 
       {/* Close Confirm */}
       {showCloseConfirm && selectedMesa !== null && selectedSession && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center">
-            <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-              <AlertTriangle className="h-7 w-7 text-red-500" />
-            </div>
-            <h3 className="text-lg font-black text-gray-900 mb-1" style={{ letterSpacing: '-0.02em' }}>Cerrar Mesa {selectedMesa}</h3>
-            <p className="text-sm text-gray-500 mb-5">Esta acción cierra la sesión activa. El siguiente cliente podrá iniciar una nueva sesión.</p>
-            <div className="flex gap-2">
-              <button onClick={() => setShowCloseConfirm(false)} className="flex-1 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">Cancelar</button>
+        <div style={{ ...modal, backdropFilter: 'blur(4px)' }}>
+          <div style={{ background: '#fff', borderRadius: 24, padding: 28, width: '100%', maxWidth: 360, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+            <div style={{ width: 52, height: 52, borderRadius: 999, background: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>⚠</div>
+            <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em' }}>Cerrar Mesa {selectedMesa}</div>
+            <div style={{ fontSize: 13.5, fontFamily: MONO, color: 'rgba(0,0,0,0.55)', lineHeight: 1.5 }}>Esta acción cierra la sesión activa. El siguiente cliente podrá iniciar una nueva sesión.</div>
+            <div style={{ display: 'flex', gap: 8, width: '100%' }}>
+              <button onClick={() => setShowCloseConfirm(false)} style={{ ...btn, flex: 1, height: 44 }}>Cancelar</button>
               <button onClick={() => { closeTableSession(selectedSession.id); setShowCloseConfirm(false); setSelectedMesa(null) }}
-                className="flex-1 h-11 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition-colors">
+                style={{ flex: 1, height: 44, border: 'none', borderRadius: 10, fontSize: 13, fontFamily: FONT, fontWeight: 700, background: '#DC2626', color: '#fff', cursor: 'pointer' }}>
                 Cerrar mesa
               </button>
             </div>

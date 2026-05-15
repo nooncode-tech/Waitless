@@ -1,23 +1,28 @@
 'use client'
 
 import { useState } from 'react'
-import { Settings, Percent, Clock, Bell, MapPin, Save, Check, AlertTriangle, X, Star, Palette, Store, Power, Eye, EyeOff, Trash2, Truck } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { DeleteAccountDialog } from '@/components/admin/delete-account-dialog'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Checkbox } from '@/components/ui/checkbox'
 
-const DEFAULT_METODOS_PAGO = {
-  efectivo: true,
-  tarjeta: true,
-  transferencia: true,
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
+
+type ConfigTab = 'general' | 'horarios' | 'pagos' | 'delivery' | 'notificaciones'
+
+const DEFAULT_METODOS_PAGO = { efectivo: true, tarjeta: true, transferencia: true }
+
+function Toggle({ on, onChange }: { on: boolean; onChange?: () => void }) {
+  return (
+    <button type="button" onClick={e => { e.stopPropagation(); onChange?.() }}
+      style={{ width: 30, height: 18, borderRadius: 999, position: 'relative', background: on ? '#BEEBBE' : 'rgba(0,0,0,0.12)', border: 'none', cursor: onChange ? 'pointer' : 'default', padding: 0, flexShrink: 0 }}>
+      <span style={{ position: 'absolute', top: 2, left: on ? 14 : 2, width: 14, height: 14, borderRadius: 999, background: '#fff', transition: 'left 0.15s', display: 'block' }} />
+    </button>
+  )
 }
 
 export function ConfigManager() {
   const { config, updateConfig, emergencyCloseTables, tableSessions, orders } = useApp()
+  const [activeTab, setActiveTab] = useState<ConfigTab>('general')
   const [showEmergencyConfirm, setShowEmergencyConfirm] = useState(false)
   const [selectedTables, setSelectedTables] = useState<number[]>([])
   const [storeSaving, setStoreSaving] = useState(false)
@@ -60,444 +65,357 @@ export function ConfigManager() {
   const getTableOrderCount = (mesa: number) =>
     orders.filter(o => o.mesa === mesa && o.status !== 'entregado' && o.status !== 'cancelado').length
 
+  const inp: React.CSSProperties = {
+    height: 36, padding: '0 12px', border: '1px solid #E5E5E5', borderRadius: 10,
+    fontSize: 13.5, letterSpacing: '-0.01em', fontFamily: FONT, outline: 'none',
+    background: '#fff', width: '100%', boxSizing: 'border-box',
+  }
+  const fieldLabel: React.CSSProperties = {
+    fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.5)', display: 'block', marginBottom: 5,
+  }
+  const row: React.CSSProperties = {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12,
+    padding: '10px 0', borderBottom: '1px solid #F5F5F5',
+  }
+
+  const TABS: { id: ConfigTab; label: string }[] = [
+    { id: 'general', label: 'General' },
+    { id: 'horarios', label: 'Horarios' },
+    { id: 'pagos', label: 'Pagos' },
+    { id: 'delivery', label: 'Delivery' },
+    { id: 'notificaciones', label: 'Notificaciones' },
+  ]
+
   return (
-    <div style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+    <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <style>{`.adm-cfg-tab-item:hover{background:rgba(0,0,0,0.04)!important}`}</style>
+
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingBottom: 16, borderBottom: '1px solid #E5E5E5' }}>
         <div>
-          <h2 className="text-sm font-black text-gray-900 flex items-center gap-1.5">
-            <Settings className="h-3.5 w-3.5" />
-            Configuración del sistema
-          </h2>
-          <p className="text-[10px] text-gray-400">Ajusta los parámetros del restaurante</p>
+          <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.2 }}>Configuración · {config.restaurantName || 'Restaurante'}</div>
+          <div style={{ fontSize: 12, fontFamily: MONO, color: 'rgba(0,0,0,0.5)', marginTop: 4 }}>Ajusta los parámetros del restaurante</div>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={!hasChanges && !saved}
-          className={`h-8 px-3 rounded-xl text-white text-xs font-semibold flex items-center gap-1.5 disabled:opacity-40 transition-colors ${saved ? 'bg-[#06C167]' : 'bg-gray-900 hover:bg-black'}`}
-        >
-          {saved ? <><Check className="h-3 w-3" />Guardado</> : <><Save className="h-3 w-3" />Guardar</>}
+        <button onClick={handleSave} disabled={!hasChanges && !saved}
+          style={{ height: 36, padding: '0 18px', border: 'none', borderRadius: 10, fontSize: 13, fontFamily: FONT, fontWeight: 700, letterSpacing: '-0.01em', background: saved ? '#BEEBBE' : '#000', color: saved ? '#0a3a0a' : '#fff', cursor: hasChanges || saved ? 'pointer' : 'not-allowed', opacity: !hasChanges && !saved ? 0.4 : 1, transition: 'background 0.2s' }}>
+          {saved ? 'Guardado ✓' : 'Guardar cambios'}
+          {storeSaving && <span style={{ marginLeft: 6, opacity: 0.6 }}>…</span>}
+          {storeSaved && !storeSaving && <span style={{ marginLeft: 6 }}>✓</span>}
         </button>
+      </header>
+
+      {/* Tab bar */}
+      <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid #E5E5E5', paddingBottom: 0 }}>
+        {TABS.map(tab => (
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className="adm-cfg-tab-item"
+            style={{ height: 34, padding: '0 14px', border: 'none', borderBottom: activeTab === tab.id ? '2px solid #000' : '2px solid transparent', borderRadius: 0, fontSize: 13, fontFamily: FONT, fontWeight: activeTab === tab.id ? 700 : 500, color: activeTab === tab.id ? '#000' : 'rgba(0,0,0,0.5)', background: 'transparent', cursor: 'pointer', letterSpacing: '-0.01em' }}>
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      <div className="space-y-3">
-        {/* Estado de la tienda */}
-        <div className={`border rounded-2xl overflow-hidden ${localConfig.tiendaAbierta ? 'border-[#06C167]/30 bg-emerald-50' : 'border-red-200 bg-red-50/30'}`}>
-          <div className={`px-4 py-3 border-b ${localConfig.tiendaAbierta ? 'border-[#06C167]/20' : 'border-red-200/50'}`}>
-            <div className={`flex items-center gap-1.5 text-xs font-black ${localConfig.tiendaAbierta ? 'text-[#06C167]' : 'text-red-600'}`}>
-              <Power className="h-3.5 w-3.5" />
-              Estado de la tienda
-              {storeSaving && <span className="ml-auto text-[9px] text-gray-400 font-normal">Guardando...</span>}
-              {storeSaved && !storeSaving && (
-                <span className="ml-auto text-[9px] text-[#06C167] font-normal flex items-center gap-0.5">
-                  <Check className="h-2.5 w-2.5" />Guardado
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="px-4 py-3 space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-gray-900">
-                  {localConfig.tiendaAbierta ? '🟢 Tienda abierta' : '🔴 Tienda cerrada'}
-                </p>
-                <p className="text-[9px] text-gray-500 mt-0.5">
-                  {localConfig.tiendaAbierta
-                    ? 'Los clientes pueden ver el menú y hacer pedidos'
-                    : 'No se aceptan pedidos. Los clientes verán "Cerrada"'}
-                </p>
-              </div>
-              <Switch checked={localConfig.tiendaAbierta} onCheckedChange={(v) => saveStoreStatus({ tiendaAbierta: v })} />
-            </div>
-
-            <div className="border-t border-gray-200/60 pt-3 flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-1.5">
-                  {localConfig.tiendaVisible ? <Eye className="h-3 w-3 text-gray-400" /> : <EyeOff className="h-3 w-3 text-gray-400" />}
-                  <p className="text-xs font-medium text-gray-900">
-                    {localConfig.tiendaVisible ? 'Visible al público' : 'Oculta al público'}
-                  </p>
-                </div>
-                <p className="text-[9px] text-gray-500 mt-0.5">
-                  {localConfig.tiendaVisible
-                    ? 'Aparece en el marketplace de restaurantes'
-                    : 'No aparece en la lista pública de restaurantes'}
-                </p>
-              </div>
-              <Switch checked={localConfig.tiendaVisible} onCheckedChange={(v) => saveStoreStatus({ tiendaVisible: v })} className="scale-75" />
-            </div>
-
-            <div className="border-t border-gray-200/60 pt-3 space-y-2">
-              <p className="text-[10px] font-medium text-gray-500 flex items-center gap-1.5">
-                <Clock className="h-3 w-3" />
-                Horario automático (opcional)
-              </p>
-              <p className="text-[9px] text-gray-400">
-                Si se configura, la tienda abre y cierra sola. Usá hora local (Argentina, UTC−3).
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label className="text-[10px] text-gray-500">Apertura</Label>
-                  <Input type="time" value={localConfig.autoHorarioApertura ?? ''} onChange={(e) => setLocalConfig(prev => ({ ...prev, autoHorarioApertura: e.target.value || null }))} className="h-8 text-xs" />
-                </div>
-                <div>
-                  <Label className="text-[10px] text-gray-500">Cierre</Label>
-                  <Input type="time" value={localConfig.autoHorarioCierre ?? ''} onChange={(e) => setLocalConfig(prev => ({ ...prev, autoHorarioCierre: e.target.value || null }))} className="h-8 text-xs" />
-                </div>
-              </div>
-              {(localConfig.autoHorarioApertura || localConfig.autoHorarioCierre) && (
-                <button type="button" onClick={() => setLocalConfig(prev => ({ ...prev, autoHorarioApertura: null, autoHorarioCierre: null }))} className="text-[9px] text-red-500 underline">
-                  Quitar horario automático
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Impuestos y pagos */}
-        <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <p className="text-xs font-black text-gray-900 flex items-center gap-1.5">
-              <Percent className="h-3.5 w-3.5 text-purple-500" />
-              Impuestos y pagos
-            </p>
-          </div>
-          <div className="px-4 py-3 space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-[10px] text-gray-500">IVA (%)</Label>
-                <Input type="number" value={localConfig.impuestoPorcentaje} onChange={(e) => setLocalConfig(prev => ({ ...prev, impuestoPorcentaje: Number.parseFloat(e.target.value) || 0 }))} className="h-8 text-xs" />
-              </div>
-              <div>
-                <Label className="text-[10px] text-gray-500">Propina sugerida (%)</Label>
-                <Input type="number" value={localConfig.propinaSugeridaPorcentaje} onChange={(e) => setLocalConfig(prev => ({ ...prev, propinaSugeridaPorcentaje: Number.parseFloat(e.target.value) || 0 }))} className="h-8 text-xs" />
-              </div>
-            </div>
-            <div className="border-t border-gray-100 pt-3 space-y-2">
-              <p className="text-[10px] font-medium text-gray-500">Métodos de pago</p>
-              {(['efectivo', 'tarjeta', 'transferencia'] as const).map(method => (
-                <div key={method} className="flex items-center justify-between">
-                  <Label className="text-[10px] text-gray-700 capitalize">{method}</Label>
-                  <Switch
-                    checked={localConfig.metodospagoActivos[method]}
-                    onCheckedChange={(v) => setLocalConfig(prev => ({ ...prev, metodospagoActivos: { ...prev.metodospagoActivos, [method]: v } }))}
-                    className="scale-75"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Operación */}
-        <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <p className="text-xs font-black text-gray-900 flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5 text-blue-500" />
-              Operación
-            </p>
-          </div>
-          <div className="px-4 py-3 space-y-3">
+      {/* General */}
+      {activeTab === 'general' && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div style={{ border: '1px solid #E5E5E5', borderRadius: 14, padding: 20, background: '#fff', display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ fontSize: 11, fontFamily: MONO, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', marginBottom: 2 }}>DATOS DEL RESTAURANTE</div>
             <div>
-              <Label className="text-[10px] text-gray-500">Tiempo expiración sesión (minutos)</Label>
-              <Input type="number" value={localConfig.tiempoExpiracionSesionMinutos} onChange={(e) => setLocalConfig(prev => ({ ...prev, tiempoExpiracionSesionMinutos: Number.parseInt(e.target.value) || 60 }))} className="h-8 text-xs" />
-              <p className="text-[9px] text-gray-400 mt-0.5">Tiempo que dura una sesión de mesa sin actividad</p>
+              <label style={fieldLabel}>Nombre</label>
+              <input value={localConfig.restaurantName || ''} onChange={e => setLocalConfig(p => ({ ...p, restaurantName: e.target.value }))} placeholder="Mi Restaurante" style={inp} />
             </div>
-            <div className="border-t border-gray-100 pt-3 space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-[10px] text-gray-700">Pacing de cocina</Label>
-                  <p className="text-[9px] text-gray-400">Limitar pedidos simultáneos en preparación</p>
-                </div>
-                <Switch
-                  checked={(localConfig.pacingMaxPreparando ?? 0) > 0}
-                  onCheckedChange={(v) => setLocalConfig(prev => ({ ...prev, pacingMaxPreparando: v ? 3 : 0 }))}
-                  className="scale-75"
-                />
-              </div>
-              {(localConfig.pacingMaxPreparando ?? 0) > 0 && (
-                <div>
-                  <Label className="text-[10px] text-gray-500">Máx. pedidos simultáneos en preparación</Label>
-                  <Input type="number" min={2} max={10} value={localConfig.pacingMaxPreparando ?? 3} onChange={(e) => setLocalConfig(prev => ({ ...prev, pacingMaxPreparando: Math.min(10, Math.max(2, Number.parseInt(e.target.value) || 2)) }))} className="h-8 text-xs" />
-                  <p className="text-[9px] text-gray-400 mt-0.5">0 = sin límite</p>
-                </div>
-              )}
+            <div>
+              <label style={fieldLabel}>Descripción</label>
+              <textarea value={localConfig.descripcion || ''} onChange={e => setLocalConfig(p => ({ ...p, descripcion: e.target.value }))} rows={3} maxLength={200} placeholder="Breve descripción..." style={{ ...inp, height: 'auto', padding: '8px 12px', resize: 'vertical' }} />
             </div>
-            <div className="border-t border-gray-100 pt-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <Truck className="h-3 w-3 text-gray-400" />
-                    <p className="text-[10px] font-medium text-gray-700">Delivery habilitado</p>
+            <div>
+              <label style={fieldLabel}>URL del logo</label>
+              <input value={localConfig.logoUrl || ''} onChange={e => setLocalConfig(p => ({ ...p, logoUrl: e.target.value }))} placeholder="https://..." style={inp} />
+            </div>
+            <div>
+              <label style={fieldLabel}>URL de portada</label>
+              <input value={localConfig.coverUrl || ''} onChange={e => setLocalConfig(p => ({ ...p, coverUrl: e.target.value }))} placeholder="https://..." style={inp} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
+              {([
+                { key: 'primaryColor', label: 'Primario', def: '#000000' },
+                { key: 'secondaryColor', label: 'Secundario', def: '#FFFFFF' },
+                { key: 'accentColor', label: 'Acento', def: '#BEBEBE' },
+              ] as const).map(({ key, label, def }) => (
+                <div key={key}>
+                  <label style={fieldLabel}>{label}</label>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <input type="color" value={(localConfig as unknown as Record<string, string>)[key] || def}
+                      onChange={e => setLocalConfig(p => ({ ...p, [key]: e.target.value }))}
+                      style={{ height: 36, width: 36, border: '1px solid #E5E5E5', borderRadius: 8, cursor: 'pointer', padding: 2 }} />
+                    <input value={(localConfig as unknown as Record<string, string>)[key] || def}
+                      onChange={e => setLocalConfig(p => ({ ...p, [key]: e.target.value }))}
+                      maxLength={7}
+                      style={{ ...inp, fontFamily: MONO, fontSize: 12 }} />
                   </div>
-                  <p className="text-[9px] text-gray-400 mt-0.5">Muestra el toggle Para llevar / Delivery en el menú digital</p>
-                </div>
-                <Switch
-                  checked={localConfig.deliveryHabilitado}
-                  onCheckedChange={(v) => { setLocalConfig(prev => ({ ...prev, deliveryHabilitado: v })); updateConfig({ deliveryHabilitado: v }) }}
-                  className="scale-75"
-                />
-              </div>
-            </div>
-            <div className="border-t border-gray-100 pt-3 space-y-2">
-              <p className="text-[10px] font-medium text-gray-500 flex items-center gap-1.5">
-                <MapPin className="h-3 w-3" />
-                Zonas de reparto
-              </p>
-              {localConfig.zonasReparto.map((zona, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Input
-                    value={zona}
-                    onChange={(e) => {
-                      const newZonas = [...localConfig.zonasReparto]
-                      newZonas[index] = e.target.value
-                      setLocalConfig(prev => ({ ...prev, zonasReparto: newZonas }))
-                    }}
-                    className="h-8 text-xs flex-1"
-                    placeholder="Nombre de zona"
-                  />
-                  <button
-                    onClick={() => setLocalConfig(prev => ({ ...prev, zonasReparto: prev.zonasReparto.filter((_, i) => i !== index) }))}
-                    className="h-8 w-8 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 flex items-center justify-center shrink-0"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
                 </div>
               ))}
-              <button
-                onClick={() => setLocalConfig(prev => ({ ...prev, zonasReparto: [...prev.zonasReparto, ''] }))}
-                className="w-full h-8 rounded-xl border border-gray-200 text-gray-700 text-xs hover:bg-gray-50"
-              >
+            </div>
+          </div>
+
+          <div style={{ border: '1px solid #E5E5E5', borderRadius: 14, padding: 20, background: '#fff', display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <div style={{ fontSize: 11, fontFamily: MONO, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', marginBottom: 14 }}>ESTADO DE TIENDA</div>
+            <div style={row}>
+              <div>
+                <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.02em' }}>{localConfig.tiendaAbierta ? 'Tienda abierta' : 'Tienda cerrada'}</div>
+                <div style={{ fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>{localConfig.tiendaAbierta ? 'Los clientes pueden pedir' : 'No se aceptan pedidos'}</div>
+              </div>
+              <Toggle on={localConfig.tiendaAbierta} onChange={() => saveStoreStatus({ tiendaAbierta: !localConfig.tiendaAbierta })} />
+            </div>
+            <div style={row}>
+              <div>
+                <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.02em' }}>{localConfig.tiendaVisible ? 'Visible al público' : 'Oculta al público'}</div>
+                <div style={{ fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>{localConfig.tiendaVisible ? 'Aparece en el marketplace' : 'No aparece en la lista pública'}</div>
+              </div>
+              <Toggle on={localConfig.tiendaVisible} onChange={() => saveStoreStatus({ tiendaVisible: !localConfig.tiendaVisible })} />
+            </div>
+            <div style={{ ...row, borderBottom: 'none', flexDirection: 'column', alignItems: 'flex-start', gap: 6, paddingTop: 14 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.02em' }}>Badge WAITLESS</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                <span style={{ fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.5)' }}>Mostrar &quot;Powered by WAITLESS&quot; al cliente</span>
+                <Toggle on={localConfig.poweredByWaitless ?? false} onChange={() => setLocalConfig(p => ({ ...p, poweredByWaitless: !p.poweredByWaitless }))} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Horarios */}
+      {activeTab === 'horarios' && (
+        <div style={{ border: '1px solid #E5E5E5', borderRadius: 14, padding: 20, background: '#fff', display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 560 }}>
+          <div style={{ fontSize: 11, fontFamily: MONO, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase' }}>HORARIO AUTOMÁTICO</div>
+          <div style={{ fontSize: 12.5, fontFamily: MONO, color: 'rgba(0,0,0,0.5)' }}>Si se configura, la tienda abre y cierra sola. Hora local (UTC-3).</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={fieldLabel}>Apertura</label>
+              <input type="time" value={localConfig.autoHorarioApertura ?? ''} onChange={e => setLocalConfig(p => ({ ...p, autoHorarioApertura: e.target.value || null }))} style={inp} />
+            </div>
+            <div>
+              <label style={fieldLabel}>Cierre</label>
+              <input type="time" value={localConfig.autoHorarioCierre ?? ''} onChange={e => setLocalConfig(p => ({ ...p, autoHorarioCierre: e.target.value || null }))} style={inp} />
+            </div>
+          </div>
+          {(localConfig.autoHorarioApertura || localConfig.autoHorarioCierre) && (
+            <button type="button" onClick={() => setLocalConfig(p => ({ ...p, autoHorarioApertura: null, autoHorarioCierre: null }))}
+              style={{ alignSelf: 'flex-start', background: 'none', border: 'none', fontSize: 12, fontFamily: MONO, color: '#DC2626', cursor: 'pointer', textDecoration: 'underline' }}>
+              Quitar horario automático
+            </button>
+          )}
+          <div style={{ borderTop: '1px solid #E5E5E5', paddingTop: 16 }}>
+            <div style={{ fontSize: 11, fontFamily: MONO, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', marginBottom: 12 }}>OPERACIÓN</div>
+            <div>
+              <label style={fieldLabel}>Tiempo expiración sesión (minutos)</label>
+              <input type="number" value={localConfig.tiempoExpiracionSesionMinutos} onChange={e => setLocalConfig(p => ({ ...p, tiempoExpiracionSesionMinutos: parseInt(e.target.value) || 60 }))}
+                style={{ ...inp, width: 120 }} />
+              <div style={{ fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.4)', marginTop: 4 }}>Tiempo que dura una sesión de mesa sin actividad</div>
+            </div>
+            <div style={{ marginTop: 14, ...row }}>
+              <div>
+                <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.02em' }}>Pacing de cocina</div>
+                <div style={{ fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>Limitar pedidos simultáneos en preparación</div>
+              </div>
+              <Toggle on={(localConfig.pacingMaxPreparando ?? 0) > 0} onChange={() => setLocalConfig(p => ({ ...p, pacingMaxPreparando: (p.pacingMaxPreparando ?? 0) > 0 ? 0 : 3 }))} />
+            </div>
+            {(localConfig.pacingMaxPreparando ?? 0) > 0 && (
+              <div style={{ marginTop: 10 }}>
+                <label style={fieldLabel}>Máx. pedidos simultáneos</label>
+                <input type="number" min={2} max={10} value={localConfig.pacingMaxPreparando ?? 3}
+                  onChange={e => setLocalConfig(p => ({ ...p, pacingMaxPreparando: Math.min(10, Math.max(2, parseInt(e.target.value) || 2)) }))}
+                  style={{ ...inp, width: 80 }} />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Pagos */}
+      {activeTab === 'pagos' && (
+        <div style={{ border: '1px solid #E5E5E5', borderRadius: 14, padding: 20, background: '#fff', display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 480 }}>
+          <div style={{ fontSize: 11, fontFamily: MONO, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase' }}>IMPUESTOS Y PAGOS</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <label style={fieldLabel}>IVA (%)</label>
+              <input type="number" value={localConfig.impuestoPorcentaje} onChange={e => setLocalConfig(p => ({ ...p, impuestoPorcentaje: parseFloat(e.target.value) || 0 }))} style={inp} />
+            </div>
+            <div>
+              <label style={fieldLabel}>Propina sugerida (%)</label>
+              <input type="number" value={localConfig.propinaSugeridaPorcentaje} onChange={e => setLocalConfig(p => ({ ...p, propinaSugeridaPorcentaje: parseFloat(e.target.value) || 0 }))} style={inp} />
+            </div>
+          </div>
+          <div style={{ borderTop: '1px solid #E5E5E5', paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <div style={{ fontSize: 11, fontFamily: MONO, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', marginBottom: 10 }}>MÉTODOS DE PAGO</div>
+            {(['efectivo', 'tarjeta', 'transferencia'] as const).map((method, i) => (
+              <div key={method} style={{ ...row, borderBottom: i < 2 ? '1px solid #F5F5F5' : 'none' }}>
+                <span style={{ fontSize: 13.5, fontWeight: 600, letterSpacing: '-0.01em', textTransform: 'capitalize' }}>{method}</span>
+                <Toggle on={localConfig.metodospagoActivos[method]}
+                  onChange={() => setLocalConfig(p => ({ ...p, metodospagoActivos: { ...p.metodospagoActivos, [method]: !p.metodospagoActivos[method] } }))} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Delivery */}
+      {activeTab === 'delivery' && (
+        <div style={{ border: '1px solid #E5E5E5', borderRadius: 14, padding: 20, background: '#fff', display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 480 }}>
+          <div style={{ fontSize: 11, fontFamily: MONO, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase' }}>DELIVERY</div>
+          <div style={row}>
+            <div>
+              <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.02em' }}>Delivery habilitado</div>
+              <div style={{ fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>Muestra Para llevar / Delivery en el menú digital</div>
+            </div>
+            <Toggle on={localConfig.deliveryHabilitado} onChange={() => { setLocalConfig(p => ({ ...p, deliveryHabilitado: !p.deliveryHabilitado })); updateConfig({ deliveryHabilitado: !localConfig.deliveryHabilitado }) }} />
+          </div>
+          <div style={{ borderTop: '1px solid #E5E5E5', paddingTop: 14 }}>
+            <div style={{ fontSize: 11, fontFamily: MONO, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', marginBottom: 10 }}>ZONAS DE REPARTO</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {localConfig.zonasReparto.map((zona, index) => (
+                <div key={index} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input value={zona} placeholder="Nombre de zona"
+                    onChange={e => { const z = [...localConfig.zonasReparto]; z[index] = e.target.value; setLocalConfig(p => ({ ...p, zonasReparto: z })) }}
+                    style={{ ...inp, flex: 1 }} />
+                  <button onClick={() => setLocalConfig(p => ({ ...p, zonasReparto: p.zonasReparto.filter((_, i) => i !== index) }))}
+                    style={{ height: 36, width: 36, border: '1px solid #FEE2E2', borderRadius: 8, background: '#fff', color: '#DC2626', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>×</button>
+                </div>
+              ))}
+              <button onClick={() => setLocalConfig(p => ({ ...p, zonasReparto: [...p.zonasReparto, ''] }))}
+                style={{ height: 36, border: '1px dashed #E5E5E5', borderRadius: 10, fontSize: 13, fontFamily: FONT, background: '#FAFAFA', cursor: 'pointer', color: 'rgba(0,0,0,0.55)', letterSpacing: '-0.01em' }}>
                 + Agregar zona
               </button>
             </div>
           </div>
         </div>
+      )}
 
-        {/* Marca y comunicación */}
-        <div className="border border-gray-100 rounded-2xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <p className="text-xs font-black text-gray-900 flex items-center gap-1.5">
-              <Palette className="h-3.5 w-3.5 text-amber-500" />
-              Marca y comunicación
-            </p>
+      {/* Notificaciones */}
+      {activeTab === 'notificaciones' && (
+        <div style={{ border: '1px solid #E5E5E5', borderRadius: 14, padding: 20, background: '#fff', display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 480 }}>
+          <div style={{ fontSize: 11, fontFamily: MONO, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase' }}>NOTIFICACIONES</div>
+          <div style={row}>
+            <div>
+              <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.02em' }}>Sonido de nuevos pedidos</div>
+              <div style={{ fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>Reproduce sonido al recibir pedidos</div>
+            </div>
+            <Toggle on={localConfig.sonidoNuevosPedidos} onChange={() => setLocalConfig(p => ({ ...p, sonidoNuevosPedidos: !p.sonidoNuevosPedidos }))} />
           </div>
-          <div className="px-4 py-3 space-y-3">
+          <div style={{ ...row, borderBottom: '1px solid #F5F5F5' }}>
             <div>
-              <Label className="text-[10px] text-gray-500">Nombre del restaurante</Label>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <Store className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                <Input value={localConfig.restaurantName || ''} onChange={(e) => setLocalConfig(prev => ({ ...prev, restaurantName: e.target.value }))} placeholder="Mi Restaurante" className="h-8 text-xs" />
-              </div>
-              <p className="text-[9px] text-gray-400 mt-0.5">Aparece en la vista del cliente y PWA</p>
+              <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.02em' }}>Notificaciones de stock bajo</div>
+              <div style={{ fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.5)', marginTop: 2 }}>Alerta cuando un ingrediente está bajo</div>
             </div>
-            <div>
-              <Label className="text-[10px] text-gray-500">URL del logo</Label>
-              <Input value={localConfig.logoUrl || ''} onChange={(e) => setLocalConfig(prev => ({ ...prev, logoUrl: e.target.value }))} placeholder="https://..." className="h-8 text-xs" />
-              <p className="text-[9px] text-gray-400 mt-0.5">URL pública de la imagen del logo</p>
-            </div>
-            <div>
-              <Label className="text-[10px] text-gray-500">URL de portada</Label>
-              <Input value={localConfig.coverUrl || ''} onChange={(e) => setLocalConfig(prev => ({ ...prev, coverUrl: e.target.value }))} placeholder="https://..." className="h-8 text-xs" />
-              <p className="text-[9px] text-gray-400 mt-0.5">Imagen de encabezado del menú digital del cliente</p>
-            </div>
-            <div>
-              <Label className="text-[10px] text-gray-500">Descripción del restaurante</Label>
-              <Textarea value={localConfig.descripcion || ''} onChange={(e) => setLocalConfig(prev => ({ ...prev, descripcion: e.target.value }))} placeholder="Breve descripción de tu restaurante..." rows={2} maxLength={200} className="mt-0.5 text-xs" />
-              <p className="text-[9px] text-gray-400 mt-0.5">Aparece debajo del nombre en el menú digital</p>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {([
-                { key: 'primaryColor', label: 'Color primario', def: '#000000' },
-                { key: 'secondaryColor', label: 'Color secundario', def: '#FFFFFF' },
-                { key: 'accentColor', label: 'Color de acento', def: '#BEBEBE' },
-              ] as const).map(({ key, label, def }) => (
-                <div key={key}>
-                  <Label className="text-[10px] text-gray-500">{label}</Label>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <input
-                      type="color"
-                      value={(localConfig as unknown as Record<string, string>)[key] || def}
-                      onChange={(e) => setLocalConfig(prev => ({ ...prev, [key]: e.target.value }))}
-                      className="h-8 w-8 rounded border cursor-pointer p-0.5"
-                    />
-                    <Input
-                      value={(localConfig as unknown as Record<string, string>)[key] || def}
-                      onChange={(e) => setLocalConfig(prev => ({ ...prev, [key]: e.target.value }))}
-                      className="h-8 text-xs font-mono"
-                      maxLength={7}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center justify-between">
+            <Toggle on={localConfig.notificacionesStockBajo} onChange={() => setLocalConfig(p => ({ ...p, notificacionesStockBajo: !p.notificacionesStockBajo }))} />
+          </div>
+          <div style={{ borderTop: '1px solid #E5E5E5', paddingTop: 14 }}>
+            <div style={{ fontSize: 11, fontFamily: MONO, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase', marginBottom: 10 }}>MARCA Y CONTACTO</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div>
-                <Label className="text-[10px] text-gray-700">Badge &quot;Powered by WAITLESS&quot;</Label>
-                <p className="text-[9px] text-gray-400">Mostrar en la vista del cliente</p>
+                <label style={fieldLabel}>Número de WhatsApp</label>
+                <input value={localConfig.whatsappNumero || ''} onChange={e => setLocalConfig(p => ({ ...p, whatsappNumero: e.target.value }))} placeholder="521550000000"
+                  style={{ ...inp, fontFamily: MONO }} />
+                <div style={{ fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.4)', marginTop: 4 }}>Solo dígitos con código de país. Ej: 521550001234</div>
               </div>
-              <Switch checked={localConfig.poweredByWaitless ?? false} onCheckedChange={(v) => setLocalConfig(prev => ({ ...prev, poweredByWaitless: v }))} className="scale-75" />
-            </div>
-            <div className="border-t border-gray-100 pt-3">
-              <Label className="text-[10px] text-gray-500">Número de WhatsApp</Label>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-[10px] text-gray-400">+</span>
-                <Input value={localConfig.whatsappNumero || ''} onChange={(e) => setLocalConfig(prev => ({ ...prev, whatsappNumero: e.target.value }))} placeholder="521550000000" className="h-8 text-xs font-mono" />
+              <div>
+                <label style={fieldLabel}>URL Google Reviews</label>
+                <input value={localConfig.googleReviewUrl || ''} onChange={e => setLocalConfig(p => ({ ...p, googleReviewUrl: e.target.value }))} placeholder="https://g.page/r/CXxxxx/review" style={inp} />
+                <div style={{ fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.4)', marginTop: 4 }}>Aparece tras calificación de 4-5 estrellas</div>
               </div>
-              <p className="text-[9px] text-gray-400 mt-0.5">Solo dígitos, incluye código de país. Ej: 521550001234.</p>
-            </div>
-            <div className="border-t border-gray-100 pt-3 space-y-2">
-              <p className="text-[10px] font-medium text-gray-500 flex items-center gap-1.5">
-                <Bell className="h-3 w-3" />
-                Notificaciones
-              </p>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-[10px] text-gray-700">Sonido de nuevos pedidos</Label>
-                  <p className="text-[9px] text-gray-400">Reproduce sonido al recibir pedidos</p>
-                </div>
-                <Switch checked={localConfig.sonidoNuevosPedidos} onCheckedChange={(v) => setLocalConfig(prev => ({ ...prev, sonidoNuevosPedidos: v }))} className="scale-75" />
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-[10px] text-gray-700">Notificaciones de stock bajo</Label>
-                  <p className="text-[9px] text-gray-400">Alerta cuando un ingrediente está bajo</p>
-                </div>
-                <Switch checked={localConfig.notificacionesStockBajo} onCheckedChange={(v) => setLocalConfig(prev => ({ ...prev, notificacionesStockBajo: v }))} className="scale-75" />
-              </div>
-            </div>
-            <div className="border-t border-gray-100 pt-3">
-              <p className="text-[10px] font-medium text-gray-500 flex items-center gap-1.5 mb-2">
-                <Star className="h-3 w-3" />
-                Reseña en Google
-              </p>
-              <Input value={localConfig.googleReviewUrl || ''} onChange={(e) => setLocalConfig(prev => ({ ...prev, googleReviewUrl: e.target.value }))} placeholder="https://g.page/r/CXxxxx/review" className="h-8 text-xs" />
-              <p className="text-[9px] text-gray-400 mt-0.5">Se muestra al cliente tras una calificación de 4-5 estrellas</p>
             </div>
           </div>
         </div>
+      )}
 
-        {/* Cierre de emergencia */}
-        <div className="border border-red-200 rounded-2xl bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-red-100">
-            <p className="text-xs font-black text-red-600 flex items-center gap-1.5">
-              <AlertTriangle className="h-3.5 w-3.5" />
-              Cierre de emergencia
-            </p>
-          </div>
-          <div className="px-4 py-3">
-            <p className="text-[9px] text-gray-500 mb-3">
-              Selecciona las mesas que deseas cerrar. Los pedidos activos asociados se eliminarán.
-            </p>
-            {activeSessions.length === 0 ? (
-              <div className="text-center py-6 text-gray-400">
-                <AlertTriangle className="h-6 w-6 mx-auto mb-2 opacity-40" />
-                <p className="text-xs">No hay mesas activas</p>
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] text-gray-400">{selectedTables.length} de {activeSessions.length} seleccionadas</p>
-                  <div className="flex gap-1">
-                    <button onClick={() => setSelectedTables(activeSessions.map(s => s.mesa))} className="h-6 px-2 rounded-lg text-[10px] text-gray-600 hover:bg-gray-100">Todas</button>
-                    <button onClick={() => setSelectedTables([])} disabled={selectedTables.length === 0} className="h-6 px-2 rounded-lg text-[10px] text-gray-600 hover:bg-gray-100 disabled:opacity-40">Ninguna</button>
-                  </div>
-                </div>
-
-                <div className="overflow-y-auto max-h-48 border border-gray-100 rounded-xl mb-3">
-                  <div className="p-2 space-y-1">
-                    {[...activeSessions].sort((a, b) => a.mesa - b.mesa).map(session => {
-                      const orderCount = getTableOrderCount(session.mesa)
-                      const isSelected = selectedTables.includes(session.mesa)
-                      return (
-                        <div
-                          key={session.id}
-                          className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer transition-colors ${isSelected ? 'bg-red-50 border border-red-200' : 'bg-gray-50 hover:bg-gray-100'}`}
-                          onClick={() => setSelectedTables(prev => prev.includes(session.mesa) ? prev.filter(m => m !== session.mesa) : [...prev, session.mesa])}
-                        >
-                          <Checkbox checked={isSelected} className="pointer-events-none" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-gray-900">Mesa {session.mesa}</p>
-                            <p className="text-[9px] text-gray-400">Total: ${session.total.toFixed(2)}</p>
-                          </div>
-                          {orderCount > 0 && (
-                            <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
-                              {orderCount} pedido{orderCount > 1 ? 's' : ''}
-                            </span>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {!showEmergencyConfirm ? (
-                  <button
-                    onClick={() => setShowEmergencyConfirm(true)}
-                    disabled={selectedTables.length === 0}
-                    className="w-full h-8 rounded-xl border border-red-300 text-red-600 hover:bg-red-50 text-xs flex items-center justify-center gap-1.5 disabled:opacity-40"
-                  >
-                    <AlertTriangle className="h-3 w-3" />
-                    Cerrar {selectedTables.length} mesa{selectedTables.length !== 1 ? 's' : ''} seleccionada{selectedTables.length !== 1 ? 's' : ''}
-                  </button>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="p-3 bg-red-50 rounded-xl border border-red-200">
-                      <p className="text-[10px] text-red-600 font-semibold mb-1">Confirmar cierre de emergencia</p>
-                      <p className="text-[9px] text-gray-500">
-                        Se cerrarán las mesas: {selectedTables.sort((a, b) => a - b).join(', ')}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => setShowEmergencyConfirm(false)} className="flex-1 h-8 rounded-xl border border-gray-200 text-gray-700 text-xs hover:bg-gray-50 flex items-center justify-center gap-1">
-                        <X className="h-3 w-3" />Cancelar
-                      </button>
-                      <button
-                        onClick={() => { emergencyCloseTables(selectedTables); setSelectedTables([]); setShowEmergencyConfirm(false) }}
-                        className="flex-1 h-8 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-semibold"
-                      >
-                        Confirmar cierre
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+      {/* Cierre de emergencia */}
+      <div style={{ border: '1px solid #FEE2E2', borderRadius: 14, overflow: 'hidden', background: '#fff' }}>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid #FEE2E2' }}>
+          <span style={{ fontSize: 11, fontFamily: MONO, fontWeight: 700, letterSpacing: '0.04em', color: '#991B1B', textTransform: 'uppercase' }}>CIERRE DE EMERGENCIA</span>
         </div>
-
-        {/* Zona de peligro */}
-        <div className="border border-red-200 rounded-2xl bg-red-50/30 overflow-hidden">
-          <div className="px-4 py-3 border-b border-red-100">
-            <p className="text-sm font-black text-red-700 flex items-center gap-2">
-              <Trash2 className="h-4 w-4" />
-              Zona de peligro
-            </p>
-          </div>
-          <div className="px-4 py-4">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-semibold text-gray-800">Eliminar cuenta</p>
-                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                  Elimina permanentemente tu cuenta, menú, órdenes y todos los datos del restaurante.<br />
-                  Solo disponible si no tenés órdenes activas ni mesas abiertas.
-                </p>
+        <div style={{ padding: '14px 16px' }}>
+          {activeSessions.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '24px 0', fontSize: 12.5, fontFamily: MONO, color: 'rgba(0,0,0,0.35)' }}>No hay mesas activas</div>
+          ) : (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                <span style={{ fontSize: 12, fontFamily: MONO, color: 'rgba(0,0,0,0.5)' }}>{selectedTables.length} de {activeSessions.length} seleccionadas</span>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={() => setSelectedTables(activeSessions.map(s => s.mesa))} style={{ height: 26, padding: '0 10px', border: '1px solid #E5E5E5', borderRadius: 6, fontSize: 11.5, fontFamily: MONO, background: '#fff', cursor: 'pointer' }}>Todas</button>
+                  <button onClick={() => setSelectedTables([])} disabled={selectedTables.length === 0} style={{ height: 26, padding: '0 10px', border: '1px solid #E5E5E5', borderRadius: 6, fontSize: 11.5, fontFamily: MONO, background: '#fff', cursor: 'pointer', opacity: selectedTables.length === 0 ? 0.4 : 1 }}>Ninguna</button>
+                </div>
               </div>
-              <button
-                onClick={() => setShowDeleteAccount(true)}
-                className="shrink-0 h-8 px-3 rounded-xl border border-red-300 text-red-700 hover:bg-red-100 text-xs font-medium flex items-center gap-1.5 bg-white"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                Eliminar
-              </button>
-            </div>
-          </div>
+              <div style={{ maxHeight: 180, overflowY: 'auto', border: '1px solid #F5F5F5', borderRadius: 10, marginBottom: 10 }}>
+                {[...activeSessions].sort((a, b) => a.mesa - b.mesa).map(session => {
+                  const orderCount = getTableOrderCount(session.mesa)
+                  const isSelected = selectedTables.includes(session.mesa)
+                  return (
+                    <div key={session.id} onClick={() => setSelectedTables(prev => prev.includes(session.mesa) ? prev.filter(m => m !== session.mesa) : [...prev, session.mesa])}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', cursor: 'pointer', background: isSelected ? '#FEF2F2' : '#fff', borderBottom: '1px solid #F5F5F5' }}>
+                      <input type="checkbox" checked={isSelected} readOnly style={{ width: 14, height: 14, accentColor: '#DC2626', cursor: 'pointer' }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '-0.02em' }}>Mesa {session.mesa}</div>
+                        <div style={{ fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.45)' }}>{formatPrice(session.total)}</div>
+                      </div>
+                      {orderCount > 0 && (
+                        <span style={{ background: '#FEF3C7', color: '#92400E', padding: '2px 8px', borderRadius: 999, fontSize: 10.5, fontFamily: MONO, fontWeight: 600 }}>
+                          {orderCount} pedido{orderCount > 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              {!showEmergencyConfirm ? (
+                <button onClick={() => setShowEmergencyConfirm(true)} disabled={selectedTables.length === 0}
+                  style={{ width: '100%', height: 36, border: '1px solid #FCA5A5', borderRadius: 10, fontSize: 13, fontFamily: FONT, fontWeight: 600, color: '#DC2626', background: '#fff', cursor: selectedTables.length === 0 ? 'not-allowed' : 'pointer', opacity: selectedTables.length === 0 ? 0.4 : 1 }}>
+                  Cerrar {selectedTables.length} mesa{selectedTables.length !== 1 ? 's' : ''} seleccionada{selectedTables.length !== 1 ? 's' : ''}
+                </button>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ padding: '10px 14px', background: '#FEF2F2', borderRadius: 10, border: '1px solid #FCA5A5' }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#991B1B', marginBottom: 4 }}>Confirmar cierre de emergencia</div>
+                    <div style={{ fontSize: 12, fontFamily: MONO, color: 'rgba(0,0,0,0.6)' }}>Mesas: {selectedTables.sort((a, b) => a - b).join(', ')}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => setShowEmergencyConfirm(false)} style={{ flex: 1, height: 36, border: '1px solid #E5E5E5', borderRadius: 10, fontSize: 13, fontFamily: FONT, background: '#fff', cursor: 'pointer' }}>Cancelar</button>
+                    <button onClick={() => { emergencyCloseTables(selectedTables); setSelectedTables([]); setShowEmergencyConfirm(false) }}
+                      style={{ flex: 1, height: 36, border: 'none', borderRadius: 10, fontSize: 13, fontFamily: FONT, fontWeight: 700, background: '#DC2626', color: '#fff', cursor: 'pointer' }}>
+                      Confirmar cierre
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
-      {showDeleteAccount && (
-        <DeleteAccountDialog onClose={() => setShowDeleteAccount(false)} />
-      )}
+      {/* Zona de peligro */}
+      <div style={{ border: '1px solid #FEE2E2', borderRadius: 14, overflow: 'hidden', background: '#FFF5F5' }}>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid #FEE2E2' }}>
+          <span style={{ fontSize: 13.5, fontWeight: 800, color: '#991B1B', letterSpacing: '-0.02em' }}>Zona de peligro</span>
+        </div>
+        <div style={{ padding: '16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+          <div>
+            <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 4 }}>Eliminar cuenta</div>
+            <div style={{ fontSize: 12.5, fontFamily: MONO, color: 'rgba(0,0,0,0.55)', lineHeight: 1.5 }}>
+              Elimina permanentemente tu cuenta, menú, órdenes y todos los datos.<br />
+              Solo disponible sin órdenes activas ni mesas abiertas.
+            </div>
+          </div>
+          <button onClick={() => setShowDeleteAccount(true)}
+            style={{ height: 36, padding: '0 16px', border: '1px solid #FCA5A5', borderRadius: 10, fontSize: 13, fontFamily: FONT, fontWeight: 600, color: '#991B1B', background: '#fff', cursor: 'pointer', flexShrink: 0 }}>
+            Eliminar
+          </button>
+        </div>
+      </div>
+
+      {showDeleteAccount && <DeleteAccountDialog onClose={() => setShowDeleteAccount(false)} />}
     </div>
   )
+}
+
+function formatPrice(n: number) {
+  return `$${n.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
 }

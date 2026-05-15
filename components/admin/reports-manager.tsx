@@ -2,36 +2,16 @@
 
 import { useMemo, useState, useEffect } from 'react'
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-  LineChart,
-  Line,
-  CartesianGrid,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+  LineChart, Line, CartesianGrid,
 } from 'recharts'
-import {
-  DollarSign,
-  Clock,
-  Users,
-  TrendingUp,
-  ChefHat,
-  AlertTriangle,
-  Star,
-  Download,
-  Smartphone,
-  RotateCcw,
-  XCircle,
-  MessageSquare,
-} from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { formatPrice, calculateOrderTotal } from '@/lib/store'
 import { supabase } from '@/lib/supabase'
-import { cn } from '@/lib/utils'
 import { PaymentBreakdownWidget } from './payment-breakdown-widget'
+
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
 
 interface TrendRow {
   fecha: string
@@ -48,12 +28,7 @@ interface FeedbackSummary {
 }
 
 type DateRange = 'hoy' | '7d' | '30d'
-
-const RANGE_LABELS: Record<DateRange, string> = {
-  hoy: 'Hoy',
-  '7d': '7 días',
-  '30d': '30 días',
-}
+const RANGE_LABELS: Record<DateRange, string> = { hoy: 'Hoy', '7d': '7 días', '30d': '30 días' }
 
 export function ReportsManager() {
   const { orders, tableSessions, waiterCalls, tables } = useApp()
@@ -70,20 +45,12 @@ export function ReportsManager() {
     return d
   }, [dateRange])
 
-  // Fetch closed sessions from Supabase for accurate KPIs
   useEffect(() => {
-    supabase
-      .from('table_sessions')
-      .select('total')
-      .eq('activa', false)
-      .eq('bill_status', 'cerrada')
+    supabase.from('table_sessions').select('total').eq('activa', false).eq('bill_status', 'cerrada')
       .gte('created_at', rangeStart.toISOString())
-      .then(({ data }) => {
-        setClosedSessionsDB((data ?? []) as { total: number }[])
-      })
+      .then(({ data }) => setClosedSessionsDB((data ?? []) as { total: number }[]))
   }, [rangeStart])
 
-  // Fetch revenue trend (7d or 30d) from DB RPC
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- setting state from async Supabase fetch inside effect, intentional data-loading pattern
     if (dateRange === 'hoy') { setRevenueTrend([]); return }
@@ -93,7 +60,6 @@ export function ReportsManager() {
         setRevenueTrend(
           (data as TrendRow[]).map(row => ({
             ...row,
-            // Format date as "dd/MM" for display
             fechaLabel: new Date(row.fecha + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }),
           })) as TrendRow[]
         )
@@ -101,7 +67,6 @@ export function ReportsManager() {
     })
   }, [dateRange])
 
-  // Fetch feedback summary
   useEffect(() => {
     const days = dateRange === 'hoy' ? 1 : dateRange === '7d' ? 7 : 30
     supabase.rpc('get_feedback_summary', { p_days: days }).then(({ data }) => {
@@ -109,7 +74,6 @@ export function ReportsManager() {
     })
   }, [dateRange])
 
-  // Snapshot today's KPIs (persist to kpi_daily) — fire-and-forget
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0]
     void Promise.resolve(supabase.rpc('get_daily_kpis', { p_fecha: today }))
@@ -123,141 +87,68 @@ export function ReportsManager() {
     return d
   }, [rangeStart, dateRange])
 
-  const todayOrders = useMemo(
-    () => orders.filter(o => new Date(o.createdAt) >= rangeStart),
-    [orders, rangeStart]
-  )
-  const prevOrders = useMemo(
-    () => orders.filter(o => {
-      const t = new Date(o.createdAt)
-      return t >= prevRangeStart && t < rangeStart
-    }),
-    [orders, prevRangeStart, rangeStart]
-  )
-  const completedOrders = useMemo(
-    () => todayOrders.filter(o => o.status === 'entregado'),
-    [todayOrders]
-  )
-  const prevCompleted = useMemo(
-    () => prevOrders.filter(o => o.status === 'entregado'),
-    [prevOrders]
-  )
-  const cancelledOrders = useMemo(
-    () => todayOrders.filter(o => o.status === 'cancelado'),
-    [todayOrders]
-  )
+  const todayOrders = useMemo(() => orders.filter(o => new Date(o.createdAt) >= rangeStart), [orders, rangeStart])
+  const prevOrders = useMemo(() => orders.filter(o => { const t = new Date(o.createdAt); return t >= prevRangeStart && t < rangeStart }), [orders, prevRangeStart, rangeStart])
+  const completedOrders = useMemo(() => todayOrders.filter(o => o.status === 'entregado'), [todayOrders])
+  const prevCompleted = useMemo(() => prevOrders.filter(o => o.status === 'entregado'), [prevOrders])
+  const cancelledOrders = useMemo(() => todayOrders.filter(o => o.status === 'cancelado'), [todayOrders])
 
-  // ── Sessions in range — from DB for accuracy ─────────
-  // closedSessionsDB is fetched from Supabase; fallback to in-memory for offline
-  const closedSessionsLocal = useMemo(
-    () => tableSessions.filter(s => {
-      const t = new Date(s.createdAt)
-      return t >= rangeStart && !s.activa && s.billStatus === 'cerrada'
-    }),
-    [tableSessions, rangeStart]
-  )
+  const closedSessionsLocal = useMemo(() => tableSessions.filter(s => { const t = new Date(s.createdAt); return t >= rangeStart && !s.activa && s.billStatus === 'cerrada' }), [tableSessions, rangeStart])
   const closedSessions = closedSessionsDB.length > 0 ? closedSessionsDB : closedSessionsLocal
 
-  // ── PDF KPI formulas ──────────────────────────────────
-  // adoption_rate = qr_orders / total_orders * 100
   const adoptionRate = useMemo(() => {
     if (!todayOrders.length) return 0
-    const qrOrders = todayOrders.filter(o => o.isQrOrder).length
-    return Math.round((qrOrders / todayOrders.length) * 100)
+    return Math.round((todayOrders.filter(o => o.isQrOrder).length / todayOrders.length) * 100)
   }, [todayOrders])
 
-  // avg_order_time = AVG(confirmed_at - createdAt) in minutes
   const avgOrderTime = useMemo(() => {
     const withTimes = todayOrders.filter(o => o.confirmedAt && o.createdAt)
     if (!withTimes.length) return 0
-    const total = withTimes.reduce((sum, o) => {
-      const ms = new Date(o.confirmedAt!).getTime() - new Date(o.createdAt).getTime()
-      return sum + ms / 60000
-    }, 0)
-    return total / withTimes.length
+    return withTimes.reduce((sum, o) => sum + (new Date(o.confirmedAt!).getTime() - new Date(o.createdAt).getTime()) / 60000, 0) / withTimes.length
   }, [todayOrders])
 
-  // error_rate = cancelados / total * 100
   const errorRate = useMemo(() => {
     if (!todayOrders.length) return 0
     return Math.round((cancelledOrders.length / todayOrders.length) * 100)
   }, [cancelledOrders, todayOrders])
 
-  // ── KPIs ──────────────────────────────────────────────
-  const totalRevenue = useMemo(
-    () => completedOrders.reduce((sum, o) => sum + calculateOrderTotal(o.items), 0),
-    [completedOrders]
-  )
-  const prevRevenue = useMemo(
-    () => prevCompleted.reduce((sum, o) => sum + calculateOrderTotal(o.items), 0),
-    [prevCompleted]
-  )
+  const totalRevenue = useMemo(() => completedOrders.reduce((sum, o) => sum + calculateOrderTotal(o.items), 0), [completedOrders])
+  const prevRevenue = useMemo(() => prevCompleted.reduce((sum, o) => sum + calculateOrderTotal(o.items), 0), [prevCompleted])
   const revenueDiff = prevRevenue > 0 ? Math.round(((totalRevenue - prevRevenue) / prevRevenue) * 100) : null
 
-  // avg_ticket = total_ventas / total_sesiones_cerradas (PDF formula)
   const closedCount = closedSessions.length
   const avgTicket = closedCount > 0 ? totalRevenue / closedCount : 0
-
-  // avg_rotation = closed_sessions / active_tables
   const activeTableCount = useMemo(() => tables.filter(t => t.activa).length || 1, [tables])
   const avgRotation = closedCount / activeTableCount
 
   const avgPrepTime = useMemo(() => {
-    const withTimes = completedOrders.filter(
-      o => o.tiempoInicioPreparacion && o.tiempoFinPreparacion
-    )
+    const withTimes = completedOrders.filter(o => o.tiempoInicioPreparacion && o.tiempoFinPreparacion)
     if (!withTimes.length) return 0
-    const total = withTimes.reduce((sum, o) => {
-      const ms =
-        new Date(o.tiempoFinPreparacion!).getTime() -
-        new Date(o.tiempoInicioPreparacion!).getTime()
-      return sum + ms / 60000
-    }, 0)
-    return total / withTimes.length
+    return withTimes.reduce((sum, o) => sum + (new Date(o.tiempoFinPreparacion!).getTime() - new Date(o.tiempoInicioPreparacion!).getTime()) / 60000, 0) / withTimes.length
   }, [completedOrders])
 
-  // SLA compliance (< 15 min)
   const slaCompliance = useMemo(() => {
-    const withTimes = completedOrders.filter(
-      o => o.tiempoInicioPreparacion && o.tiempoFinPreparacion
-    )
+    const withTimes = completedOrders.filter(o => o.tiempoInicioPreparacion && o.tiempoFinPreparacion)
     if (!withTimes.length) return 100
-    const ok = withTimes.filter(o => {
-      const ms =
-        new Date(o.tiempoFinPreparacion!).getTime() -
-        new Date(o.tiempoInicioPreparacion!).getTime()
-      return ms / 60000 <= 15
-    }).length
+    const ok = withTimes.filter(o => (new Date(o.tiempoFinPreparacion!).getTime() - new Date(o.tiempoInicioPreparacion!).getTime()) / 60000 <= 15).length
     return Math.round((ok / withTimes.length) * 100)
   }, [completedOrders])
 
   const activeTables = tableSessions.filter(s => s.activa).length
-  const totalTableCount = tableSessions.length > 0
-    ? Math.max(...tableSessions.map(s => s.mesa))
-    : 1
-  const occupancy = totalTableCount > 0
-    ? Math.round((activeTables / Math.max(totalTableCount, 1)) * 100)
-    : 0
+  const totalTableCount = tableSessions.length > 0 ? Math.max(...tableSessions.map(s => s.mesa)) : 1
+  const occupancy = totalTableCount > 0 ? Math.round((activeTables / Math.max(totalTableCount, 1)) * 100) : 0
 
-  // ── Ventas por hora ───────────────────────────────────
   const hourlyData = useMemo(() => {
     const buckets: Record<number, number> = {}
     for (let h = 8; h <= 23; h++) buckets[h] = 0
     completedOrders.forEach(o => {
       const h = new Date(o.createdAt).getHours()
-      if (h >= 8 && h <= 23) {
-        buckets[h] = (buckets[h] || 0) + calculateOrderTotal(o.items)
-      }
+      if (h >= 8 && h <= 23) buckets[h] = (buckets[h] || 0) + calculateOrderTotal(o.items)
     })
-    return Object.entries(buckets).map(([hour, revenue]) => ({
-      hour: `${hour}h`,
-      revenue,
-    }))
+    return Object.entries(buckets).map(([hour, revenue]) => ({ hour: `${hour}h`, revenue }))
   }, [completedOrders])
-
   const maxHourRevenue = Math.max(...hourlyData.map(d => d.revenue), 1)
 
-  // Daily trend — from DB for 7d/30d, client-side fallback for 'hoy'
   const trendData = useMemo(() => {
     if (revenueTrend.length > 0) {
       return revenueTrend.map(r => ({
@@ -266,15 +157,13 @@ export function ReportsManager() {
         sesiones: Number(r.total_sesiones),
       }))
     }
-    // Client-side daily grouping (fallback)
     if (dateRange === 'hoy') return []
     const days = dateRange === '7d' ? 7 : 30
     const buckets: Record<string, { ventas: number; sesiones: number }> = {}
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date()
       d.setDate(d.getDate() - i)
-      const key = d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
-      buckets[key] = { ventas: 0, sesiones: 0 }
+      buckets[d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })] = { ventas: 0, sesiones: 0 }
     }
     completedOrders.forEach(o => {
       const key = new Date(o.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
@@ -289,7 +178,6 @@ export function ReportsManager() {
     return Object.entries(buckets).map(([label, v]) => ({ label, ...v }))
   }, [revenueTrend, dateRange, completedOrders, tableSessions])
 
-  // ── Ventas por canal ──────────────────────────────────
   const byChannel = useMemo(() => {
     const map: Record<string, number> = { mesa: 0, mesero: 0, para_llevar: 0, delivery: 0 }
     todayOrders.forEach(o => { map[o.canal] = (map[o.canal] || 0) + 1 })
@@ -301,100 +189,28 @@ export function ReportsManager() {
     ]
   }, [todayOrders])
 
-  // ── Top items ─────────────────────────────────────────
   const topItems = useMemo(() => {
     const map: Record<string, { name: string; qty: number; revenue: number }> = {}
-    completedOrders.forEach(o => {
-      o.items.forEach(item => {
-        if (!map[item.menuItem.id]) {
-          map[item.menuItem.id] = { name: item.menuItem.nombre, qty: 0, revenue: 0 }
-        }
-        map[item.menuItem.id].qty += item.cantidad
-        const extras = item.extras?.reduce((e, ex) => e + ex.precio, 0) || 0
-        map[item.menuItem.id].revenue += (item.menuItem.precio + extras) * item.cantidad
-      })
-    })
+    completedOrders.forEach(o => o.items.forEach(item => {
+      if (!map[item.menuItem.id]) map[item.menuItem.id] = { name: item.menuItem.nombre, qty: 0, revenue: 0 }
+      map[item.menuItem.id].qty += item.cantidad
+      map[item.menuItem.id].revenue += (item.menuItem.precio + (item.extras?.reduce((e, ex) => e + ex.precio, 0) || 0)) * item.cantidad
+    }))
     return Object.values(map).sort((a, b) => b.qty - a.qty).slice(0, 5)
   }, [completedOrders])
 
-  // ── Alertas del día ───────────────────────────────────
   const pendingCalls = waiterCalls.filter(c => !c.atendido).length
-
-  const kpis = [
-    {
-      label: dateRange === 'hoy' ? 'Ventas Hoy' : `Ventas (${RANGE_LABELS[dateRange]})`,
-      value: formatPrice(totalRevenue),
-      icon: <DollarSign className="h-4 w-4" />,
-      sub: `${completedOrders.length} pedidos completados`,
-      diff: revenueDiff,
-    },
-    {
-      label: 'Ticket Promedio',
-      value: formatPrice(avgTicket),
-      icon: <TrendingUp className="h-4 w-4" />,
-      sub: `${closedCount} sesiones cerradas`,
-      diff: null,
-    },
-    {
-      label: 'Tiempo orden→cocina',
-      value: avgOrderTime > 0 ? `${avgOrderTime.toFixed(1)} min` : '— min',
-      icon: <Clock className="h-4 w-4" />,
-      sub: `SLA ${slaCompliance}% ≤15 min`,
-      diff: null,
-    },
-    {
-      label: 'Ocupación',
-      value: `${activeTables} mesas`,
-      icon: <Users className="h-4 w-4" />,
-      sub: `${occupancy}% de capacidad`,
-      diff: null,
-    },
-    {
-      label: 'Adopción QR',
-      value: `${adoptionRate}%`,
-      icon: <Smartphone className="h-4 w-4" />,
-      sub: `${todayOrders.filter(o => o.isQrOrder).length} pedidos QR`,
-      diff: null,
-    },
-    {
-      label: 'Rotación por mesa',
-      value: avgRotation.toFixed(1),
-      icon: <RotateCcw className="h-4 w-4" />,
-      sub: `${closedCount} sesiones / ${activeTableCount} mesas`,
-      diff: null,
-    },
-    {
-      label: 'Tasa de error',
-      value: `${errorRate}%`,
-      icon: <XCircle className="h-4 w-4" />,
-      sub: `${cancelledOrders.length} cancelados`,
-      diff: null,
-    },
-  ]
 
   const handleExportCSV = () => {
     const rows = [
       ['Fecha', 'Mesa', 'Pedido #', 'Item', 'Cantidad', 'Precio Unit', 'Total', 'Estado', 'Canal'],
-      ...completedOrders.flatMap(o =>
-        o.items.map(item => {
-          const extras = item.extras?.reduce((e: number, ex: { precio: number }) => e + ex.precio, 0) || 0
-          const unitPrice = item.menuItem.precio + extras
-          return [
-            new Date(o.createdAt).toLocaleDateString('es-MX'),
-            o.mesa,
-            o.numero,
-            item.menuItem.nombre,
-            item.cantidad,
-            unitPrice.toFixed(2),
-            (unitPrice * item.cantidad).toFixed(2),
-            o.status,
-            o.canal,
-          ]
-        })
-      ),
+      ...completedOrders.flatMap(o => o.items.map(item => {
+        const extras = item.extras?.reduce((e: number, ex: { precio: number }) => e + ex.precio, 0) || 0
+        const unitPrice = item.menuItem.precio + extras
+        return [new Date(o.createdAt).toLocaleDateString('es-MX'), o.mesa, o.numero, item.menuItem.nombre, item.cantidad, unitPrice.toFixed(2), (unitPrice * item.cantidad).toFixed(2), o.status, o.canal]
+      })),
     ]
-    const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n')
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const blob = new Blob([rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n')], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -403,280 +219,249 @@ export function ReportsManager() {
     URL.revokeObjectURL(url)
   }
 
-  const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-    <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden ${className}`}>
-      {children}
-    </div>
-  )
-  const CardHead = ({ children }: { children: React.ReactNode }) => (
-    <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
-      {children}
-    </div>
-  )
+  const kpis = [
+    { label: dateRange === 'hoy' ? 'Ventas Hoy' : `Ventas (${RANGE_LABELS[dateRange]})`, value: formatPrice(totalRevenue), sub: `${completedOrders.length} pedidos completados`, diff: revenueDiff, mint: false },
+    { label: 'Ticket Promedio', value: formatPrice(avgTicket), sub: `${closedCount} sesiones cerradas`, diff: null, mint: false },
+    { label: 'Tiempo orden→cocina', value: avgOrderTime > 0 ? `${avgOrderTime.toFixed(1)} min` : '— min', sub: `SLA ${slaCompliance}% ≤15 min`, diff: null, mint: false },
+    { label: 'Ocupación', value: `${activeTables} mesas`, sub: `${occupancy}% de capacidad`, diff: null, mint: false },
+    { label: 'Adopción QR', value: `${adoptionRate}%`, sub: `${todayOrders.filter(o => o.isQrOrder).length} pedidos QR`, diff: null, mint: false },
+    { label: 'Rotación/mesa', value: avgRotation.toFixed(1), sub: `${closedCount} sesiones / ${activeTableCount} mesas`, diff: null, mint: false },
+    { label: 'Tasa de error', value: `${errorRate}%`, sub: `${cancelledOrders.length} cancelados`, diff: null, mint: errorRate === 0 },
+  ]
+
+  const card: React.CSSProperties = { border: '1px solid #E5E5E5', borderRadius: 14, overflow: 'hidden', background: '#fff' }
+  const cardHead: React.CSSProperties = { padding: '12px 16px', borderBottom: '1px solid #E5E5E5', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }
+  const swiss: React.CSSProperties = { fontSize: 10.5, fontFamily: MONO, fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(0,0,0,0.55)', textTransform: 'uppercase' as const }
 
   return (
-    <div className="space-y-4 w-full" style={{ fontFamily: "'Sora', system-ui, sans-serif" }}>
+    <div style={{ fontFamily: FONT, display: 'flex', flexDirection: 'column', gap: 16, width: '100%' }}>
 
       {/* Header */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingBottom: 16, borderBottom: '1px solid #E5E5E5' }}>
         <div>
-          <p className="text-xs text-gray-400 capitalize">
-            {new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}
-          </p>
+          <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.2 }}>Reportes · dashboard</div>
+          <div style={{ fontSize: 12, fontFamily: MONO, color: 'rgba(0,0,0,0.5)', marginTop: 4 }}>
+            {new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleExportCSV}
-            className="flex items-center gap-1.5 h-8 px-3 text-xs font-semibold rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
-          >
-            <Download className="h-3.5 w-3.5" />CSV
-          </button>
-          <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button onClick={handleExportCSV} style={{ height: 32, padding: '0 14px', border: '1px solid #E5E5E5', borderRadius: 10, fontSize: 12, fontFamily: FONT, fontWeight: 600, background: '#fff', cursor: 'pointer' }}>CSV</button>
+          <div style={{ display: 'flex', gap: 4, background: 'rgba(0,0,0,0.05)', borderRadius: 10, padding: 3 }}>
             {(Object.keys(RANGE_LABELS) as DateRange[]).map(r => (
               <button key={r} onClick={() => setDateRange(r)}
-                className={cn('px-3 py-1 text-xs font-bold rounded-lg transition-all',
-                  dateRange === r ? 'bg-black text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'
-                )}>
+                style={{ height: 28, padding: '0 12px', border: 'none', borderRadius: 7, fontSize: 12.5, fontFamily: FONT, fontWeight: dateRange === r ? 700 : 500, background: dateRange === r ? '#000' : 'transparent', color: dateRange === r ? '#fff' : 'rgba(0,0,0,0.55)', cursor: 'pointer', transition: 'all 0.15s' }}>
                 {RANGE_LABELS[r]}
               </button>
             ))}
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Alerta llamadas pendientes */}
+      {/* Pending calls alert */}
       {pendingCalls > 0 && (
-        <div className="flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-100 rounded-2xl">
-          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0" />
-          <span className="text-sm font-semibold text-red-700">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 12 }}>
+          <span style={{ width: 8, height: 8, borderRadius: 999, background: '#DC2626', flexShrink: 0, display: 'inline-block' }} />
+          <span style={{ fontSize: 13.5, fontWeight: 700, color: '#991B1B', letterSpacing: '-0.02em' }}>
             {pendingCalls} llamada{pendingCalls !== 1 ? 's' : ''} de mesero sin atender
           </span>
         </div>
       )}
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
-        {kpis.map((kpi, i) => {
-          const accent = i === 0 ? '#06C167' : i === 6 ? '#EF4444' : '#111'
-          return (
-            <div key={kpi.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 min-w-0">
-              <div className="flex items-center justify-between gap-1 mb-3">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 leading-tight line-clamp-2">
-                  {kpi.label}
-                </span>
-                <div className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: accent + '15', color: accent }}>
-                  {kpi.icon}
-                </div>
+      {/* KPI cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 10 }}>
+        {kpis.map((kpi, i) => (
+          <div key={kpi.label} style={{ border: `1px solid ${kpi.mint ? '#BEEBBE' : '#E5E5E5'}`, borderRadius: 14, padding: '14px 14px 12px', background: kpi.mint ? '#BEEBBE' : '#fff' }}>
+            <div style={{ fontSize: 10, fontFamily: MONO, color: kpi.mint ? 'rgba(10,58,10,0.6)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: 1.3, marginBottom: 10, minHeight: 28 }}>{kpi.label}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1, color: kpi.mint ? '#0a3a0a' : '#000', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{kpi.value}</div>
+            {kpi.diff !== null && kpi.diff !== undefined ? (
+              <div style={{ fontSize: 11.5, fontFamily: MONO, marginTop: 6, fontWeight: 600, color: kpi.diff > 0 ? '#0a3a0a' : kpi.diff < 0 ? '#DC2626' : 'rgba(0,0,0,0.4)' }}>
+                {kpi.diff > 0 ? '↑' : kpi.diff < 0 ? '↓' : '='} {Math.abs(kpi.diff)}%
               </div>
-              <p className="text-2xl font-black text-gray-900 leading-none truncate" style={{ letterSpacing: '-0.03em' }}>
-                {kpi.value}
-              </p>
-              {kpi.diff !== null && kpi.diff !== undefined ? (
-                <p className={cn('text-[11px] mt-1.5 font-semibold flex items-center gap-0.5',
-                  kpi.diff > 0 ? 'text-[#06C167]' : kpi.diff < 0 ? 'text-red-500' : 'text-gray-400'
-                )}>
-                  {kpi.diff > 0 ? '↑' : kpi.diff < 0 ? '↓' : '='} {Math.abs(kpi.diff)}%
-                </p>
-              ) : (
-                <p className="text-[11px] text-gray-400 mt-1.5 leading-tight">{kpi.sub}</p>
-              )}
-            </div>
-          )
-        })}
+            ) : (
+              <div style={{ fontSize: 10.5, fontFamily: MONO, marginTop: 6, color: kpi.mint ? 'rgba(10,58,10,0.6)' : 'rgba(0,0,0,0.4)', lineHeight: 1.3 }}>{kpi.sub}</div>
+            )}
+          </div>
+        ))}
       </div>
 
-      {/* Gráfico ventas por hora */}
-      <Card>
-        <CardHead>
-          <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Ventas por hora</p>
-        </CardHead>
-        <div className="p-5">
+      {/* Ventas por hora */}
+      <div style={card}>
+        <div style={cardHead}>
+          <span style={swiss}>VENTAS POR HORA · {RANGE_LABELS[dateRange]}</span>
+          <span style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.04em', fontFamily: MONO }}>{formatPrice(totalRevenue)}</span>
+        </div>
+        <div style={{ padding: '16px 16px 12px' }}>
           {totalRevenue > 0 ? (
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={hourlyData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                <XAxis dataKey="hour" tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => v === 0 ? '' : `$${v}`} />
+                <XAxis dataKey="hour" tick={{ fontSize: 10, fill: '#9CA3AF', fontFamily: MONO }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: '#9CA3AF', fontFamily: MONO }} axisLine={false} tickLine={false} tickFormatter={v => v === 0 ? '' : `$${v}`} />
                 <Tooltip
                   formatter={(value: number) => [formatPrice(value), 'Ventas']}
-                  contentStyle={{ border: '1px solid #F3F4F6', borderRadius: 12, fontSize: 12, color: '#111', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}
+                  contentStyle={{ border: '1px solid #E5E5E5', borderRadius: 10, fontSize: 12, color: '#111', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontFamily: FONT }}
                   cursor={{ fill: '#F9FAFB' }}
                 />
-                <Bar dataKey="revenue" radius={[6, 6, 0, 0]}>
+                <Bar dataKey="revenue" radius={[5, 5, 0, 0]}>
                   {hourlyData.map(entry => (
-                    <Cell key={entry.hour} fill={entry.revenue === maxHourRevenue && entry.revenue > 0 ? '#06C167' : '#E5E7EB'} />
+                    <Cell key={entry.hour} fill={entry.revenue === maxHourRevenue && entry.revenue > 0 ? '#BEEBBE' : '#E5E5E5'} />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-40 flex items-center justify-center">
-              <p className="text-sm text-gray-400">Sin ventas en el período seleccionado</p>
-            </div>
+            <div style={{ height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12.5, fontFamily: MONO, color: 'rgba(0,0,0,0.35)' }}>Sin ventas en el período seleccionado</div>
           )}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12,1fr)', fontFamily: MONO, fontSize: 10, color: 'rgba(0,0,0,0.4)', marginTop: 4 }}>
+            {['12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'].map(h => <span key={h}>{h}</span>)}
+          </div>
         </div>
-      </Card>
+      </div>
 
-      {/* Gráfico tendencia diaria */}
+      {/* Tendencia */}
       {dateRange !== 'hoy' && (
-        <Card>
-          <CardHead>
-            <p className="text-xs font-black text-gray-900 uppercase tracking-widest">
-              Tendencia — {RANGE_LABELS[dateRange]}
-            </p>
-          </CardHead>
-          <div className="p-5">
+        <div style={card}>
+          <div style={cardHead}>
+            <span style={swiss}>TENDENCIA · {RANGE_LABELS[dateRange]}</span>
+          </div>
+          <div style={{ padding: '16px' }}>
             {trendData.some(d => d.ventas > 0) ? (
               <ResponsiveContainer width="100%" height={160}>
                 <LineChart data={trendData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                   <CartesianGrid stroke="#F3F4F6" vertical={false} />
-                  <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#9CA3AF' }} axisLine={false} tickLine={false} interval={dateRange === '30d' ? 4 : 0} />
-                  <YAxis tick={{ fontSize: 10, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={v => v === 0 ? '' : `$${(v / 1000).toFixed(0)}k`} />
+                  <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#9CA3AF', fontFamily: MONO }} axisLine={false} tickLine={false} interval={dateRange === '30d' ? 4 : 0} />
+                  <YAxis tick={{ fontSize: 10, fill: '#9CA3AF', fontFamily: MONO }} axisLine={false} tickLine={false} tickFormatter={v => v === 0 ? '' : `$${(v / 1000).toFixed(0)}k`} />
                   <Tooltip
                     formatter={(value: number) => [formatPrice(value), 'Ventas']}
-                    contentStyle={{ border: '1px solid #F3F4F6', borderRadius: 12, fontSize: 12, color: '#111', boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}
+                    contentStyle={{ border: '1px solid #E5E5E5', borderRadius: 10, fontSize: 12, color: '#111', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontFamily: FONT }}
                   />
-                  <Line type="monotone" dataKey="ventas" stroke="#06C167" strokeWidth={2.5} dot={{ r: 3, fill: '#06C167', strokeWidth: 0 }} activeDot={{ r: 5 }} />
+                  <Line type="monotone" dataKey="ventas" stroke="#000" strokeWidth={2} dot={{ r: 3, fill: '#000', strokeWidth: 0 }} activeDot={{ r: 5 }} />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-40 flex items-center justify-center">
-                <p className="text-sm text-gray-400">Sin datos en el período</p>
-              </div>
+              <div style={{ height: 160, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12.5, fontFamily: MONO, color: 'rgba(0,0,0,0.35)' }}>Sin datos en el período</div>
             )}
           </div>
-        </Card>
+        </div>
       )}
 
-      {/* Canal + Eficiencia */}
-      <div className="grid md:grid-cols-2 gap-3">
-        <Card>
-          <CardHead>
-            <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Por canal</p>
-          </CardHead>
-          <div className="p-5 space-y-4">
-            {byChannel.map(ch => (
-              <div key={ch.label}>
-                <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-sm font-semibold text-gray-700">{ch.label}</span>
-                  <span className="text-sm font-black text-gray-900">{ch.count} <span className="text-xs font-normal text-gray-400">({ch.pct}%)</span></span>
-                </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-black rounded-full transition-all" style={{ width: `${ch.pct}%` }} />
-                </div>
-              </div>
-            ))}
-            {todayOrders.length === 0 && <p className="text-sm text-gray-400 text-center py-2">Sin pedidos</p>}
-          </div>
-        </Card>
-
-        <Card>
-          <CardHead>
-            <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Eficiencia</p>
-            <span className={cn('text-sm font-black', slaCompliance >= 90 ? 'text-[#06C167]' : slaCompliance >= 70 ? 'text-amber-500' : 'text-red-500')}>
-              SLA {slaCompliance}%
-            </span>
-          </CardHead>
-          <div className="p-5 space-y-4">
-            <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all"
-                style={{ width: `${slaCompliance}%`, backgroundColor: slaCompliance >= 90 ? '#06C167' : slaCompliance >= 70 ? '#F59E0B' : '#EF4444' }}
-              />
+      {/* 2-col: canal + top items */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
+        {/* Canal + Eficiencia */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={card}>
+            <div style={cardHead}>
+              <span style={swiss}>VENTAS POR CANAL</span>
             </div>
-            <div className="grid grid-cols-3 gap-3 pt-1">
-              {[
-                { label: 'Completados', value: completedOrders.length, color: '#06C167' },
-                { label: 'En proceso', value: todayOrders.filter(o => !['entregado', 'cancelado'].includes(o.status)).length, color: '#F59E0B' },
-                { label: 'Cancelados', value: cancelledOrders.length, color: '#EF4444' },
-              ].map(s => (
-                <div key={s.label} className="text-center">
-                  <p className="text-2xl font-black" style={{ color: s.color, letterSpacing: '-0.03em' }}>{s.value}</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">{s.label}</p>
+            <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {byChannel.map(ch => (
+                <div key={ch.label}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.02em' }}>{ch.label}</span>
+                    <span style={{ fontSize: 13, fontFamily: MONO, color: 'rgba(0,0,0,0.5)' }}>{ch.count} <span style={{ fontSize: 11 }}>({ch.pct}%)</span></span>
+                  </div>
+                  <div style={{ height: 6, background: '#F0F0F0', borderRadius: 999, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: '#000', borderRadius: 999, width: `${ch.pct}%`, transition: 'width 0.4s' }} />
+                  </div>
                 </div>
               ))}
+              {todayOrders.length === 0 && <div style={{ textAlign: 'center', fontSize: 12.5, fontFamily: MONO, color: 'rgba(0,0,0,0.35)' }}>Sin pedidos</div>}
             </div>
           </div>
-        </Card>
+          <div style={card}>
+            <div style={cardHead}>
+              <span style={swiss}>EFICIENCIA</span>
+              <span style={{ fontSize: 14, fontWeight: 800, fontFamily: MONO, letterSpacing: '-0.03em', color: slaCompliance >= 90 ? '#0a3a0a' : slaCompliance >= 70 ? '#92400E' : '#DC2626' }}>
+                SLA {slaCompliance}%
+              </span>
+            </div>
+            <div style={{ padding: '14px 16px' }}>
+              <div style={{ height: 8, background: '#F0F0F0', borderRadius: 999, overflow: 'hidden', marginBottom: 16 }}>
+                <div style={{ height: '100%', borderRadius: 999, width: `${slaCompliance}%`, background: slaCompliance >= 90 ? '#BEEBBE' : slaCompliance >= 70 ? '#FBBF24' : '#DC2626', transition: 'width 0.4s' }} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, textAlign: 'center' }}>
+                {[
+                  { label: 'Completados', value: completedOrders.length, color: '#0a3a0a' },
+                  { label: 'En proceso', value: todayOrders.filter(o => !['entregado', 'cancelado'].includes(o.status)).length, color: '#92400E' },
+                  { label: 'Cancelados', value: cancelledOrders.length, color: '#DC2626' },
+                ].map(s => (
+                  <div key={s.label}>
+                    <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.04em', color: s.color }}>{s.value}</div>
+                    <div style={{ fontSize: 11, fontFamily: MONO, color: 'rgba(0,0,0,0.45)', marginTop: 4 }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid #E5E5E5', display: 'flex', justifyContent: 'space-between', fontSize: 12.5, fontFamily: MONO }}>
+                <span style={{ color: 'rgba(0,0,0,0.5)' }}>Prep. promedio</span>
+                <span style={{ fontWeight: 700 }}>{avgPrepTime > 0 ? `${avgPrepTime.toFixed(1)} min` : '—'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Top items */}
+        <div style={card}>
+          <div style={cardHead}>
+            <span style={swiss}>TOP 5 · más vendidos</span>
+            <span style={{ fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.4)' }}>{RANGE_LABELS[dateRange]}</span>
+          </div>
+          <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {topItems.length > 0 ? topItems.map((item, i) => (
+              <div key={item.name} style={{ display: 'grid', gridTemplateColumns: '24px 1fr 40px', gap: 10, alignItems: 'center' }}>
+                <span style={{ width: 24, height: 24, borderRadius: 8, background: i === 0 ? '#000' : '#F0F0F0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: i === 0 ? 12 : 11.5, fontWeight: 800, fontFamily: MONO, color: i === 0 ? '#fff' : 'rgba(0,0,0,0.45)' }}>
+                  {i === 0 ? '★' : i + 1}
+                </span>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
+                  <div style={{ height: 4, background: '#F0F0F0', borderRadius: 999, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', borderRadius: 999, width: `${Math.round((item.qty / (topItems[0]?.qty || 1)) * 100)}%`, background: i === 2 ? '#BEEBBE' : '#000' }} />
+                  </div>
+                </div>
+                <span style={{ fontSize: 12.5, fontFamily: MONO, fontWeight: 700, textAlign: 'right', letterSpacing: '-0.02em' }}>×{item.qty}</span>
+              </div>
+            )) : (
+              <div style={{ textAlign: 'center', fontSize: 12.5, fontFamily: MONO, color: 'rgba(0,0,0,0.35)', paddingTop: 24 }}>Sin ventas en el período</div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Desglose por método de pago */}
       <PaymentBreakdownWidget />
 
-      {/* Top items */}
-      <Card>
-        <CardHead>
-          <div className="flex items-center gap-2">
-            <ChefHat className="h-4 w-4 text-gray-400" />
-            <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Más vendidos</p>
-          </div>
-          <span className="text-[11px] text-gray-400">{RANGE_LABELS[dateRange]}</span>
-        </CardHead>
-        <div className="p-5">
-          {topItems.length > 0 ? (
-            <div className="space-y-3">
-              {topItems.map((item, i) => (
-                <div key={item.name} className="flex items-center gap-3">
-                  <span className={cn(
-                    'w-7 h-7 rounded-xl flex items-center justify-center text-xs font-black shrink-0',
-                    i === 0 ? 'bg-black text-white' : 'bg-gray-100 text-gray-500'
-                  )}>
-                    {i === 0 ? <Star className="h-3 w-3" /> : i + 1}
-                  </span>
-                  <span className="flex-1 text-sm font-semibold text-gray-900 truncate">{item.name}</span>
-                  <span className="text-[11px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full shrink-0 font-semibold">×{item.qty}</span>
-                  <span className="text-sm font-black text-gray-900 shrink-0" style={{ letterSpacing: '-0.02em' }}>
-                    {formatPrice(item.revenue)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-400 text-center py-4">Sin ventas en el período</p>
-          )}
-        </div>
-      </Card>
-
-      {/* Feedback summary */}
+      {/* Feedback */}
       {feedbackSummary && feedbackSummary.total > 0 && (
-        <Card>
-          <CardHead>
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-gray-400" />
-              <p className="text-xs font-black text-gray-900 uppercase tracking-widest">Satisfacción</p>
+        <div style={card}>
+          <div style={cardHead}>
+            <span style={swiss}>SATISFACCIÓN</span>
+            <span style={{ fontSize: 11.5, fontFamily: MONO, color: 'rgba(0,0,0,0.4)' }}>{feedbackSummary.total} reseña{feedbackSummary.total !== 1 ? 's' : ''}</span>
+          </div>
+          <div style={{ padding: '16px', display: 'flex', alignItems: 'flex-start', gap: 24 }}>
+            <div style={{ textAlign: 'center', flexShrink: 0 }}>
+              <div style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1 }}>{feedbackSummary.avg_rating?.toFixed(1) ?? '—'}</div>
+              <div style={{ display: 'flex', gap: 2, justifyContent: 'center', marginTop: 8 }}>
+                {[1, 2, 3, 4, 5].map(s => (
+                  <span key={s} style={{ fontSize: 14, color: s <= Math.round(feedbackSummary.avg_rating ?? 0) ? '#FBBF24' : '#E5E5E5' }}>★</span>
+                ))}
+              </div>
             </div>
-            <span className="text-[11px] text-gray-400">{feedbackSummary.total} reseña{feedbackSummary.total !== 1 ? 's' : ''}</span>
-          </CardHead>
-          <div className="p-5">
-            <div className="flex items-start gap-6">
-              <div className="text-center shrink-0">
-                <p className="text-4xl font-black text-gray-900 leading-none" style={{ letterSpacing: '-0.04em' }}>
-                  {feedbackSummary.avg_rating?.toFixed(1) ?? '—'}
-                </p>
-                <div className="flex gap-0.5 justify-center mt-2">
-                  {[1, 2, 3, 4, 5].map(s => (
-                    <Star key={s} className={cn('h-3.5 w-3.5', s <= Math.round(feedbackSummary.avg_rating ?? 0) ? 'fill-amber-400 text-amber-400' : 'text-gray-200 fill-gray-200')} />
-                  ))}
-                </div>
-              </div>
-              <div className="flex-1 space-y-2">
-                {[5, 4, 3, 2, 1].map(star => {
-                  const count = feedbackSummary.dist?.[String(star)] ?? 0
-                  const pct = feedbackSummary.total > 0 ? Math.round((count / feedbackSummary.total) * 100) : 0
-                  return (
-                    <div key={star} className="flex items-center gap-2">
-                      <span className="text-[11px] text-gray-400 w-3 shrink-0 font-semibold">{star}</span>
-                      <Star className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0" />
-                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-amber-400 rounded-full" style={{ width: `${pct}%` }} />
-                      </div>
-                      <span className="text-[11px] text-gray-400 w-5 text-right shrink-0 font-semibold">{count}</span>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[5, 4, 3, 2, 1].map(star => {
+                const count = feedbackSummary.dist?.[String(star)] ?? 0
+                const pct = feedbackSummary.total > 0 ? Math.round((count / feedbackSummary.total) * 100) : 0
+                return (
+                  <div key={star} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 11, fontFamily: MONO, color: 'rgba(0,0,0,0.4)', width: 12, flexShrink: 0, fontWeight: 700 }}>{star}</span>
+                    <span style={{ fontSize: 12, color: '#FBBF24' }}>★</span>
+                    <div style={{ flex: 1, height: 6, background: '#F0F0F0', borderRadius: 999, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', background: '#FBBF24', borderRadius: 999, width: `${pct}%` }} />
                     </div>
-                  )
-                })}
-              </div>
+                    <span style={{ fontSize: 11, fontFamily: MONO, color: 'rgba(0,0,0,0.4)', width: 20, textAlign: 'right', flexShrink: 0, fontWeight: 600 }}>{count}</span>
+                  </div>
+                )
+              })}
             </div>
           </div>
-        </Card>
+        </div>
       )}
     </div>
   )
