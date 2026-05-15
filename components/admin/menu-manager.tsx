@@ -1,21 +1,50 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Plus, Edit2, ImageIcon, ExternalLink, Copy, Check, Settings2, X, Save, Upload } from 'lucide-react'
 import { useApp } from '@/lib/context'
 import { canDo } from '@/lib/permissions'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Switch } from '@/components/ui/switch'
 import { formatPrice, type MenuItem } from '@/lib/store'
 import { MenuItemDialog } from './menu-item-dialog'
 import { supabase } from '@/lib/supabase'
 
+const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
+const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
+
+const PALETTES = [
+  'linear-gradient(135deg,#3a1c0a,#0e0805)',
+  'linear-gradient(135deg,#3a2a18,#1a0e08)',
+  'linear-gradient(135deg,#2a1810,#1a0e08)',
+  'linear-gradient(135deg,#2a1f12,#10080a)',
+  'linear-gradient(135deg,#1a2a1a,#081a08)',
+  'linear-gradient(135deg,#2a1f2a,#10081a)',
+]
+
+function Toggle({ on, onChange }: { on: boolean; onChange?: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={e => { e.stopPropagation(); onChange?.() }}
+      style={{
+        width: 30, height: 18, borderRadius: 999, position: 'relative',
+        background: on ? '#BEEBBE' : 'rgba(0,0,0,0.12)',
+        border: 'none', cursor: onChange ? 'pointer' : 'default', padding: 0, flexShrink: 0,
+      }}
+    >
+      <span style={{
+        position: 'absolute', top: 2, left: on ? 14 : 2,
+        width: 14, height: 14, borderRadius: 999,
+        background: '#fff', transition: 'left 0.15s', display: 'block',
+      }} />
+    </button>
+  )
+}
+
 export function MenuManager() {
   const { menuItems, updateMenuItem, categories, ingredients, currentUser, config, updateConfig, tenantSlug } = useApp()
   const role = currentUser?.role
-  const canEditMenu = canDo(role, 'editar_menu')
+  const canEditMenu   = canDo(role, 'editar_menu')
   const canEditConfig = canDo(role, 'editar_config')
+
   const uploadBrandingImage = async (file: File): Promise<string | null> => {
     const { data: { session } } = await supabase.auth.getSession()
     const token = session?.access_token
@@ -41,34 +70,34 @@ export function MenuManager() {
     }
   }
 
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied]               = useState(false)
   const [showCustomize, setShowCustomize] = useState(false)
-  const [customSaved, setCustomSaved] = useState(false)
+  const [customSaved, setCustomSaved]     = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [uploadingCover, setUploadingCover] = useState(false)
-  const logoInputRef = useRef<HTMLInputElement>(null)
+  const logoInputRef  = useRef<HTMLInputElement>(null)
   const coverInputRef = useRef<HTMLInputElement>(null)
   const [localBranding, setLocalBranding] = useState({
-    restaurantName: config.restaurantName ?? '',
-    logoUrl: config.logoUrl ?? '',
-    coverUrl: config.coverUrl ?? '',
-    descripcion: config.descripcion ?? '',
-    whatsappNumero: config.whatsappNumero ?? '',
-    primaryColor: config.primaryColor ?? '#000000',
-    accentColor: config.accentColor ?? '#BEBEBE',
+    restaurantName:    config.restaurantName    ?? '',
+    logoUrl:           config.logoUrl           ?? '',
+    coverUrl:          config.coverUrl          ?? '',
+    descripcion:       config.descripcion       ?? '',
+    whatsappNumero:    config.whatsappNumero     ?? '',
+    primaryColor:      config.primaryColor      ?? '#000000',
+    accentColor:       config.accentColor       ?? '#BEBEBE',
     poweredByWaitless: config.poweredByWaitless ?? true,
   })
 
   useEffect(() => {
     if (showCustomize) {
       setLocalBranding({
-        restaurantName: config.restaurantName ?? '',
-        logoUrl: config.logoUrl ?? '',
-        coverUrl: config.coverUrl ?? '',
-        descripcion: config.descripcion ?? '',
-        whatsappNumero: config.whatsappNumero ?? '',
-        primaryColor: config.primaryColor ?? '#000000',
-        accentColor: config.accentColor ?? '#BEBEBE',
+        restaurantName:    config.restaurantName    ?? '',
+        logoUrl:           config.logoUrl           ?? '',
+        coverUrl:          config.coverUrl          ?? '',
+        descripcion:       config.descripcion       ?? '',
+        whatsappNumero:    config.whatsappNumero     ?? '',
+        primaryColor:      config.primaryColor      ?? '#000000',
+        accentColor:       config.accentColor       ?? '#BEBEBE',
         poweredByWaitless: config.poweredByWaitless ?? true,
       })
     }
@@ -98,78 +127,132 @@ export function MenuManager() {
       return total + (ing ? ing.costoUnitario * ri.cantidad : 0)
     }, 0)
   }
-  const [showDialog, setShowDialog] = useState(false)
+
+  const [showDialog, setShowDialog]   = useState(false)
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null)
-  
+  const [selectedCatId, setSelectedCatId] = useState<string | null>(null)
+
   const handleToggleAvailability = async (item: MenuItem) => {
     try {
       await updateMenuItem(item.id, { disponible: !item.disponible })
     } catch {
-      // el optimistic revert ya se aplicó en updateMenuItem
+      // optimistic revert ya se aplicó en updateMenuItem
     }
   }
-  
+
   const handleEdit = (item: MenuItem) => {
     setEditingItem(item)
     setShowDialog(true)
   }
-  
+
   const handleAdd = () => {
     setEditingItem(null)
     setShowDialog(true)
   }
-  
+
   const handleCloseDialog = () => {
     setShowDialog(false)
     setEditingItem(null)
   }
-  
+
   const sortedCategories = [...categories]
     .filter(c => c.activa)
     .sort((a, b) => a.orden - b.orden)
-  
-  return (
-    <div className="space-y-4">
 
-      {/* ── Header ── */}
-      <div className="flex items-center justify-between">
+  const uncategorized = menuItems.filter(item => !categories.some(c => c.id === item.categoria))
+
+  const effectiveCatId = selectedCatId ?? sortedCategories[0]?.id ?? '__none__'
+
+  const catItems = effectiveCatId === '__none__'
+    ? uncategorized
+    : menuItems.filter(item => item.categoria === effectiveCatId)
+
+  const activeCategory = effectiveCatId === '__none__'
+    ? 'Sin categoría'
+    : (sortedCategories.find(c => c.id === effectiveCatId)?.nombre ?? '')
+
+  const inputStyle: React.CSSProperties = {
+    height: 42, padding: '0 14px',
+    border: '1px solid #E5E5E5', borderRadius: 10,
+    fontSize: 14, letterSpacing: '-0.01em',
+    fontFamily: FONT, outline: 'none', background: '#fff',
+    width: '100%', boxSizing: 'border-box',
+  }
+
+  return (
+    <div style={{ fontFamily: FONT }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 14, marginBottom: 18 }}>
         <div>
-          <h2 className="text-lg font-black text-gray-900 tracking-tight">Gestión de menú</h2>
-          <p className="text-sm text-gray-500">{menuItems.length} platillos en total</p>
+          <div style={{ fontFamily: MONO, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#909090', fontWeight: 700 }}>
+            Catálogo
+          </div>
+          <h2 style={{ fontFamily: FONT, fontWeight: 700, letterSpacing: '-0.04em', fontSize: 24, margin: '4px 0 0' }}>
+            {menuItems.length} items · {sortedCategories.length} categorías
+          </h2>
         </div>
         {canEditMenu && (
-          <button
-            onClick={handleAdd}
-            className="flex items-center gap-2 h-10 px-4 bg-black hover:bg-black/80 text-white text-sm font-semibold rounded-xl transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            Agregar platillo
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={handleAdd}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                height: 36, padding: '0 16px', borderRadius: 999,
+                background: '#fff', color: '#000',
+                fontWeight: 700, fontSize: 12.5,
+                border: '1px solid #E5E5E5', cursor: 'pointer', fontFamily: FONT,
+              }}
+            >
+              ＋ Categoría
+            </button>
+            <button
+              onClick={handleAdd}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                height: 36, padding: '0 16px', borderRadius: 999,
+                background: '#000', color: '#fff',
+                fontWeight: 700, fontSize: 12.5,
+                border: 'none', cursor: 'pointer', fontFamily: FONT,
+              }}
+            >
+              ＋ Item
+            </button>
+          </div>
         )}
       </div>
 
-      {/* ── Banner menú digital ── */}
-      <div className="rounded-2xl border border-gray-100 bg-white overflow-hidden">
-        <div className="px-4 pt-4 pb-3">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-1">Menú digital público</p>
-          <p className="text-xs text-gray-500 font-mono truncate">{menuUrl}</p>
+      {/* URL banner */}
+      <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 14, overflow: 'hidden', marginBottom: 18 }}>
+        <div style={{ padding: '14px 16px 10px' }}>
+          <div style={{ fontFamily: MONO, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#909090', fontWeight: 700, marginBottom: 4 }}>
+            Menú digital público
+          </div>
+          <div style={{ fontFamily: MONO, fontSize: 11.5, color: '#909090', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {menuUrl}
+          </div>
         </div>
-        <div className="flex border-t border-gray-100 divide-x divide-gray-100">
+        <div style={{ display: 'flex', borderTop: '1px solid #E5E5E5' }}>
           <button
             onClick={handleCopyUrl}
-            className="flex-1 flex items-center justify-center gap-1.5 h-10 text-xs font-semibold text-gray-900 hover:bg-gray-50 transition-colors"
+            style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              height: 40, fontSize: 12.5, fontWeight: 700, color: copied ? '#0a3a0a' : '#000',
+              background: copied ? '#BEEBBE' : '#fff', border: 'none', cursor: 'pointer', fontFamily: FONT,
+            }}
           >
-            {copied
-              ? <><Check className="h-3.5 w-3.5 text-green-600" /><span className="text-green-600">Copiado</span></>
-              : <><Copy className="h-3.5 w-3.5" />Copiar enlace</>
-            }
+            {copied ? '✓ Copiado' : 'Copiar enlace'}
           </button>
           {canEditConfig && (
             <button
               onClick={() => setShowCustomize(true)}
-              className="flex-1 flex items-center justify-center gap-1.5 h-10 text-xs font-semibold text-gray-900 hover:bg-gray-50 transition-colors"
+              style={{
+                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                height: 40, fontSize: 12.5, fontWeight: 700, color: '#000',
+                background: '#fff', border: 'none', borderLeft: '1px solid #E5E5E5',
+                cursor: 'pointer', fontFamily: FONT,
+              }}
             >
-              <Settings2 className="h-3.5 w-3.5" />
               Personalizar
             </button>
           )}
@@ -177,260 +260,269 @@ export function MenuManager() {
             href={menuUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-1.5 h-10 text-xs font-semibold text-white bg-black hover:bg-black/80 transition-colors"
+            style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              height: 40, fontSize: 12.5, fontWeight: 700, color: '#fff',
+              background: '#000', borderLeft: '1px solid #E5E5E5',
+              textDecoration: 'none', fontFamily: FONT,
+            }}
           >
-            <ExternalLink className="h-3.5 w-3.5" />
-            Ver menú
+            Ver menú ↗
           </a>
         </div>
       </div>
 
-      {/* ── Lista de platillos ── */}
-      <div className="space-y-3">
-        {(() => {
-          const renderItem = (item: MenuItem) => {
-            const cost = calculateItemCost(item)
-            const margin = cost > 0 ? Math.round(((item.precio - cost) / item.precio) * 100) : null
-            const marginCls = margin !== null
-              ? margin >= 60 ? 'text-green-600 bg-green-50' : margin >= 40 ? 'text-amber-600 bg-amber-50' : 'text-red-600 bg-red-50'
-              : ''
-            return (
-              <div
-                key={item.id}
-                className={`flex items-center gap-3 px-4 py-3 border-b border-gray-100 last:border-0 transition-opacity ${!item.disponible ? 'opacity-40' : ''}`}
-              >
-                {/* Imagen */}
-                <div className="w-12 h-12 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
-                  {item.imagen ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={item.imagen} alt={item.nombre} className="w-full h-full object-cover" />
-                  ) : (
-                    <ImageIcon className="h-5 w-5 text-gray-500/40" />
-                  )}
-                </div>
+      {/* Two-column layout */}
+      <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: 16 }}>
 
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{item.nombre}</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-sm font-bold text-gray-900">{formatPrice(item.precio)}</span>
-                    {margin !== null && (
-                      <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full ${marginCls}`}>
-                        {margin}% margen
-                      </span>
-                    )}
+        {/* Category list */}
+        <div>
+          <div style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#909090', marginBottom: 10 }}>
+            Categorías
+          </div>
+          <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 14, overflow: 'hidden' }}>
+            {sortedCategories.map((cat, i) => {
+              const count   = menuItems.filter(item => item.categoria === cat.id).length
+              const isActive = effectiveCatId === cat.id
+              return (
+                <div
+                  key={cat.id}
+                  onClick={() => setSelectedCatId(cat.id)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '12px 14px',
+                    borderBottom: i < sortedCategories.length - 1 ? '1px solid #EFEFEF' : 'none',
+                    cursor: 'pointer',
+                    background: isActive ? '#000' : '#fff',
+                    color: isActive ? '#fff' : '#000',
+                  }}
+                >
+                  <div style={{ flex: 1, fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.02em' }}>
+                    {cat.nombre}
+                  </div>
+                  <div style={{ fontFamily: MONO, fontSize: 10.5, color: isActive ? 'rgba(255,255,255,0.6)' : '#909090' }}>
+                    {count}
+                  </div>
+                  <div style={{
+                    width: 28, height: 16, borderRadius: 999, position: 'relative',
+                    background: '#BEEBBE', flexShrink: 0,
+                  }}>
+                    <span style={{
+                      position: 'absolute', top: 2, left: 14,
+                      width: 12, height: 12, borderRadius: 999, background: '#fff',
+                    }} />
                   </div>
                 </div>
-
-                {/* Disponible toggle */}
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-xs text-gray-500 hidden sm:block">
-                    {item.disponible ? 'Disponible' : 'Agotado'}
-                  </span>
-                  <Switch
-                    checked={item.disponible}
-                    onCheckedChange={() => handleToggleAvailability(item)}
-                    className="scale-[0.8] shrink-0"
-                  />
+              )
+            })}
+            {uncategorized.length > 0 && (
+              <div
+                onClick={() => setSelectedCatId('__none__')}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '12px 14px', cursor: 'pointer',
+                  background: effectiveCatId === '__none__' ? '#000' : '#fff',
+                  color: effectiveCatId === '__none__' ? '#fff' : '#000',
+                  borderTop: sortedCategories.length > 0 ? '1px solid #EFEFEF' : 'none',
+                }}
+              >
+                <div style={{ flex: 1, fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.02em' }}>Sin categoría</div>
+                <div style={{ fontFamily: MONO, fontSize: 10.5, color: effectiveCatId === '__none__' ? 'rgba(255,255,255,0.6)' : '#909090' }}>
+                  {uncategorized.length}
                 </div>
-
-                {/* Editar */}
-                <button
-                  onClick={() => handleEdit(item)}
-                  className="h-8 w-8 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors shrink-0"
-                >
-                  <Edit2 className="h-4 w-4" />
-                </button>
               </div>
-            )
-          }
+            )}
+          </div>
+        </div>
 
-          const sections: React.ReactNode[] = []
+        {/* Item grid */}
+        <div>
+          <div style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', color: '#909090', marginBottom: 10 }}>
+            Items · {catItems.length} — {activeCategory}
+          </div>
 
-          sortedCategories.forEach(categoria => {
-            const catItems = menuItems.filter(item => item.categoria === categoria.id)
-            if (catItems.length === 0) return
-            sections.push(
-              <div key={`cat-${categoria.id}`} className="rounded-2xl border border-gray-100 bg-white overflow-hidden">
-                <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                  <p className="text-sm font-bold text-gray-900">{categoria.nombre}</p>
-                  <span className="text-xs text-gray-500 bg-white border border-gray-100 rounded-full px-2 py-0.5">
-                    {catItems.length} {catItems.length === 1 ? 'platillo' : 'platillos'}
-                  </span>
-                </div>
-                {catItems.map(item => renderItem(item))}
+          {catItems.length === 0 ? (
+            <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 14, padding: '48px 24px', textAlign: 'center' }}>
+              <div style={{ fontFamily: FONT, fontWeight: 700, letterSpacing: '-0.06em', fontSize: 64, color: 'rgba(0,0,0,0.08)', lineHeight: 1 }}>Ø</div>
+              <div style={{ fontWeight: 700, letterSpacing: '-0.04em', fontSize: 20, marginTop: 14 }}>Sin items</div>
+              <div style={{ fontFamily: MONO, fontSize: 11.5, color: '#909090', marginTop: 6 }}>
+                Agregá el primer item con el botón de arriba.
               </div>
-            )
-          })
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+              {catItems.map((item, idx) => {
+                const cost   = calculateItemCost(item)
+                const margin = cost > 0 ? Math.round(((item.precio - cost) / item.precio) * 100) : null
+                const pal    = PALETTES[idx % PALETTES.length]
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => canEditMenu && handleEdit(item)}
+                    style={{
+                      background: '#fff', border: '1px solid #E5E5E5', borderRadius: 14,
+                      overflow: 'hidden', cursor: canEditMenu ? 'pointer' : 'default',
+                      display: 'flex', flexDirection: 'column',
+                    }}
+                  >
+                    {/* Photo */}
+                    <div style={{ aspectRatio: '5/3', position: 'relative', background: item.imagen ? '#000' : pal }}>
+                      {item.imagen && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={item.imagen} alt={item.nombre} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      )}
+                      {!item.disponible && (
+                        <span style={{
+                          position: 'absolute', top: 8, left: 8,
+                          display: 'inline-flex', alignItems: 'center',
+                          padding: '3px 8px', borderRadius: 999,
+                          fontFamily: MONO, fontSize: 10.5, fontWeight: 700,
+                          letterSpacing: '0.04em', textTransform: 'uppercase',
+                          background: '#FEE2E2', color: '#991B1B',
+                        }}>
+                          Agotado
+                        </span>
+                      )}
+                    </div>
 
-          const uncategorized = menuItems.filter(item => !sortedCategories.some(c => c.id === item.categoria))
-          if (uncategorized.length > 0) {
-            sections.push(
-              <div key="cat-sin" className="rounded-2xl border border-gray-100 bg-white overflow-hidden">
-                <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                  <p className="text-sm font-bold text-gray-900">Sin categoría</p>
-                  <span className="text-xs text-gray-500 bg-white border border-gray-100 rounded-full px-2 py-0.5">
-                    {uncategorized.length} {uncategorized.length === 1 ? 'platillo' : 'platillos'}
-                  </span>
-                </div>
-                {uncategorized.map(item => renderItem(item))}
-              </div>
-            )
-          }
-
-          if (sections.length === 0) {
-            return (
-              <div className="rounded-2xl border border-gray-100 bg-white py-14 text-center">
-                <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
-                  <ImageIcon className="h-6 w-6 text-gray-500/40" />
-                </div>
-                <p className="text-sm font-semibold text-gray-900">Sin platillos todavía</p>
-                <p className="text-xs text-gray-500 mt-1">Agregá tu primer platillo con el botón de arriba.</p>
-              </div>
-            )
-          }
-
-          return sections
-        })()}
+                    {/* Info */}
+                    <div style={{ padding: '12px 14px' }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em' }}>{item.nombre}</div>
+                      <div style={{ fontFamily: MONO, fontSize: 12.5, fontWeight: 700, marginTop: 2 }}>{formatPrice(item.precio)}</div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+                        <span style={{
+                          fontFamily: MONO, fontSize: 10.5,
+                          color: margin === null ? '#909090' : margin >= 60 ? '#0a3a0a' : margin >= 40 ? '#92400E' : '#991B1B',
+                        }}>
+                          {margin !== null ? `${margin}% margen` : '—'}
+                        </span>
+                        <Toggle on={item.disponible} onChange={() => handleToggleAvailability(item)} />
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </div>
-      
+
       {showDialog && (
-        <MenuItemDialog
-          item={editingItem}
-          onClose={handleCloseDialog}
-        />
+        <MenuItemDialog item={editingItem} onClose={handleCloseDialog} />
       )}
 
-      {/* ── Modal personalizar menú público ──────────────────────────────── */}
+      {/* Customize modal */}
       {showCustomize && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            onClick={() => setShowCustomize(false)}
-          />
-
-          {/* Panel */}
-          <div className="relative z-10 w-full sm:max-w-md bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-black/8">
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+          className="sm:items-center">
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}
+            onClick={() => setShowCustomize(false)} />
+          <div style={{
+            position: 'relative', zIndex: 10, width: '100%', maxWidth: 440,
+            background: '#fff', borderRadius: '16px 16px 0 0', overflow: 'hidden',
+            display: 'flex', flexDirection: 'column', maxHeight: '90vh',
+            fontFamily: FONT,
+          }}>
+            {/* Modal header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #E5E5E5' }}>
               <div>
-                <p className="font-black text-gray-900 text-sm tracking-tight">
-                  Personalizar menú
-                </p>
-                <p className="text-[10px] text-gray-400 mt-0.5">Apariencia de la página pública</p>
+                <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: '-0.02em' }}>Personalizar menú</div>
+                <div style={{ fontFamily: MONO, fontSize: 10.5, color: '#909090', marginTop: 2 }}>Apariencia de la página pública</div>
               </div>
               <button
                 onClick={() => setShowCustomize(false)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-black/6 transition-colors"
-              >
-                <X className="h-4 w-4 text-gray-500" />
-              </button>
+                style={{ width: 28, height: 28, borderRadius: 8, border: '1px solid #E5E5E5', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: '#000' }}
+              >✕</button>
             </div>
 
-            {/* Campos */}
-            <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
+            {/* Fields */}
+            <div style={{ overflowY: 'auto', flex: 1, padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
               {/* Identidad */}
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-2.5">Identidad</p>
-                <div className="space-y-2.5">
-                  <div>
-                    <label className="text-[10px] font-semibold text-gray-500 block mb-1">Nombre del restaurante</label>
-                    <Input
-                      value={localBranding.restaurantName}
-                      onChange={e => setLocalBranding(p => ({ ...p, restaurantName: e.target.value }))}
-                      placeholder="Mi Restaurante"
-                      className="h-9 text-xs"
-                    />
+                <div style={{ fontFamily: MONO, fontSize: 9.5, textTransform: 'uppercase', letterSpacing: '0.22em', color: '#909090', fontWeight: 700, marginBottom: 10 }}>Identidad</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700 }}>Nombre del restaurante</label>
+                    <input style={inputStyle} value={localBranding.restaurantName} onChange={e => setLocalBranding(p => ({ ...p, restaurantName: e.target.value }))} placeholder="Mi Restaurante" />
                   </div>
-                  <div>
-                    <label className="text-[10px] font-semibold text-gray-500 block mb-1">Descripción</label>
-                    <Textarea
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700 }}>Descripción</label>
+                    <textarea
+                      style={{ ...inputStyle, height: 'auto', padding: '12px 14px', resize: 'vertical' }}
+                      rows={2} maxLength={200}
                       value={localBranding.descripcion}
                       onChange={e => setLocalBranding(p => ({ ...p, descripcion: e.target.value }))}
                       placeholder="Breve descripción de tu restaurante..."
-                      rows={2}
-                      maxLength={200}
-                      className="text-xs"
                     />
-                    <p className="text-[9px] text-gray-300 text-right">{localBranding.descripcion.length}/200</p>
+                    <div style={{ fontFamily: MONO, fontSize: 9.5, color: '#909090', textAlign: 'right' }}>{localBranding.descripcion.length}/200</div>
                   </div>
                 </div>
               </div>
 
               {/* Imágenes */}
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-2.5">Imágenes</p>
-                <div className="space-y-3">
+                <div style={{ fontFamily: MONO, fontSize: 9.5, textTransform: 'uppercase', letterSpacing: '0.22em', color: '#909090', fontWeight: 700, marginBottom: 10 }}>Imágenes</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {/* Logo */}
-                  <div>
-                    <label className="text-[10px] font-semibold text-gray-500 block mb-1.5">Logo</label>
-                    <div className="flex items-center gap-2">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700 }}>Logo</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       {localBranding.logoUrl && (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={localBranding.logoUrl} alt="Logo" className="h-10 w-10 object-cover rounded-lg border border-black/10 shrink-0" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                        <img src={localBranding.logoUrl} alt="Logo" style={{ height: 40, width: 40, objectFit: 'cover', borderRadius: 8, border: '1px solid #E5E5E5', flexShrink: 0 }} onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
                       )}
                       <button
                         type="button"
                         onClick={() => logoInputRef.current?.click()}
                         disabled={uploadingLogo}
-                        className="flex-1 h-10 rounded-lg border border-dashed border-black/20 flex items-center justify-center gap-2 text-xs text-gray-500 hover:border-black/40 hover:text-gray-700 transition-colors disabled:opacity-50"
+                        style={{ flex: 1, height: 40, borderRadius: 10, border: '1px dashed rgba(0,0,0,0.2)', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 12.5, color: '#909090', cursor: 'pointer', fontFamily: FONT, opacity: uploadingLogo ? 0.5 : 1 }}
                       >
-                        <Upload className="h-3.5 w-3.5" />
-                        {uploadingLogo ? 'Subiendo...' : localBranding.logoUrl ? 'Cambiar logo' : 'Subir logo'}
+                        ↑ {uploadingLogo ? 'Subiendo...' : localBranding.logoUrl ? 'Cambiar logo' : 'Subir logo'}
                       </button>
-                      <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={async e => {
+                      <input ref={logoInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async e => {
                         const file = e.target.files?.[0]
                         if (!file) return
                         setUploadingLogo(true)
                         try {
                           const url = await uploadBrandingImage(file)
                           if (url) setLocalBranding(p => ({ ...p, logoUrl: url }))
-                        } finally {
-                          setUploadingLogo(false)
-                          e.target.value = ''
-                        }
+                        } finally { setUploadingLogo(false); e.target.value = '' }
                       }} />
                     </div>
                   </div>
 
                   {/* Portada */}
-                  <div>
-                    <label className="text-[10px] font-semibold text-gray-500 block mb-1.5">Imagen de portada</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700 }}>Imagen de portada</label>
                     <button
                       type="button"
                       onClick={() => coverInputRef.current?.click()}
                       disabled={uploadingCover}
-                      className="w-full rounded-lg border border-dashed border-black/20 overflow-hidden hover:border-black/40 transition-colors disabled:opacity-50"
+                      style={{ borderRadius: 10, border: '1px dashed rgba(0,0,0,0.2)', background: '#fff', overflow: 'hidden', cursor: 'pointer', opacity: uploadingCover ? 0.5 : 1, width: '100%' }}
                     >
                       {localBranding.coverUrl ? (
-                        <div className="relative">
+                        <div style={{ position: 'relative' }}>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={localBranding.coverUrl} alt="Portada" className="w-full h-24 object-cover" />
-                          <div className="absolute inset-0 bg-black/30 flex items-center justify-center gap-1.5 text-white text-xs opacity-0 hover:opacity-100 transition-opacity">
-                            <Upload className="h-3.5 w-3.5" />
-                            {uploadingCover ? 'Subiendo...' : 'Cambiar portada'}
+                          <img src={localBranding.coverUrl} alt="Portada" style={{ width: '100%', height: 80, objectFit: 'cover', display: 'block' }} />
+                          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12.5, color: '#fff', fontFamily: FONT, fontWeight: 700 }}>
+                            ↑ {uploadingCover ? 'Subiendo...' : 'Cambiar portada'}
                           </div>
                         </div>
                       ) : (
-                        <div className="h-20 flex items-center justify-center gap-2 text-xs text-gray-500">
-                          <Upload className="h-3.5 w-3.5" />
-                          {uploadingCover ? 'Subiendo...' : 'Subir imagen de portada'}
+                        <div style={{ height: 72, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 12.5, color: '#909090', fontFamily: FONT }}>
+                          ↑ {uploadingCover ? 'Subiendo...' : 'Subir imagen de portada'}
                         </div>
                       )}
                     </button>
-                    <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={async e => {
+                    <input ref={coverInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={async e => {
                       const file = e.target.files?.[0]
                       if (!file) return
                       setUploadingCover(true)
                       try {
                         const url = await uploadBrandingImage(file)
                         if (url) setLocalBranding(p => ({ ...p, coverUrl: url }))
-                      } finally {
-                        setUploadingCover(false)
-                        e.target.value = ''
-                      }
+                      } finally { setUploadingCover(false); e.target.value = '' }
                     }} />
                   </div>
                 </div>
@@ -438,78 +530,64 @@ export function MenuManager() {
 
               {/* Contacto */}
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-2.5">Contacto</p>
-                <div>
-                  <label className="text-[10px] font-semibold text-gray-500 block mb-1">Número de WhatsApp</label>
-                  <Input
-                    value={localBranding.whatsappNumero}
-                    onChange={e => setLocalBranding(p => ({ ...p, whatsappNumero: e.target.value }))}
-                    placeholder="+52 55 1234 5678"
-                    className="h-9 text-xs"
-                  />
-                  <p className="text-[9px] text-gray-400 mt-0.5">Aparece como botón de contacto en el menú</p>
+                <div style={{ fontFamily: MONO, fontSize: 9.5, textTransform: 'uppercase', letterSpacing: '0.22em', color: '#909090', fontWeight: 700, marginBottom: 10 }}>Contacto</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700 }}>Número de WhatsApp</label>
+                  <input style={inputStyle} value={localBranding.whatsappNumero} onChange={e => setLocalBranding(p => ({ ...p, whatsappNumero: e.target.value }))} placeholder="+54 11 1234 5678" />
+                  <div style={{ fontFamily: MONO, fontSize: 9.5, color: '#909090' }}>Aparece como botón de contacto en el menú</div>
                 </div>
               </div>
 
               {/* Colores */}
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-2.5">Colores</p>
-                <div className="grid grid-cols-2 gap-2.5">
-                  <div>
-                    <label className="text-[10px] font-semibold text-gray-500 block mb-1">Color primario</label>
-                    <div className="flex items-center gap-2 h-9 rounded-lg border border-black/10 px-2 bg-white">
-                      <input
-                        type="color"
-                        value={localBranding.primaryColor}
-                        onChange={e => setLocalBranding(p => ({ ...p, primaryColor: e.target.value }))}
-                        className="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent"
-                      />
-                      <span className="text-xs font-mono text-gray-600">{localBranding.primaryColor}</span>
+                <div style={{ fontFamily: MONO, fontSize: 9.5, textTransform: 'uppercase', letterSpacing: '0.22em', color: '#909090', fontWeight: 700, marginBottom: 10 }}>Colores</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  {([
+                    { key: 'primaryColor', label: 'Color primario' },
+                    { key: 'accentColor',  label: 'Color acento' },
+                  ] as const).map(({ key, label }) => (
+                    <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <label style={{ fontFamily: MONO, fontSize: 10.5, textTransform: 'uppercase', letterSpacing: '0.18em', fontWeight: 700 }}>{label}</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 42, borderRadius: 10, border: '1px solid #E5E5E5', padding: '0 12px', background: '#fff' }}>
+                        <input
+                          type="color"
+                          value={localBranding[key]}
+                          onChange={e => setLocalBranding(p => ({ ...p, [key]: e.target.value }))}
+                          style={{ width: 24, height: 24, borderRadius: 6, cursor: 'pointer', border: 'none', padding: 0, background: 'transparent' }}
+                        />
+                        <span style={{ fontFamily: MONO, fontSize: 12, color: '#909090' }}>{localBranding[key]}</span>
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-semibold text-gray-500 block mb-1">Color acento</label>
-                    <div className="flex items-center gap-2 h-9 rounded-lg border border-black/10 px-2 bg-white">
-                      <input
-                        type="color"
-                        value={localBranding.accentColor}
-                        onChange={e => setLocalBranding(p => ({ ...p, accentColor: e.target.value }))}
-                        className="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent"
-                      />
-                      <span className="text-xs font-mono text-gray-600">{localBranding.accentColor}</span>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
 
               {/* Opciones */}
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-2.5">Opciones</p>
-                <div className="flex items-center justify-between h-10 px-3 rounded-lg border border-black/10 bg-white">
+                <div style={{ fontFamily: MONO, fontSize: 9.5, textTransform: 'uppercase', letterSpacing: '0.22em', color: '#909090', fontWeight: 700, marginBottom: 10 }}>Opciones</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 44, padding: '0 14px', borderRadius: 10, border: '1px solid #E5E5E5', background: '#fff' }}>
                   <div>
-                    <p className="text-xs font-semibold text-gray-900">Powered by WAITLESS</p>
-                    <p className="text-[9px] text-gray-400">Muestra el badge al pie del menú</p>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, letterSpacing: '-0.01em' }}>Powered by WAITLESS</div>
+                    <div style={{ fontFamily: MONO, fontSize: 10.5, color: '#909090', marginTop: 1 }}>Muestra el badge al pie del menú</div>
                   </div>
-                  <Switch
-                    checked={localBranding.poweredByWaitless}
-                    onCheckedChange={v => setLocalBranding(p => ({ ...p, poweredByWaitless: v }))}
-                    className="scale-75"
-                  />
+                  <Toggle on={localBranding.poweredByWaitless} onChange={() => setLocalBranding(p => ({ ...p, poweredByWaitless: !p.poweredByWaitless }))} />
                 </div>
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="px-5 py-4 border-t border-black/8">
+            {/* Modal footer */}
+            <div style={{ padding: '14px 20px', borderTop: '1px solid #E5E5E5' }}>
               <button
                 onClick={handleSaveBranding}
-                className="w-full h-11 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-opacity hover:opacity-85"
-                style={{ backgroundColor: '#000' }}
+                style={{
+                  width: '100%', height: 48, borderRadius: 999, border: 'none',
+                  background: customSaved ? '#BEEBBE' : '#000',
+                  color: customSaved ? '#0a3a0a' : '#fff',
+                  fontFamily: FONT, fontWeight: 700, fontSize: 14,
+                  cursor: 'pointer', letterSpacing: '-0.01em',
+                }}
               >
-                {customSaved
-                  ? <><Check className="h-4 w-4" />Guardado</>
-                  : <><Save className="h-4 w-4" />Guardar cambios</>
-                }
+                {customSaved ? '✓ Guardado' : 'Guardar cambios'}
               </button>
             </div>
           </div>
