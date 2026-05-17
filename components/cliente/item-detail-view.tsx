@@ -99,7 +99,7 @@ export function ItemDetailView({ item, onBack, onAddToCart, cartItemCount = 0, c
       </div>
 
       {/* Content */}
-      <main style={{ flex: 1, padding: '20px 16px 112px' }}>
+      <main style={{ flex: 1, padding: '20px 16px 88px' }}>
         <div style={{ marginBottom: 20 }}>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: '#000', margin: 0 }}>{item.nombre}</h1>
           {item.descripcion && (

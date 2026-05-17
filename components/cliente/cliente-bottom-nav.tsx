@@ -92,16 +92,16 @@ export function ClienteBottomNav({
                 aria-current={isActive ? 'page' : undefined}
                 style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-                  padding: '12px 16px', minHeight: 52, background: 'none', border: 'none',
+                  padding: '10px 12px', minHeight: 48, background: 'none', border: 'none',
                   cursor: 'pointer', position: 'relative', fontFamily: FONT,
                   color: isActive ? '#000' : isAlert ? '#000' : '#999',
-                  transition: 'color 0.15s',
+                  transition: 'color 0.15s', flex: 1,
                 }}
               >
                 <div style={{ position: 'relative' }}>
                   <span
                     style={{
-                      fontSize: 22, lineHeight: 1,
+                      fontSize: 20, lineHeight: 1,
                       display: 'block',
                       animation: isAlert ? 'pulse 1.5s infinite' : 'none',
                     }}

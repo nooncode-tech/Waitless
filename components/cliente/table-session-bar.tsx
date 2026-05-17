@@ -43,8 +43,8 @@ export function TableSessionBar({
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '8px 16px', background: '#f7f7f7', borderBottom: '1px solid #eee',
-      fontFamily: FONT,
+      padding: '6px 16px', background: '#f7f7f7', borderBottom: '1px solid #eee',
+      fontFamily: FONT, minHeight: 40,
     }}>
       {/* Identity */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
@@ -65,9 +65,9 @@ export function TableSessionBar({
       {/* Status + bill action */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
         {status && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 500, color: status.color }}>
-            <span>{status.symbol}</span>
-            <span>{status.text}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: status.color, maxWidth: 160, overflow: 'hidden' }}>
+            <span style={{ flexShrink: 0 }}>{status.symbol}</span>
+            <span style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{status.text}</span>
           </div>
         )}
         {!isPaid && hasActivity && onViewBill && (

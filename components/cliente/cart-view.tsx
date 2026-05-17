@@ -54,7 +54,7 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
   }
 
   const inputStyle: React.CSSProperties = {
-    flex: 1, fontSize: 13, background: 'transparent',
+    flex: 1, fontSize: 14, background: 'transparent',
     outline: 'none', border: 'none', color: '#000', fontFamily: FONT,
   }
 
@@ -143,18 +143,18 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
                 </div>
 
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 4 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <h3 style={{ fontSize: 13, fontWeight: 600, color: '#000', margin: 0, lineHeight: 1.3 }}>
+                      <h3 style={{ fontSize: 14, fontWeight: 600, color: '#000', margin: 0, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {item.menuItem.nombre}
                       </h3>
                       {item.extras && item.extras.length > 0 && (
-                        <p style={{ fontSize: 11, color: '#888', marginTop: 2 }}>
+                        <p style={{ fontSize: 12, color: '#888', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           + {item.extras.map(e => e.nombre).join(', ')}
                         </p>
                       )}
                       {item.notas && (
-                        <p style={{ fontSize: 11, color: '#888', marginTop: 2, fontStyle: 'italic' }}>
+                        <p style={{ fontSize: 12, color: '#888', marginTop: 2, fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           &quot;{item.notas}&quot;
                         </p>
                       )}

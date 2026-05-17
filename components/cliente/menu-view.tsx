@@ -72,15 +72,15 @@ export function MenuView({
       <header style={{
         position: 'sticky', top: 0, zIndex: 50,
         background: '#fff', borderBottom: '1px solid #f0f0f0',
-        padding: '16px 16px 12px',
+        padding: '10px 16px 8px',
       }}>
         {/* Restaurant name */}
-        <div style={{ marginBottom: 12 }}>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#000', margin: 0, lineHeight: 1.2 }}>
+        <div style={{ marginBottom: 8 }}>
+          <h1 style={{ fontSize: 17, fontWeight: 700, color: '#000', margin: 0, lineHeight: 1.25, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
             {config.restaurantName ?? `Mesa ${mesa}`}
           </h1>
           {config.descripcion && (
-            <p style={{ fontSize: 12, color: '#888', marginTop: 3, lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+            <p style={{ fontSize: 11, color: '#999', marginTop: 2, lineHeight: 1.4, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
               {config.descripcion}
             </p>
           )}
@@ -89,30 +89,30 @@ export function MenuView({
         {/* Ordering blocked banner */}
         {!canOrder && (
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            padding: '10px 12px', background: '#fff8e1',
-            border: '1px solid #ffe082', borderRadius: 12, marginBottom: 12,
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '8px 10px', background: '#fff8e1',
+            border: '1px solid #ffe082', borderRadius: 10, marginBottom: 8,
           }}>
-            <span style={{ fontSize: 15 }}>⚠</span>
+            <span style={{ fontSize: 13, flexShrink: 0 }}>⚠</span>
             <p style={{ fontSize: 12, color: '#b45309', fontWeight: 600, margin: 0 }}>
-              Pago en proceso — no puedes agregar más platillos.
+              Pago en proceso — no se pueden agregar platillos.
             </p>
           </div>
         )}
 
         {/* Category chips */}
         <div style={{
-          display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none',
-          marginLeft: -16, marginRight: -16, paddingLeft: 16, paddingRight: 16, marginBottom: 12,
+          display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none',
+          marginLeft: -16, marginRight: -16, paddingLeft: 16, paddingRight: 16, marginBottom: 8,
+          msOverflowStyle: 'none',
         }}>
           <button
             onClick={() => setSelectedCategory(null)}
             style={{
-              padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+              padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600,
               border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: FONT,
               background: !selectedCategory ? '#000' : '#f0f0f0',
               color: !selectedCategory ? '#fff' : '#666',
-              transition: 'background 0.15s',
             }}
           >
             Todo
@@ -122,11 +122,10 @@ export function MenuView({
               key={cat.id}
               onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
               style={{
-                padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600,
                 border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, fontFamily: FONT,
                 background: selectedCategory === cat.id ? '#000' : '#f0f0f0',
                 color: selectedCategory === cat.id ? '#fff' : '#666',
-                transition: 'background 0.15s',
               }}
             >
               {cat.nombre}
@@ -139,7 +138,7 @@ export function MenuView({
           <label htmlFor="menu-search" style={{ position: 'absolute', left: -9999 }}>Buscar platillos</label>
           <span style={{
             position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-            fontSize: 16, color: '#aaa', pointerEvents: 'none',
+            fontSize: 15, color: '#bbb', pointerEvents: 'none',
           }} aria-hidden="true">⌕</span>
           <input
             id="menu-search"
@@ -148,8 +147,8 @@ export function MenuView({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
-              width: '100%', height: 40, paddingLeft: 36, paddingRight: 12,
-              background: '#f5f5f5', border: 'none', borderRadius: 12,
+              width: '100%', height: 36, paddingLeft: 34, paddingRight: 12,
+              background: '#f5f5f5', border: 'none', borderRadius: 10,
               fontSize: 14, fontFamily: FONT, outline: 'none',
               color: '#000', boxSizing: 'border-box',
             }}
@@ -158,18 +157,18 @@ export function MenuView({
       </header>
 
       {/* Menu content */}
-      <main style={{ flex: 1, padding: '16px 16px 144px' }}>
+      <main style={{ flex: 1, padding: '12px 16px 20px' }}>
         {Object.entries(itemsByCategory).map(([category, items]) => (
-          <section key={category} style={{ marginBottom: 32 }}>
+          <section key={category} style={{ marginBottom: 24 }}>
             <h2 style={{
-              fontSize: 15, fontWeight: 700, color: '#000',
-              marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8,
+              fontSize: 13, fontWeight: 700, color: '#000', textTransform: 'uppercase', letterSpacing: '0.05em',
+              marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6,
             }}>
               <span aria-hidden="true">{getCategoryEmoji(category)}</span>
               {getCategoryName(category)}
             </h2>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {items.map((item) => {
                 const availability = getItemAvailability(item)
                 const isAvailable = availability.canPrepare
@@ -188,8 +187,8 @@ export function MenuView({
                         : `${item.nombre}, ${unavailableLabel}`
                     }
                     style={{
-                      display: 'flex', alignItems: 'center', gap: 16,
-                      padding: 12, borderRadius: 18,
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '10px 8px', borderRadius: 14,
                       cursor: isAvailable && canOrder ? 'pointer' : 'default',
                       opacity: !isAvailable ? 0.5 : 1,
                       transition: 'background 0.12s',
@@ -207,7 +206,7 @@ export function MenuView({
                   >
                     {/* Image */}
                     <div style={{
-                      width: 96, height: 96, borderRadius: 18, flexShrink: 0,
+                      width: 80, height: 80, borderRadius: 14, flexShrink: 0,
                       overflow: 'hidden', background: '#f0f0f0',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       position: 'relative', filter: !isAvailable ? 'grayscale(1)' : 'none',
@@ -221,16 +220,16 @@ export function MenuView({
                           loading="lazy"
                         />
                       ) : (
-                        <span style={{ fontSize: 36 }} aria-hidden="true">{getCategoryEmoji(item.categoria)}</span>
+                        <span style={{ fontSize: 30 }} aria-hidden="true">{getCategoryEmoji(item.categoria)}</span>
                       )}
                       {!isAvailable && (
                         <div style={{
                           position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.8)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 18,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 14,
                         }}>
                           <span style={{
                             fontSize: 10, fontWeight: 700, color: '#dc2626',
-                            background: '#fef2f2', padding: '4px 8px', borderRadius: 8,
+                            background: '#fef2f2', padding: '3px 6px', borderRadius: 6,
                             textAlign: 'center', lineHeight: 1.3,
                           }}>
                             {unavailableLabel}
@@ -238,11 +237,11 @@ export function MenuView({
                         </div>
                       )}
                       {showLowStock && (
-                        <div style={{ position: 'absolute', bottom: 4, left: 4, right: 4 }}>
+                        <div style={{ position: 'absolute', bottom: 3, left: 3, right: 3 }}>
                           <span style={{
                             display: 'block', textAlign: 'center', fontSize: 9, fontWeight: 700,
-                            color: '#b45309', background: '#fef3c7', borderRadius: 6,
-                            padding: '2px 4px', lineHeight: 1.3,
+                            color: '#b45309', background: '#fef3c7', borderRadius: 5,
+                            padding: '2px 3px', lineHeight: 1.3,
                           }}>
                             ¡Últimos {availability.maxPortions}!
                           </span>
@@ -251,29 +250,29 @@ export function MenuView({
                     </div>
 
                     {/* Content */}
-                    <div style={{ flex: 1, minWidth: 0, paddingTop: 4, paddingBottom: 4 }}>
-                      <h3 style={{ fontSize: 16, fontWeight: 600, color: '#000', margin: 0, lineHeight: 1.2 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h3 style={{ fontSize: 15, fontWeight: 600, color: '#000', margin: 0, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {item.nombre}
                       </h3>
                       {item.descripcion && (
                         <p style={{
-                          fontSize: 13, color: '#888', marginTop: 4, lineHeight: 1.5,
+                          fontSize: 12, color: '#999', marginTop: 2, lineHeight: 1.4,
                           overflow: 'hidden', display: '-webkit-box',
                           WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
                         }}>
                           {item.descripcion}
                         </p>
                       )}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
-                        <p style={{ fontSize: 16, fontWeight: 700, color: isAvailable ? '#000' : '#aaa', margin: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+                        <p style={{ fontSize: 15, fontWeight: 700, color: isAvailable ? '#000' : '#aaa', margin: 0 }}>
                           {formatPrice(item.precio)}
                         </p>
                         {isAvailable && canOrder && (
                           <button
                             style={{
-                              width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              background: '#000', color: '#fff', border: 'none', borderRadius: 12,
-                              fontSize: 20, cursor: 'pointer', transition: 'opacity 0.15s', fontFamily: FONT,
+                              width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              background: '#000', color: '#fff', border: 'none', borderRadius: 10,
+                              fontSize: 18, cursor: 'pointer', fontFamily: FONT, flexShrink: 0,
                             }}
                             aria-label={`Agregar ${item.nombre}`}
                             onClick={(e) => {
