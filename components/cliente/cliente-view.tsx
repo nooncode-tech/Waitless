@@ -390,7 +390,7 @@ export function ClienteView({ mesa, onBack, clienteUser }: ClienteViewProps) {
         </div>
       )}
 
-      <div style={{ paddingBottom: showBottomNav ? 96 : 0 }}>
+      <div style={{ paddingBottom: showBottomNav ? 124 : 0 }}>
         {renderScreen()}
       </div>
 

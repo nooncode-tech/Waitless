@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { cn } from '@/lib/utils'
 
 const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
 const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
@@ -276,7 +275,6 @@ export function PaymentSubmitView({
             <button
               key={m.id}
               onClick={() => handleSelectMethod(m)}
-              className={cn()}
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '16px', border: '1.5px solid #e5e5e5', borderRadius: 20,

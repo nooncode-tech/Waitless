@@ -64,10 +64,16 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
     padding: '0 12px', gap: 8, height: 44,
   }
 
+  const outerStyle: React.CSSProperties = {
+    height: '100svh', background: '#fff', display: 'flex',
+    flexDirection: 'column', maxWidth: 480, margin: '0 auto',
+    fontFamily: FONT, overflow: 'hidden',
+  }
+
   if (cart.length === 0) {
     return (
-      <div style={{ minHeight: '100svh', background: '#fff', display: 'flex', flexDirection: 'column', maxWidth: 480, margin: '0 auto', fontFamily: FONT }}>
-        <header style={{ padding: '12px 16px 8px' }}>
+      <div style={{ ...outerStyle, height: '100svh' }}>
+        <header style={{ flexShrink: 0, padding: '12px 16px 8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <button onClick={onBack} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#000' }}>
               ←
@@ -98,10 +104,11 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
   }
 
   return (
-    <div style={{ minHeight: '100svh', background: '#fff', display: 'flex', flexDirection: 'column', maxWidth: 480, margin: '0 auto', fontFamily: FONT }}>
+    <div style={outerStyle}>
+      {/* Header — fixed within the column */}
       <header style={{
-        position: 'sticky', top: 0, zIndex: 50,
-        background: '#fff', padding: '12px 16px', borderBottom: '1px solid #f0f0f0',
+        flexShrink: 0, background: '#fff',
+        padding: '12px 16px', borderBottom: '1px solid #f0f0f0',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <button onClick={onBack} style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: '#000' }}>
@@ -115,16 +122,17 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
         </div>
       </header>
 
-      {/* Cart Items */}
-      <main style={{ flex: 1, padding: '16px 16px 192px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+      {/* Scrollable content — cart items + form */}
+      <main style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' as React.CSSProperties['WebkitOverflowScrolling'], padding: '0 16px 16px' }}>
+
+        {/* Cart Items */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
           {cart.map((item) => {
             const extrasTotal = item.extras?.reduce((e, ex) => e + ex.precio, 0) || 0
             const itemTotal = (item.menuItem.precio + extrasTotal) * item.cantidad
 
             return (
               <div key={item.id} style={{ display: 'flex', gap: 12, paddingTop: 12, paddingBottom: 12, borderBottom: '1px solid #f0f0f0' }}>
-                {/* Image */}
                 <div style={{ width: 64, height: 64, borderRadius: 14, overflow: 'hidden', flexShrink: 0, background: '#f0f0f0' }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -136,7 +144,7 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
 
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <h3 style={{ fontSize: 13, fontWeight: 600, color: '#000', margin: 0, lineHeight: 1.3 }}>
                         {item.menuItem.nombre}
                       </h3>
@@ -152,7 +160,7 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
                       )}
                     </div>
                     <button
-                      style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: '#ccc', fontSize: 16, lineHeight: 1 }}
+                      style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: '#ccc', fontSize: 16, lineHeight: 1, flexShrink: 0 }}
                       onClick={() => removeFromCart(item.id)}
                       aria-label="Eliminar"
                     >
@@ -161,7 +169,6 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
-                    {/* Quantity controls */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <button
                         style={{
@@ -202,105 +209,84 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
             )
           })}
         </div>
-      </main>
-
-      {/* Bottom summary */}
-      <div style={{
-        position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-        width: '100%', maxWidth: 480, background: '#fff',
-        borderTop: '1px solid #f0f0f0', padding: '12px 16px',
-        paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
-        display: 'flex', flexDirection: 'column', gap: 10, boxSizing: 'border-box',
-      }}>
 
         {/* Loyalty widget */}
-        {!loyaltyPhone && !showPhoneInput && (
-          <button
-            onClick={() => setShowPhoneInput(true)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '8px 12px', border: '1.5px solid #e5e5e5',
-              borderRadius: 12, fontSize: 12, color: '#888', background: 'none',
-              cursor: 'pointer', fontFamily: FONT, textAlign: 'left',
-              transition: 'border-color 0.15s',
-            }}
-          >
-            <span style={{ fontSize: 14 }}>◈</span>
-            <span>Acumula puntos — identifícate con tu teléfono</span>
-          </button>
-        )}
-
-        {showPhoneInput && (
-          <div style={{ display: 'flex', gap: 8 }}>
-            <div style={{ ...inputRowStyle, flex: 1 }}>
-              <span style={{ fontSize: 14, color: '#aaa' }}>✆</span>
-              <input
-                type="tel"
-                value={phoneInput}
-                onChange={e => setPhoneInput(e.target.value)}
-                placeholder="Número de teléfono"
-                style={inputStyle}
-                onKeyDown={e => e.key === 'Enter' && handleIdentify()}
-                autoFocus
-              />
-            </div>
+        <div style={{ marginTop: 16 }}>
+          {!loyaltyPhone && !showPhoneInput && (
             <button
-              onClick={handleIdentify}
-              disabled={phoneInput.trim().length < 8}
+              onClick={() => setShowPhoneInput(true)}
               style={{
-                padding: '0 14px', height: 44, background: phoneInput.trim().length >= 8 ? '#000' : '#ccc',
-                color: '#fff', border: 'none', borderRadius: 12, fontSize: 12,
-                fontWeight: 700, cursor: 'pointer', fontFamily: FONT,
+                display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                padding: '10px 12px', border: '1.5px solid #e5e5e5',
+                borderRadius: 12, fontSize: 12, color: '#888', background: 'none',
+                cursor: 'pointer', fontFamily: FONT, textAlign: 'left',
               }}
             >
-              OK
-            </button>
-            <button
-              onClick={() => setShowPhoneInput(false)}
-              style={{
-                padding: '0 12px', height: 44, border: '1.5px solid #e5e5e5',
-                borderRadius: 12, fontSize: 14, color: '#888', background: 'none',
-                cursor: 'pointer', fontFamily: FONT,
-              }}
-            >
-              ✕
-            </button>
-          </div>
-        )}
-
-        {customer && (
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '8px 12px', background: '#f0fdf0', border: '1px solid #bbf7b0',
-            borderRadius: 12,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 14 }}>◈</span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#166534' }}>
-                {customer.puntos} puntos acumulados
-              </span>
-            </div>
-            {puntosGanados > 0 && (
-              <span style={{ fontSize: 11, color: '#166534' }}>+{puntosGanados} con este pedido</span>
-            )}
-          </div>
-        )}
+              <span>Acumula puntos — identifícate con tu teléfono</span>
+            </button>
+          )}
 
-        {/* Totals */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 14, color: '#888' }}>Subtotal</span>
-            <span style={{ fontSize: 14, color: '#888' }}>{formatPrice(subtotal)}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 16, fontWeight: 700, color: '#000' }}>Total</span>
-            <span style={{ fontSize: 16, fontWeight: 700, color: '#000' }}>{formatPrice(subtotal)}</span>
-          </div>
+          {showPhoneInput && (
+            <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ ...inputRowStyle, flex: 1 }}>
+                <span style={{ fontSize: 14, color: '#aaa' }}>✆</span>
+                <input
+                  type="tel"
+                  value={phoneInput}
+                  onChange={e => setPhoneInput(e.target.value)}
+                  placeholder="Número de teléfono"
+                  style={inputStyle}
+                  onKeyDown={e => e.key === 'Enter' && handleIdentify()}
+                  autoFocus
+                />
+              </div>
+              <button
+                onClick={handleIdentify}
+                disabled={phoneInput.trim().length < 8}
+                style={{
+                  padding: '0 14px', height: 44, background: phoneInput.trim().length >= 8 ? '#000' : '#ccc',
+                  color: '#fff', border: 'none', borderRadius: 12, fontSize: 12,
+                  fontWeight: 700, cursor: 'pointer', fontFamily: FONT,
+                }}
+              >
+                OK
+              </button>
+              <button
+                onClick={() => setShowPhoneInput(false)}
+                style={{
+                  padding: '0 12px', height: 44, border: '1.5px solid #e5e5e5',
+                  borderRadius: 12, fontSize: 14, color: '#888', background: 'none',
+                  cursor: 'pointer', fontFamily: FONT,
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {customer && (
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '8px 12px', background: '#f0fdf0', border: '1px solid #bbf7b0',
+              borderRadius: 12, marginTop: showPhoneInput ? 8 : 0,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 14 }}>◈</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#166534' }}>
+                  {customer.puntos} puntos acumulados
+                </span>
+              </div>
+              {puntosGanados > 0 && (
+                <span style={{ fontSize: 11, color: '#166534' }}>+{puntosGanados} con este pedido</span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Client data */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
+        <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>
             Tus datos <span style={{ fontWeight: 400, textTransform: 'none' }}>(opcional)</span>
           </p>
           <div style={inputRowStyle}>
@@ -322,10 +308,10 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
         </div>
 
         {/* Seat selector */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#888' }}>
             <span>⊞</span>
-            <span>¿En qué asiento estás? El mesero te lo lleva ahí. <span style={{ opacity: 0.6 }}>(opcional)</span></span>
+            <span>¿En qué asiento estás? <span style={{ opacity: 0.6 }}>(opcional)</span></span>
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {[1,2,3,4,5,6,7,8].map(n => (
@@ -338,12 +324,31 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
                   background: seatNumber === n ? '#000' : '#fff',
                   color: seatNumber === n ? '#fff' : '#000',
                   borderColor: seatNumber === n ? '#000' : '#e5e5e5',
-                  transition: 'background 0.12s, border-color 0.12s',
                 }}
               >
                 {n}
               </button>
             ))}
+          </div>
+        </div>
+      </main>
+
+      {/* Bottom summary — always visible, non-scrolling */}
+      <div style={{
+        flexShrink: 0, background: '#fff',
+        borderTop: '1px solid #f0f0f0', padding: '12px 16px',
+        paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
+        display: 'flex', flexDirection: 'column', gap: 10,
+      }}>
+        {/* Totals */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 14, color: '#888' }}>Subtotal</span>
+            <span style={{ fontSize: 14, color: '#888' }}>{formatPrice(subtotal)}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: '#000' }}>Total</span>
+            <span style={{ fontSize: 16, fontWeight: 700, color: '#000' }}>{formatPrice(subtotal)}</span>
           </div>
         </div>
 
@@ -361,7 +366,7 @@ export function CartView({ mesa, onBack, onOrderConfirmed, loyaltyPhone, onSetLo
         <button
           style={{
             background: 'none', border: 'none', color: '#888', fontSize: 14,
-            cursor: 'pointer', padding: '6px 0', fontFamily: FONT,
+            cursor: 'pointer', padding: '4px 0', fontFamily: FONT,
           }}
           onClick={onBack}
         >
