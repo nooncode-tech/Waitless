@@ -103,6 +103,16 @@ export default function LandingPage() {
             </a>
           </div>
         </div>
+        {/* Mobile login row — visible only on small screens */}
+        <div className="md:hidden border-t border-black/10 flex">
+          <a href="/consumidor" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[13px] font-medium-tight text-black/65 hover:text-black">
+            Soy cliente <span className="arr">→</span>
+          </a>
+          <span className="border-r border-black/10"></span>
+          <a href="/restaurante" className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[13px] font-medium-tight text-black/65 hover:text-black">
+            Soy restaurante <span className="arr">→</span>
+          </a>
+        </div>
       </header>
       
       {/* ─────────────────── HERO ─────────────────── */}
@@ -829,21 +839,21 @@ export default function LandingPage() {
               </div>
             </div>
       
-            <div className="col-span-12 md:col-span-7 grid grid-cols-4 gap-6 md:border-l border-white/15 md:pl-8">
+            <div className="col-span-12 md:col-span-7 grid grid-cols-2 md:grid-cols-4 gap-6 md:border-l border-white/15 md:pl-8">
               <div>
-                <div className="big-num text-[52px]">340<span style={{ color: '#BEEBBE' }}>+</span></div>
+                <div className="big-num text-[40px] md:text-[52px]">340<span style={{ color: '#BEEBBE' }}>+</span></div>
                 <div className="text-[11px] text-white/55 mono mt-2 uppercase tracking-[0.16em]">restaurantes</div>
               </div>
               <div>
-                <div className="big-num text-[52px]">$8.4<span className="text-[28px] align-top" style={{ color: '#BEEBBE' }}>M</span></div>
+                <div className="big-num text-[40px] md:text-[52px]">$8.4<span className="text-[22px] md:text-[28px] align-top" style={{ color: '#BEEBBE' }}>M</span></div>
                 <div className="text-[11px] text-white/55 mono mt-2 uppercase tracking-[0.16em]">/ mes proc.</div>
               </div>
               <div>
-                <div className="big-num text-[52px]">11<span className="text-[28px] align-top">s</span></div>
+                <div className="big-num text-[40px] md:text-[52px]">11<span className="text-[22px] md:text-[28px] align-top">s</span></div>
                 <div className="text-[11px] text-white/55 mono mt-2 uppercase tracking-[0.16em]">cobro avg</div>
               </div>
               <div>
-                <div className="big-num text-[52px]" style={{ color: '#BEEBBE' }}>99.98<span className="text-[28px] align-top">%</span></div>
+                <div className="big-num text-[40px] md:text-[52px]" style={{ color: '#BEEBBE' }}>99.98<span className="text-[22px] md:text-[28px] align-top">%</span></div>
                 <div className="text-[11px] text-white/55 mono mt-2 uppercase tracking-[0.16em]">uptime 90d</div>
               </div>
             </div>
