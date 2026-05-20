@@ -342,11 +342,29 @@ export function RepartidorView({ onBack }: RepartidorViewProps) {
                 </button>
               )}
               {selectedOrder.status === 'en_camino' && (
-                <button
-                  onClick={() => { updateOrderStatus(selectedOrder.id, 'entregado'); notifyConsumerDelivery(selectedOrder.id, 'entregado'); setSelectedOrderId(null) }}
-                  style={{ ...btnBase, width: '100%', height: 52, fontSize: 15, background: '#BEEBBE', color: '#0a3a0a', borderRadius: 999 }}>
-                  Confirmar entrega →
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {selectedOrder.direccion && (
+                    <button
+                      onClick={() => {
+                        if (navigator.geolocation) {
+                          navigator.geolocation.getCurrentPosition(
+                            pos => window.open(`https://maps.google.com/maps?saddr=${pos.coords.latitude},${pos.coords.longitude}&daddr=${encodeURIComponent(selectedOrder.direccion!)}`, '_blank'),
+                            () => window.open(`https://maps.google.com/?q=${encodeURIComponent(selectedOrder.direccion!)}`, '_blank')
+                          )
+                        } else {
+                          window.open(`https://maps.google.com/?q=${encodeURIComponent(selectedOrder.direccion!)}`, '_blank')
+                        }
+                      }}
+                      style={{ ...btnBase, width: '100%', height: 48, fontSize: 14, background: '#F4F4F2', color: '#000', borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                      📍 Abrir navegación
+                    </button>
+                  )}
+                  <button
+                    onClick={() => { updateOrderStatus(selectedOrder.id, 'entregado'); notifyConsumerDelivery(selectedOrder.id, 'entregado'); setSelectedOrderId(null) }}
+                    style={{ ...btnBase, width: '100%', height: 52, fontSize: 15, background: '#BEEBBE', color: '#0a3a0a', borderRadius: 999 }}>
+                    Confirmar entrega →
+                  </button>
+                </div>
               )}
               {selectedOrder.status !== 'listo' && selectedOrder.status !== 'en_camino' && (
                 <div style={{ textAlign: 'center', fontFamily: MONO, fontSize: 12, color: '#909090', padding: '12px 0' }}>

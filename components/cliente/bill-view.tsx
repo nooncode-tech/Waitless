@@ -37,10 +37,10 @@ export function BillView({ sessionId, mesa, onBack, onShowRewards, onPayNow }: B
 
   if (!session) {
     return (
-      <div style={{ minHeight: '100svh', background: '#fff', display: 'flex', flexDirection: 'column', maxWidth: 520, margin: '0 auto', fontFamily: FONT }}>
+      <div style={{ minHeight: '100svh', background: '#fff', display: 'flex', flexDirection: 'column', maxWidth: 480, margin: '0 auto', fontFamily: FONT }}>
         <header style={{ padding: '16px 20px 12px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: 999, background: '#F4F4F2', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L4 7l4.5 4" stroke="#000" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: 999, background: '#F4F4F2', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#000' }}>
+            ←
           </button>
           <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.02em', color: '#000' }}>Mi Cuenta · Mesa {mesa}</span>
         </header>
@@ -93,13 +93,13 @@ export function BillView({ sessionId, mesa, onBack, onShowRewards, onPayNow }: B
   ]
 
   return (
-    <div style={{ minHeight: '100svh', background: '#F4F4F2', display: 'flex', flexDirection: 'column', maxWidth: 520, margin: '0 auto', fontFamily: FONT }}>
+    <div style={{ minHeight: '100svh', background: '#F4F4F2', display: 'flex', flexDirection: 'column', maxWidth: 480, margin: '0 auto', fontFamily: FONT }}>
 
       {/* Header */}
       <header style={{ background: '#fff', borderBottom: '1px solid #E5E5E5', position: 'sticky', top: 0, zIndex: 20 }}>
         <div style={{ padding: '0 20px', height: 56, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: 999, background: '#F4F4F2', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L4 7l4.5 4" stroke="#000" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: 999, background: '#F4F4F2', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 18, color: '#000' }}>
+            ←
           </button>
           <div>
             <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.02em', color: '#000', lineHeight: 1 }}>Mi Cuenta</div>
@@ -276,7 +276,7 @@ export function BillView({ sessionId, mesa, onBack, onShowRewards, onPayNow }: B
 
       {/* Bottom: totals + CTA */}
       {session.orders.length > 0 && (
-        <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 520, background: '#fff', borderTop: '1px solid #E5E5E5', padding: '16px 20px 0', paddingBottom: 'calc(16px + env(safe-area-inset-bottom))', boxSizing: 'border-box' }}>
+        <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 480, background: '#fff', borderTop: '1px solid #E5E5E5', padding: '16px 20px 0', paddingBottom: 'calc(16px + env(safe-area-inset-bottom))', boxSizing: 'border-box' }}>
           {/* Totals */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', paddingBottom: 5, backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.2) 1px, transparent 1.5px)', backgroundPosition: 'bottom', backgroundSize: '6px 4px', backgroundRepeat: 'repeat-x' }}>

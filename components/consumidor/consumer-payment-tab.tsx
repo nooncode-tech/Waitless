@@ -302,46 +302,28 @@ export function ConsumerPaymentTab({ token }: { token: string }) {
       </div>
 
       {/* PayPal */}
-      <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 16, padding: 20 }}>
+      <div style={{ background: '#fff', border: '1px solid #E5E5E5', borderRadius: 16, padding: 20, opacity: 0.6 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: '#003087', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <span style={{ color: '#fff', fontWeight: 700, fontSize: 11, letterSpacing: '-0.02em' }}>PP</span>
           </div>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: '-0.02em', color: '#000' }}>PayPal</div>
-            <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.4)', marginTop: 2 }}>Vinculá tu cuenta de PayPal</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ fontWeight: 700, fontSize: 14, letterSpacing: '-0.02em', color: '#000' }}>PayPal</div>
+              <span style={{ fontFamily: MONO, fontSize: 9.5, color: 'rgba(0,0,0,0.4)', background: '#F4F4F2', padding: '2px 7px', borderRadius: 3 }}>Próximamente</span>
+            </div>
+            <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(0,0,0,0.4)', marginTop: 2 }}>Integración de pago en desarrollo</div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <input
-            type="email"
-            placeholder="tu@email.com"
-            value={paypalDraft}
-            onChange={e => setPaypalDraft(e.target.value)}
-            style={{ width: '100%', height: 48, padding: '0 16px', border: '1px solid #E5E5E5', borderRadius: 10, fontSize: 14, fontFamily: FONT, color: '#000', background: '#F4F4F2', outline: 'none', boxSizing: 'border-box' }}
-          />
-
-          {paypalSuccess && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#0a3a0a', background: '#BEEBBE', borderRadius: 10, padding: '10px 14px' }}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#0a3a0a" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              Email de PayPal guardado
-            </div>
-          )}
-
-          {paypalDraft !== paypalEmail && (
-            <button
-              onClick={handleSavePaypal}
-              disabled={paypalSaving || !paypalDraft.includes('@')}
-              style={{ width: '100%', height: 48, background: paypalSaving || !paypalDraft.includes('@') ? '#E5E5E5' : '#003087', color: paypalSaving || !paypalDraft.includes('@') ? '#999' : '#fff', borderRadius: 999, border: 'none', fontWeight: 700, fontSize: 13, fontFamily: FONT, cursor: paypalSaving || !paypalDraft.includes('@') ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              {paypalSaving
-                ? <span style={{ width: 16, height: 16, border: '2px solid #999', borderTopColor: '#fff', borderRadius: 999, animation: 'con-spin 0.7s linear infinite', display: 'inline-block' }} />
-                : 'Guardar email de PayPal'
-              }
-            </button>
-          )}
-        </div>
+        <input
+          type="email"
+          placeholder="tu@email.com"
+          disabled
+          value=""
+          onChange={() => {}}
+          style={{ width: '100%', height: 48, padding: '0 16px', border: '1px solid #E5E5E5', borderRadius: 10, fontSize: 14, fontFamily: FONT, color: '#999', background: '#F4F4F2', outline: 'none', boxSizing: 'border-box', cursor: 'not-allowed' }}
+        />
       </div>
 
       {/* Transferencia bancaria */}

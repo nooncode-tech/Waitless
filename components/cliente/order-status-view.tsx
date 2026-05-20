@@ -46,10 +46,10 @@ export function OrderStatusView({ orders, mesa, onBack }: OrderStatusViewProps) 
 
   if (orders.length === 0) {
     return (
-      <div style={{ minHeight: '100svh', background: '#fff', display: 'flex', flexDirection: 'column', maxWidth: 520, margin: '0 auto', fontFamily: FONT }}>
+      <div style={{ minHeight: '100svh', background: '#fff', display: 'flex', flexDirection: 'column', maxWidth: 480, margin: '0 auto', fontFamily: FONT }}>
         <header style={{ padding: '16px 20px 12px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: 999, background: '#F4F4F2', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L4 7l4.5 4" stroke="#000" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: 999, background: '#F4F4F2', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#000' }}>
+            ←
           </button>
           <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.02em', color: '#000' }}>Estado · Mesa {mesa}</span>
         </header>
@@ -68,12 +68,12 @@ export function OrderStatusView({ orders, mesa, onBack }: OrderStatusViewProps) 
   }
 
   return (
-    <div style={{ minHeight: '100svh', background: '#F4F4F2', display: 'flex', flexDirection: 'column', maxWidth: 520, margin: '0 auto', fontFamily: FONT }}>
+    <div style={{ minHeight: '100svh', background: '#F4F4F2', display: 'flex', flexDirection: 'column', maxWidth: 480, margin: '0 auto', fontFamily: FONT }}>
       {/* Header */}
       <header style={{ background: '#fff', borderBottom: '1px solid #E5E5E5', position: 'sticky', top: 0, zIndex: 20 }}>
         <div style={{ padding: '0 20px', height: 56, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: 999, background: '#F4F4F2', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L4 7l4.5 4" stroke="#000" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: 999, background: '#F4F4F2', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 18, color: '#000' }}>
+            ←
           </button>
           <div>
             <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.02em', color: '#000', lineHeight: 1 }}>Estado de pedidos</div>

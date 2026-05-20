@@ -145,31 +145,29 @@ export default function TrackingPage() {
 
       <div style={{ maxWidth: 420, margin: '0 auto', padding: '20px 16px 40px' }}>
 
-        {/* ── Map placeholder ── */}
-        <div className="trk-map" style={{ height: 200, marginBottom: 20, position: 'relative' }}>
-          <div className="trk-radar" />
-          {/* Driver pin */}
-          <div className="trk-pin trk-pin-driver">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <circle cx="7" cy="7" r="3" fill={MINT_DEEP} />
-            </svg>
-          </div>
-          {/* Dest pin */}
-          <div className="trk-pin trk-pin-dest">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M7 1c-2.2 0-4 1.8-4 4 0 2.7 4 8 4 8s4-5.3 4-8c0-2.2-1.8-4-4-4Z" stroke="#000" strokeWidth="1.4"/>
-            </svg>
-          </div>
-          {/* ETA overlay */}
-          <div style={{ position: 'absolute', top: 14, left: 14, right: 14, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', color: '#fff' }}>
+        {/* ── Status card ── */}
+        <div style={{ background: '#000', borderRadius: 20, padding: '18px 20px 14px', marginBottom: 20, position: 'relative', overflow: 'hidden', minHeight: 110 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: data.direccion ? 14 : 0 }}>
             <div>
-              <div style={{ fontFamily: FONT, fontSize: 9.5, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'rgba(255,255,255,0.7)' }}>Estado</div>
-              <div className="trk-eta" style={{ fontSize: 26, lineHeight: 1, marginTop: 4, color: '#fff', fontFamily: FONT, fontWeight: 700, letterSpacing: '-0.04em' }}>
+              <div style={{ fontFamily: FONT, fontSize: 9.5, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>Estado actual</div>
+              <div style={{ fontSize: 26, lineHeight: 1, color: '#fff', fontFamily: FONT, fontWeight: 700, letterSpacing: '-0.04em' }}>
                 {STEPS[Math.max(currentIdx, 0)]?.label ?? '—'}
               </div>
             </div>
-            <div className="trk-chip trk-chip-mint">En vivo</div>
+            <div style={{ background: MINT, color: MINT_DEEP, fontSize: 9.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 10px', borderRadius: 999, flexShrink: 0 }}>En vivo</div>
           </div>
+          {data.direccion && (
+            <a
+              href={`https://maps.google.com/?q=${encodeURIComponent(data.direccion)}`}
+              target="_blank" rel="noopener noreferrer"
+              style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: '9px 12px', textDecoration: 'none', color: '#fff' }}
+            >
+              <span style={{ fontSize: 13 }}>📍</span>
+              <span style={{ fontSize: 12, fontWeight: 600, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{data.direccion}</span>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', flexShrink: 0 }}>Maps →</span>
+            </a>
+          )}
+          <div style={{ position: 'absolute', bottom: 10, right: 14, fontSize: 10, color: 'rgba(255,255,255,0.25)', fontFamily: 'ui-monospace, monospace' }}>mapa · próximamente</div>
         </div>
 
         {/* ── Live status ── */}

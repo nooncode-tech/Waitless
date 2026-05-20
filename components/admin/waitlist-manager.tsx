@@ -214,6 +214,16 @@ function WaitlistCard({ entry, onAssign, onCancel, onRemove }: WaitlistCardProps
         )}
       </div>
 
+      {entry.estado === 'asignada' && entry.telefono && (
+        <a
+          href={`https://wa.me/${entry.telefono.replace(/\D/g, '')}?text=${encodeURIComponent(`¡Hola ${entry.nombre}! Tu mesa está lista. Puedes pasar cuando quieras. 🍽️`)}`}
+          target="_blank" rel="noopener noreferrer"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 10, height: 30, padding: '0 12px', borderRadius: 8, background: '#25D366', color: '#fff', fontSize: 12, fontWeight: 700, textDecoration: 'none', fontFamily: FONT }}
+        >
+          ↗ Notificar por WhatsApp
+        </a>
+      )}
+
       {assigningMesa && (
         <form onSubmit={submitAssign} style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 10 }}>
           <input type="number" min={1} value={mesaValue} onChange={e => setMesaValue(e.target.value)} placeholder="Nro. de mesa" autoFocus style={{ width: 100, height: 32, padding: '0 10px', borderRadius: 8, border: '1px solid #E5E5E5', fontSize: 13, fontFamily: MONO, outline: 'none' }} />
