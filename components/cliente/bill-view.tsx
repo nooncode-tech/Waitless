@@ -34,6 +34,7 @@ export function BillView({ sessionId, mesa, onBack, onShowRewards, onPayNow }: B
   const [billRequested, setBillRequested] = useState(hasPendingBillCall)
   const [payMode, setPayMode] = useState<PayMode>('full')
   const [splitPeople, setSplitPeople] = useState(2)
+  const [showConfirmBill, setShowConfirmBill] = useState(false)
 
   if (!session) {
     return (
@@ -355,13 +356,40 @@ export function BillView({ sessionId, mesa, onBack, onShowRewards, onPayNow }: B
                   gap: 8,
                   letterSpacing: '-0.01em',
                 }}
-                onClick={handleRequestBill}
+                onClick={() => setShowConfirmBill(true)}
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2a5 5 0 1 0 0 10A5 5 0 0 0 8 2ZM8 12v2M6 14h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                Llamar al mesero
+                Pedir la cuenta
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Confirmación de pedir la cuenta */}
+      {showConfirmBill && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowConfirmBill(false)} />
+          <div style={{ position: 'relative', width: '100%', maxWidth: 340, background: '#fff', borderRadius: 18, padding: '22px 20px', fontFamily: FONT, boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: '#000', marginBottom: 6, letterSpacing: '-0.02em' }}>¿Pedir la cuenta?</div>
+            <div style={{ fontSize: 13.5, color: '#666', lineHeight: 1.45, marginBottom: 18 }}>
+              Vamos a avisar al personal que la <strong style={{ color: '#000' }}>Mesa {mesa}</strong> quiere pagar. Un mesero se acercará a cobrarte.
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => setShowConfirmBill(false)}
+                style={{ flex: 1, height: 48, borderRadius: 999, border: '1px solid #E5E5E5', background: '#fff', color: '#000', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: FONT }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => { handleRequestBill(); setShowConfirmBill(false) }}
+                style={{ flex: 1, height: 48, borderRadius: 999, border: 'none', background: '#000', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: FONT }}
+              >
+                Sí, pedir cuenta
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

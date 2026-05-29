@@ -32,6 +32,7 @@ import { ConnectSettings } from './connect-settings'
 import { LiquidacionView } from './liquidacion-view'
 import { DisputesManager } from './disputes-manager'
 import { CalendarEmbed } from './calendar-embed'
+import { BillRequestAlerts } from './bill-request-alerts'
 
 type AdminScreen = 'reports' | 'menu' | 'orders' | 'inventory' | 'users' | 'config' | 'qr' | 'refunds' | 'closing' | 'history' | 'expo' | 'tables' | 'audit' | 'feedback' | 'health' | 'waitlist' | 'backup' | 'analytics' | 'billing' | 'payment-methods' | 'payments-review' | 'sales-notes' | 'connect' | 'liquidacion' | 'disputes' | 'calendar'
 
@@ -298,6 +299,9 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
 
   return (
     <div className="adm-shell" style={{ fontFamily: "'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif" }}>
+
+      {/* Aviso flotante: mesas que pidieron la cuenta (visible en todo el panel) */}
+      <BillRequestAlerts />
 
       {/* ── DESKTOP layout ─────────────────────────────────────────────────── */}
       <div className="hidden md:flex" style={{ width: '100%', height: '100vh', overflow: 'hidden' }}>
