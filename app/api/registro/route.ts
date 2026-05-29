@@ -120,6 +120,10 @@ export async function POST(req: NextRequest) {
     .single()
 
   if (tenantError || !tenantRow) {
+    // 23505 = unique_violation → carrera de slug que esquivó el chequeo previo.
+    if ((tenantError as { code?: string } | null)?.code === '23505') {
+      return NextResponse.json({ error: 'Ese identificador ya está en uso, elegí otro' }, { status: 409 })
+    }
     return NextResponse.json({ error: 'Error creando el negocio' }, { status: 500 })
   }
 
