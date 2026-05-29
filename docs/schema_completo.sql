@@ -570,6 +570,9 @@ CREATE POLICY "anon_insert_feedback" ON feedback FOR INSERT
     )
   );
 CREATE POLICY "anon_read_qr_tokens"       ON qr_tokens    FOR SELECT USING (activo = true);
+-- qr_tokens: el staff genera/invalida QR desde el cliente autenticado.
+CREATE POLICY "auth_write_qr_tokens"      ON qr_tokens    FOR ALL TO authenticated
+  USING (true) WITH CHECK (true);
 
 -- tables_config: layout no sensible → lectura pública; escritura solo staff.
 CREATE POLICY "public_read_tables_config" ON tables_config FOR SELECT USING (true);
