@@ -212,7 +212,7 @@ export function CompletarRegistroForm() {
             placeholder="la-trattoria"
             value={slug}
             onChange={(e) => handleSlugChange(e.target.value)}
-            style={{ ...inputStyle, paddingLeft: 98, fontFamily: MONO }}
+            style={{ ...inputStyle, paddingLeft: 120, fontFamily: MONO }}
             disabled={isLoading}
           />
         </div>

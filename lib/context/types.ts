@@ -35,6 +35,7 @@ import type {
   LoyaltyCustomer,
   WaitlistEntry,
 } from '../store'
+import type { AuthLoginResult } from './auth'
 
 export interface AppState {
   orders: Order[]
@@ -67,7 +68,7 @@ export interface AppState {
 
 export interface AppContextType extends AppState {
   // Auth
-  login: (username: string, password: string) => Promise<User | null>
+  login: (username: string, password: string) => Promise<AuthLoginResult>
   logout: () => Promise<void>
   /** Cierra el perfil activo y muestra la pantalla de bloqueo (no cierra la sesión del restaurante) */
   lockProfile: () => void

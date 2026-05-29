@@ -109,11 +109,14 @@ export async function POST(req: NextRequest) {
   const email = authUser.user.email ?? ''
   const displayName = authUser.user.user_metadata?.full_name ?? authUser.user.user_metadata?.name ?? nombre
 
+  const normalizedEmail = email ? email.toLowerCase() : null
+
+  // Google ya verifica el email del usuario → email_verified: true (no requiere código).
   if (existingProfile) {
     // Profile exists but no tenant — update it
     await supabaseAdmin
       .from('profiles')
-      .update({ tenant_id: tenantId, role: 'admin', activo: true })
+      .update({ tenant_id: tenantId, role: 'admin', activo: true, email: normalizedEmail, email_verified: true })
       .eq('id', userId)
   } else {
     // No profile at all — create one
@@ -121,6 +124,8 @@ export async function POST(req: NextRequest) {
       id: userId,
       username: slug,
       nombre: displayName,
+      email: normalizedEmail,
+      email_verified: true,
       role: 'admin',
       activo: true,
       tenant_id: tenantId,

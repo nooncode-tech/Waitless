@@ -13,10 +13,11 @@
  *   logo?         File    — Optional logo image (png/jpg/webp, max 2MB)
  */
 
+import { randomInt } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
-import { sendRestaurantWelcome } from '@/lib/email'
+import { sendRestaurantWelcome, sendEmailVerificationCode, emailEnabled } from '@/lib/email'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const SLUG_RE = /^[a-z0-9-]{3,40}$/
@@ -55,8 +56,11 @@ export async function POST(req: NextRequest) {
   if (!email || !EMAIL_RE.test(email)) {
     return NextResponse.json({ error: 'Email inválido' }, { status: 400 })
   }
-  if (!password || password.length < 6) {
-    return NextResponse.json({ error: 'La contraseña debe tener al menos 6 caracteres' }, { status: 400 })
+  if (!password || password.length < 8 || !/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+    return NextResponse.json(
+      { error: 'La contraseña debe tener al menos 8 caracteres, con al menos una letra y un número' },
+      { status: 400 },
+    )
   }
   if (logoFile && logoFile.size > 2 * 1024 * 1024) {
     return NextResponse.json({ error: 'El logo no puede superar 2 MB' }, { status: 400 })
@@ -74,9 +78,9 @@ export async function POST(req: NextRequest) {
   }
 
   // El login de staff usa username → `${username}@pqvv.local` (ver lib/context/auth.ts
-  // y app/api/admin/users/route.ts). El usuario de Auth debe crearse con ese email
-  // sintético, NO con el email real, o el login falla. El email real solo se guarda
-  // para el correo de bienvenida.
+  // y app/api/admin/users/route.ts). El usuario de Auth se crea con ese email sintético,
+  // NO con el email real, o el login falla. El email real se guarda en profiles.email
+  // para permitir login por email y para el correo de bienvenida.
   const authEmail = `${slug}@pqvv.local`
 
   // ── Verificar que el email de Auth (sintético) no exista ya ───────────────
@@ -84,6 +88,17 @@ export async function POST(req: NextRequest) {
   const emailTaken = existingUsers?.users?.some(u => u.email === authEmail)
   if (emailTaken) {
     return NextResponse.json({ error: 'Ese identificador ya está en uso, elegí otro' }, { status: 409 })
+  }
+
+  // ── Verificar email real único (se puede iniciar sesión con él) ───────────
+  const { data: emailOwner } = await supabaseAdmin
+    .from('profiles')
+    .select('id')
+    .ilike('email', email)
+    .maybeSingle()
+
+  if (emailOwner) {
+    return NextResponse.json({ error: 'Ese email ya está registrado' }, { status: 409 })
   }
 
   // ── Subir logo a Storage (si se proporcionó) ──────────────────────────────
@@ -157,12 +172,23 @@ export async function POST(req: NextRequest) {
 
   const userId = authData.user.id
 
+  // ── Verificación de email ─────────────────────────────────────────────────
+  // Solo se exige si hay proveedor de email (Resend) configurado. Si no lo hay,
+  // la cuenta se marca verificada para no quedar bloqueada (no llegaría el código).
+  const requiresVerification = emailEnabled()
+  const verifyCode = requiresVerification ? randomInt(0, 1_000_000).toString().padStart(6, '0') : null
+  const verifyExpires = requiresVerification ? new Date(Date.now() + 10 * 60_000).toISOString() : null
+
   // ── Crear profile con rol admin vinculado al tenant ───────────────────────
   const username = slug // slug as username for login
   const { error: profileError } = await supabaseAdmin.from('profiles').insert({
     id: userId,
     username,
     nombre,
+    email,
+    email_verified: !requiresVerification,
+    email_verify_code: verifyCode,
+    email_verify_expires: verifyExpires,
     role: 'admin',
     activo: true,
     tenant_id: tenantId,
@@ -176,12 +202,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Error creando el perfil de administrador' }, { status: 500 })
   }
 
-  sendRestaurantWelcome({ to: email, nombreRestaurante: nombre }).catch(() => {})
+  if (requiresVerification && verifyCode) {
+    // Enviar el código de verificación. La bienvenida se manda recién al verificar.
+    sendEmailVerificationCode({ to: email, nombre, code: verifyCode }).catch(() => {})
+  } else {
+    sendRestaurantWelcome({ to: email, nombreRestaurante: nombre }).catch(() => {})
+  }
 
   return NextResponse.json({
     success: true,
     tenant: { id: tenantId, nombre, slug },
     admin: { email, username },
-    message: `Negocio registrado. Ingresá con usuario: ${username} y tu contraseña.`,
+    requiresVerification,
+    message: requiresVerification
+      ? `Te enviamos un código de verificación a ${email}.`
+      : `Negocio registrado. Ingresá con usuario: ${username} y tu contraseña.`,
   }, { status: 201 })
 }

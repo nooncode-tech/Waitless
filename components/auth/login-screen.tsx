@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { useApp } from '@/lib/context'
 import { GoogleAuthButton } from '@/components/ui/google-auth-button'
+import { EmailVerification } from '@/components/auth/email-verification'
 import type { UserRole } from '@/lib/store'
 import type { TenantBranding } from '@/lib/tenant-server'
 
@@ -29,23 +30,34 @@ export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginSc
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  // Cuenta con email sin verificar: se muestra la pantalla de verificación.
+  const [unverified, setUnverified] = useState<string | null>(null)
+
+  const submitLogin = async (): Promise<'ok' | 'unverified' | 'invalid' | 'error'> => {
+    try {
+      const result = await login(username.trim(), password)
+      if (result.status === 'ok') {
+        onLoginSuccess(result.user.role)
+        return 'ok'
+      }
+      if (result.status === 'unverified') {
+        setUnverified(result.identifier)
+        return 'unverified'
+      }
+      setError('Usuario o contraseña incorrectos')
+      return 'invalid'
+    } catch {
+      setError('Error de conexión. Verificá tu red e intentá de nuevo.')
+      return 'error'
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setIsLoading(true)
-    try {
-      const user = await login(username.trim(), password)
-      if (user) {
-        onLoginSuccess(user.role)
-      } else {
-        setError('Usuario o contraseña incorrectos')
-      }
-    } catch {
-      setError('Error de conexión. Verificá tu red e intentá de nuevo.')
-    } finally {
-      setIsLoading(false)
-    }
+    await submitLogin()
+    setIsLoading(false)
   }
 
   return (
@@ -122,6 +134,13 @@ export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginSc
           </button>
         )}
 
+        {unverified ? (
+          <EmailVerification
+            identifier={unverified}
+            onVerified={async () => { setUnverified(null); setError(''); await submitLogin() }}
+            onBack={() => { setUnverified(null); setError('') }}
+          />
+        ) : (
         <div style={{ width: '100%', maxWidth: 360 }}>
           <div style={{ marginBottom: 32 }}>
             <h1 style={{ fontFamily: FONT, fontWeight: 700, fontSize: 34, letterSpacing: '-0.045em', lineHeight: 0.95, marginBottom: 8 }}>
@@ -135,13 +154,13 @@ export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginSc
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label style={{ fontFamily: MONO, fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: '#000' }}>
-                Usuario
+                Email o usuario
               </label>
               <input
                 type="text"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
-                placeholder="Nombre de usuario"
+                placeholder="Email o usuario"
                 autoComplete="username"
                 required
                 disabled={isLoading}
@@ -230,6 +249,7 @@ export function LoginScreen({ onLoginSuccess, onBack, initialBranding }: LoginSc
             </Link>
           </p>
         </div>
+        )}
       </div>
 
       <style>{`

@@ -10,16 +10,48 @@ import { supabase } from '../supabase'
 import type { User, UserRole } from '../store'
 
 /**
- * Autentica al usuario contra Supabase Auth y carga su perfil.
- * Retorna el User si el login es exitoso y el perfil está activo,
- * null en cualquier otro caso.
+ * Resultado del login. Discriminado por `status`:
+ *  - 'ok'         → credenciales válidas, perfil activo y (si aplica) email verificado.
+ *  - 'invalid'    → credenciales incorrectas, sin perfil, o perfil inactivo.
+ *  - 'unverified' → credenciales OK pero la cuenta tiene un email sin verificar.
+ *                   `identifier` es lo que el usuario tipeó (para reenviar/verificar).
  */
-export async function authLogin(username: string, password: string): Promise<User | null> {
+export type AuthLoginResult =
+  | { status: 'ok'; user: User }
+  | { status: 'invalid' }
+  | { status: 'unverified'; identifier: string }
+
+/**
+ * Autentica al usuario contra Supabase Auth y carga su perfil.
+ * Devuelve un AuthLoginResult discriminado (ver tipo arriba).
+ *
+ * Gate de verificación: solo bloquea cuentas con `email` NO NULO y
+ * `email_verified = false`. Las cuentas sin email (staff, cuentas viejas) y
+ * las verificadas pasan normalmente.
+ */
+export async function authLogin(identifier: string, password: string): Promise<AuthLoginResult> {
+  const id = identifier.trim()
+
+  // Resolver el identificador (email real o usuario) al email sintético de Auth.
+  // Usuario → se arma directo; email real → se resuelve server-side vía profiles.
+  let authEmail: string
+  if (id.includes('@')) {
+    const res = await fetch('/api/auth/resolve-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier: id }),
+    })
+    if (!res.ok) return { status: 'invalid' }
+    authEmail = (await res.json()).email
+  } else {
+    authEmail = `${id.toLowerCase()}@pqvv.local`
+  }
+
   const { data, error } = await supabase.auth.signInWithPassword({
-    email: `${username}@pqvv.local`,
+    email: authEmail,
     password,
   })
-  if (error || !data.user) return null
+  if (error || !data.user) return { status: 'invalid' }
 
   const { data: profile } = await supabase
     .from('profiles')
@@ -29,17 +61,26 @@ export async function authLogin(username: string, password: string): Promise<Use
 
   if (!profile || !profile.activo) {
     await supabase.auth.signOut()
-    return null
+    return { status: 'invalid' }
+  }
+
+  // Gate de verificación de email (solo cuentas con email real sin verificar).
+  if (profile.email && !profile.email_verified) {
+    await supabase.auth.signOut()
+    return { status: 'unverified', identifier: id }
   }
 
   return {
-    id: profile.id as string,
-    username: profile.username as string,
-    nombre: profile.nombre as string,
-    role: profile.role as UserRole,
-    activo: profile.activo as boolean,
-    tenantId: (profile.tenant_id as string | null) ?? undefined,
-    createdAt: new Date(profile.created_at as string),
+    status: 'ok',
+    user: {
+      id: profile.id as string,
+      username: profile.username as string,
+      nombre: profile.nombre as string,
+      role: profile.role as UserRole,
+      activo: profile.activo as boolean,
+      tenantId: (profile.tenant_id as string | null) ?? undefined,
+      createdAt: new Date(profile.created_at as string),
+    },
   }
 }
 

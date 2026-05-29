@@ -29,6 +29,7 @@ import type {
   WaitlistEstado,
   Extra,
   RecipeIngredient,
+  QRToken,
 } from '../store'
 import type { AppState } from './types'
 
@@ -168,6 +169,36 @@ export async function cargarTables(setState: SetState) {
     setState(prev => ({ ...prev, tables }))
   } catch (e) {
     logError('cargarTables', e)
+  }
+}
+
+export async function cargarQRTokens(setState: SetState, tenantId?: string) {
+  try {
+    // Solo tokens vigentes: activos y sin expirar. Scoped por tenant cuando aplica.
+    let query = supabase
+      .from('qr_tokens')
+      .select('*')
+      .eq('activo', true)
+      .gt('expires_at', new Date().toISOString())
+    if (tenantId) query = query.eq('tenant_id', tenantId)
+
+    const { data, error } = await query
+    if (error || !data) return
+
+    const qrTokens: QRToken[] = data.map(row => ({
+      id: row.id,
+      mesa: row.mesa,
+      token: row.token,
+      createdAt: new Date(row.created_at),
+      expiresAt: row.expires_at ? new Date(row.expires_at) : new Date(),
+      usedAt: row.used_at ? new Date(row.used_at) : undefined,
+      sessionId: row.session_id ?? undefined,
+      activo: row.activo,
+    }))
+
+    setState(prev => ({ ...prev, qrTokens }))
+  } catch (e) {
+    logError('cargarQRTokens', e)
   }
 }
 

@@ -20,6 +20,16 @@ function send(to: string, subject: string, html: string) {
   })
 }
 
+/**
+ * ¿Está configurado el envío de email (Resend)?
+ * Se usa para degradar con gracia: si NO hay proveedor de email, la verificación
+ * de email no se exige en el registro (de lo contrario, una cuenta recién creada
+ * nunca recibiría el código y quedaría bloqueada para siempre).
+ */
+export function emailEnabled(): boolean {
+  return !!resend
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function layout(content: string) {
@@ -341,4 +351,24 @@ export function sendDisputeResolution({
     <a class="btn" href="${APP_URL}/consumidor">Ir a mi cuenta →</a>
   `)
   return send(to, `Resolución de tu reclamo — Waitless`, html)
+}
+
+// ─── 9. Código de verificación de email (registro de negocio) ─────────────────
+
+export function sendEmailVerificationCode({
+  to,
+  nombre,
+  code,
+}: {
+  to: string
+  nombre?: string
+  code: string
+}) {
+  const html = layout(`
+    <p>Hola${nombre ? ` <strong>${nombre}</strong>` : ''},</p>
+    <p>Para activar tu cuenta de <strong>Waitless</strong>, ingresá este código de verificación:</p>
+    <p style="font-size:34px;font-weight:900;letter-spacing:0.32em;color:#111;text-align:center;background:#f5f5f5;border-radius:12px;padding:18px 0;margin:18px 0">${code}</p>
+    <p style="font-size:13px;color:#888">El código vence en <strong>10 minutos</strong>. Si no creaste una cuenta en Waitless, podés ignorar este correo.</p>
+  `)
+  return send(to, `Tu código de verificación: ${code}`, html)
 }

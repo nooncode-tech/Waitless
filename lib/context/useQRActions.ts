@@ -13,11 +13,12 @@ export function useQRActions(state: AppState, setState: SetState) {
     const tenantId = state.currentUser?.tenantId ?? null
 
     // 1. Invalidar tokens previos en Supabase (scoped por tenant cuando aplica)
+    //    La columna real es `activo` (boolean) + `used_at` (timestamp). NO existe `usado`.
     let invalidateQuery = supabase
       .from('qr_tokens')
-      .update({ usado: true })
+      .update({ activo: false, used_at: new Date().toISOString() })
       .eq('mesa', mesa)
-      .eq('usado', false)
+      .eq('activo', true)
     if (tenantId) {
       invalidateQuery = invalidateQuery.eq('tenant_id', tenantId)
     }
@@ -45,7 +46,7 @@ export function useQRActions(state: AppState, setState: SetState) {
       token: data.token,
       createdAt: new Date(data.created_at),
       expiresAt: new Date(data.expires_at),
-      activo: !data.usado,
+      activo: data.activo,
     }
 
     setState(prev => ({
@@ -66,7 +67,7 @@ export function useQRActions(state: AppState, setState: SetState) {
       .from('qr_tokens')
       .select('*')
       .eq('token', token)
-      .eq('usado', false)
+      .eq('activo', true)
       .gt('expires_at', new Date().toISOString())
     if (tenantId) {
       query = query.eq('tenant_id', tenantId)
@@ -90,7 +91,7 @@ export function useQRActions(state: AppState, setState: SetState) {
   }, [state.currentUser?.tenantId])
 
   const invalidateTableQR = useCallback(async (tokenId: string): Promise<void> => {
-    await supabase.from('qr_tokens').update({ usado: true }).eq('id', tokenId)
+    await supabase.from('qr_tokens').update({ activo: false, used_at: new Date().toISOString() }).eq('id', tokenId)
     setState(prev => ({
       ...prev,
       qrTokens: prev.qrTokens.map(t =>

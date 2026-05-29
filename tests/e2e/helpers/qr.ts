@@ -43,7 +43,7 @@ export async function createTestQRToken(
   const supabase = getAdminClient()
   const token = `test-${crypto.randomBytes(16).toString('hex')}`
   const expiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000).toISOString()
-  const payload: Record<string, unknown> = { token, mesa, expires_at: expiresAt, usado: false }
+  const payload: Record<string, unknown> = { token, mesa, expires_at: expiresAt, activo: true }
   if (tenantId) payload.tenant_id = tenantId
 
   const { data, error } = await supabase
@@ -69,7 +69,7 @@ export async function createExpiredTestQRToken(
   const token = `test-expired-${crypto.randomBytes(16).toString('hex')}`
   // Already expired
   const expiresAt = new Date(Date.now() - 60 * 1000).toISOString()
-  const payload: Record<string, unknown> = { token, mesa, expires_at: expiresAt, usado: false }
+  const payload: Record<string, unknown> = { token, mesa, expires_at: expiresAt, activo: true }
   if (tenantId) payload.tenant_id = tenantId
 
   const { data, error } = await supabase

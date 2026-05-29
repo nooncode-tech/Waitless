@@ -28,6 +28,7 @@ import {
   cargarCategorias,
   cargarOrdenes,
   cargarTables,
+  cargarQRTokens,
   cargarSesionesActivas,
   cargarWaiterCalls,
   cargarReembolsos,
@@ -36,6 +37,7 @@ import {
 } from './context/loaders'
 import { logError, handleError } from './handle-error'
 import { authLogin, authLoadUsers, authLogout } from './context/auth'
+import type { AuthLoginResult } from './context/auth'
 import { useLoyalty } from './context/loyalty'
 import { supabaseInsertWaitlistEntry, supabaseUpdateWaitlistEntry, supabaseDeleteWaitlistEntry } from './context/waitlist'
 import { logAction } from './context/log-action'
@@ -514,6 +516,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     cargarOrdenes(setState, tenantId)
     cargarSesionesActivas(setState, tenantId)
     cargarTables(setState)
+    cargarQRTokens(setState, tenantId)
     cargarWaiterCalls(setState, tenantId)
     cargarReembolsos(setState, tenantId)
     cargarIngredientes(setState, tenantId)
@@ -1107,16 +1110,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // ============ AUTH ACTIONS ============
   // Lógica de Supabase Auth extraída a lib/context/auth.ts.
   // El provider solo gestiona el estado React resultante.
-  const login = useCallback(async (username: string, password: string): Promise<User | null> => {
-    const user = await authLogin(username, password)
-    if (!user) return null
+  const login = useCallback(async (username: string, password: string): Promise<AuthLoginResult> => {
+    const result = await authLogin(username, password)
+    if (result.status !== 'ok') return result
+    const user = result.user
     // Login completo: establece tanto la cuenta del dispositivo como el perfil activo
     setState(prev => ({ ...prev, deviceUser: user, currentUser: user }))
     localStorage.setItem('waitless_active_profile_id', user.id)
     authLoadUsers(user.tenantId).then(users => {
       setState(prev => ({ ...prev, users }))
     })
-    return user
+    return result
   }, [])
 
   const logout = useCallback(async (): Promise<void> => {

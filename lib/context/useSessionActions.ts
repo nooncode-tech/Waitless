@@ -324,7 +324,8 @@ export function useSessionActions(state: AppState, setState: SetState) {
     // Update table estado in Supabase
     supabase.from('tables_config').update({ estado: 'limpieza' }).eq('numero', session.mesa).then(() => {})
     // Sprint 2: invalidar tokens QR de esta mesa en Supabase al confirmar pago
-    supabase.from('qr_tokens').update({ usado: true }).eq('mesa', session.mesa).eq('usado', false).then(() => {})
+    // Columna real: `activo` (boolean) + `used_at` (timestamp). NO existe `usado`.
+    supabase.from('qr_tokens').update({ activo: false, used_at: new Date().toISOString() }).eq('mesa', session.mesa).eq('activo', true).then(() => {})
     // Task 2.8: audit de confirmación de pago (mutación más crítica del sistema)
     const auditId = generateId()
     setState(prev => ({

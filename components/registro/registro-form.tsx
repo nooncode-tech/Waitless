@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { GoogleAuthButton } from '@/components/ui/google-auth-button'
+import { EmailVerification } from '@/components/auth/email-verification'
 
 const FONT = "'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif"
 const MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
@@ -63,12 +64,22 @@ export function RegistroForm() {
   // Step 2 — Credentials
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+
+  // Reglas de contraseña (espejadas en /api/registro): mín 8, ≥1 letra, ≥1 número.
+  const pwHasLen = password.length >= 8
+  const pwHasLetter = /[a-zA-Z]/.test(password)
+  const pwHasNumber = /[0-9]/.test(password)
+  const pwValid = pwHasLen && pwHasLetter && pwHasNumber
+  const pwMatch = password.length > 0 && password === confirmPassword
+  const canSubmit = !!email.trim() && pwValid && pwMatch
 
   // UI state
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [success, setSuccess] = useState<{ username: string } | null>(null)
+  const [success, setSuccess] = useState<{ username: string; email: string; requiresVerification: boolean } | null>(null)
+  const [verified, setVerified] = useState(false)
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -119,6 +130,14 @@ export function RegistroForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!pwValid) {
+      setError('La contraseña debe tener al menos 8 caracteres, con una letra y un número')
+      return
+    }
+    if (!pwMatch) {
+      setError('Las contraseñas no coinciden')
+      return
+    }
     setError('')
     setIsLoading(true)
 
@@ -139,12 +158,28 @@ export function RegistroForm() {
         return
       }
 
-      setSuccess({ username: json.admin.username })
+      setSuccess({
+        username: json.admin.username,
+        email: json.admin.email,
+        requiresVerification: !!json.requiresVerification,
+      })
     } catch {
       setError('Error de conexión. Verificá tu red e intentá de nuevo.')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // ── Verificación de email (si el registro la requiere y aún no se hizo) ─────
+  if (success && success.requiresVerification && !verified) {
+    return (
+      <EmailVerification
+        identifier={success.email}
+        email={success.email}
+        accent={primaryColor}
+        onVerified={() => setVerified(true)}
+      />
+    )
   }
 
   // ── Success screen ────────────────────────────────────────────────────────
@@ -278,7 +313,7 @@ export function RegistroForm() {
                 placeholder="la-trattoria"
                 value={slug}
                 onChange={(e) => handleSlugChange(e.target.value)}
-                style={{ ...inputStyle, paddingLeft: 98, fontFamily: MONO }}
+                style={{ ...inputStyle, paddingLeft: 120, fontFamily: MONO }}
               />
             </div>
             <p style={{ fontSize: 10, color: 'rgba(0,0,0,0.35)', marginTop: 5, fontFamily: MONO }}>
@@ -457,13 +492,13 @@ export function RegistroForm() {
             <div style={{ position: 'relative' }}>
               <input
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Mínimo 6 caracteres"
+                placeholder="Mínimo 8 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 style={{ ...inputStyle, paddingRight: 44 }}
                 autoComplete="new-password"
                 required
-                minLength={6}
+                minLength={8}
                 disabled={isLoading}
               />
               <button
@@ -479,6 +514,44 @@ export function RegistroForm() {
                 {showPassword ? '○' : '●'}
               </button>
             </div>
+
+            {/* Checklist de requisitos */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}>
+              {[
+                { ok: pwHasLen, label: 'Al menos 8 caracteres' },
+                { ok: pwHasLetter, label: 'Al menos una letra' },
+                { ok: pwHasNumber, label: 'Al menos un número' },
+              ].map((r) => (
+                <div key={r.label} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: r.ok ? '#059669' : 'rgba(0,0,0,0.4)' }}>
+                  <span style={{ fontSize: 11 }}>{r.ok ? '✓' : '○'}</span>
+                  {r.label}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Confirmar contraseña */}
+          <div>
+            <label style={labelStyle}>Confirmar contraseña</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Repetí la contraseña"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                style={{
+                  ...inputStyle,
+                  paddingRight: 44,
+                  borderColor: confirmPassword.length > 0 && !pwMatch ? 'rgba(220,38,38,0.5)' : '#E5E5E5',
+                }}
+                autoComplete="new-password"
+                required
+                disabled={isLoading}
+              />
+            </div>
+            {confirmPassword.length > 0 && !pwMatch && (
+              <p style={{ fontSize: 12, color: '#DC2626', marginTop: 6 }}>Las contraseñas no coinciden</p>
+            )}
           </div>
 
           {error && (
@@ -509,14 +582,14 @@ export function RegistroForm() {
             </button>
             <button
               type="submit"
-              disabled={isLoading || !email.trim() || !password}
+              disabled={isLoading || !canSubmit}
               style={{
                 flex: 1, height: 44,
-                background: isLoading || !email.trim() || !password ? '#E5E5E5' : primaryColor,
-                color: isLoading || !email.trim() || !password ? 'rgba(0,0,0,0.35)' : '#fff',
+                background: isLoading || !canSubmit ? '#E5E5E5' : primaryColor,
+                color: isLoading || !canSubmit ? 'rgba(0,0,0,0.35)' : '#fff',
                 border: 'none', borderRadius: 10,
                 fontSize: 15, fontWeight: 700, fontFamily: FONT,
-                cursor: isLoading || !email.trim() || !password ? 'not-allowed' : 'pointer',
+                cursor: isLoading || !canSubmit ? 'not-allowed' : 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
               }}
             >
