@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const { allowed } = rateLimit(`dispute-open:${getClientIp(req)}`, 5, 60_000)
+  const { allowed } = await rateLimit(`dispute-open:${getClientIp(req)}`, 5, 60_000)
   if (!allowed) return NextResponse.json({ error: 'Demasiados intentos' }, { status: 429 })
 
   const auth = await requireConsumerAuth(req)

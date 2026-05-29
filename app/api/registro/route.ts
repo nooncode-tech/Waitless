@@ -23,7 +23,7 @@ const SLUG_RE = /^[a-z0-9-]{3,40}$/
 const HEX_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/
 
 export async function POST(req: NextRequest) {
-  const { allowed } = rateLimit(`registro:${getClientIp(req)}`, 5, 60_000)
+  const { allowed } = await rateLimit(`registro:${getClientIp(req)}`, 5, 60_000)
   if (!allowed) {
     return NextResponse.json({ error: 'Demasiados intentos. Esperá un momento.' }, { status: 429 })
   }

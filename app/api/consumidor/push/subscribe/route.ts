@@ -14,7 +14,7 @@ import { requireConsumerAuth } from '@/lib/api-auth'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
-  const { allowed } = rateLimit(`consumer-push-sub:${getClientIp(req)}`, 10, 60_000)
+  const { allowed } = await rateLimit(`consumer-push-sub:${getClientIp(req)}`, 10, 60_000)
   if (!allowed) {
     return NextResponse.json({ error: 'Demasiados intentos' }, { status: 429 })
   }

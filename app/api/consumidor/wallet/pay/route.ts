@@ -4,7 +4,7 @@ import { requireConsumerAuth } from '@/lib/api-auth'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
-  const { allowed } = rateLimit(`wallet-pay:${getClientIp(req)}`, 15, 60_000)
+  const { allowed } = await rateLimit(`wallet-pay:${getClientIp(req)}`, 15, 60_000)
   if (!allowed) return NextResponse.json({ error: 'Demasiados intentos' }, { status: 429 })
 
   const auth = await requireConsumerAuth(req)
@@ -53,15 +53,26 @@ export async function POST(req: NextRequest) {
   const newCash        = cashBalance - cashUsed
   const newTotal       = newCash + newRewards
 
-  const { error: updateError } = await supabaseAdmin
+  const { data: updatedRows, error: updateError } = await supabaseAdmin
     .from('consumer_wallet')
     .update({ balance_cash_cents: newCash, balance_rewards_cents: newRewards })
     .eq('consumer_id', auth.userId)
     .eq('balance_cash_cents', cashBalance)    // optimistic lock
     .eq('balance_rewards_cents', rewardsBalance)
+    .select('consumer_id')
 
   if (updateError) {
     return NextResponse.json({ error: 'Error actualizando saldo' }, { status: 500 })
+  }
+
+  // Si no se afectó ninguna fila, otro request modificó el saldo entre la lectura y el update.
+  // PostgREST no trata el update de 0 filas como error, así que hay que verificarlo explícitamente
+  // para evitar el doble gasto.
+  if (!updatedRows || updatedRows.length === 0) {
+    return NextResponse.json(
+      { error: 'El saldo cambió, reintentá la operación' },
+      { status: 409 },
+    )
   }
 
   const balanceType =

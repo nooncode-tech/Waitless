@@ -52,7 +52,10 @@ export async function POST(req: NextRequest) {
       console.log(`[webhook] Evento ${event.id} ya procesado — skipping`)
       return NextResponse.json({ received: true, skipped: 'already_processed' })
     }
-    console.error('[webhook] idempotency insert:', idempotencyError.message)
+    // Fail-closed: sin garantía de idempotencia NO procesamos (evitar doble acreditación).
+    // El 500 hace que Stripe reintente el evento más tarde.
+    console.error('[webhook] idempotency insert falló:', idempotencyError.message)
+    return NextResponse.json({ error: 'No se pudo registrar idempotencia' }, { status: 500 })
   }
 
   // ── Handle events ─────────────────────────────────────────────────────────
@@ -70,23 +73,20 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ received: true })
         }
 
-        // Upsert saldo cash
-        const { data: existing } = await supabaseAdmin
-          .from('consumer_wallet')
-          .select('balance_cash_cents, balance_rewards_cents')
-          .eq('consumer_id', consumerId)
-          .maybeSingle()
+        // Crédito atómico vía RPC (evita lost-update y doble acreditación bajo reintentos).
+        const { data: walletRows, error: walletErr } = await supabaseAdmin.rpc('wallet_apply_delta', {
+          p_consumer_id:   consumerId,
+          p_cash_delta:    amountCents,
+          p_rewards_delta: 0,
+        })
 
-        const newCash    = (existing?.balance_cash_cents    ?? 0) + amountCents
-        const newRewards = existing?.balance_rewards_cents  ?? 0
-        const newBalance = newCash + newRewards
+        if (walletErr || !walletRows || walletRows.length === 0) {
+          console.error('[webhook] Error acreditando recarga:', walletErr?.message)
+          return NextResponse.json({ received: true, warning: 'wallet_credit_failed' })
+        }
 
-        await supabaseAdmin
-          .from('consumer_wallet')
-          .upsert(
-            { consumer_id: consumerId, balance_cash_cents: newCash, balance_rewards_cents: newRewards },
-            { onConflict: 'consumer_id' },
-          )
+        const newCash    = walletRows[0].balance_cash_cents
+        const newBalance = walletRows[0].balance_cash_cents + walletRows[0].balance_rewards_cents
 
         // Marcar transacción como completada
         if (transactionId) {

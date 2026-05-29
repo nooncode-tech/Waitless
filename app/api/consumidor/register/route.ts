@@ -4,7 +4,7 @@ import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import { sendConsumerWelcome } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
-  const { allowed } = rateLimit(`consumer-register:${getClientIp(req)}`, 5, 60_000)
+  const { allowed } = await rateLimit(`consumer-register:${getClientIp(req)}`, 5, 60_000)
   if (!allowed) {
     return NextResponse.json({ error: 'Demasiados intentos. Esperá un momento.' }, { status: 429 })
   }

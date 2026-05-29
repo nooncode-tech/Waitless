@@ -182,11 +182,11 @@ CREATE INDEX IF NOT EXISTS table_sessions_tenant_idx ON table_sessions(tenant_id
 CREATE INDEX IF NOT EXISTS table_sessions_mesa_idx   ON table_sessions(tenant_id, mesa) WHERE activa = true;
 
 -- ──────────────────────────────────────────────────────────────────────────────
--- 8. TABLES (configuración física de mesas)
+-- 8. TABLES_CONFIG (configuración física de mesas; tabla global por instancia)
 -- ──────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS tables (
+-- El código consume `tables_config` (no `tables`). Es global: sin tenant_id.
+CREATE TABLE IF NOT EXISTS tables_config (
   id         text PRIMARY KEY DEFAULT gen_random_uuid()::text,
-  tenant_id  uuid REFERENCES tenants(id) ON DELETE CASCADE,
   numero     integer NOT NULL,
   nombre     text,
   capacidad  integer NOT NULL DEFAULT 4,
@@ -198,8 +198,7 @@ CREATE TABLE IF NOT EXISTS tables (
   pos_y      numeric(8,2) DEFAULT 0,
   created_at timestamptz NOT NULL DEFAULT now()
 );
-CREATE UNIQUE INDEX IF NOT EXISTS tables_tenant_numero_idx ON tables(tenant_id, numero);
-CREATE INDEX  IF NOT EXISTS tables_tenant_idx ON tables(tenant_id);
+CREATE UNIQUE INDEX IF NOT EXISTS tables_config_numero_idx ON tables_config(numero);
 
 -- ──────────────────────────────────────────────────────────────────────────────
 -- 9. ORDERS
@@ -436,6 +435,65 @@ CREATE TABLE IF NOT EXISTS clientes (
 CREATE INDEX IF NOT EXISTS clientes_tenant_idx ON clientes(tenant_id);
 
 -- ──────────────────────────────────────────────────────────────────────────────
+-- 20. SHIFTS (cierre de turno / arqueo de caja)
+-- ──────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS shifts (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id     uuid REFERENCES tenants(id) ON DELETE CASCADE,
+  nombre        text,
+  activo        boolean NOT NULL DEFAULT true,
+  opened_at     timestamptz NOT NULL DEFAULT now(),
+  closed_at     timestamptz,
+  notas         text,
+  total_ventas  numeric(10,2) NOT NULL DEFAULT 0,
+  total_ordenes integer       NOT NULL DEFAULT 0,
+  efectivo      numeric(10,2) NOT NULL DEFAULT 0,
+  tarjeta       numeric(10,2) NOT NULL DEFAULT 0,
+  propinas      numeric(10,2) NOT NULL DEFAULT 0,
+  descuentos    numeric(10,2) NOT NULL DEFAULT 0,
+  reembolsos    numeric(10,2) NOT NULL DEFAULT 0,
+  created_at    timestamptz   NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS shifts_activo_idx ON shifts(activo, opened_at DESC);
+
+-- ──────────────────────────────────────────────────────────────────────────────
+-- 21. INVENTORY_ADJUSTMENTS (entradas/salidas/ajustes de stock)
+-- ──────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS inventory_adjustments (
+  id            text PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  tenant_id     uuid REFERENCES tenants(id) ON DELETE CASCADE,
+  ingredient_id text REFERENCES ingredients(id) ON DELETE CASCADE,
+  tipo          text NOT NULL CHECK (tipo IN ('entrada','salida','ajuste')),
+  cantidad      numeric(10,3) NOT NULL DEFAULT 0,
+  motivo        text,
+  user_id       text,
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS inventory_adjustments_ingredient_idx ON inventory_adjustments(ingredient_id);
+
+-- ──────────────────────────────────────────────────────────────────────────────
+-- 22. CONSUMER_PUSH_SUBSCRIPTIONS (Web Push del marketplace)
+-- ──────────────────────────────────────────────────────────────────────────────
+-- Acceso exclusivo vía service_role (rutas server) → RLS habilitado sin política.
+CREATE TABLE IF NOT EXISTS consumer_push_subscriptions (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  consumer_id uuid NOT NULL UNIQUE,
+  endpoint    text NOT NULL,
+  p256dh      text NOT NULL,
+  auth        text NOT NULL,
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  updated_at  timestamptz NOT NULL DEFAULT now()
+);
+
+-- ──────────────────────────────────────────────────────────────────────────────
+-- 23. SALES_NOTE_SEQS (contador atómico de nota de venta por tenant)
+-- ──────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS sales_note_seqs (
+  tenant_id uuid PRIMARY KEY,
+  last_seq  integer NOT NULL DEFAULT 0
+);
+
+-- ──────────────────────────────────────────────────────────────────────────────
 -- ROW LEVEL SECURITY
 -- ──────────────────────────────────────────────────────────────────────────────
 
@@ -447,7 +505,7 @@ ALTER TABLE categories       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE menu_items       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ingredients      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE table_sessions   ENABLE ROW LEVEL SECURITY;
-ALTER TABLE tables           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tables_config    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE waiter_calls     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE refunds          ENABLE ROW LEVEL SECURITY;
@@ -459,13 +517,19 @@ ALTER TABLE rewards          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE applied_rewards  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE clientes         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE shifts                      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inventory_adjustments       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE consumer_push_subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- El service_role siempre bypasea RLS (comportamiento de Supabase por defecto).
 -- Las API routes usan service_role → no necesitan políticas explícitas.
 
 -- Políticas para lectura pública (menú digital, explore)
 CREATE POLICY "public_read_tenants"     ON tenants     FOR SELECT USING (activo = true);
-CREATE POLICY "public_read_app_config"  ON app_config  FOR SELECT USING (true);
+-- app_config: solo staff autenticado lee la config de su propio tenant.
+-- El branding/menú público se sirve vía rutas server con service_role (bypasea RLS).
+CREATE POLICY "auth_read_own_app_config" ON app_config FOR SELECT
+  USING (app_config.tenant_id IN (SELECT p.tenant_id FROM profiles p WHERE p.id = auth.uid()));
 CREATE POLICY "public_read_categories"  ON categories  FOR SELECT USING (activa = true);
 CREATE POLICY "public_read_menu_items"  ON menu_items  FOR SELECT USING (available = true AND mostrar_en_menu_digital = true);
 
@@ -476,11 +540,49 @@ CREATE POLICY "auth_read_tenant_data"   ON orders      FOR SELECT
 CREATE POLICY "auth_read_sessions"      ON table_sessions FOR SELECT
   USING (tenant_id IN (SELECT tenant_id FROM profiles WHERE id = auth.uid()));
 
--- Inserción anónima de órdenes y llamadas al mesero (menú digital público)
-CREATE POLICY "anon_insert_orders"        ON orders       FOR INSERT WITH CHECK (true);
-CREATE POLICY "anon_insert_waiter_calls"  ON waiter_calls FOR INSERT WITH CHECK (true);
-CREATE POLICY "anon_insert_feedback"      ON feedback     FOR INSERT WITH CHECK (true);
+-- Inserción anónima (cliente QR): acotada a la sesión del header x-session-id
+-- y a una sesión activa del mismo tenant. Nunca WITH CHECK (true).
+CREATE POLICY "anon_insert_orders" ON orders FOR INSERT
+  WITH CHECK (
+    orders.session_id IS NOT NULL
+    AND orders.session_id::text = (current_setting('request.headers', true)::json ->> 'x-session-id')
+    AND EXISTS (
+      SELECT 1 FROM table_sessions s
+      WHERE s.id = orders.session_id AND s.activa = true AND s.tenant_id = orders.tenant_id
+    )
+  );
+CREATE POLICY "anon_insert_waiter_calls" ON waiter_calls FOR INSERT
+  WITH CHECK (
+    waiter_calls.session_id IS NOT NULL
+    AND waiter_calls.session_id::text = (current_setting('request.headers', true)::json ->> 'x-session-id')
+    AND EXISTS (
+      SELECT 1 FROM table_sessions s
+      WHERE s.id = waiter_calls.session_id AND s.activa = true AND s.tenant_id = waiter_calls.tenant_id
+    )
+  );
+CREATE POLICY "anon_insert_feedback" ON feedback FOR INSERT
+  WITH CHECK (
+    feedback.session_id IS NOT NULL
+    AND feedback.session_id::text = (current_setting('request.headers', true)::json ->> 'x-session-id')
+    AND EXISTS (
+      SELECT 1 FROM table_sessions s
+      WHERE s.id = feedback.session_id AND s.tenant_id = feedback.tenant_id
+    )
+  );
 CREATE POLICY "anon_read_qr_tokens"       ON qr_tokens    FOR SELECT USING (activo = true);
+
+-- tables_config: layout no sensible → lectura pública; escritura solo staff.
+CREATE POLICY "public_read_tables_config" ON tables_config FOR SELECT USING (true);
+CREATE POLICY "auth_write_tables_config"  ON tables_config FOR ALL TO authenticated
+  USING (true) WITH CHECK (true);
+
+-- shifts / inventory_adjustments: solo staff autenticado.
+CREATE POLICY "auth_all_shifts" ON shifts FOR ALL TO authenticated
+  USING (true) WITH CHECK (true);
+CREATE POLICY "auth_all_inventory_adjustments" ON inventory_adjustments FOR ALL TO authenticated
+  USING (true) WITH CHECK (true);
+
+-- consumer_push_subscriptions: sin política → solo service_role (bypassa RLS).
 
 -- ──────────────────────────────────────────────────────────────────────────────
 -- REALTIME (habilitar publicación de cambios)
@@ -492,10 +594,249 @@ ALTER PUBLICATION supabase_realtime ADD TABLE waiter_calls;
 ALTER PUBLICATION supabase_realtime ADD TABLE menu_items;
 ALTER PUBLICATION supabase_realtime ADD TABLE categories;
 ALTER PUBLICATION supabase_realtime ADD TABLE ingredients;
-ALTER PUBLICATION supabase_realtime ADD TABLE tables;
+ALTER PUBLICATION supabase_realtime ADD TABLE tables_config;
 ALTER PUBLICATION supabase_realtime ADD TABLE waitlist;
 ALTER PUBLICATION supabase_realtime ADD TABLE feedback;
 ALTER PUBLICATION supabase_realtime ADD TABLE push_subscriptions;
+
+-- ──────────────────────────────────────────────────────────────────────────────
+-- FUNCIONES / RPC
+-- ──────────────────────────────────────────────────────────────────────────────
+-- Las RPC de analítica las invoca el cliente `supabase` (staff autenticado).
+-- Se declaran SECURITY DEFINER y filtran por el tenant del llamante
+-- (auth.uid() -> profiles) para no depender de políticas SELECT por tabla.
+
+-- DROP previo: si ya existen creadas a mano (a veces con defaults), CREATE OR
+-- REPLACE no puede cambiar defaults ni el tipo de retorno → recrear limpio.
+DROP FUNCTION IF EXISTS next_sales_note_seq(uuid);
+DROP FUNCTION IF EXISTS deduct_ingredients_for_order(jsonb);
+DROP FUNCTION IF EXISTS get_revenue_trend(integer);
+DROP FUNCTION IF EXISTS get_feedback_summary(integer);
+DROP FUNCTION IF EXISTS get_daily_kpis(date);
+
+-- next_sales_note_seq — secuencia incremental atómica por tenant
+CREATE OR REPLACE FUNCTION next_sales_note_seq(p_tenant_id uuid)
+RETURNS integer
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  v_seq integer;
+  v_key uuid := COALESCE(p_tenant_id, '00000000-0000-0000-0000-000000000000'::uuid);
+BEGIN
+  INSERT INTO sales_note_seqs (tenant_id, last_seq)
+  VALUES (v_key, 1)
+  ON CONFLICT (tenant_id) DO UPDATE SET last_seq = sales_note_seqs.last_seq + 1
+  RETURNING last_seq INTO v_seq;
+  RETURN v_seq;
+END;
+$$;
+
+-- deduct_ingredients_for_order — descuento atómico de stock con validación previa
+CREATE OR REPLACE FUNCTION deduct_ingredients_for_order(deductions jsonb)
+RETURNS jsonb
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  d          jsonb;
+  v_ing_id   text;
+  v_cantidad numeric;
+  v_motivo   text;
+  v_user     text;
+  v_stock    numeric;
+  v_nombre   text;
+BEGIN
+  FOR d IN
+    SELECT value FROM jsonb_array_elements(deductions) ORDER BY value->>'ingredient_id'
+  LOOP
+    v_ing_id   := d->>'ingredient_id';
+    v_cantidad := COALESCE((d->>'cantidad')::numeric, 0);
+
+    SELECT stock_actual, nombre INTO v_stock, v_nombre
+    FROM ingredients WHERE id = v_ing_id FOR UPDATE;
+
+    IF NOT FOUND THEN
+      CONTINUE;
+    END IF;
+
+    IF v_stock < v_cantidad THEN
+      RETURN jsonb_build_object('success', false, 'failed_ingredient', v_nombre);
+    END IF;
+  END LOOP;
+
+  FOR d IN SELECT value FROM jsonb_array_elements(deductions)
+  LOOP
+    v_ing_id   := d->>'ingredient_id';
+    v_cantidad := COALESCE((d->>'cantidad')::numeric, 0);
+    v_motivo   := d->>'motivo';
+    v_user     := COALESCE(d->>'user_id', 'system');
+
+    UPDATE ingredients
+    SET stock_actual = stock_actual - v_cantidad
+    WHERE id = v_ing_id AND stock_actual IS NOT NULL;
+
+    IF FOUND THEN
+      INSERT INTO inventory_adjustments (id, tenant_id, ingredient_id, tipo, cantidad, motivo, user_id)
+      SELECT gen_random_uuid()::text, i.tenant_id, v_ing_id, 'salida', v_cantidad, v_motivo, v_user
+      FROM ingredients i WHERE i.id = v_ing_id;
+    END IF;
+  END LOOP;
+
+  RETURN jsonb_build_object('success', true);
+END;
+$$;
+
+-- get_revenue_trend — tendencia de ventas por día (tenant actual)
+CREATE OR REPLACE FUNCTION get_revenue_trend(p_days integer)
+RETURNS TABLE (
+  fecha          text,
+  total_ventas   numeric,
+  total_sesiones bigint,
+  total_ordenes  bigint,
+  avg_ticket     numeric
+)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  v_tenant uuid;
+  v_from   date := current_date - GREATEST(p_days - 1, 0);
+BEGIN
+  SELECT p.tenant_id INTO v_tenant FROM profiles p WHERE p.id = auth.uid();
+
+  RETURN QUERY
+  WITH dias AS (
+    SELECT generate_series(v_from, current_date, interval '1 day')::date AS d
+  ),
+  sess AS (
+    SELECT s.created_at::date AS d, s.id, s.total
+    FROM table_sessions s
+    WHERE s.tenant_id IS NOT DISTINCT FROM v_tenant
+      AND s.payment_status = 'pagado'
+      AND s.created_at::date >= v_from
+  ),
+  ord AS (
+    SELECT o.created_at::date AS d, count(*) AS c
+    FROM orders o
+    WHERE o.tenant_id IS NOT DISTINCT FROM v_tenant
+      AND o.cancelado = false
+      AND o.created_at::date >= v_from
+    GROUP BY 1
+  )
+  SELECT
+    to_char(dias.d, 'YYYY-MM-DD'),
+    COALESCE(sum(sess.total), 0)::numeric,
+    count(DISTINCT sess.id)::bigint,
+    COALESCE(max(ord.c), 0)::bigint,
+    CASE WHEN count(DISTINCT sess.id) > 0
+         THEN ROUND(COALESCE(sum(sess.total), 0) / count(DISTINCT sess.id), 2)
+         ELSE 0 END
+  FROM dias
+  LEFT JOIN sess ON sess.d = dias.d
+  LEFT JOIN ord  ON ord.d  = dias.d
+  GROUP BY dias.d
+  ORDER BY dias.d;
+END;
+$$;
+
+-- get_feedback_summary — resumen de calificaciones (tenant actual)
+CREATE OR REPLACE FUNCTION get_feedback_summary(p_days integer)
+RETURNS jsonb
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  v_tenant uuid;
+  v_result jsonb;
+  v_from   date := current_date - GREATEST(p_days - 1, 0);
+BEGIN
+  SELECT p.tenant_id INTO v_tenant FROM profiles p WHERE p.id = auth.uid();
+
+  SELECT jsonb_build_object(
+    'total',      COUNT(*),
+    'avg_rating', COALESCE(ROUND(AVG(rating)::numeric, 2), 0),
+    'dist', jsonb_build_object(
+      '1', COUNT(*) FILTER (WHERE rating = 1),
+      '2', COUNT(*) FILTER (WHERE rating = 2),
+      '3', COUNT(*) FILTER (WHERE rating = 3),
+      '4', COUNT(*) FILTER (WHERE rating = 4),
+      '5', COUNT(*) FILTER (WHERE rating = 5)
+    )
+  ) INTO v_result
+  FROM feedback
+  WHERE tenant_id IS NOT DISTINCT FROM v_tenant
+    AND created_at::date >= v_from;
+
+  RETURN v_result;
+END;
+$$;
+
+-- get_daily_kpis — KPIs del día (tenant actual)
+CREATE OR REPLACE FUNCTION get_daily_kpis(p_fecha date)
+RETURNS jsonb
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  v_tenant         uuid;
+  v_total_sesiones bigint;
+  v_total_ventas   numeric;
+  v_total_ordenes  bigint;
+  v_canceladas     bigint;
+  v_tiempo         numeric;
+  v_mesas          bigint;
+  v_top            jsonb;
+BEGIN
+  SELECT p.tenant_id INTO v_tenant FROM profiles p WHERE p.id = auth.uid();
+
+  SELECT COUNT(*), COALESCE(SUM(total), 0)
+  INTO v_total_sesiones, v_total_ventas
+  FROM table_sessions
+  WHERE tenant_id IS NOT DISTINCT FROM v_tenant
+    AND payment_status = 'pagado'
+    AND created_at::date = p_fecha;
+
+  SELECT
+    COUNT(*) FILTER (WHERE cancelado = false),
+    COUNT(*) FILTER (WHERE cancelado = true),
+    COALESCE(AVG(EXTRACT(EPOCH FROM (tiempo_fin_preparacion - tiempo_inicio_preparacion)) / 60)
+             FILTER (WHERE tiempo_fin_preparacion IS NOT NULL
+                       AND tiempo_inicio_preparacion IS NOT NULL), 0)
+  INTO v_total_ordenes, v_canceladas, v_tiempo
+  FROM orders
+  WHERE tenant_id IS NOT DISTINCT FROM v_tenant
+    AND created_at::date = p_fecha;
+
+  SELECT COUNT(*) INTO v_mesas FROM tables_config WHERE activa = true;
+
+  SELECT COALESCE(jsonb_agg(t ORDER BY t.total_revenue DESC), '[]'::jsonb)
+  INTO v_top
+  FROM (
+    SELECT
+      elem->'menuItem'->>'id'     AS menu_item_id,
+      elem->'menuItem'->>'nombre' AS nombre,
+      SUM(COALESCE((elem->>'cantidad')::numeric, 1)) AS total_cantidad,
+      SUM(COALESCE((elem->>'cantidad')::numeric, 1)
+          * COALESCE((elem->'menuItem'->>'precio')::numeric, 0)) AS total_revenue
+    FROM orders o, jsonb_array_elements(o.items) AS elem
+    WHERE o.tenant_id IS NOT DISTINCT FROM v_tenant
+      AND o.cancelado = false
+      AND o.created_at::date = p_fecha
+      AND elem->'menuItem'->>'id' IS NOT NULL
+    GROUP BY 1, 2
+    ORDER BY total_revenue DESC
+    LIMIT 5
+  ) t;
+
+  RETURN jsonb_build_object(
+    'fecha',               to_char(p_fecha, 'YYYY-MM-DD'),
+    'ticket_promedio',     CASE WHEN v_total_sesiones > 0
+                                THEN ROUND(v_total_ventas / v_total_sesiones, 2) ELSE 0 END,
+    'total_sesiones',      v_total_sesiones,
+    'total_ventas',        v_total_ventas,
+    'total_ordenes',       v_total_ordenes,
+    'canceladas',          v_canceladas,
+    'tasa_cancelacion',    CASE WHEN (v_total_ordenes + v_canceladas) > 0
+                                THEN ROUND(v_canceladas::numeric / (v_total_ordenes + v_canceladas) * 100, 1)
+                                ELSE 0 END,
+    'tiempo_atencion_min', ROUND(v_tiempo, 1),
+    'ocupacion_rate',      CASE WHEN v_mesas > 0
+                                THEN ROUND(v_total_sesiones::numeric / v_mesas * 100, 1) ELSE 0 END,
+    'top_items',           v_top
+  );
+END;
+$$;
 
 -- ──────────────────────────────────────────────────────────────────────────────
 -- STORAGE BUCKETS

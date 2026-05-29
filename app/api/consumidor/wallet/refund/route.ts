@@ -11,7 +11,7 @@ import { requireRole } from '@/lib/api-auth'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest) {
-  const { allowed } = rateLimit(`wallet-refund:${getClientIp(req)}`, 20, 60_000)
+  const { allowed } = await rateLimit(`wallet-refund:${getClientIp(req)}`, 20, 60_000)
   if (!allowed) return NextResponse.json({ error: 'Demasiados intentos' }, { status: 429 })
 
   const auth = await requireRole(req, ['admin', 'manager'])
@@ -30,22 +30,20 @@ export async function POST(req: NextRequest) {
   // Waitless retains 5% mediation fee — consumer receives 95%
   const netCents = Math.round(amount_cents * 0.95)
 
-  const { data: wallet } = await supabaseAdmin
-    .from('consumer_wallet')
-    .select('balance_cash_cents, balance_rewards_cents')
-    .eq('consumer_id', consumer_id)
-    .maybeSingle()
+  // Crédito atómico vía RPC (evita lost-update bajo concurrencia).
+  const { data: rows, error: walletErr } = await supabaseAdmin.rpc('wallet_apply_delta', {
+    p_consumer_id:   consumer_id,
+    p_cash_delta:    netCents,
+    p_rewards_delta: 0,
+  })
 
-  const newCash    = (wallet?.balance_cash_cents    ?? 0) + netCents
-  const newRewards = wallet?.balance_rewards_cents  ?? 0
+  if (walletErr || !rows || rows.length === 0) {
+    return NextResponse.json({ error: 'Error acreditando saldo' }, { status: 500 })
+  }
+
+  const newCash    = rows[0].balance_cash_cents
+  const newRewards = rows[0].balance_rewards_cents
   const newTotal   = newCash + newRewards
-
-  await supabaseAdmin
-    .from('consumer_wallet')
-    .upsert(
-      { consumer_id, balance_cash_cents: newCash, balance_rewards_cents: newRewards },
-      { onConflict: 'consumer_id' },
-    )
 
   await supabaseAdmin.from('wallet_transactions').insert({
     consumer_id,

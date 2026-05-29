@@ -61,26 +61,55 @@ export async function POST(
 
   const nota = (body.nota as string | undefined) ?? null
   const grossRefund = resolucion === 'favor_cliente' ? Number(body.refund_cents ?? 0) : 0
+
+  if (!Number.isInteger(grossRefund) || grossRefund < 0) {
+    return NextResponse.json(
+      { error: 'refund_cents debe ser un entero no negativo (en centavos)' },
+      { status: 400 },
+    )
+  }
+
+  // Un reembolso no puede superar el total de la orden. orders.total es numeric en dólares → centavos.
+  if (grossRefund > 0) {
+    if (!dispute.order_id) {
+      return NextResponse.json(
+        { error: 'No se puede reembolsar un reclamo sin orden asociada' },
+        { status: 422 },
+      )
+    }
+    const { data: order } = await supabaseAdmin
+      .from('orders')
+      .select('total')
+      .eq('id', dispute.order_id)
+      .maybeSingle()
+    if (!order) {
+      return NextResponse.json({ error: 'Orden del reclamo no encontrada' }, { status: 422 })
+    }
+    const orderTotalCents = Math.round(Number(order.total ?? 0) * 100)
+    if (grossRefund > orderTotalCents) {
+      return NextResponse.json(
+        { error: `El reembolso (${grossRefund}¢) supera el total de la orden (${orderTotalCents}¢)` },
+        { status: 422 },
+      )
+    }
+  }
+
   // Apply 5% mediation fee
   const refund_cents = grossRefund > 0 ? Math.round(grossRefund * 0.95) : 0
 
   if (refund_cents > 0 && dispute.consumer_id) {
-    const { data: wallet } = await supabaseAdmin
-      .from('consumer_wallet')
-      .select('balance_cash_cents, balance_rewards_cents')
-      .eq('consumer_id', dispute.consumer_id)
-      .maybeSingle()
+    // Crédito atómico vía RPC (evita lost-update bajo concurrencia).
+    const { data: walletRows, error: walletErr } = await supabaseAdmin.rpc('wallet_apply_delta', {
+      p_consumer_id:   dispute.consumer_id,
+      p_cash_delta:    refund_cents,
+      p_rewards_delta: 0,
+    })
 
-    const newCash  = (wallet?.balance_cash_cents   ?? 0) + refund_cents
-    const rewards  = wallet?.balance_rewards_cents ?? 0
-    const newTotal = newCash + rewards
+    if (walletErr || !walletRows || walletRows.length === 0) {
+      return NextResponse.json({ error: 'Error acreditando reembolso' }, { status: 500 })
+    }
 
-    await supabaseAdmin
-      .from('consumer_wallet')
-      .upsert(
-        { consumer_id: dispute.consumer_id, balance_cash_cents: newCash, balance_rewards_cents: rewards },
-        { onConflict: 'consumer_id' },
-      )
+    const newTotal = walletRows[0].balance_cash_cents + walletRows[0].balance_rewards_cents
 
     await supabaseAdmin.from('wallet_transactions').insert({
       consumer_id:         dispute.consumer_id,
