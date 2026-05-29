@@ -73,11 +73,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Ese identificador ya está en uso, elegí otro' }, { status: 409 })
   }
 
-  // ── Verificar email único en Auth ─────────────────────────────────────────
+  // El login de staff usa username → `${username}@pqvv.local` (ver lib/context/auth.ts
+  // y app/api/admin/users/route.ts). El usuario de Auth debe crearse con ese email
+  // sintético, NO con el email real, o el login falla. El email real solo se guarda
+  // para el correo de bienvenida.
+  const authEmail = `${slug}@pqvv.local`
+
+  // ── Verificar que el email de Auth (sintético) no exista ya ───────────────
   const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()
-  const emailTaken = existingUsers?.users?.some(u => u.email === email)
+  const emailTaken = existingUsers?.users?.some(u => u.email === authEmail)
   if (emailTaken) {
-    return NextResponse.json({ error: 'Ese email ya está registrado' }, { status: 409 })
+    return NextResponse.json({ error: 'Ese identificador ya está en uso, elegí otro' }, { status: 409 })
   }
 
   // ── Subir logo a Storage (si se proporcionó) ──────────────────────────────
@@ -133,7 +139,7 @@ export async function POST(req: NextRequest) {
 
   // ── Crear usuario admin en Supabase Auth ──────────────────────────────────
   const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-    email,
+    email: authEmail,
     password,
     email_confirm: true,
   })
