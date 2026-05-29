@@ -102,7 +102,7 @@ export function AdminView({ onBack, onLockProfile }: AdminViewProps) {
           { id: 'connect' as AdminScreen,         label: 'Stripe Connect',     icon: '⊕' },
           { id: 'liquidacion' as AdminScreen,     label: 'Liquidaciones',      icon: '↓' },
           { id: 'disputes' as AdminScreen,        label: 'Reclamos',           icon: '⚠' },
-          { id: 'calendar' as AdminScreen,        label: 'Calendario',         icon: '◫' },
+          { id: 'calendar' as AdminScreen,        label: 'Contacto',           icon: '✉' },
         ] : []),
       ]
     },
