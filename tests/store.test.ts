@@ -393,7 +393,7 @@ describe('generateQRToken', () => {
 describe('generateQRUrl', () => {
   it('builds correct URL', () => {
     const url = generateQRUrl('https://app.example.com', 3, 'TOKEN123')
-    expect(url).toBe('https://app.example.com?mesa=3&token=TOKEN123')
+    expect(url).toBe('https://app.example.com/restaurante?mesa=3&token=TOKEN123')
   })
 })
 

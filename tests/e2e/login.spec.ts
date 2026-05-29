@@ -36,7 +36,7 @@ test.describe('Login', () => {
  */
 test.describe('Cliente QR — V4', () => {
   test('sin token QR muestra mensaje de error, no el menú', async ({ page }) => {
-    await page.goto('/?mesa=1')
+    await page.goto('/restaurante?mesa=1')
     await page.waitForTimeout(3000)
     // V4 requires a token — without it, shows an error message
     const errorMsg = page.locator(
@@ -47,7 +47,7 @@ test.describe('Cliente QR — V4', () => {
   })
 
   test('token inválido muestra mensaje de QR expirado o inválido', async ({ page }) => {
-    await page.goto('/?mesa=1&token=token-invalido-para-test')
+    await page.goto('/restaurante?mesa=1&token=token-invalido-para-test')
     await page.waitForTimeout(4000)
     // Server-side validation will reject this token
     const errorMsg = page.locator(

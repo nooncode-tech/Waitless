@@ -41,7 +41,7 @@ test.describe('QR — tenant isolation (multi-tenant)', () => {
     try {
       qrToken = await createTestQRToken({ mesa: 5, tenantId: TENANT_A })
       // Access without any tenant slug (default context) — should fail
-      await page.goto(`/?mesa=5&token=${qrToken.token}`)
+      await page.goto(`/restaurante?mesa=5&token=${qrToken.token}`)
       await page.waitForTimeout(4000)
       const errorMsg = page.locator(
         'text=inválido, text=expirado, text=QR inválido, text=token QR requerido, text=nuevo código'
@@ -123,7 +123,7 @@ test.describe('QR — sin tenantId (single-tenant / legacy)', () => {
     let qrToken: TestQRToken | null = null
     try {
       qrToken = await createTestQRToken({ mesa: 2 }) // no tenantId — legacy
-      await page.goto(`/?mesa=2&token=${qrToken.token}`)
+      await page.goto(`/restaurante?mesa=2&token=${qrToken.token}`)
       await page.waitForTimeout(4000)
       const errorGate = page.locator(
         'text=QR inválido, text=QR expirado, text=token QR requerido'
@@ -142,7 +142,7 @@ test.describe('QR — sin tenantId (single-tenant / legacy)', () => {
     let qrToken: TestQRToken | null = null
     try {
       qrToken = await createExpiredTestQRToken({ mesa: 4, tenantId: TENANT_A || undefined })
-      await page.goto(`/?mesa=4&token=${qrToken.token}`)
+      await page.goto(`/restaurante?mesa=4&token=${qrToken.token}`)
       await page.waitForTimeout(4000)
       const errorMsg = page.locator(
         'text=inválido, text=expirado, text=QR inválido, text=QR expirado, text=nuevo código'

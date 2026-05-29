@@ -38,7 +38,7 @@ test.describe('Cliente QR — acceso con token válido', () => {
   test('token válido muestra vista de cliente con menú', async ({ page }) => {
     const qrToken = await createTestQRToken({ mesa: 1 })
     try {
-      await page.goto(`/?mesa=1&token=${qrToken.token}`)
+      await page.goto(`/restaurante?mesa=1&token=${qrToken.token}`)
       await page.waitForTimeout(4000)
       // Customer view should be visible — no error message
       const errorGate = page.locator('text=QR inválido, text=QR expirado, text=token QR requerido').first()
@@ -56,7 +56,7 @@ test.describe('Cliente QR — acceso con token válido', () => {
   test('token expirado muestra mensaje de error', async ({ page }) => {
     const qrToken = await createExpiredTestQRToken({ mesa: 1 })
     try {
-      await page.goto(`/?mesa=1&token=${qrToken.token}`)
+      await page.goto(`/restaurante?mesa=1&token=${qrToken.token}`)
       await page.waitForTimeout(4000)
       const errorMsg = page.locator('text=inválido, text=expirado, text=nuevo código').first()
       expect(await errorMsg.isVisible({ timeout: 5000 }).catch(() => false)).toBe(true)
@@ -69,7 +69,7 @@ test.describe('Cliente QR — acceso con token válido', () => {
     const qrToken = await createTestQRToken({ mesa: 1 })
     try {
       // Try to access mesa 2 with mesa 1's token
-      await page.goto(`/?mesa=2&token=${qrToken.token}`)
+      await page.goto(`/restaurante?mesa=2&token=${qrToken.token}`)
       await page.waitForTimeout(4000)
       const errorMsg = page.locator('text=inválido, text=no corresponde, text=expirado').first()
       expect(await errorMsg.isVisible({ timeout: 5000 }).catch(() => false)).toBe(true)

@@ -960,7 +960,9 @@ export function validateQRToken(token: string, tokens: QRToken[]): QRToken | nul
 }
 
 export function generateQRUrl(baseUrl: string, mesa: number, token: string): string {
-  return `${baseUrl}?mesa=${mesa}&token=${token}`
+  // El flujo de cliente por QR lo procesa AppClientRoot, montado en /restaurante
+  // (la raíz "/" es la landing de marketing y no lee mesa/token).
+  return `${baseUrl}/restaurante?mesa=${mesa}&token=${token}`
 }
 
 // ============ REEMBOLSO FUNCTIONS ============

@@ -48,7 +48,7 @@ test.describe('Estructura de la aplicación', () => {
     const errors: string[] = []
     page.on('pageerror', err => errors.push(err.message))
 
-    await page.goto('/?mesa=2')
+    await page.goto('/restaurante?mesa=2')
     await page.waitForTimeout(3000)
 
     // URL still contains mesa param (no redirect out)

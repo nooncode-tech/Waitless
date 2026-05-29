@@ -41,14 +41,14 @@ export function QRManager() {
 
   const handleCopyUrl = (mesa: number, token: string) => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    navigator.clipboard.writeText(`${baseUrl}?mesa=${mesa}&token=${token}`)
+    navigator.clipboard.writeText(`${baseUrl}/restaurante?mesa=${mesa}&token=${token}`)
     setCopiedToken(token)
     setTimeout(() => setCopiedToken(null), 2000)
   }
 
   const handleDownloadQR = (mesa: number, token: string) => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
-    const url = `${baseUrl}?mesa=${mesa}&token=${token}`
+    const url = `${baseUrl}/restaurante?mesa=${mesa}&token=${token}`
     const link = document.createElement('a')
     link.href = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`
     link.download = `mesa-${mesa}-qr.png`

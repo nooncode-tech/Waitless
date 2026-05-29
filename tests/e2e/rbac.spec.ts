@@ -112,7 +112,7 @@ test.describe('Cocina — solo vista de pedidos', () => {
 
 test.describe('Cliente QR — sin acceso a admin (V4)', () => {
   test('URL sin token muestra gate de error, no panel de admin', async ({ page }) => {
-    await page.goto('/?mesa=1')
+    await page.goto('/restaurante?mesa=1')
     await page.waitForTimeout(3_000)
     // V4: no token → error gate is shown instead of customer menu
     const adminPanel = page.locator(
@@ -123,7 +123,7 @@ test.describe('Cliente QR — sin acceso a admin (V4)', () => {
 
   test('token inválido muestra error y no panel de admin', async ({ page }) => {
     // V4: fake token is rejected by server-side validation
-    await page.goto('/?mesa=1&token=token-invalido-no-existe-en-db')
+    await page.goto('/restaurante?mesa=1&token=token-invalido-no-existe-en-db')
     await page.waitForTimeout(4_000)
     const adminPanel = page.locator(
       '[data-testid="admin-panel"], [data-testid="nav-config"], [data-testid="nav-users"]'
