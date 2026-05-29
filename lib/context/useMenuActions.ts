@@ -290,29 +290,58 @@ export function useMenuActions(state: AppState, setState: SetState) {
   }, [setState])
 
   // ============ TABLE ACTIONS ============
-  const addTable = useCallback((numero: number, capacidad = 4, ubicacion?: string) => {
-    const newTable: TableConfig = {
-      id: generateId(),
-      numero,
-      capacidad,
-      ubicacion,
-      activa: true,
-      estado: 'disponible' as const,
-      createdAt: new Date(),
+  const addTable = useCallback(async (numero: number, capacidad = 4, ubicacion?: string): Promise<{ ok: boolean; error?: string }> => {
+    try {
+      // El número de mesa es único (índice global). Si la mesa ya existe en la DB
+      // —aunque haya sido "borrada" (activa=false)— la reactivamos en vez de
+      // insertar un duplicado (que fallaría). Así los números se pueden reutilizar.
+      const { data: existing, error: selErr } = await supabase
+        .from('tables_config')
+        .select('id')
+        .eq('numero', numero)
+        .maybeSingle()
+      if (selErr) return { ok: false, error: selErr.message }
+
+      if (existing?.id) {
+        const { error: updErr } = await supabase
+          .from('tables_config')
+          .update({ activa: true, capacidad, ubicacion: ubicacion ?? null, estado: 'disponible' })
+          .eq('id', existing.id)
+        if (updErr) return { ok: false, error: updErr.message }
+
+        const reactivated: TableConfig = {
+          id: existing.id, numero, capacidad, ubicacion,
+          activa: true, estado: 'disponible', createdAt: new Date(),
+        }
+        setState(prev => ({
+          ...prev,
+          tables: prev.tables.some(t => t.id === existing.id)
+            ? prev.tables.map(t => (t.id === existing.id ? { ...t, ...reactivated } : t))
+            : [...prev.tables, reactivated],
+        }))
+        return { ok: true }
+      }
+
+      // No existía → insertar nueva
+      const newTable: TableConfig = {
+        id: generateId(), numero, capacidad, ubicacion,
+        activa: true, estado: 'disponible', createdAt: new Date(),
+      }
+      const { error: insErr } = await supabase.from('tables_config').insert({
+        id: newTable.id,
+        numero: newTable.numero,
+        capacidad: newTable.capacidad,
+        ubicacion: newTable.ubicacion ?? null,
+        activa: true,
+        estado: 'disponible',
+      })
+      if (insErr) return { ok: false, error: insErr.message }
+
+      setState(prev => ({ ...prev, tables: [...prev.tables, newTable] }))
+      return { ok: true }
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : 'Error al guardar la mesa' }
     }
-    setState(prev => ({
-      ...prev,
-      tables: [...prev.tables, newTable],
-    }))
-    // Persistir en Supabase
-    supabase.from('tables_config').insert({
-      id: newTable.id,
-      numero: newTable.numero,
-      capacidad: newTable.capacidad,
-      ubicacion: newTable.ubicacion ?? null,
-      activa: true,
-      estado: 'disponible',
-    }).then(() => {})
   }, [setState])
 
   const updateTable = useCallback((tableId: string, updates: Partial<TableConfig>) => {
@@ -330,7 +359,9 @@ export function useMenuActions(state: AppState, setState: SetState) {
     if (updates.activa !== undefined)    dbUpdates.activa    = updates.activa
     if (updates.estado !== undefined)    dbUpdates.estado    = updates.estado
     if (Object.keys(dbUpdates).length > 0) {
-      supabase.from('tables_config').update(dbUpdates).eq('id', tableId).then(() => {})
+      supabase.from('tables_config').update(dbUpdates).eq('id', tableId).then(({ error }) => {
+        if (error) console.error('[updateTable] Supabase error:', error.message)
+      })
     }
   }, [setState])
 
@@ -340,7 +371,9 @@ export function useMenuActions(state: AppState, setState: SetState) {
       tables: prev.tables.filter(table => table.id !== tableId),
     }))
     // Soft delete en Supabase: marcar como inactiva
-    supabase.from('tables_config').update({ activa: false }).eq('id', tableId).then(() => {})
+    supabase.from('tables_config').update({ activa: false }).eq('id', tableId).then(({ error }) => {
+      if (error) console.error('[deleteTable] Supabase error:', error.message)
+    })
   }, [setState])
 
   const getActiveTables = useCallback((): TableConfig[] => {

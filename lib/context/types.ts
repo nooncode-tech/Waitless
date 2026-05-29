@@ -139,7 +139,7 @@ export interface AppContextType extends AppState {
   reorderCategories: (categoryIds: string[]) => void
 
   // Tables
-  addTable: (numero: number, capacidad?: number, ubicacion?: string) => void
+  addTable: (numero: number, capacidad?: number, ubicacion?: string) => Promise<{ ok: boolean; error?: string }>
   updateTable: (tableId: string, updates: Partial<TableConfig>) => void
   deleteTable: (tableId: string) => void
   getActiveTables: () => TableConfig[]

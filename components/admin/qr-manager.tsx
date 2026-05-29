@@ -56,10 +56,17 @@ export function QRManager() {
     link.click()
   }
 
-  const handleAddTable = () => {
+  const handleAddTable = async () => {
     const numero = parseInt(newTableNumber)
     if (!numero || tables.some(t => t.numero === numero)) return
-    addTable(numero, parseInt(newTableCapacity) || 4, newTableUbicacion || undefined)
+    const res = await addTable(numero, parseInt(newTableCapacity) || 4, newTableUbicacion || undefined)
+    if (!res.ok) {
+      toast.error(res.error?.includes('duplicate') || res.error?.includes('unique')
+        ? `La mesa ${numero} ya existe`
+        : (res.error || 'No se pudo guardar la mesa'))
+      return
+    }
+    toast.success(`Mesa ${numero} agregada`)
     setNewTableNumber(''); setNewTableCapacity('4'); setNewTableUbicacion('')
     setShowAddTable(false)
   }
