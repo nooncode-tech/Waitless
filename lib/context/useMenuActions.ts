@@ -376,6 +376,76 @@ export function useMenuActions(state: AppState, setState: SetState) {
     })
   }, [setState])
 
+  /**
+   * Define cuántas mesas trabaja el local de una sola vez.
+   * - Crea/reactiva las mesas 1..count (activa=true).
+   * - Desactiva (soft) cualquier mesa activa con número > count.
+   * El resultado se refleja en todas las listas (incl. QR) porque todas
+   * derivan de getActiveTables()/state.tables.
+   */
+  const setTablesCount = useCallback(async (count: number): Promise<{ ok: boolean; error?: string }> => {
+    const n = Math.max(0, Math.floor(count) || 0)
+    try {
+      const { data: existing, error: selErr } = await supabase
+        .from('tables_config')
+        .select('id, numero, capacidad, nombre, ubicacion, activa, estado')
+      if (selErr) return { ok: false, error: selErr.message }
+
+      const rows = existing ?? []
+      const byNumero = new Map<number, (typeof rows)[number]>()
+      rows.forEach(r => byNumero.set(r.numero, r))
+
+      const toInsert: Array<{ id: string; numero: number; capacidad: number; activa: boolean; estado: string }> = []
+      const toReactivate: string[] = []
+      for (let numero = 1; numero <= n; numero++) {
+        const r = byNumero.get(numero)
+        if (r) {
+          if (!r.activa) toReactivate.push(r.id)
+        } else {
+          toInsert.push({ id: generateId(), numero, capacidad: 4, activa: true, estado: 'disponible' })
+        }
+      }
+      const toDeactivate = rows.filter(r => r.numero > n && r.activa).map(r => r.id)
+
+      if (toInsert.length) {
+        const { error } = await supabase.from('tables_config').insert(toInsert)
+        if (error) return { ok: false, error: error.message }
+      }
+      if (toReactivate.length) {
+        const { error } = await supabase.from('tables_config').update({ activa: true }).in('id', toReactivate)
+        if (error) return { ok: false, error: error.message }
+      }
+      if (toDeactivate.length) {
+        const { error } = await supabase.from('tables_config').update({ activa: false }).in('id', toDeactivate)
+        if (error) return { ok: false, error: error.message }
+      }
+
+      // Reconstruir el estado local a partir de la verdad en DB + inserts.
+      setState(prev => {
+        const finalTables: TableConfig[] = rows.map(r => ({
+          id: r.id,
+          numero: r.numero,
+          nombre: r.nombre ?? undefined,
+          capacidad: r.capacidad ?? 4,
+          ubicacion: r.ubicacion ?? undefined,
+          activa: r.numero >= 1 && r.numero <= n ? true : (r.numero > n ? false : r.activa),
+          estado: (r.estado as TableState) ?? 'disponible',
+          createdAt: prev.tables.find(t => t.id === r.id)?.createdAt ?? new Date(),
+        }))
+        toInsert.forEach(r => finalTables.push({
+          id: r.id, numero: r.numero, capacidad: r.capacidad,
+          activa: true, estado: 'disponible', createdAt: new Date(),
+        }))
+        finalTables.sort((a, b) => a.numero - b.numero)
+        return { ...prev, tables: finalTables }
+      })
+
+      return { ok: true }
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : 'Error al configurar las mesas' }
+    }
+  }, [setState])
+
   const getActiveTables = useCallback((): TableConfig[] => {
     return state.tables.filter(t => t.activa).sort((a, b) => a.numero - b.numero)
   }, [state.tables])
@@ -392,6 +462,7 @@ export function useMenuActions(state: AppState, setState: SetState) {
     addTable,
     updateTable,
     deleteTable,
+    setTablesCount,
     getActiveTables,
   }
 }

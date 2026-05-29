@@ -142,6 +142,7 @@ export interface AppContextType extends AppState {
   addTable: (numero: number, capacidad?: number, ubicacion?: string) => Promise<{ ok: boolean; error?: string }>
   updateTable: (tableId: string, updates: Partial<TableConfig>) => void
   deleteTable: (tableId: string) => void
+  setTablesCount: (count: number) => Promise<{ ok: boolean; error?: string }>
   getActiveTables: () => TableConfig[]
 
   // Inventory
