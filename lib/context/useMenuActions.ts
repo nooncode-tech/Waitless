@@ -405,6 +405,18 @@ export function useMenuActions(state: AppState, setState: SetState) {
           toInsert.push({ id: generateId(), numero, capacidad: 4, activa: true, estado: 'disponible' })
         }
       }
+      // No se puede reducir la cantidad si alguna mesa por encima de N está en uso:
+      // perderíamos una sesión activa. Se bloquea y se informa cuáles liberar.
+      const enUso = rows.filter(
+        r => r.numero > n && r.activa && (r.estado === 'ocupada' || r.estado === 'cuenta_pedida')
+      )
+      if (enUso.length) {
+        const nums = enUso.map(r => r.numero).sort((a, b) => a - b).join(', ')
+        return {
+          ok: false,
+          error: `No se puede reducir a ${n} mesas: la(s) mesa(s) ${nums} están en uso. Cerrá esas cuentas primero.`,
+        }
+      }
       const toDeactivate = rows.filter(r => r.numero > n && r.activa).map(r => r.id)
 
       if (toInsert.length) {
